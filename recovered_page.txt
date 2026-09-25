@@ -1,0 +1,391 @@
+Created At: 2026-09-25T13:18:49+07:00
+Completed At: 2026-09-25T13:18:49+07:00
+File Path: `file:///Users/anggasrimugiarahayu/Documents/PROJECT/NGONTEN%20PAKAI%20AI/src/app/page.tsx`
+Total Lines: 508
+Total Bytes: 52121
+Showing lines 1 to 508
+Content truncated: showing bytes 0-46080 of 52121. To see more, call this tool again with the same line range and ContentOffset=46080.
+The following code has been modified to include a line number before every line, in the format: <line_number>: <original_line>. Please note that any changes targeting the original code should remove the line number, colon, and leading space.
+1: "use client";
+2: 
+3: import { useState, useEffect } from "react";
+4: import Link from "next/link";
+5: import { LayoutDashboard, UserCircle, Lightbulb, Camera, Calendar, BookOpen,
+6:   Wrench,
+7:   MessageCircle,
+8:   FileText,
+9:   Check,
+10:   Copy,
+11:   Flame,
+12:   User,
+13:   PlayCircle,
+14:   Star,
+15:   Zap,
+16:   Moon,
+17: } from "lucide-react";
+18: import { useSearchParams } from "next/navigation";
+19: import { useTheme } from "next-themes";
+20: import { Suspense } from "react";
+21: 
+22: function HomeContent() {
+23:   const searchParams = useSearchParams();
+24:   const showPricingParam = searchParams.get("pricing") === "true";
+25:   const [showPricing, setShowPricing] = useState(showPricingParam);
+26:   const { theme } = useTheme();
+27:   const [mounted, setMounted] = useState(false);
+28: 
+29:   useEffect(() => {
+30:     setMounted(true);
+31:   }, []);
+32: 
+33:   const isDark = mounted ? theme === "dark" : true;
+34: 
+35:   useEffect(() => {
+36:     setMounted(true);
+37:   }, []);
+38: 
+39:   return (
+40:     <>
+41:       {/* MAIN CONTENT */}
+42:       {!showPricing ? (
+43:         <main className="flex-1 flex flex-col items-center justify-center p-6 text-center max-w-5xl mx-auto w-full py-20">
+44:           <button
+45:             onClick={() => setShowPricing(true)}
+46:             className={`flex items-center gap-2 px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-widest mb-8 transition-all hover:scale-105 hover:shadow-[0_0_15px_rgba(249,115,22,0.4)] ${isDark ? "border border-rn-accent/30 bg-rn-accent/5 hover:bg-rn-accent/10 text-rn-accent" : "border border-rn-accent bg-rn-accent/20 hover:bg-rn-accent/30 text-gray-900"}`}
+47:           >
+48:             <Flame
+49:               className="w-4 h-4 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,1)] animate-pulse"
+50:               fill="currentColor"
+51:             />
+52:             PROMO hingga 95%{" "}
+53:             <span className="ml-1 text-lg leading-none">&rsaquo;</span>
+54:           </button>
+55: 
+56:           <h1
+57:             className={`text-3xl md:text-4xl font-black font-heading mb-8 md:mb-10 tracking-tight transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
+58:           >
+59:             Mau Ngonten apa hari ini?
+60:           </h1>
+61: 
+62:           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-7xl">
+63:             {/* EBOOK CARD */}
+64:             <Link
+65:               href="/master-blueprint"
+66:               className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-300 hover:shadow-xl cursor-pointer z-0 overflow-hidden ${isDark ? "bg-[#18181b] border-white/5 hover:border-rn-orange/50 shadow-black/50" : "bg-white border-gray-200 hover:border-rn-orange shadow-gray-200"}`}
+67:             >
+68:               <span className="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-orange-500 shadow-sm z-10">
+69:                 Update Baru
+70:               </span>
+71:               <div className="relative w-full overflow-hidden aspect-[16/9] rounded-lg">
+72:                 <div
+73:                   data-active="true"
+74:                   className={`iso-stage pointer-events-none absolute -z-10 aspect-[1642/1200] max-w-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out group-hover:scale-[1.05] ${isDark ? "text-gray-400" : "text-gray-600"}`}
+75:                   style={{ top: "50%", left: "50%", width: "290%" }}
+76:                 >
+77:                   <svg viewBox="0 0 1642 1200" className="size-full" aria-hidden="true" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><g strokeOpacity="0.18" strokeWidth="3" strokeDasharray="3 14"><line x1="21" y1="0" x2="21" y2="1200"></line><line x1="101" y1="0" x2="101" y2="1200"></line><line x1="181" y1="0" x2="181" y2="1200"></line><line x1="261" y1="0" x2="261" y2="1200"></line><line x1="341" y1="0" x2="341" y2="1200"></line><line x1="421" y1="0" x2="421" y2="1200"></line><line x1="501" y1="0" x2="501" y2="1200"></line><line x1="581" y1="0" x2="581" y2="1200"></line><line x1="661" y1="0" x2="661" y2="1200"></line><line x1="741" y1="0" x2="741" y2="1200"></line><line x1="821" y1="0" x2="821" y2="1200"></line><line x1="901" y1="0" x2="901" y2="1200"></line><line x1="981" y1="0" x2="981" y2="1200"></line><line x1="1061" y1="0" x2="1061" y2="1200"></line><line x1="1141" y1="0" x2="1141" y2="1200"></line><line x1="1221" y1="0" x2="1221" y2="1200"></line><line x1="1301" y1="0" x2="1301" y2="1200"></line><line x1="1381" y1="0" x2="1381" y2="1200"></line><line x1="1461" y1="0" x2="1461" y2="1200"></line><line x1="1541" y1="0" x2="1541" y2="1200"></line><line x1="1621" y1="0" x2="1621" y2="1200"></line><line x1="0" y1="40" x2="1642" y2="40"></line><line x1="0" y1="120" x2="1642" y2="120"></line><line x1="0" y1="200" x2="1642" y2="200"></line><line x1="0" y1="280" x2="1642" y2="280"></line><line x1="0" y1="360" x2="1642" y2="360"></line><line x1="0" y1="440" x2="1642" y2="440"></line><line x1="0" y1="520" x2="1642" y2="520"></line><line x1="0" y1="600" x2="1642" y2="600"></line><line x1="0" y1="680" x2="1642" y2="680"></line><line x1="0" y1="760" x2="1642" y2="760"></line><line x1="0" y1="840" x2="1642" y2="840"></line><line x1="0" y1="920" x2="1642" y2="920"></line><line x1="0" y1="1000" x2="1642" y2="1000"></line><line x1="0" y1="1080" x2="1642" y2="1080"></line><line x1="0" y1="1160" x2="1642" y2="1160"></line></g><g transform="translate(821 600)"><g transform="translate(-12 0)"><g className="sc-rise-10"><circle cx="-200" cy="-22" r="30" fill="currentColor" fillOpacity="0.06" strokeOpacity="0.75" strokeWidth="5"></circle><path d="M-212 -22 L-206 -33 L-200 -19 L-194 -33 L-188 -22" strokeWidth="5" strokeOpacity="0.8" className="sc-draw-50" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></path><rect x="-212" y="6" width="24" height="15" rx="3" fill="currentColor" fillOpacity="0.12" strokeOpacity="0.7" strokeWidth="4"></rect><line x1="-206" y1="25" x2="-194" y2="25" strokeWidth="5" strokeOpacity="0.6"></line><g className="sc-pop-90"><path d="M-200 -60 L-200 -74" strokeWidth="6" strokeOpacity="0.7"></path></g><g className="sc-pop-105"><path d="M-226 -44 L-236 -54" strokeWidth="6" strokeOpacity="0.7"></path></g><g className="sc-pop-120"><path d="M-174 -44 L-164 -54" strokeWidth="6" strokeOpacity="0.7"></path></g></g><g className="sc-rise-150"><g transform="translate(-160 -10)"><g className="sc-flow" style={{ animationDelay: '' }}><path d="M0 -12 L11 0 L0 12" strokeWidth="7" strokeOpacity="0.8"></path></g></g><g transform="translate(-144 -10)"><g className="sc-flow" style={{ animationDelay: '' }}><path d="M0 -12 L11 0 L0 12" strokeWidth="7" strokeOpacity="0.8"></path></g></g><g transform="translate(-128 -10)"><g className="sc-flow" style={{ animationDelay: '' }}><path d="M0 -12 L11 0 L0 12" strokeWidth="7" strokeOpacity="0.8"></path></g></g></g><g className="sc-rise-180"><rect x="-95" y="-100" width="210" height="190" rx="16" fill="currentColor" fillOpacity="0.05" strokeOpacity="0.7" strokeWidth="5"></rect><g className="sc-pop-210"><text x="-70" y="-70" fontSize="24" fontWeight="700" fill="currentColor" fillOpacity="0.85" stroke="none" dominantBaseline="central" letterSpacing="0.68">FACELESS</text></g><line x1="78" y1="-70" x2="110" y2="-70" strokeWidth="11" strokeOpacity="0.3" className="sc-draw-230" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-70" y1="-44" x2="90" y2="-44" strokeWidth="3" strokeOpacity="0.35" className="sc-draw-250" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-70" y1="-18" x2="55" y2="-18" strokeWidth="10" strokeOpacity="0.6" className="sc-draw-280" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-70" y1="8" x2="85" y2="8" strokeWidth="10" strokeOpacity="0.6" className="sc-draw-305" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-70" y1="34" x2="35" y2="34" strokeWidth="10" strokeOpacity="0.6" className="sc-draw-330" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g><g className="sc-rise-360"><rect x="75" y="-50" width="190" height="150" rx="16" fill={isDark ? "#18181b" : "#ffffff"} strokeOpacity="0.8" strokeWidth="5"></rect><rect x="69" y="-56" width="12" height="12" fill="currentColor" stroke="none" opacity="0.85"></rect><rect x="259" y="-56" width="12" height="12" fill="currentColor" stroke="none" opacity="0.85"></rect><rect x="259" y="94" width="12" height="12" fill="currentColor" stroke="none" opacity="0.85"></rect><rect x="69" y="94" width="12" height="12" fill="currentColor" stroke="none" opacity="0.85"></rect><g className="sc-pop-390"><text x="95" y="-24" fontSize="28" fontWeight="600" fill="currentColor" fillOpacity="0.6" stroke="none" dominantBaseline="central" letterSpacing="0.56">Cuan</text></g><g><line x1="128" y1="4" x2="210" y2="4" strokeWidth="10" strokeOpacity="0.65" className="sc-draw-395" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><g transform="translate(107 4)"><g className="sc-pop-410"><rect x="-11" y="-11" width="22" height="22" rx="6" strokeOpacity="0.55" strokeWidth="4"></rect></g><g className="sc-pop-490"><rect x="-11" y="-11" width="22" height="22" rx="6" fill="oklch(0.75 0.13 150)" fillOpacity="0.18" stroke="oklch(0.75 0.13 150)" strokeOpacity="0.95" strokeWidth="4"></rect><path d="M-6 0 L-2 4 L7 -5" stroke="oklch(0.75 0.13 150)" strokeWidth="5"></path></g></g></g><g><line x1="128" y1="34" x2="240" y2="34" strokeWidth="10" strokeOpacity="0.65" className="sc-draw-415" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><g transform="translate(107 34)"><g className="sc-pop-430"><rect x="-11" y="-11" width="22" height="22" rx="6" strokeOpacity="0.55" strokeWidth="4"></rect></g><g className="sc-pop-530"><rect x="-11" y="-11" width="22" height="22" rx="6" fill="oklch(0.75 0.13 150)" fillOpacity="0.18" stroke="oklch(0.75 0.13 150)" strokeOpacity="0.95" strokeWidth="4"></rect><path d="M-6 0 L-2 4 L7 -5" stroke="oklch(0.75 0.13 150)" strokeWidth="5"></path></g></g></g><g><line x1="128" y1="64" x2="188" y2="64" strokeWidth="10" strokeOpacity="0.65" className="sc-draw-435" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><g transform="translate(107 64)"><g className="sc-pop-450"><rect x="-11" y="-11" width="22" height="22" rx="6" strokeOpacity="0.55" strokeWidth="4"></rect></g><g className="sc-pop-570"><rect x="-11" y="-11" width="22" height="22" rx="6" fill="oklch(0.75 0.13 150)" fillOpacity="0.18" stroke="oklch(0.75 0.13 150)" strokeOpacity="0.95" strokeWidth="4"></rect><path d="M-6 0 L-2 4 L7 -5" stroke="oklch(0.75 0.13 150)" strokeWidth="5"></path></g></g></g></g></g></g></svg>
+78:                 </div>
+79:               </div>
+80:               <div className="relative mt-4 space-y-1">
+81:                 <h2
+82:                   className={`font-heading text-lg font-bold leading-snug transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
+83:                 >
+84:                   Master Blueprint
+85:                 </h2>
+86:                 <p
+87:                   className={`text-sm leading-relaxed transition-colors duration-300 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+88:                 >
+89:                   Meracik otomatis Brand Foundation, Strategy, dan Audience Psychology dari idemu.
+90:                 </p>
+91:               </div>
+92:             </Link>
+93: 
+94:             {/* TOOLS CARD */}
+95:             <Link
+96:               href="/bio-builder"
+97:               className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-300 hover:shadow-xl cursor-pointer z-0 overflow-hidden ${isDark ? "bg-[#18181b] border-white/5 hover:border-rn-accent/50 shadow-black/50" : "bg-white border-gray-200 hover:border-rn-accent shadow-gray-200"}`}
+98:             >
+99: 
+100:               <div className="relative w-full overflow-hidden aspect-[16/9] rounded-lg">
+101:                 <div
+102:                   data-active="true"
+103:                   className={`iso-stage pointer-events-none absolute -z-10 aspect-[1642/1200] max-w-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out group-hover:scale-[1.05] ${isDark ? "text-gray-400" : "text-gray-600"} w-[200%] md:w-[270%]`}
+104:                   style={{ top: "45%", left: "50%" }}
+105:                 >
+106:                   <svg viewBox="0 0 1642 1200" className="size-full" aria-hidden="true" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><g strokeOpacity="0.18" strokeWidth="3" strokeDasharray="3 14"><line x1="21" y1="0" x2="21" y2="1200"></line><line x1="101" y1="0" x2="101" y2="1200"></line><line x1="181" y1="0" x2="181" y2="1200"></line><line x1="261" y1="0" x2="261" y2="1200"></line><line x1="341" y1="0" x2="341" y2="1200"></line><line x1="421" y1="0" x2="421" y2="1200"></line><line x1="501" y1="0" x2="501" y2="1200"></line><line x1="581" y1="0" x2="581" y2="1200"></line><line x1="661" y1="0" x2="661" y2="1200"></line><line x1="741" y1="0" x2="741" y2="1200"></line><line x1="821" y1="0" x2="821" y2="1200"></line><line x1="901" y1="0" x2="901" y2="1200"></line><line x1="981" y1="0" x2="981" y2="1200"></line><line x1="1061" y1="0" x2="1061" y2="1200"></line><line x1="1141" y1="0" x2="1141" y2="1200"></line><line x1="1221" y1="0" x2="1221" y2="1200"></line><line x1="1301" y1="0" x2="1301" y2="1200"></line><line x1="1381" y1="0" x2="1381" y2="1200"></line><line x1="1461" y1="0" x2="1461" y2="1200"></line><line x1="1541" y1="0" x2="1541" y2="1200"></line><line x1="1621" y1="0" x2="1621" y2="1200"></line><line x1="0" y1="40" x2="1642" y2="40"></line><line x1="0" y1="120" x2="1642" y2="120"></line><line x1="0" y1="200" x2="1642" y2="200"></line><line x1="0" y1="280" x2="1642" y2="280"></line><line x1="0" y1="360" x2="1642" y2="360"></line><line x1="0" y1="440" x2="1642" y2="440"></line><line x1="0" y1="520" x2="1642" y2="520"></line><line x1="0" y1="600" x2="1642" y2="600"></line><line x1="0" y1="680" x2="1642" y2="680"></line><line x1="0" y1="760" x2="1642" y2="760"></line><line x1="0" y1="840" x2="1642" y2="840"></line><line x1="0" y1="920" x2="1642" y2="920"></line><line x1="0" y1="1000" x2="1642" y2="1000"></line><line x1="0" y1="1080" x2="1642" y2="1080"></line><line x1="0" y1="1160" x2="1642" y2="1160"></line></g><g transform="translate(821 600)">
+107:   <g transform="translate(-138 -110)">
+108:     <g className="sc-pop-15">
+109:       <rect x="-25" y="-25" width="50" height="50" rx="15" fill="currentColor" fillOpacity="0.05" strokeOpacity="0.45" strokeWidth="4"></rect>
+110:       <LayoutDashboard x="-12" y="-12" width="24" height="24" strokeWidth="2" stroke="currentColor" fill="none" opacity="0.8" />
+111:     </g>
+112:   </g>
+113:   <g transform="translate(-46 -110)">
+114:     <g className="sc-pop-30">
+115:       <rect x="-25" y="-25" width="50" height="50" rx="15" fill="currentColor" fillOpacity="0.05" strokeOpacity="0.45" strokeWidth="4"></rect>
+116:       <UserCircle x="-12" y="-12" width="24" height="24" strokeWidth="2" stroke="currentColor" fill="none" opacity="0.8" />
+117:     </g>
+118:   </g>
+119:   <g transform="translate(46 -110)">
+120:     <g className="sc-pop-45">
+121:       <rect x="-25" y="-25" width="50" height="50" rx="15" fill="currentColor" fillOpacity="0.05" strokeOpacity="0.45" strokeWidth="4"></rect>
+122:       <Lightbulb x="-12" y="-12" width="24" height="24" strokeWidth="2" stroke="currentColor" fill="none" opacity="0.8" />
+123:     </g>
+124:   </g>
+125:   <g transform="translate(138 -110)">
+126:     <g className="sc-pop-60">
+127:       <rect x="-25" y="-25" width="50" height="50" rx="15" fill="currentColor" fillOpacity="0.05" strokeOpacity="0.45" strokeWidth="4"></rect>
+128:       <FileText x="-12" y="-12" width="24" height="24" strokeWidth="2" stroke="currentColor" fill="none" opacity="0.8" />
+129:     </g>
+130:   </g>
+131:   <g transform="translate(-138 -45)">
+132:     <g className="sc-pop-72">
+133:       <rect x="-25" y="-25" width="50" height="50" rx="15" fill="currentColor" fillOpacity="0.05" strokeOpacity="0.45" strokeWidth="4"></rect>
+134:       <Copy x="-12" y="-12" width="24" height="24" strokeWidth="2" stroke="currentColor" fill="none" opacity="0.8" />
+135:     </g>
+136:   </g>
+137:   <g transform="translate(-46 -45)">
+138:     <g className="sc-pop-84">
+139:       <rect x="-25" y="-25" width="50" height="50" rx="15" fill="currentColor" fillOpacity="0.05" strokeOpacity="0.45" strokeWidth="4"></rect>
+140:       <Camera x="-12" y="-12" width="24" height="24" strokeWidth="2" stroke="currentColor" fill="none" opacity="0.8" />
+141:     </g>
+142:   </g>
+143:   <g transform="translate(46 -45)">
+144:     <g className="sc-pop-90">
+145:       <rect x="-25" y="-25" width="50" height="50" rx="15" fill="currentColor" fillOpacity="0.05" strokeOpacity="0.45" strokeWidth="4"></rect>
+146:       <BookOpen x="-12" y="-12" width="24" height="24" strokeWidth="2" stroke="currentColor" fill="none" opacity="0.8" />
+147:     </g>
+148:   </g>
+149:   <g transform="translate(138 -45)">
+150:     <g className="sc-pop-105">
+151:       <rect x="-25" y="-25" width="50" height="50" rx="15" fill="currentColor" fillOpacity="0.05" strokeOpacity="0.45" strokeWidth="4"></rect>
+152:       <Calendar x="-12" y="-12" width="24" height="24" strokeWidth="2" stroke="currentColor" fill="none" opacity="0.8" />
+153:     </g>
+154:   </g>
+155:   <g className="sc-ring-8">
+156:     <rect x="-29" y="-29" width="58" height="58" rx="18" fill="oklch(0.78 0.15 45)" fillOpacity="0.1" stroke="oklch(0.78 0.15 45)" strokeOpacity="0.95" strokeWidth="5"></rect>
+157:   </g>
+158:   <defs><clipPath id="home-v2-chat-viewport"><rect x="-272" y="10" width="544" height="200"></rect></clipPath></defs>
+159:   <g clipPath="url(#home-v2-chat-viewport)">
+160:     <g transform="translate(0 -10)">
+161:       <g className="sc-scroll">
+162:         <g className="sc-rise-250">
+163:           <path d="M 114 24 H 236 a 14 14 0 0 1 14 14 V 56 H 114 a 14 14 0 0 1 -14 -14 V 38 a 14 14 0 0 1 14 -14 Z" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeOpacity="0.6" strokeWidth="5"></path>
+164:           <g><line x1="120" y1="40" x2="230" y2="40" strokeWidth="9" strokeOpacity="0.55" className="sc-draw-270" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g>
+165:         </g>
+166:         <g className="sc-rise-300">
+167:           <path d="M -236 66 H 16 a 14 14 0 0 1 14 14 V 106 a 14 14 0 0 1 -14 14 H -250 V 80 a 14 14 0 0 1 14 -14 Z" fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeOpacity="0.95" strokeWidth="5"></path>
+168:           <g><line x1="-230" y1="84" x2="10" y2="84" strokeWidth="9" strokeOpacity="0.7" className="sc-draw-320" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g>
+169:           <g><line x1="-230" y1="106" x2="-60" y2="106" strokeWidth="9" strokeOpacity="0.7" className="sc-draw-340" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g>
+170:         </g>
+171:         <g className="sc-rise-370">
+172:           <path d="M 164 130 H 236 a 14 14 0 0 1 14 14 V 162 H 164 a 14 14 0 0 1 -14 -14 V 144 a 14 14 0 0 1 14 -14 Z" fill="currentColor" fillOpacity="0.08" stroke="currentColor" strokeOpacity="0.6" strokeWidth="5"></path>
+173:           <g><line x1="170" y1="146" x2="230" y2="146" strokeWidth="9" strokeOpacity="0.55" className="sc-draw-390" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g>
+174:         </g>
+175:         <g className="sc-rise-420">
+176:           <path d="M -236 172 H 36 a 14 14 0 0 1 14 14 V 298 a 14 14 0 0 1 -14 14 H -250 V 186 a 14 14 0 0 1 14 -14 Z" fill="currentColor" fillOpacity="0.12" stroke="currentColor" strokeOpacity="0.95" strokeWidth="5"></path>
+177:           <g><line x1="-230" y1="194" x2="-110" y2="194" strokeWidth="12" strokeOpacity="0.85" className="sc-draw-470" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g>
+178:           <g><line x1="-230" y1="210" x2="30" y2="210" strokeWidth="2" strokeOpacity="0.25" className="sc-draw-490" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g>
+179:           <g><line x1="-210" y1="228" x2="30" y2="228" strokeWidth="9" strokeOpacity="0.7" className="sc-draw-510" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line>
+180:              <g transform="translate(-226 228)"><g className="sc-pop-510"><circle r="4.5" fill="oklch(0.78 0.15 45)" stroke="none"></circle></g></g>
+181:           </g>
+182:           <g><line x1="-210" y1="250" x2="-50" y2="250" strokeWidth="9" strokeOpacity="0.7" className="sc-draw-540" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line>
+183:              <g transform="translate(-226 250)"><g className="sc-pop-540"><circle r="4.5" fill="oklch(0.78 0.15 45)" stroke="none"></circle></g></g>
+184:           </g>
+185:           <g><line x1="-210" y1="272" x2="10" y2="272" strokeWidth="9" strokeOpacity="0.7" className="sc-draw-570" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line>
+186:              <g transform="translate(-226 272)"><g className="sc-pop-570"><circle r="4.5" fill="oklch(0.78 0.15 45)" stroke="none"></circle></g></g>
+187:           </g>
+188:           <g><line x1="-230" y1="294" x2="-130" y2="294" strokeWidth="7" strokeOpacity="0.45" className="sc-draw-600" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g>
+189:         </g>
+190:       </g>
+191:     </g>
+192:   </g>
+193: </g></svg>
+194:                 </div>
+195:               </div>
+196:               <div className="relative mt-4 space-y-1">
+197:                 <h2
+198:                   className={`font-heading text-lg font-bold leading-snug transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
+199:                 >
+200:                   Bio Builder
+201:                 </h2>
+202:                 <p
+203:                   className={`text-sm leading-relaxed transition-colors duration-300 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+204:                 >
+205:                   Rumuskan profil IG (Username, Headline, Bio) menarik yang sesuai dengan niche secara presisi.
+206:                 </p>
+207:               </div>
+208:             </Link>
+209: 
+210:             {/* E-LEARNING CARD */}
+211:             <Link
+212:               href="/content-builder"
+213:               className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-300 hover:shadow-xl cursor-pointer z-0 overflow-hidden ${isDark ? "bg-[#18181b] border-white/5 shadow-black/50 hover:border-purple-500/50" : "bg-white border-gray-200 shadow-gray-200 hover:border-purple-400"}`}
+214:             >
+215: 
+216:               <div className="relative w-full overflow-hidden aspect-[16/9] rounded-lg">
+217:                 <div
+218:                   data-active="true"
+219:                   className={`iso-stage pointer-events-none absolute -z-10 aspect-[1642/1200] max-w-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out group-hover:scale-[1.05] ${isDark ? "text-gray-400" : "text-gray-600"}`}
+220:                   style={{ top: "50%", left: "50%", width: "300%" }}
+221:                 >
+222:                   <svg viewBox="0 0 1642 1200" className="size-full" aria-hidden="true" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><g strokeOpacity="0.18" strokeWidth="3" strokeDasharray="3 14"><line x1="21" y1="0" x2="21" y2="1200"></line><line x1="101" y1="0" x2="101" y2="1200"></line><line x1="181" y1="0" x2="181" y2="1200"></line><line x1="261" y1="0" x2="261" y2="1200"></line><line x1="341" y1="0" x2="341" y2="1200"></line><line x1="421" y1="0" x2="421" y2="1200"></line><line x1="501" y1="0" x2="501" y2="1200"></line><line x1="581" y1="0" x2="581" y2="1200"></line><line x1="661" y1="0" x2="661" y2="1200"></line><line x1="741" y1="0" x2="741" y2="1200"></line><line x1="821" y1="0" x2="821" y2="1200"></line><line x1="901" y1="0" x2="901" y2="1200"></line><line x1="981" y1="0" x2="981" y2="1200"></line><line x1="1061" y1="0" x2="1061" y2="1200"></line><line x1="1141" y1="0" x2="1141" y2="1200"></line><line x1="1221" y1="0" x2="1221" y2="1200"></line><line x1="1301" y1="0" x2="1301" y2="1200"></line><line x1="1381" y1="0" x2="1381" y2="1200"></line><line x1="1461" y1="0" x2="1461" y2="1200"></line><line x1="1541" y1="0" x2="1541" y2="1200"></line><line x1="1621" y1="0" x2="1621" y2="1200"></line><line x1="0" y1="40" x2="1642" y2="40"></line><line x1="0" y1="120" x2="1642" y2="120"></line><line x1="0" y1="200" x2="1642" y2="200"></line><line x1="0" y1="280" x2="1642" y2="280"></line><line x1="0" y1="360" x2="1642" y2="360"></line><line x1="0" y1="440" x2="1642" y2="440"></line><line x1="0" y1="520" x2="1642" y2="520"></line><line x1="0" y1="600" x2="1642" y2="600"></line><line x1="0" y1="680" x2="1642" y2="680"></line><line x1="0" y1="760" x2="1642" y2="760"></line><line x1="0" y1="840" x2="1642" y2="840"></line><line x1="0" y1="920" x2="1642" y2="920"></line><line x1="0" y1="1000" x2="1642" y2="1000"></line><line x1="0" y1="1080" x2="1642" y2="1080"></line><line x1="0" y1="1160" x2="1642" y2="1160"></line></g><g transform="translate(821 600)"><g className="sc-rise-20"><rect x="-235" y="-108" width="470" height="216" rx="18" fill="currentColor" fillOpacity="0.04" strokeOpacity="0.7" strokeWidth="5"></rect><line x1="-235" y1="-80" x2="235" y2="-80" strokeWidth="3" strokeOpacity="0.28"></line><g transform="translate(-216 -94)"><g className="sc-pop-60"><circle r="4.5" fill="currentColor" fillOpacity="0.5" stroke="none"></circle></g></g><g transform="translate(-201 -94)"><g className="sc-pop-72"><circle r="4.5" fill="currentColor" fillOpacity="0.5" stroke="none"></circle></g></g><g transform="translate(-186 -94)"><g className="sc-pop-84"><circle r="4.5" fill="currentColor" fillOpacity="0.5" stroke="none"></circle></g></g><line x1="-161" y1="-94" x2="-51" y2="-94" strokeWidth="11" strokeOpacity="0.18" className="sc-draw-90" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g><g className="sc-ghost-115-250"><rect x="-228" y="-68" width="64" height="166" rx="10" fill="currentColor" fillOpacity="0.03" strokeOpacity="0.38" strokeWidth="3" strokeDasharray="10 8"></rect></g><g className="sc-ghost-130-280"><rect x="-137" y="-67" width="372" height="26" rx="10" fill="currentColor" fillOpacity="0.03" strokeOpacity="0.38" strokeWidth="3" strokeDasharray="10 8"></rect></g><g className="sc-ghost-145-330"><rect x="-137" y="-28" width="152" height="112" rx="10" fill="currentColor" fillOpacity="0.03" strokeOpacity="0.38" strokeWidth="3" strokeDasharray="10 8"></rect><g strokeOpacity="0.2" strokeWidth="2.5" strokeDasharray="8 7"><line x1="-137" y1="-28" x2="15" y2="84"></line><line x1="15" y1="-28" x2="-137" y2="84"></line></g></g><g className="sc-ghost-160-400"><rect x="35" y="-28" width="182" height="112" rx="10" fill="currentColor" fillOpacity="0.03" strokeOpacity="0.38" strokeWidth="3" strokeDasharray="10 8"></rect><g strokeOpacity="0.2" strokeWidth="2.5" strokeDasharray="8 7"><line x1="35" y1="-28" x2="217" y2="84"></line><line x1="217" y1="-28" x2="35" y2="84"></line></g></g><g className="sc-rise-250"><line x1="-157" y1="-80" x2="-157" y2="108" strokeWidth="3" strokeOpacity="0.28"></line><g className="sc-pop-270"><rect x="-223" y="-66" width="30" height="20" rx="5" fill="currentColor" fillOpacity="0.18" strokeOpacity="0.5" strokeWidth="3"></rect></g><line x1="-223" y1="-30" x2="-178" y2="-30" strokeWidth="7" strokeOpacity="0.45" className="sc-draw-285" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-223" y1="-8" x2="-190" y2="-8" strokeWidth="7" strokeOpacity="0.45" className="sc-draw-295" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-223" y1="14" x2="-174" y2="14" strokeWidth="7" strokeOpacity="0.45" className="sc-draw-305" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-223" y1="36" x2="-196" y2="36" strokeWidth="7" strokeOpacity="0.45" className="sc-draw-315" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-223" y1="58" x2="-184" y2="58" strokeWidth="7" strokeOpacity="0.45" className="sc-draw-325" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g><line x1="-137" y1="-54" x2="-45" y2="-54" strokeWidth="12" strokeOpacity="0.8" className="sc-draw-280" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><g transform="translate(188 -54)"><g className="sc-pop-295"><rect x="-31" y="-9" width="62" height="18" rx="9" fill="currentColor" fillOpacity="0.3" stroke="none"></rect></g></g><g className="sc-rise-330"><rect x="-137" y="-28" width="152" height="112" rx="12" fill="currentColor" fillOpacity="0.04" strokeOpacity="0.5" strokeWidth="4"></rect><line x1="-122" y1="-12" x2="-74" y2="-12" strokeWidth="7" strokeOpacity="0.4" className="sc-draw-350" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-122" y1="10" x2="-18" y2="10" strokeWidth="13" strokeOpacity="0.16" className="sc-draw-370" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-122" y1="36" x2="-18" y2="36" strokeWidth="13" strokeOpacity="0.16" className="sc-draw-390" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><g transform="translate(-86 66)"><g className="sc-pop-410"><rect x="-36" y="-8.5" width="72" height="17" rx="8.5" fill="oklch(0.76 0.14 300)" stroke="none"></rect></g></g></g><g className="sc-rise-400"><rect x="35" y="-28" width="182" height="112" rx="12" fill="currentColor" fillOpacity="0.04" strokeOpacity="0.5" strokeWidth="4"></rect><line x1="130" y1="-2" x2="130" y2="76" strokeWidth="2.5" strokeOpacity="0.2"></line><line x1="51" y1="-10" x2="201" y2="-10" strokeWidth="3" strokeOpacity="0.3" className="sc-draw-420" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><g><line x1="51" y1="8" x2="114" y2="8" strokeWidth="9" strokeOpacity="0.5" className="sc-draw-445" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="142" y1="8" x2="196" y2="8" strokeWidth="9" strokeOpacity="0.28" className="sc-draw-445" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g><g><line x1="51" y1="30" x2="104" y2="30" strokeWidth="9" strokeOpacity="0.5" className="sc-draw-460" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="142" y1="30" x2="188" y2="30" strokeWidth="9" strokeOpacity="0.28" className="sc-draw-460" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g><g><line x1="51" y1="52" x2="120" y2="52" strokeWidth="9" strokeOpacity="0.5" className="sc-draw-475" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="142" y1="52" x2="200" y2="52" strokeWidth="9" strokeOpacity="0.28" className="sc-draw-475" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g><g><line x1="51" y1="74" x2="97" y2="74" strokeWidth="9" strokeOpacity="0.5" className="sc-draw-490" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="142" y1="74" x2="180" y2="74" strokeWidth="9" strokeOpacity="0.28" className="sc-draw-490" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g></g><g transform="translate(215 -94)"><g className="sc-pop-540"><circle r="13" fill="oklch(0.76 0.14 300)" stroke="none"></circle><path d="M-5.5 0 L-2 3.5 L6.5 -4.5" stroke="var(--card)" strokeWidth="4" fill="none"></path></g></g></g></svg>
+223:                 </div>
+224:               </div>
+225:               <div className="relative mt-4 space-y-1">
+226:                 <h2
+227:                   className={`font-heading text-lg font-bold leading-snug transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
+228:                 >
+229:                   Content Builder
+230:                 </h2>
+231:                 <p
+232:                   className={`text-sm leading-relaxed transition-colors duration-300 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+233:                 >
+234:                   Mudah mencari ide, membuat script, desain carousel, hingga susun content calendar.
+235:                 </p>
+236:               </div>
+237:             </Link>
+238: 
+239:             {/* EBOOK BUILDER CARD */}
+240:             <Link
+241:               href="/ebook-builder"
+242:               className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-300 hover:shadow-xl cursor-pointer z-0 overflow-hidden ${isDark ? "bg-[#18181b] border-white/5 shadow-black/50 hover:border-blue-500/50" : "bg-white border-gray-200 shadow-gray-200 hover:border-blue-400"}`}
+243:             >
+244: 
+245:               <div className="relative w-full overflow-hidden aspect-[16/9] rounded-lg">
+246:                 <div
+247:                   data-active="true"
+248:                   className={`iso-stage pointer-events-none absolute -z-10 aspect-[1642/1200] max-w-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out group-hover:scale-[1.05] ${isDark ? "text-gray-400" : "text-gray-600"}`}
+249:                   style={{ top: "50%", left: "50%", width: "290%" }}
+250:                 >
+251:                   <svg viewBox="0 0 1642 1200" className="size-full" aria-hidden="true" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><g strokeOpacity="0.18" strokeWidth="3" strokeDasharray="3 14"><line x1="21" y1="0" x2="21" y2="1200"></line><line x1="101" y1="0" x2="101" y2="1200"></line><line x1="181" y1="0" x2="181" y2="1200"></line><line x1="261" y1="0" x2="261" y2="1200"></line><line x1="341" y1="0" x2="341" y2="1200"></line><line x1="421" y1="0" x2="421" y2="1200"></line><line x1="501" y1="0" x2="501" y2="1200"></line><line x1="581" y1="0" x2="581" y2="1200"></line><line x1="661" y1="0" x2="661" y2="1200"></line><line x1="741" y1="0" x2="741" y2="1200"></line><line x1="821" y1="0" x2="821" y2="1200"></line><line x1="901" y1="0" x2="901" y2="1200"></line><line x1="981" y1="0" x2="981" y2="1200"></line><line x1="1061" y1="0" x2="1061" y2="1200"></line><line x1="1141" y1="0" x2="1141" y2="1200"></line><line x1="1221" y1="0" x2="1221" y2="1200"></line><line x1="1301" y1="0" x2="1301" y2="1200"></line><line x1="1381" y1="0" x2="1381" y2="1200"></line><line x1="1461" y1="0" x2="1461" y2="1200"></line><line x1="1541" y1="0" x2="1541" y2="1200"></line><line x1="1621" y1="0" x2="1621" y2="1200"></line><line x1="0" y1="40" x2="1642" y2="40"></line><line x1="0" y1="120" x2="1642" y2="120"></line><line x1="0" y1="200" x2="1642" y2="200"></line><line x1="0" y1="280" x2="1642" y2="280"></line><line x1="0" y1="360" x2="1642" y2="360"></line><line x1="0" y1="440" x2="1642" y2="440"></line><line x1="0" y1="520" x2="1642" y2="520"></line><line x1="0" y1="600" x2="1642" y2="600"></line><line x1="0" y1="680" x2="1642" y2="680"></line><line x1="0" y1="760" x2="1642" y2="760"></line><line x1="0" y1="840" x2="1642" y2="840"></line><line x1="0" y1="920" x2="1642" y2="920"></line><line x1="0" y1="1000" x2="1642" y2="1000"></line><line x1="0" y1="1080" x2="1642" y2="1080"></line><line x1="0" y1="1160" x2="1642" y2="1160"></line></g><g transform="translate(821 600)"><g transform="translate(-12 0)"><g className="sc-rise-10"><circle cx="-200" cy="-22" r="30" fill="currentColor" fillOpacity="0.06" strokeOpacity="0.75" strokeWidth="5"></circle><path d="M-212 -22 L-206 -33 L-200 -19 L-194 -33 L-188 -22" strokeWidth="5" strokeOpacity="0.8" className="sc-draw-50" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></path><rect x="-212" y="6" width="24" height="15" rx="3" fill="currentColor" fillOpacity="0.12" strokeOpacity="0.7" strokeWidth="4"></rect><line x1="-206" y1="25" x2="-194" y2="25" strokeWidth="5" strokeOpacity="0.6"></line><g className="sc-pop-90"><path d="M-200 -60 L-200 -74" strokeWidth="6" strokeOpacity="0.7"></path></g><g className="sc-pop-105"><path d="M-226 -44 L-236 -54" strokeWidth="6" strokeOpacity="0.7"></path></g><g className="sc-pop-120"><path d="M-174 -44 L-164 -54" strokeWidth="6" strokeOpacity="0.7"></path></g></g><g className="sc-rise-150"><g transform="translate(-160 -10)"><g className="sc-flow" style={{ animationDelay: '' }}><path d="M0 -12 L11 0 L0 12" strokeWidth="7" strokeOpacity="0.8"></path></g></g><g transform="translate(-144 -10)"><g className="sc-flow" style={{ animationDelay: '' }}><path d="M0 -12 L11 0 L0 12" strokeWidth="7" strokeOpacity="0.8"></path></g></g><g transform="translate(-128 -10)"><g className="sc-flow" style={{ animationDelay: '' }}><path d="M0 -12 L11 0 L0 12" strokeWidth="7" strokeOpacity="0.8"></path></g></g></g><g className="sc-rise-180"><rect x="-95" y="-100" width="210" height="190" rx="16" fill="currentColor" fillOpacity="0.05" strokeOpacity="0.7" strokeWidth="5"></rect><g className="sc-pop-210"><text x="-70" y="-70" fontSize="24" fontWeight="700" fill="currentColor" fillOpacity="0.85" stroke="none" dominantBaseline="central" letterSpacing="0.68">EBOOK</text></g><line x1="38" y1="-70" x2="110" y2="-70" strokeWidth="11" strokeOpacity="0.3" className="sc-draw-230" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-70" y1="-44" x2="90" y2="-44" strokeWidth="3" strokeOpacity="0.35" className="sc-draw-250" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-70" y1="-18" x2="55" y2="-18" strokeWidth="10" strokeOpacity="0.6" className="sc-draw-280" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-70" y1="8" x2="85" y2="8" strokeWidth="10" strokeOpacity="0.6" className="sc-draw-305" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-70" y1="34" x2="35" y2="34" strokeWidth="10" strokeOpacity="0.6" className="sc-draw-330" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g><g className="sc-rise-360"><rect x="75" y="-50" width="190" height="150" rx="16" fill={isDark ? "#18181b" : "#ffffff"} strokeOpacity="0.8" strokeWidth="5"></rect><rect x="69" y="-56" width="12" height="12" fill="currentColor" stroke="none" opacity="0.85"></rect><rect x="259" y="-56" width="12" height="12" fill="currentColor" stroke="none" opacity="0.85"></rect><rect x="259" y="94" width="12" height="12" fill="currentColor" stroke="none" opacity="0.85"></rect><rect x="69" y="94" width="12" height="12" fill="currentColor" stroke="none" opacity="0.85"></rect><g className="sc-pop-390"><text x="95" y="-24" fontSize="28" fontWeight="600" fill="currentColor" fillOpacity="0.6" stroke="none" dominantBaseline="central" letterSpacing="0.56">Pro</text></g><g><line x1="128" y1="4" x2="210" y2="4" strokeWidth="10" strokeOpacity="0.65" className="sc-draw-395" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><g transform="translate(107 4)"><g className="sc-pop-410"><rect x="-11" y="-11" width="22" height="22" rx="6" strokeOpacity="0.55" strokeWidth="4"></rect></g><g className="sc-pop-490"><rect x="-11" y="-11" width="22" height="22" rx="6" fill="oklch(0.75 0.13 150)" fillOpacity="0.18" stroke="oklch(0.75 0.13 150)" strokeOpacity="0.95" strokeWidth="4"></rect><path d="M-6 0 L-2 4 L7 -5" stroke="oklch(0.75 0.13 150)" strokeWidth="5"></path></g></g></g><g><line x1="128" y1="34" x2="240" y2="34" strokeWidth="10" strokeOpacity="0.65" className="sc-draw-415" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><g transform="translate(107 34)"><g className="sc-pop-430"><rect x="-11" y="-11" width="22" height="22" rx="6" strokeOpacity="0.55" strokeWidth="4"></rect></g><g className="sc-pop-530"><rect x="-11" y="-11" width="22" height="22" rx="6" fill="oklch(0.75 0.13 150)" fillOpacity="0.18" stroke="oklch(0.75 0.13 150)" strokeOpacity="0.95" strokeWidth="4"></rect><path d="M-6 0 L-2 4 L7 -5" stroke="oklch(0.75 0.13 150)" strokeWidth="5"></path></g></g></g><g><line x1="128" y1="64" x2="188" y2="64" strokeWidth="10" strokeOpacity="0.65" className="sc-draw-435" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><g transform="translate(107 64)"><g className="sc-pop-450"><rect x="-11" y="-11" width="22" height="22" rx="6" strokeOpacity="0.55" strokeWidth="4"></rect></g><g className="sc-pop-570"><rect x="-11" y="-11" width="22" height="22" rx="6" fill="oklch(0.75 0.13 150)" fillOpacity="0.18" stroke="oklch(0.75 0.13 150)" strokeOpacity="0.95" strokeWidth="4"></rect><path d="M-6 0 L-2 4 L7 -5" stroke="oklch(0.75 0.13 150)" strokeWidth="5"></path></g></g></g></g></g></g></svg>
+252:                 </div>
+253:               </div>
+254:               <div className="relative mt-4 space-y-1">
+255:                 <h2
+256:                   className={`font-heading text-lg font-bold leading-snug transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
+257:                 >
+258:                   Ebook Builder
+259:                 </h2>
+260:                 <p
+261:                   className={`text-sm leading-relaxed transition-colors duration-300 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+262:                 >
+263:                   Buat ebook premium dalam hitungan menit, siap untuk dijual atau sebagai lead magnet.
+264:                 </p>
+265:               </div>
+266:             </Link>
+267:           </div>
+268:         </main>
+269:       ) : (
+270:         /* PRICING MODAL / SECTION */
+271:         <main className="flex-1 flex flex-col items-center p-4 md:p-6 text-center max-w-7xl mx-auto w-full py-6 md:py-8 animate-in fade-in zoom-in duration-300">
+272:           <button
+273:             onClick={() => setShowPricing(false)}
+274:             className={`flex items-center gap-2 px-4 py-1.5 rounded-full font-bold text-xs uppercase tracking-widest mb-4 transition-all hover:scale-105 hover:shadow-[0_0_15px_rgba(249,115,22,0.4)] ${isDark ? "border border-rn-accent/30 bg-rn-accent/5 hover:bg-rn-accent/10 text-rn-accent" : "border border-rn-accent bg-rn-accent/20 hover:bg-rn-accent/30 text-gray-900"}`}
+275:           >
+276:             <span className="mr-1 text-lg leading-none">&lsaquo;</span> PROMO
+277:             hingga 95%{" "}
+278:             <Flame
+279:               className="w-4 h-4 text-orange-500 drop-shadow-[0_0_8px_rgba(249,115,22,1)] animate-pulse"
+280:               fill="currentColor"
+281:             />
+282:           </button>
+283: 
+284:           <h1
+285:             className={`text-2xl md:text-4xl font-black font-heading mb-2 tracking-tight transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
+286:           >
+287:             Pilih paket kamu
+288:           </h1>
+289:           <p
+290:             className={`text-xs md:text-sm mb-6 md:mb-8 transition-colors duration-300 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+291:           >
+292:             Ambil kesempatan mumpung lagi diskon besar-besaran. Sekali bayar!
+293:           </p>
+294: 
+295:           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full text-left">
+296:             {/* PAKET EBOOK BASIC */}
+297:             <div
+298:               className={`border rounded-2xl p-5 md:p-6 flex flex-col transition-colors duration-300 ${isDark ? "bg-[#18181b] border-white/5" : "bg-white border-gray-200"}`}
+299:             >
+300:               <h3
+301:                 className={`font-bold text-lg md:text-xl font-heading mb-1 transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
+302:               >
+303:                 Paket Basic (Ebook)
+304:               </h3>
+305:               <p
+306:                 className={`text-xs md:text-sm mb-4 transition-colors duration-300 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+307:               >
+308:                 Cocok buat yang mau fokus belajar teori faceless creator.
+309:               </p>
+310: 
+311:               <div className="flex items-end gap-2 mb-2">
+312:                 <span
+313:                   className={`text-2xl md:text-3xl font-black transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
+314:                 >
+315:                   Rp 99k
+316:                 </span>
+317:               </div>
+318:               <div
+319:                 className={`text-xs md:text-sm mb-2 transition-colors duration-300 ${isDark ? "text-gray-400" : "text-gray-500"}`}
+320:               >
+321:                 Total <span className="line-through">Rp 2.419.000</span>
+322:               </div>
+323:               <div className="inline-block bg-red-500/20 text-red-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider w-max mb-4">
+324:                 95% OFF
+325:               </div>
+326: 
+327:               <div className="flex-1">
+328:                 <ul
+329:                   className={`space-y-2 md:space-y-3 text-xs md:text-sm transition-colors duration-300 ${isDark ? "text-gray-300" : "text-gray-700"}`}
+330:                 >
+331:                   <li className="flex gap-2 items-start">
+332:                     <Check className="w-4 h-4 text-rn-accent shrink-0 mt-0.5" />{" "}
+333:                     Ebook Ngonten Pakai AI (Personal Use)
+334:                   </li>
+335:                   <li className="flex gap-2 items-start">
+336:                     <Check className="w-4 h-4 text-rn-accent shrink-0 mt-0.5" />{" "}
+337:                     Ebook 30 Day Creator Challenge (Personal Use)
+338:                   </li>
+339:                   <li className="flex gap-2 items-start">
+340:                     <Check className="w-4 h-4 text-rn-accent shrink-0 mt-0.5" />{" "}
+341:                     Bimbingan Private 1-on-1 WhatsApp (6 Bulan)
+342:                   </li>
+343:                   <li className="flex gap-2 items-start">
+344:                     <Check className="w-4 h-4 text-rn-accent shrink-0 mt-0.5" />{" "}
+345:                     6+ Bonus Strategi & Template Lainnya
+346:                   </li>
+347:                 </ul>
+348:               </div>
+349: 
+350:               <a
+351:                 href="http://lynk.id/ngontenpakaiai/2124pkdew4ee/checkout"
+352:                 target="_blank"
+353:                 className={`mt-6 block text-center font-bold py-3 rounded-xl transition-all ${isDark ? "bg-[#27272a] hover:bg-rn-accent hover:text-black text-white" : "bg-gray-900 hover:bg-rn-accent hover:text-black text-white"}`}
+354:               >
+355:                 Pilih Paket Basic
+356:               </a>
+357:             </div>
+358: 
+359:             {/* PAKET TOOLS */}
+360:             <div
+361:               className={`border rounded-2xl p-5 md:p-6 flex flex-col transition-colors duration-300 ${isDark ? "bg-[#18181b] border-white/5" : "bg-white border-gray-200"}`}
+362:             >
+363:               <h3
+364:                 className={`font-bold text-lg md:text-xl font-heading mb-1 transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
+365:               >
+366:                 Paket Sistem Tools
+367:               </h3>
+368:               <p
+369:                 className={`text-xs md:text-sm mb-4 transition-colors duration-300 ${isDark ? "text-gray-400" : "text-gray-600"}`}
+370:               >
+371:                 Cocok buat yang butuh bantuan AI untuk eksekusi ngonten.
+372:               </p>
+373: 
+374:               <div className="flex items-end gap-2 mb-2">
+375:                 <span
+376:                   className={`text-2xl md:text-3xl font-black transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
+377:                 >
+378:                   Rp 99k
+379:                 </span>
+380:               </div>
+381:               <div
+382:                 classNam
+The above content was truncated because individual lines are very long. Only a portion of the content is shown.
