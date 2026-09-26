@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Montserrat, Plus_Jakarta_Sans } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
@@ -7,19 +6,6 @@ import AuthProvider from "@/components/layout/AuthProvider";
 import { Suspense } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-const montserrat = Montserrat({
-  variable: "--font-heading",
-  subsets: ["latin"],
-  weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
-  style: ["normal", "italic"],
-});
-
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-body",
-  subsets: ["latin"],
-  weight: ["200", "300", "400", "500", "600", "700", "800"],
-  style: ["normal", "italic"],
-});
 
 import prisma from "@/lib/prisma";
 
@@ -47,11 +33,11 @@ export default async function RootLayout({
   return (
     <html
       lang="id"
-      className={`${montserrat.variable} ${plusJakartaSans.variable} scroll-smooth`}
+      className="scroll-smooth"
       suppressHydrationWarning
     >
       <body
-        className={`bg-gray-50 text-gray-800 dark:bg-rn-dark-bg dark:text-gray-200 font-body selection:bg-rn-accent selection:text-black antialiased relative min-h-screen`}
+        className={`bg-gray-50 text-gray-800 dark:bg-rn-dark-bg dark:text-gray-200 font-sans selection:bg-rn-accent selection:text-black antialiased relative min-h-screen`}
         suppressHydrationWarning
       >
         <AuthProvider>
@@ -65,7 +51,7 @@ export default async function RootLayout({
               <Suspense>
                 <Navbar memberCount={memberCount.toString()} />
               </Suspense>
-              <main className="flex-1 flex flex-col">
+              <main className="flex-1 flex flex-col pt-16 md:pt-20">
                 {children}
               </main>
               <Footer />

@@ -33,7 +33,7 @@ export default async function SettingsPage() {
         <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
           <div className="mb-6">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Riwayat Langganan</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Semua langganan kamu — yang aktif, sudah berakhir, dan yang belum mulai.</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Semua langganan kamu yang aktif, sudah berakhir, dan yang belum mulai.</p>
           </div>
 
           <div className="flex justify-between items-center">

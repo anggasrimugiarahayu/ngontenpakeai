@@ -84,18 +84,18 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
           Simpan / Perbarui API Key
         </label>
-        <div className="flex gap-4">
+        <div className="flex flex-col md:flex-row gap-3 md:gap-4">
           <input
             type="password"
             name="apiKey"
             placeholder="AIzaSy..."
             required
-            className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
+            className="flex-1 w-full px-4 py-2.5 md:py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
           />
           <button
             type="submit"
             disabled={isLoading}
-            className="px-6 py-2 rounded-lg bg-orange-700/80 hover:bg-orange-600 text-white font-medium transition-colors disabled:opacity-50"
+            className="w-full md:w-auto px-6 py-2.5 md:py-2 rounded-lg bg-orange-700/80 hover:bg-orange-600 text-white font-medium transition-colors disabled:opacity-50"
           >
             {isLoading ? "Menyimpan..." : "Simpan"}
           </button>

@@ -75,7 +75,7 @@ function HomeContent() {
           </button>
 
           <h1
-            className={`text-3xl md:text-4xl font-black font-heading mb-8 md:mb-10 tracking-tight transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
+            className={`text-4xl md:text-5xl font-bold font-heading mb-8 md:mb-10 tracking-tight transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
           >
             Mau mulai dari mana hari ini?
           </h1>

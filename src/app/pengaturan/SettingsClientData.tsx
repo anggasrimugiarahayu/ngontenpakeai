@@ -47,7 +47,7 @@ export function PlanUsageSection({ isPro }: { isPro: boolean }) {
           <div key={feature.id} className="flex justify-between items-center text-sm">
             <span className="text-gray-700 dark:text-gray-300">{feature.name}</span>
             <span className="text-gray-500 dark:text-gray-400">
-              {usageMap[feature.id] || 0} digunakan — {isPro ? "Unlimited" : "Terbatas"}
+              {usageMap[feature.id] || 0} digunakan ({isPro ? "Unlimited" : "Terbatas"})
             </span>
           </div>
         ))}
@@ -57,7 +57,7 @@ export function PlanUsageSection({ isPro }: { isPro: boolean }) {
       </div>
 
       <div className="mt-8 pt-4 border-t border-gray-200 dark:border-white/5 text-sm text-gray-500 dark:text-gray-400">
-        {isPro ? "Aktif — berlaku hingga 3 Oktober 2026" : "Paket Free (Terbatas)"}
+        {isPro ? "Aktif, berlaku hingga 3 Oktober 2026" : "Paket Free (Terbatas)"}
       </div>
     </div>
   );

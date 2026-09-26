@@ -70,7 +70,7 @@ export function Navbar({ followerCount = "144K", memberCount = "0" }: NavbarProp
   const isPro = false; 
 
   return (
-    <nav className="sticky top-0 z-50 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors duration-300 backdrop-blur-md bg-gray-50/80 dark:bg-[#0f0f11]/80">
+    <nav className="fixed w-full top-0 z-50 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors duration-300 backdrop-blur-md bg-gray-50/80 dark:bg-[#0f0f11]/80">
       <div className="flex items-center shrink-0">
         <Link
           href="/"

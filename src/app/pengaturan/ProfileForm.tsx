@@ -112,7 +112,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         <button
           type="submit"
           disabled={isLoading}
-          className="px-6 py-2 rounded-lg bg-orange-700/80 hover:bg-orange-600 text-white font-medium transition-colors disabled:opacity-50"
+          className="w-full md:w-auto px-6 py-2.5 md:py-2 rounded-lg bg-orange-700/80 hover:bg-orange-600 text-white font-medium transition-colors disabled:opacity-50"
         >
           {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
         </button>

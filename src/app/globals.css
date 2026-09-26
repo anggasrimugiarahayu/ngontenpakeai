@@ -1,8 +1,16 @@
+@import url("https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-sans/400.css");
+@import url("https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-sans/500.css");
+@import url("https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-sans/600.css");
+@import url("https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-sans/700.css");
+@import url("https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-sans/800.css");
+@import url("https://cdn.jsdelivr.net/npm/@fontsource/open-sauce-sans/900.css");
+
 @import "tailwindcss";
 
 @theme inline {
-  --font-heading: "Montserrat", sans-serif;
-  --font-body: "Plus Jakarta Sans", sans-serif;
+  --font-sans: "Open Sauce Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-heading: "Open Sauce Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Open Sauce Sans", ui-sans-serif, system-ui, sans-serif;
   --color-rn-yellow: #f97316;
   --color-rn-accent: #f97316;
   --color-rn-blue: #5A9CB5;
