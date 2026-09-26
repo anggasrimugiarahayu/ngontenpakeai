@@ -77,7 +77,7 @@ function HomeContent() {
           <h1
             className={`text-3xl md:text-4xl font-black font-heading mb-8 md:mb-10 tracking-tight transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}
           >
-            Mau Ngonten apa hari ini?
+            Mau mulai dari mana hari ini?
           </h1>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
