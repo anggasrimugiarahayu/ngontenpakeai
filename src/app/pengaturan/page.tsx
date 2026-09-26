@@ -24,6 +24,20 @@ export default async function SettingsPage() {
     where: { id: session.user.id }
   });
 
+  const features = await prisma.feature.findMany({
+    where: { isActive: true },
+    orderBy: { createdAt: 'asc' }
+  });
+
+  const usages = await prisma.usage.findMany({
+    where: { userId: session.user.id }
+  });
+
+  const usageMap = usages.reduce((acc, usage) => {
+    acc[usage.featureId] = usage.count;
+    return acc;
+  }, {} as Record<string, number>);
+
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto p-6 py-10 md:py-16">
       <h1 className="text-2xl md:text-3xl font-bold font-heading mb-8 md:mb-10 text-gray-900 dark:text-white">
@@ -46,22 +60,17 @@ export default async function SettingsPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-700 dark:text-gray-300">Master Blueprint</span>
-              <span className="text-gray-500 dark:text-gray-400">0 digunakan — {isPro ? "Unlimited" : "Terbatas"}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-700 dark:text-gray-300">Bio Builder</span>
-              <span className="text-gray-500 dark:text-gray-400">0 digunakan — {isPro ? "Unlimited" : "Terbatas"}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-700 dark:text-gray-300">Content Calendar</span>
-              <span className="text-gray-500 dark:text-gray-400">0 digunakan — {isPro ? "Unlimited" : "Terbatas"}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-700 dark:text-gray-300">Ebook Builder</span>
-              <span className="text-gray-500 dark:text-gray-400">0 digunakan — {isPro ? "Unlimited" : "Terbatas"}</span>
-            </div>
+            {features.map((feature) => (
+              <div key={feature.id} className="flex justify-between items-center text-sm">
+                <span className="text-gray-700 dark:text-gray-300">{feature.name}</span>
+                <span className="text-gray-500 dark:text-gray-400">
+                  {usageMap[feature.id] || 0} digunakan — {isPro ? "Unlimited" : "Terbatas"}
+                </span>
+              </div>
+            ))}
+            {features.length === 0 && (
+              <div className="text-sm text-gray-500 dark:text-gray-400">Belum ada fitur tersedia.</div>
+            )}
           </div>
 
           <div className="mt-8 pt-4 border-t border-gray-200 dark:border-white/5 text-sm text-gray-500 dark:text-gray-400">
