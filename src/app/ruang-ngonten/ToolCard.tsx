@@ -1,0 +1,78 @@
+"use client";
+
+import Link from "next/link";
+import { useState } from "react";
+import { AlertCircle } from "lucide-react";
+
+export default function ToolCard({ feature, hasBlueprint}: { feature: any; hasBlueprint: boolean; }) {
+  const [showError, setShowError] = useState(false);
+  
+  const Icon = feature.icon;
+  const isMasterBlueprint = feature.href === "/ruang-ngonten/master-blueprint";
+  const canAccess = isMasterBlueprint || hasBlueprint;
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (!canAccess) {
+      e.preventDefault();
+      setShowError(true);
+      setTimeout(() => setShowError(false), 3000);
+    }
+  };
+
+  return (
+    <>
+      <Link 
+        href={feature.href}
+        onClick={handleClick}
+        className={`group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-300 ${!canAccess ? 'opacity-80' : 'hover:shadow-xl hover:-translate-y-1.5'} cursor-pointer z-0 overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/5 ${canAccess ? 'hover:border-rn-accent dark:hover:border-rn-accent/50 shadow-gray-200 dark:shadow-black/50' : 'hover:border-red-500/50 dark:hover:border-red-500/50'}`}
+      >
+        {/* Lock Overlay if no access */}
+        {!canAccess && showError && (
+          <div className="absolute inset-0 bg-red-500/10 backdrop-blur-[1px] flex flex-col items-center justify-center z-50 animate-in fade-in duration-200">
+            <div className="bg-red-50 dark:bg-red-950/80 text-red-600 dark:text-red-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-sm border border-red-200 dark:border-red-900">
+              <AlertCircle className="w-4 h-4" />
+              Buat Master Blueprint Dulu!
+            </div>
+          </div>
+        )}
+
+        {/* Card Header */}
+        <div className="flex items-center gap-3 mb-3">
+          <div className={`w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center transition-colors ${canAccess ? 'text-gray-600 dark:text-gray-400 group-hover:bg-rn-accent/10 group-hover:text-rn-accent' : 'text-gray-500'}`}>
+            <Icon className="w-5 h-5" />
+          </div>
+          <h3 className={`font-bold text-base leading-tight transition-colors ${canAccess ? 'text-gray-900 dark:text-white group-hover:text-rn-accent' : 'text-gray-900 dark:text-white'}`}>
+            {feature.title}
+          </h3>
+        </div>
+        
+        {/* Description */}
+        <p className="text-[13px] leading-relaxed text-gray-500 dark:text-gray-400 mb-5 line-clamp-2">
+          {feature.description}
+        </p>
+
+        {/* Timeline List */}
+        <div className="relative ml-1.5 space-y-3">
+          <div className="absolute left-[3px] top-1.5 bottom-1.5 w-[2px] bg-gray-200 dark:bg-white/5" />
+          
+          {feature.points.map((point: string, pIdx: number) => (
+            <div key={pIdx} className="relative flex items-center gap-3">
+              <div className={`w-2 h-2 rounded-full z-10 transition-colors ${
+                pIdx === 0 
+                  ? (canAccess ? "bg-rn-accent ring-4 ring-rn-accent/20" : "bg-gray-400 ring-4 ring-gray-400/20") 
+                  : `bg-gray-300 dark:bg-gray-600 ${canAccess ? 'group-hover:bg-rn-accent/50' : ''}`
+              }`} />
+              <span className={`text-[11px] font-medium transition-colors ${
+                pIdx === 0 
+                  ? "text-gray-900 dark:text-white" 
+                  : `text-gray-500 dark:text-gray-400 ${canAccess ? 'group-hover:text-gray-400 dark:group-hover:text-gray-300' : ''}`
+              }`}>
+                {point}
+              </span>
+            </div>
+          ))}
+        </div>
+      </Link>
+    </>
+  );
+}

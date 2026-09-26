@@ -5,7 +5,7 @@ import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useRef } from "react";
-import { Loader2, ArrowLeft, CheckCircle2, Compass, FileJson, Download, FileText, Upload, RefreshCw, Save, AlertCircle, Target, Award, MessageSquare, Flag, Eye, Heart, Zap, TrendingUp, Users, LayoutDashboard, Map, Video, DollarSign, User, Lock, Star, Activity, X, Crosshair, Shield, List, BookOpen, Megaphone, UserCircle, ChevronDown, ChevronUp } from "lucide-react";
+import { Loader2, ArrowLeft, CheckCircle2, Compass, FileJson, Download, FileText, Upload, RefreshCw, Save, AlertCircle, Target, Award, MessageSquare, Flag, Eye, Heart, Zap, TrendingUp, Users, LayoutDashboard, Map, Video, DollarSign, User, Lock, Star, Activity, X, Crosshair, Shield, List, BookOpen, Megaphone, UserCircle, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import HeroCanvasCell from "@/components/master-blueprint/HeroCanvasCell";
 import CanvasCell from "@/components/master-blueprint/CanvasCell";
 
@@ -23,6 +23,8 @@ export default function MasterBlueprintClient({ initialData, nicheReferences }: 
   const [blueprintId, setBlueprintId] = useState<string | null>(initialData?.id || null);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const router = useRouter();
   const [isBrandOpen, setIsBrandOpen] = useState(true);
   const [isContentOpen, setIsContentOpen] = useState(true);
   const [isPsychologyOpen, setIsPsychologyOpen] = useState(true);
@@ -195,6 +197,41 @@ export default function MasterBlueprintClient({ initialData, nicheReferences }: 
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  
+  const confirmDelete = async () => {
+    setIsDeleteModalOpen(false);
+    if (!blueprintId) {
+      setCanvasData(null);
+      setStep(1);
+      router.refresh();
+      return;
+    }
+    
+    setIsSaving(true);
+    try {
+      const res = await fetch(`/api/master-blueprint?id=${blueprintId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        showToast("Blueprint berhasil dihapus permanen!");
+        setCanvasData(null);
+        setBlueprintId(null);
+        setStep(1);
+        router.refresh();
+      } else {
+        showToast("Gagal menghapus blueprint.", "error");
+      }
+    } catch (err) {
+      showToast("Terjadi kesalahan koneksi.", "error");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDeleteBlueprint = () => {
+    setIsDeleteModalOpen(true);
   };
 
   const saveUpdatesToDB = async () => {
@@ -404,7 +441,9 @@ export default function MasterBlueprintClient({ initialData, nicheReferences }: 
                   <button onClick={handleBuatUlang} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm shrink-0 transition-all bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-white/20 shadow-sm w-full sm:w-auto">
                     <RefreshCw className="w-4 h-4" /> Buat Ulang Blueprint
                   </button>
-                  
+                  <button onClick={handleDeleteBlueprint} disabled={isSaving} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm shrink-0 transition-all bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-500/20 shadow-sm w-full sm:w-auto disabled:opacity-50">
+                    <Trash2 className="w-4 h-4" /> Hapus Blueprint
+                  </button>
                 </div>
               </div>
 
@@ -425,6 +464,39 @@ export default function MasterBlueprintClient({ initialData, nicheReferences }: 
                 </div>
               )}
               <p className={`text-sm font-bold ${isDark ? "text-white" : "text-gray-900"}`}>{toast.message}</p>
+            </div>
+          </div>
+        )}
+      
+        {/* Delete Confirmation Modal */}
+        {isDeleteModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+            <div className={`w-full max-w-md p-6 rounded-2xl shadow-2xl border ${isDark ? "bg-[#18181b] border-white/10" : "bg-white border-gray-200"} animate-in zoom-in-95 duration-200`}>
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center shrink-0">
+                  <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
+                </div>
+                <div>
+                  <h3 className={`text-lg font-bold ${isDark ? "text-white" : "text-gray-900"}`}>Hapus Blueprint?</h3>
+                  <p className={`text-sm mt-1 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+                    Data ini akan dihapus permanen dari database dan tidak bisa dikembalikan.
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center justify-end gap-3 mt-8">
+                <button 
+                  onClick={() => setIsDeleteModalOpen(false)}
+                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors ${isDark ? "bg-white/10 text-white hover:bg-white/20" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                >
+                  Batal
+                </button>
+                <button 
+                  onClick={confirmDelete}
+                  className="px-5 py-2.5 rounded-xl font-bold text-sm transition-colors bg-red-600 text-white hover:bg-red-700 shadow-sm flex items-center gap-2"
+                >
+                  Ya, Hapus Blueprint
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -692,6 +764,9 @@ export default function MasterBlueprintClient({ initialData, nicheReferences }: 
           </div>
         </div>
       )}
+    
+        
+
     </div>
   );
 }

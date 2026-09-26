@@ -60,3 +60,33 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
   }
 }
+
+export async function DELETE(req: Request) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json({ error: "Missing blueprint id" }, { status: 400 });
+    }
+
+    // Delete ALL blueprints for this user to ensure complete reset
+    const deleted = await prisma.masterBlueprint.deleteMany({
+      where: { userId: session.user.id }
+    });
+    
+    if (deleted.count === 0) {
+      return NextResponse.json({ error: "Blueprint not found or unauthorized" }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true });
+  } catch (error: any) {
+    console.error("Error deleting blueprint:", error);
+    return NextResponse.json({ error: error.message || "Internal Server Error" }, { status: 500 });
+  }
+}
