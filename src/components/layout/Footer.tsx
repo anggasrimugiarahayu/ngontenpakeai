@@ -18,7 +18,7 @@ export function Footer() {
       <div className="text-gray-500 text-xs flex items-center gap-2">
         Product by
         <a
-          href="https://www.instagram.com/ngontenpakaiai/"
+          href="https://www.instagram.com/ruangcreativemuslim/"
           target="_blank"
           rel="noopener noreferrer"
           className={`font-bold flex items-center gap-1.5 hover:text-rn-accent transition-colors ml-1 ${isDark ? "text-white" : "text-gray-900"}`}
@@ -39,7 +39,7 @@ export function Footer() {
             <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
             <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
           </svg>{" "}
-          ngontenpakaiai
+          ruangcreativemuslim
         </a>
       </div>
     </footer>

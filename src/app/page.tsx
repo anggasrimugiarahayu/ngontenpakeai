@@ -107,7 +107,7 @@ function HomeContent() {
                 <p
                   className={`text-sm leading-relaxed transition-colors duration-300 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                 >
-                  Meracik otomatis Brand Foundation, Strategy, dan Audience Psychology dari idemu.
+                  Dari dasar sampai strategi, pelajari ilmu yang kamu butuhkan untuk ngonten lebih terarah.
                 </p>
               </div>
             </Link>
@@ -223,7 +223,7 @@ function HomeContent() {
                 <p
                   className={`text-sm leading-relaxed transition-colors duration-300 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                 >
-                  Rumuskan profil IG (Username, Headline, Bio) menarik yang sesuai dengan niche secara presisi.
+                  Dari ide sampai jadi konten, kerjakan semuanya lebih cepat dengan bantuan AI.
                 </p>
               </div>
             </Link>
@@ -252,7 +252,7 @@ function HomeContent() {
                 <p
                   className={`text-sm leading-relaxed transition-colors duration-300 ${isDark ? "text-gray-400" : "text-gray-600"}`}
                 >
-                  Dari konten jadi aset, bangun sistem yang membantu mengembangkan audiens dan bisnis.
+                  Dari konten sampai sistem, bangun aset dan strategi untuk mengembangkan hasilmu.
                 </p>
               </div>
             </Link>

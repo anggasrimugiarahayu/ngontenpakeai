@@ -64,7 +64,7 @@ export function Navbar({ followerCount = "144K", memberCount = "0" }: NavbarProp
           href="/"
           className="font-black font-heading text-[16px] sm:text-[22px] tracking-tight transition-colors duration-300 text-gray-900 dark:text-white"
         >
-          Ngonten Pakai AI
+          Ngonten Pake AI
         </Link>
       </div>
 
