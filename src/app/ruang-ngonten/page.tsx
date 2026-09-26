@@ -21,7 +21,7 @@ const features = [
   {
     title: "Master Blueprint",
     description: "Rancang fondasi dan strategi dasar kontenmu dari nol hingga siap eksekusi.",
-    points: ["Target Audience", "Content Pillar", "Tone of Voice"],
+    points: ["Isi Kuisioner", "Proses Generate AI", "Hasil Blueprint"],
     icon: Compass,
     href: "/ruang-ngonten/master-blueprint"
   },
