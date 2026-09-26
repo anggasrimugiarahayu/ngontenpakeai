@@ -54,6 +54,7 @@ model User {
   accounts      Account[]
   sessions      Session[]
   usages        Usage[]
+  masterBlueprints MasterBlueprint[]
 
   @@map("users")
 }
@@ -95,4 +96,28 @@ model Usage {
 
   @@unique([userId, featureId])
   @@map("usages")
+}
+
+model MasterBlueprint {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  title     String
+  inputData Json     @map("input_data")
+  aiResult  Json     @map("ai_result")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("master_blueprints")
+}
+
+model NicheReference {
+  id        String   @id @default(cuid())
+  nama      String   @map("nama")
+  data      Json     @map("data")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("niche_references")
 }
