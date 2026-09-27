@@ -38,12 +38,20 @@ const QUICK_ACTIONS = [
   { icon: Bot, label: 'Temukan Insight Baru' }
 ];
 
+const AI_MODELS = [
+  { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
+  { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
+  { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+];
+
 export default function IdeaRoomsClient({ blueprintId, blueprintData }: { blueprintId: string, blueprintData: any }) {
   const [ideaPromptText, setIdeaPromptText] = useState("");
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
+  const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash");
+  const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -92,7 +100,8 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
           promptText: rawText,
           isFunneling,
           blueprintData,
-          chatHistory: chatContext
+          chatHistory: chatContext,
+          model: selectedModel
         })
       });
 
@@ -119,32 +128,22 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
   };
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-white dark:bg-[#0a0a0c] text-gray-900 dark:text-gray-100 font-sans transition-colors relative">
+    <div className="flex flex-col h-[100dvh] bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors relative">
       
-      {/* Header */}
-      <header className="px-6 py-4 border-b border-gray-100 dark:border-white/5 flex items-center justify-between sticky top-0 bg-white/80 dark:bg-[#0a0a0c]/80 backdrop-blur-md z-40 shrink-0">
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold font-heading flex items-center gap-2">
-            Idea Rooms <span className="text-xl">💡</span>
-          </h1>
-          <p className="text-xs md:text-sm text-gray-500 mt-1">Ubah Master Blueprint kamu menjadi gudang ide konten.</p>
-        </div>
-      </header>
-
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto w-full flex flex-col items-center pb-32">
         {chatHistory.length === 0 ? (
           /* Empty State - Hero UI like Screenshot */
           <div className="w-full max-w-3xl flex-1 flex flex-col items-center justify-center px-4 -mt-10">
-            <h2 className="text-3xl md:text-4xl font-bold mb-3 font-heading text-center flex items-center gap-2">
-              Mau bikin apa? <span className="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 p-1.5 rounded-lg text-sm"><Lightbulb size={20} /></span>
+            <h2 className="text-3xl md:text-4xl font-bold mb-3 font-heading text-center flex items-center justify-center gap-2">
+              Idea Rooms <span className="text-2xl md:text-3xl">💡</span>
             </h2>
             <p className="text-center text-gray-500 dark:text-gray-400 mb-8 max-w-lg text-sm">
-              Ubah Ide kamu menjadi rencana yang tajam, 100% selaras dengan <span className="font-bold text-gray-900 dark:text-white">Master Blueprint</span> kamu.
+              Ubah Master Blueprint kamu menjadi gudang ide konten.
             </p>
 
             {/* Input Box Centered */}
-            <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300">
+            <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
               <textarea 
                 ref={textareaRef}
                 value={ideaPromptText}
@@ -159,8 +158,8 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                 placeholder="Contoh: Aplikasi tracking pengeluaran harian, bisa input lewat WhatsApp, ada dashboard ringkasan bulanan..."
               />
               
-              <div className="px-4 pb-3 pt-1 flex items-center justify-between border-t border-transparent bg-transparent">
-                <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+              <div className="px-4 pb-3 pt-1 flex items-center justify-between border-t border-transparent bg-transparent relative z-20">
+                <div className="flex items-center gap-2 overflow-visible flex-wrap">
                   {/* Dropdown Quick Actions */}
                   <div className="relative">
                     <button 
@@ -171,7 +170,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                     </button>
                     
                     {isActionsMenuOpen && (
-                      <div className="absolute left-0 bottom-full mb-2 w-[220px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 rounded-xl shadow-lg z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95">
+                      <div className="absolute left-0 bottom-full mb-2 w-[220px] max-h-[250px] overflow-y-auto bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 rounded-xl shadow-lg z-50 py-1 animate-in fade-in zoom-in-95">
                         {QUICK_ACTIONS.map((action, i) => {
                           const Icon = action.icon;
                           return (
@@ -180,10 +179,35 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                               onClick={() => { setIsActionsMenuOpen(false); generateContentIdeas(action.label); }}
                               className="w-full flex items-center gap-3 px-3 py-2 text-left text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
                             >
-                              <Icon size={14} className="text-gray-500" /> {action.label}
+                              <Icon size={14} className="text-gray-500 shrink-0" /> {action.label}
                             </button>
                           );
                         })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dropdown Model AI */}
+                  <div className="relative">
+                    <button 
+                      onClick={() => setIsModelMenuOpen(!isModelMenuOpen)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                    >
+                      AI: <span className="text-gray-900 dark:text-white">{AI_MODELS.find(m => m.value === selectedModel)?.label}</span>
+                      <ChevronDown size={12} className={`transition-transform ${isModelMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {isModelMenuOpen && (
+                      <div className="absolute left-0 bottom-full mb-2 w-[180px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 rounded-xl shadow-lg z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95">
+                        {AI_MODELS.map((m, i) => (
+                          <button 
+                            key={i} 
+                            onClick={() => { setSelectedModel(m.value); setIsModelMenuOpen(false); }}
+                            className={`w-full text-left px-3 py-2 text-xs font-bold transition-colors ${selectedModel === m.value ? 'text-rn-accent bg-orange-50 dark:bg-orange-900/10' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                          >
+                            {m.label}
+                          </button>
+                        ))}
                       </div>
                     )}
                   </div>
@@ -336,7 +360,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
 
       {/* Sticky Input Footer when Chat > 0 */}
       {chatHistory.length > 0 && (
-        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-white via-white to-transparent dark:from-[#0a0a0c] dark:via-[#0a0a0c] pt-10 pb-6 px-4 z-40">
+        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-white via-white to-transparent dark:from-rn-dark-bg dark:via-rn-dark-bg pt-10 pb-6 px-4 z-40">
           <div className="max-w-3xl mx-auto relative">
             
             {/* Quick Actions Float */}
