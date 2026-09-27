@@ -59,6 +59,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [interimText, setInterimText] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -129,9 +130,14 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
     e.target.style.height = `${Math.min(e.target.scrollHeight, 150)}px`;
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    // Could add toast here
+  const copyToClipboard = (ide: any, id: string) => {
+    const text = `Ide Konten (${ide.tahap_funnel || 'Umum'})\n\nJudul: ${ide.nama_ide}\nTemplate: ${ide.template_ide_digunakan}\nAngle: ${ide.angle}\nPain Point: ${ide.masalah_audiens}`;
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedId(id);
+      setTimeout(() => setCopiedId(null), 2000);
+    }).catch((err) => {
+      console.error("Failed to copy:", err);
+    });
   };
 
   const abortControllerRef = useRef<AbortController | null>(null);
@@ -261,10 +267,10 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
   };
 
   return (
-    <div className="flex flex-col flex-1 bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors relative">
+    <div className="flex flex-col flex-1 h-full overflow-hidden bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors relative">
       
       {/* Main Content Area */}
-      <main className="flex-1 w-full flex flex-col items-center">
+      <main className="flex-1 overflow-y-auto w-full flex flex-col items-center">
         {chatHistory.length === 0 ? (
           /* Empty State - Hero UI like Screenshot */
           <div className="w-full max-w-3xl flex-1 flex flex-col items-center justify-center px-4 -mt-10">
@@ -433,11 +439,11 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                                       </td>
                                       <td className="p-4 align-top text-center">
                                         <button 
-                                          onClick={() => copyToClipboard(JSON.stringify(ide, null, 2))}
-                                          className="p-2 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-600 dark:text-gray-300 rounded-lg transition-colors"
+                                          onClick={() => copyToClipboard(ide, `${msg.id}-${idx}`)}
+                                          className={`p-2 rounded-lg transition-colors ${copiedId === `${msg.id}-${idx}` ? 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400' : 'bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-gray-600 dark:text-gray-300'}`}
                                           title="Copy Ide"
                                         >
-                                          <Copy size={14} />
+                                          {copiedId === `${msg.id}-${idx}` ? <Check size={14} /> : <Copy size={14} />}
                                         </button>
                                       </td>
                                     </tr>
@@ -457,8 +463,11 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                                   </div>
                                   <div className="flex justify-between items-start mb-3 pt-1">
                                     <span className="text-[10px] font-bold tracking-widest text-gray-500 dark:text-gray-400">{ide.tahap_funnel}</span>
-                                    <button onClick={() => copyToClipboard(JSON.stringify(ide, null, 2))} className="text-gray-400 hover:text-gray-900 dark:hover:text-white">
-                                      <Copy size={14} />
+                                    <button 
+                                      onClick={() => copyToClipboard(ide, `mobile-${msg.id}-${idx}`)} 
+                                      className={`${copiedId === `mobile-${msg.id}-${idx}` ? 'text-green-500' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                                    >
+                                      {copiedId === `mobile-${msg.id}-${idx}` ? <Check size={14} /> : <Copy size={14} />}
                                     </button>
                                   </div>
                                   <h5 className="font-bold text-gray-900 dark:text-white text-base mb-4 leading-snug">{ide.nama_ide}</h5>
@@ -499,7 +508,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
 
       {/* Sticky Input Footer when Chat > 0 */}
       {chatHistory.length > 0 && (
-        <div className="sticky bottom-0 w-full bg-white/90 dark:bg-rn-dark-bg/90 backdrop-blur-md pt-4 pb-8 px-4 z-40">
+        <div className="w-full shrink-0 bg-white/90 dark:bg-rn-dark-bg/90 backdrop-blur-md pt-4 pb-8 px-4 z-40">
           <div className="max-w-3xl mx-auto relative">
             
             <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-lg flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
