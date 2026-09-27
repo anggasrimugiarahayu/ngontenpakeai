@@ -374,7 +374,13 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                     <Mic size={16} />
                   </button>
                   <button 
-                    onClick={() => generateContentIdeas()}
+                    onClick={() => {
+                      if (isLoading) {
+                        abortControllerRef.current?.abort();
+                      } else {
+                        generateContentIdeas();
+                      }
+                    }}
                     disabled={!isLoading && !ideaPromptText.trim()}
                     className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors shadow-sm"
                   >
@@ -602,7 +608,13 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                     <Mic size={16} />
                   </button>
                   <button 
-                    onClick={() => generateContentIdeas()}
+                    onClick={() => {
+                      if (isLoading) {
+                        abortControllerRef.current?.abort();
+                      } else {
+                        generateContentIdeas();
+                      }
+                    }}
                     disabled={!isLoading && !ideaPromptText.trim()}
                     className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 hover:bg-orange-600 transition-colors shadow-sm"
                   >
