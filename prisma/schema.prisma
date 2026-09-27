@@ -55,6 +55,7 @@ model User {
   sessions      Session[]
   usages        Usage[]
   masterBlueprints MasterBlueprint[]
+  bioBuilders   BioBuilder[]
 
   @@map("users")
 }
@@ -120,4 +121,20 @@ model NicheReference {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("niche_references")
+}
+
+model BioBuilder {
+  id          String   @id @default(cuid())
+  userId      String   @map("user_id")
+  username    String?
+  profileName String?
+  bioText     String?  @db.Text
+  avatarUrl   String?  @db.Text
+  suggestions Json?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("bio_builders")
 }

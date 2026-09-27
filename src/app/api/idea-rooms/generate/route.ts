@@ -33,14 +33,14 @@ export async function POST(req: Request) {
 
     const userRecord = await prisma.user.findUnique({
       where: { id: session.user.id },
-      select: { apiKey: true }
+      select: { googleApiKey: true }
     });
 
-    if (!userRecord?.apiKey) {
+    if (!userRecord?.googleApiKey) {
       return NextResponse.json({ error: "Gemini API Key belum dikonfigurasi. Silakan isi di pengaturan profil." }, { status: 400 });
     }
 
-    const ai = new GoogleGenAI({ apiKey: userRecord.apiKey });
+    const ai = new GoogleGenAI({ apiKey: userRecord.googleApiKey });
     const dbKnowledge = await fetchKnowledgeBase();
 
     const ideaCountRule = isFunneling 

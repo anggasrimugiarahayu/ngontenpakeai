@@ -134,22 +134,60 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
     // Could add toast here
   };
 
+  const abortControllerRef = useRef<AbortController | null>(null);
+
   const generateContentIdeas = async (manualPromptText: string | null = null) => {
     const rawText = (manualPromptText || ideaPromptText).trim();
-    if (!rawText || isLoading) return;
+    if (!rawText) return;
 
-    let isFunneling = rawText === 'Ide Konten Funneling';
+    if (isLoading) {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+        abortControllerRef.current = null;
+        setIsLoading(false);
+      }
+      return;
+    }
+
+    let actualPrompt = rawText;
+    let displayContent = rawText;
+    let isFunneling = false;
+
+    // TRANSLATION LAYER: Menerjemahkan tombol Meta-Prompt
+    if (rawText === 'Ide Konten Funneling') {
+      isFunneling = true;
+      displayContent = "Tolong berikan rekomendasi 30 Ide Konten Funneling (10 TOFU, 10 MOFU, 10 BOFU) berdasarkan analisa Master Blueprint saya.";
+      actualPrompt = "Tolong buatkan strategi Ide Konten Funneling secara komprehensif berdasarkan analisa mendalam KESELURUHAN Master Blueprint saya. Berikan total 30 ide konten yang dibagi menjadi 10 TOFU, 10 MOFU, dan 10 BOFU. INGAT: Topik/Pembahasan KESELURUHAN ide WAJIB 100% diambil dari Niche Blueprint saya.";
+    } else if (rawText === 'Riset Topik & Trend') {
+      actualPrompt = "Gunakan akses pencarian internet (Search Grounding) untuk meriset topik, keresahan, dan tren terbaru saat ini (Tahun 2026) yang sedang viral/ramai dibicarakan KHUSUS di dalam Niche/Topik Master Blueprint saya. Setelah itu, buatkan ide konten berdasarkan tren tersebut. INGAT HARGA MATI: Topik idenya adalah Niche saya, BUKAN membuat konten edukasi tentang 'bagaimana cara meriset tren'!";
+    } else if (rawText === 'Ide Evergreen') {
+      actualPrompt = "Buatkan ide konten yang bersifat Evergreen (solusi untuk masalah mendasar/fundamental yang selalu dicari orang kapanpun, tidak lekang oleh waktu) KHUSUS untuk Niche/Topik Master Blueprint saya. INGAT HARGA MATI: Topik idenya adalah Niche saya, BUKAN membuat konten edukasi tentang 'apa itu konten evergreen'!";
+    } else if (rawText === 'Peluang Konten Viral') {
+      actualPrompt = "Berikan ide konten dengan potensi viral tinggi (bisa berupa kontroversi ringan, opini *unpopular/contrarian*, atau keresahan massal yang sangat *relatable*) KHUSUS untuk Niche/Topik Master Blueprint saya.";
+    } else if (rawText === 'Eksplor Angle') {
+      actualPrompt = "Pilih satu masalah/topik utama dari Master Blueprint saya, lalu berikan ide konten dengan sudut pandang (*angle*) yang sangat *out-of-the-box*, *contrarian*, atau tidak biasa dipikirkan oleh kompetitor di niche saya.";
+    } else if (rawText === 'Analisis Audiens') {
+      actualPrompt = "Lakukan Analisis Audiens mendalam berdasarkan Master Blueprint saya, berikan insight psikologis baru, lalu hasilkan ide konten yang menyerang titik emosional terkuat mereka.";
+    } else if (rawText === 'Rencana Konten Mingguan') {
+      actualPrompt = "Buatkan Rencana Konten Mingguan (Senin-Minggu) yang seimbang antara edukasi, hiburan, dan konversi, berdasarkan Master Blueprint saya.";
+    } else if (rawText === 'Cari Ide Konten') {
+      actualPrompt = "Tolong berikan ide konten yang segar, tajam, dan langsung bisa dieksekusi hari ini berdasarkan Master Blueprint saya.";
+    } else if (rawText === 'Temukan Insight Baru') {
+      actualPrompt = "Analisa ulang Master Blueprint saya dan temukan insight atau sudut pandang yang mungkin saya lewatkan, lalu jadikan itu sebagai ide konten yang provokatif.";
+    }
 
     const newUserMsg: ChatMessage = {
       id: Date.now(),
       role: "user",
-      content: rawText
+      content: displayContent
     };
 
     setChatHistory(prev => [...prev, newUserMsg]);
     setIdeaPromptText("");
     setIsLoading(true);
     if (textareaRef.current) textareaRef.current.style.height = "auto";
+
+    abortControllerRef.current = new AbortController();
 
     // Prepare context
     const chatContext = chatHistory.slice(-4).map(msg => 
@@ -160,8 +198,9 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
       const res = await fetch("/api/idea-rooms/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: abortControllerRef.current.signal,
         body: JSON.stringify({
-          promptText: rawText,
+          promptText: actualPrompt,
           isFunneling,
           blueprintData,
           chatHistory: chatContext,
@@ -181,6 +220,10 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
         data
       }]);
     } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log("Generation aborted by user");
+        return;
+      }
       console.error(error);
       setChatHistory(prev => [...prev, {
         id: Date.now(),
@@ -192,6 +235,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
       }]);
     } finally {
       setIsLoading(false);
+      abortControllerRef.current = null;
     }
   };
 
@@ -292,7 +336,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                   </button>
                   <button 
                     onClick={() => generateContentIdeas()}
-                    disabled={!ideaPromptText.trim() || isLoading}
+                    disabled={!isLoading && !ideaPromptText.trim()}
                     className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors shadow-sm"
                   >
                     {isLoading ? <Square size={14} className="fill-current" /> : <Send size={14} className="-ml-0.5" />}
@@ -517,7 +561,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                   </button>
                   <button 
                     onClick={() => generateContentIdeas()}
-                    disabled={!ideaPromptText.trim() || isLoading}
+                    disabled={!isLoading && !ideaPromptText.trim()}
                     className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 hover:bg-orange-600 transition-colors shadow-sm"
                   >
                     {isLoading ? <Square size={14} className="fill-current" /> : <Send size={14} className="-ml-0.5" />}
