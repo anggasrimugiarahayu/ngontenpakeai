@@ -292,7 +292,6 @@ ${ver.caption}
         setActiveSubMenu(null);
         setActiveDeepMenu(null);
       }
-      setIsModelMenuOpen(false);
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
