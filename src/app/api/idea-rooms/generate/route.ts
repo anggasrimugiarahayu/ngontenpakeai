@@ -36,11 +36,13 @@ export async function POST(req: Request) {
       select: { googleApiKey: true }
     });
 
-    if (!userRecord?.googleApiKey) {
-      return NextResponse.json({ error: "Gemini API Key belum dikonfigurasi. Silakan isi di pengaturan profil." }, { status: 400 });
+    const apiKey = userRecord?.googleApiKey || process.env.GEMINI_API_KEY;
+
+    if (!apiKey) {
+      return NextResponse.json({ error: "Gemini API Key tidak ditemukan baik dari pengguna maupun sistem." }, { status: 400 });
     }
 
-    const ai = new GoogleGenAI({ apiKey: userRecord.googleApiKey });
+    const ai = new GoogleGenAI({ apiKey });
     const dbKnowledge = await fetchKnowledgeBase();
 
     const ideaCountRule = isFunneling 
