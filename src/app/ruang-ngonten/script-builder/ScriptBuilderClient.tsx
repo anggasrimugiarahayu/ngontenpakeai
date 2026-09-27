@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Square, CheckCircle2, MessageSquare, Search, UserCircle, Calendar, Bot, Lightbulb, Video, Filter, ChevronDown, Copy, Check, Save, Plus, Mic, X } from "lucide-react";
+import { Send, Square, CheckCircle2, MessageSquare, Search, UserCircle, Calendar, Bot, Lightbulb, Video, Filter, ChevronDown, Copy, Check, Save, Plus, Mic, X, FileText } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -20,7 +20,7 @@ interface ScriptVariation {
 }
 
 interface ChatMessage {
-  id: string;
+  id: string | number;
   role: "user" | "assistant";
   content?: string;
   data?: {
@@ -31,19 +31,27 @@ interface ChatMessage {
   };
 }
 
-const QUICK_ACTIONS = [
-  { icon: Video, label: 'Bikin Script Reels' },
-  { icon: Copy, label: 'Bikin Carousel Edukasi' },
-  { icon: Search, label: 'Script Review Produk' },
-  { icon: Bot, label: 'Ubah Ide Jadi Script' },
+const AI_MODELS = [
+  { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash' },
+  { value: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash' },
+  { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash' },
+  { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite' },
+  { value: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash-Lite' },
+  { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+  { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
+  { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
 ];
 
 export default function ScriptBuilderClient({ blueprintData }: { blueprintData: any }) {
   const [scriptPromptText, setScriptPromptText] = useState("");
+  const [interimText, setInterimText] = useState("");
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash");
+  const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
 
   // Script options
   const [scriptFormat, setScriptFormat] = useState<string>('');
@@ -51,17 +59,30 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
   const [scriptReelsDuration, setScriptReelsDuration] = useState<number>(30);
   const [scriptTone, setScriptTone] = useState<string>('');
 
+  const [isScriptMenuOpen, setIsScriptMenuOpen] = useState(false);
   const [activeSubMenu, setActiveSubMenu] = useState<string | null>(null);
   const [activeDeepMenu, setActiveDeepMenu] = useState<string | null>(null);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
   const recognitionRef = useRef<any>(null);
+  const scriptMenuRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
   }, [chatHistory, isLoading]);
+
+  const autoResizeTextarea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setScriptPromptText(e.target.value);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = textareaRef.current.scrollHeight + "px";
+    }
+  };
 
   // Speech Recognition Setup
   useEffect(() => {
@@ -74,20 +95,30 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
         recognitionRef.current.lang = 'id-ID';
 
         recognitionRef.current.onresult = (event: any) => {
-          let currentTranscript = '';
+          let currentInterim = '';
+          let finalTranscript = '';
           for (let i = event.resultIndex; i < event.results.length; i++) {
-            currentTranscript += event.results[i][0].transcript;
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            } else {
+              currentInterim += event.results[i][0].transcript;
+            }
           }
-          setScriptPromptText(prev => prev + ' ' + currentTranscript);
+          if (finalTranscript) {
+            setScriptPromptText(prev => prev + (prev && !prev.endsWith(' ') ? ' ' : '') + finalTranscript);
+          }
+          setInterimText(currentInterim);
         };
 
         recognitionRef.current.onerror = (event: any) => {
           console.error('Speech recognition error', event.error);
           setIsListening(false);
+          setInterimText("");
         };
 
         recognitionRef.current.onend = () => {
           setIsListening(false);
+          setInterimText("");
         };
       }
     }
@@ -97,8 +128,8 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
     if (isListening) {
       recognitionRef.current?.stop();
       setIsListening(false);
+      setInterimText("");
     } else {
-      setScriptPromptText('');
       recognitionRef.current?.start();
       setIsListening(true);
     }
@@ -123,9 +154,10 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
     if (isListening) {
       recognitionRef.current?.stop();
       setIsListening(false);
+      setInterimText("");
     }
 
-    const newMessageId = Date.now().toString();
+    const newMessageId = Date.now();
     setChatHistory(prev => [...prev, {
       id: newMessageId,
       role: "user",
@@ -133,13 +165,17 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
     }]);
 
     if (!customPrompt) setScriptPromptText("");
+    if (textareaRef.current) textareaRef.current.style.height = "auto";
     setIsLoading(true);
+    setIsScriptMenuOpen(false);
     setActiveSubMenu(null);
     setActiveDeepMenu(null);
 
     let requestContext = "";
-    if (scriptFormat) requestContext += `Format: ${scriptFormat === 'Carousel' ? `Carousel (${scriptCarouselSlides} Slide)` : scriptFormat === 'Reels' ? `Reels (${scriptReelsDuration}s)` : scriptFormat}\n`;
-    if (scriptTone) requestContext += `Tone: ${scriptTone}\n`;
+    if (scriptFormat) requestContext += `Format: ${scriptFormat === 'Carousel' ? 'Carousel (' + scriptCarouselSlides + ' Slide)' : scriptFormat === 'Reels' ? 'Reels (' + scriptReelsDuration + 's)' : scriptFormat}
+`;
+    if (scriptTone) requestContext += `Tone: ${scriptTone}
+`;
 
     abortControllerRef.current = new AbortController();
 
@@ -160,7 +196,7 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
       
       if (!res.ok || data.error) {
         setChatHistory(prev => [...prev, {
-          id: Date.now().toString(),
+          id: Date.now(),
           role: "assistant",
           content: "",
           data: {
@@ -171,7 +207,6 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
         return;
       }
 
-      // Safe normalization (just like in the reference App.tsx)
       if (!data.variations && data.script_sections) {
         data.variations = [data];
       } else if (!data.variations || data.variations.length === 0) {
@@ -186,7 +221,7 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
       }
 
       setChatHistory(prev => [...prev, {
-        id: Date.now().toString(),
+        id: Date.now(),
         role: "assistant",
         content: "",
         data
@@ -195,7 +230,7 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
     } catch (error: any) {
       if (error.name === 'AbortError') {
         setChatHistory(prev => [...prev, {
-          id: Date.now().toString(),
+          id: Date.now(),
           role: "assistant",
           content: "",
           data: {
@@ -206,7 +241,7 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
         return;
       }
       setChatHistory(prev => [...prev, {
-        id: Date.now().toString(),
+        id: Date.now(),
         role: "assistant",
         content: "",
         data: {
@@ -221,17 +256,27 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
   };
 
   const copyScriptToClipboard = (ver: ScriptVariation, id: string) => {
-    let scriptText = `Judul: ${ver.judul}\n`;
-    scriptText += `Framework: ${ver.framework_digunakan}\n`;
-    scriptText += `Hook: ${ver.hook_digunakan}\n`;
-    scriptText += `CTA: ${ver.cta_digunakan}\n\n`;
+    let scriptText = `Judul: ${ver.judul}
+`;
+    scriptText += `Framework: ${ver.framework_digunakan}
+`;
+    scriptText += `Hook: ${ver.hook_digunakan}
+`;
+    scriptText += `CTA: ${ver.cta_digunakan}
+
+`;
     
     ver.script_sections.forEach(sec => {
-      scriptText += `[${sec.label}]\n${sec.content}\n\n`;
+      scriptText += `[${sec.label}]
+${sec.content}
+
+`;
     });
     
     if (ver.caption) {
-      scriptText += `--- CAPTION ---\n${ver.caption}\n`;
+      scriptText += `--- CAPTION ---
+${ver.caption}
+`;
     }
 
     navigator.clipboard.writeText(scriptText);
@@ -241,365 +286,237 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
 
   // Close menus when clicking outside
   useEffect(() => {
-    const handleClickOutside = () => setActiveSubMenu(null);
+    const handleClickOutside = (e: MouseEvent) => {
+      if (scriptMenuRef.current && !scriptMenuRef.current.contains(e.target as Node)) {
+        setIsScriptMenuOpen(false);
+        setActiveSubMenu(null);
+        setActiveDeepMenu(null);
+      }
+      setIsModelMenuOpen(false);
+    };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  return (
-    <div className="absolute left-0 right-0 top-[64px] md:top-[80px] bottom-[50px] bg-white dark:bg-[#0A0A0A] flex flex-col overflow-hidden">
-      
-      {/* 1) EMPTY STATE */}
-      {chatHistory.length === 0 ? (
-        <div className="flex-1 flex flex-col justify-center items-center p-4 overflow-y-auto max-h-full">
-          <div className="w-full max-w-2xl mx-auto flex flex-col items-center animate-in fade-in zoom-in duration-500">
-            <div className="w-16 h-16 rounded-full bg-rn-accent/10 dark:bg-rn-accent/20 flex items-center justify-center mb-6">
-              <Bot className="w-8 h-8 text-rn-accent" />
-            </div>
+  const renderInputControls = () => (
+    <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0 h-[42px]">
+      {/* Nested Menu Container & Seluruh Dropdown */}
+      <div className="relative shrink-0 flex items-center h-full" ref={scriptMenuRef}>
+        <button 
+          onClick={(e) => { e.stopPropagation(); setIsScriptMenuOpen(!isScriptMenuOpen); setActiveSubMenu(null); setActiveDeepMenu(null); }} 
+          className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${isScriptMenuOpen && !activeSubMenu?.startsWith('badge_') ? 'bg-gray-100 dark:bg-white/10' : ''}`}
+        ><Plus size={18} className={`transition-transform duration-200 ${isScriptMenuOpen && !activeSubMenu?.startsWith('badge_') ? 'rotate-45' : ''}`} /></button>
+
+        {/* 1. MAIN MENU DROPDOWN (Tombol Plus) */}
+        {isScriptMenuOpen && !activeSubMenu?.startsWith('badge_') && (
+          <div className="absolute bottom-full left-0 mb-3 w-[280px] max-w-[calc(100vw-3rem)] md:w-[280px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 py-1.5 animate-in fade-in zoom-in-95 overflow-hidden">
+            <div className="px-4 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1c1c1f] mb-1">Pengaturan Naskah</div>
             
-            <h1 className="text-2xl md:text-3xl font-bold font-heading text-center mb-2 text-gray-900 dark:text-white">
-              Bikin Script Anti-Skip
-            </h1>
-            <p className="text-center text-gray-500 dark:text-gray-400 mb-8 max-w-md text-sm">
-              AI akan menuliskan struktur naskah yang memikat perhatian sejak detik pertama. Mau bahas apa hari ini?
-            </p>
-
-            <div className="w-full grid grid-cols-1 md:grid-cols-2 gap-3 mb-8">
-              {QUICK_ACTIONS.map((action, idx) => {
-                const Icon = action.icon;
-                return (
-                  <button
-                    key={idx}
-                    onClick={() => {
-                      setScriptPromptText(action.label);
-                    }}
-                    className="flex items-center gap-3 p-4 rounded-xl border border-gray-200 dark:border-white/10 hover:border-rn-accent dark:hover:border-rn-accent hover:bg-orange-50 dark:hover:bg-rn-accent/10 transition-all text-left group"
-                  >
-                    <div className="p-2 rounded-lg bg-gray-50 dark:bg-white/5 group-hover:bg-white dark:group-hover:bg-white/10 text-gray-600 dark:text-gray-300 group-hover:text-rn-accent">
-                      <Icon size={18} />
+            {/* Format Menu */}
+            <div className="flex flex-col">
+              <div 
+                onClick={(e) => { e.stopPropagation(); setActiveSubMenu(activeSubMenu === 'format' ? null : 'format'); setActiveDeepMenu(null); }}
+                className="px-4 py-3 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300"
+              >
+                Format Konten <ChevronDown size={14} className={`transition-transform text-gray-400 dark:text-gray-400 ${activeSubMenu === 'format' ? 'rotate-180' : ''}`} />
+              </div>
+              {activeSubMenu === 'format' && (
+                <div className="bg-gray-50 dark:bg-[#1c1c1f] border-y border-gray-200 dark:border-white/10 py-1">
+                  <div className="flex flex-col">
+                    <div 
+                      onClick={(e) => { e.stopPropagation(); setActiveDeepMenu(activeDeepMenu === 'carousel' ? null : 'carousel'); }}
+                      className="px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300"
+                    >
+                      Carousel <ChevronDown size={14} className={`transition-transform text-gray-400 dark:text-gray-400 ${activeDeepMenu === 'carousel' ? 'rotate-180' : ''}`}/>
                     </div>
-                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">{action.label}</span>
-                  </button>
-                );
-              })}
+                    {activeDeepMenu === 'carousel' && (
+                      <div className="bg-white dark:bg-black border-y border-gray-100 dark:border-white/10 py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(i => (
+                          <div key={i} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_carousel', i); setIsScriptMenuOpen(false); }} className="px-8 py-2 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{i} Slide</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex flex-col">
+                    <div 
+                      onClick={(e) => { e.stopPropagation(); setActiveDeepMenu(activeDeepMenu === 'reels' ? null : 'reels'); }}
+                      className="px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300"
+                    >
+                      Reels / TikTok <ChevronDown size={14} className={`transition-transform text-gray-400 dark:text-gray-400 ${activeDeepMenu === 'reels' ? 'rotate-180' : ''}`}/>
+                    </div>
+                    {activeDeepMenu === 'reels' && (
+                      <div className="bg-white dark:bg-black border-y border-gray-100 dark:border-white/10 py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
+                        {[15, 30, 45, 60, 90, 120].map(s => (
+                          <div key={s} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_reels', s); setIsScriptMenuOpen(false); }} className="px-8 py-2 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{s} Detik</div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
-            {/* Empty State Chat Box */}
-            <div className="w-full relative max-w-3xl">
-              
-              {/* Settings badges */}
-              <div className="flex flex-wrap gap-2 mb-2 px-1">
-                {/* Format Badge */}
-                <div className="relative">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setActiveSubMenu(activeSubMenu === 'format' ? null : 'format'); setActiveDeepMenu(null); }}
-                    className="inline-flex items-center gap-1 bg-white dark:bg-black border border-gray-300 dark:border-white/40 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg text-[11px] font-bold shadow-sm hover:border-gray-900 transition-all"
-                  >
-                    {scriptFormat === 'Carousel' ? `Carousel (${scriptCarouselSlides})` : scriptFormat === 'Reels' ? `Reels (${scriptReelsDuration}s)` : 'Format'} 
-                    {scriptFormat && <X size={12} onClick={(e) => { e.stopPropagation(); setScriptFormat(''); }} className="ml-1 hover:text-red-500" />}
-                  </button>
-
-                  {/* Format Menu */}
-                  {activeSubMenu === 'format' && (
-                    <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[220px] bg-white dark:bg-[#111] border border-gray-200 dark:border-white/20 rounded-xl shadow-xl z-50 overflow-hidden">
-                      <div className="px-4 py-2 text-[10px] font-bold text-gray-500 uppercase bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/10">Pilih Format</div>
-                      <div className="flex flex-col">
-                        <div onClick={() => setActiveDeepMenu(activeDeepMenu === 'carousel' ? null : 'carousel')} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300">
-                          Carousel <ChevronDown size={14} className={activeDeepMenu === 'carousel' ? 'rotate-180' : ''}/>
-                        </div>
-                        {activeDeepMenu === 'carousel' && (
-                          <div className="bg-gray-50 dark:bg-black/50 py-1 max-h-32 overflow-y-auto border-y border-gray-100 dark:border-white/10">
-                            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                              <div key={i} onClick={() => { handleUpdateSetting('format_carousel', i); setActiveSubMenu(null); }} className="px-8 py-2 hover:bg-gray-100 dark:hover:bg-white/10 cursor-pointer text-xs text-gray-600 dark:text-gray-400">{i} Slide</div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col border-t border-gray-100 dark:border-white/10">
-                        <div onClick={() => setActiveDeepMenu(activeDeepMenu === 'reels' ? null : 'reels')} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300">
-                          Reels / TikTok <ChevronDown size={14} className={activeDeepMenu === 'reels' ? 'rotate-180' : ''}/>
-                        </div>
-                        {activeDeepMenu === 'reels' && (
-                          <div className="bg-gray-50 dark:bg-black/50 py-1 max-h-32 overflow-y-auto border-y border-gray-100 dark:border-white/10">
-                            {[15, 30, 45, 60, 90].map(s => (
-                              <div key={s} onClick={() => { handleUpdateSetting('format_reels', s); setActiveSubMenu(null); }} className="px-8 py-2 hover:bg-gray-100 dark:hover:bg-white/10 cursor-pointer text-xs text-gray-600 dark:text-gray-400">{s} Detik</div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
+            {/* Tone Menu */}
+            <div className="flex flex-col border-t border-gray-200 dark:border-white/10">
+              <div 
+                onClick={(e) => { e.stopPropagation(); setActiveSubMenu(activeSubMenu === 'tone' ? null : 'tone'); setActiveDeepMenu(null); }}
+                className="px-4 py-3 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300"
+              >
+                Gaya Bahasa <ChevronDown size={14} className={`transition-transform text-gray-400 dark:text-gray-400 ${activeSubMenu === 'tone' ? 'rotate-180' : ''}`} />
+              </div>
+              {activeSubMenu === 'tone' && (
+                <div className="bg-gray-50 dark:bg-[#1c1c1f] border-y border-gray-200 dark:border-white/10 py-1 max-h-48 overflow-y-auto custom-table-scrollbar">
+                  {['Storytelling', 'Edukatif', 'Profesional', 'Santai', 'Humor', 'Inspiratif', 'Motivasi', 'Blak-blakan & Kritis'].map(t => (
+                    <div key={t} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('tone', t); setIsScriptMenuOpen(false); }} className="px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-white/10 last:border-0">{t}</div>
+                  ))}
                 </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
 
-                {/* Tone Badge */}
-                <div className="relative">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setActiveSubMenu(activeSubMenu === 'tone' ? null : 'tone'); setActiveDeepMenu(null); }}
-                    className="inline-flex items-center gap-1 bg-white dark:bg-black border border-gray-300 dark:border-white/40 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg text-[11px] font-bold shadow-sm hover:border-gray-900 transition-all"
-                  >
-                    {scriptTone || 'Gaya Bahasa'}
-                    {scriptTone && <X size={12} onClick={(e) => { e.stopPropagation(); setScriptTone(''); }} className="ml-1 hover:text-red-500" />}
-                  </button>
+      {/* SCROLLABLE AREA for Model + Badges */}
+      <div className="flex flex-nowrap gap-1.5 sm:gap-2 items-center overflow-x-auto md:overflow-visible no-scrollbar w-full h-full">
+        {/* INLINED MODEL SELECTOR */}
+        <div className="relative z-10 flex shrink-0 h-8 md:h-9">
+          <div 
+            onClick={(e) => { e.stopPropagation(); setIsModelMenuOpen(!isModelMenuOpen); }}
+            className="flex items-center gap-1.5 h-full px-3 rounded-lg border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+          >
+            <span>AI:</span>
+            <span className="text-gray-900 dark:text-white whitespace-nowrap">{AI_MODELS.find(m => m.value === selectedModel)?.label || 'Gemini 2.5 Flash'}</span>
+            <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform text-gray-400 dark:text-gray-400 ml-0.5 ${isModelMenuOpen ? 'rotate-180' : ''}`}/>
+          </div>
+          
+          {/* DESKTOP MENU ONLY */}
+          {isModelMenuOpen && (
+            <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-3 w-[200px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 py-2 max-h-56 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 cursor-default">
+              <div className="px-4 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1c1c1f] mb-1">Pilih Model AI</div>
+              {AI_MODELS.map(m => (
+                <div 
+                  key={m.value} 
+                  onClick={() => { setSelectedModel(m.value); setIsModelMenuOpen(false); }} 
+                  className={`px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-[12px] font-bold border-b border-gray-100 dark:border-white/10 last:border-0 ${selectedModel === m.value ? 'text-[#D0E206] dark:text-[#D0E206]' : 'text-gray-700 dark:text-gray-300'}`}
+                >
+                  {m.label}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
-                  {/* Tone Menu */}
-                  {activeSubMenu === 'tone' && (
-                    <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[180px] bg-white dark:bg-[#111] border border-gray-200 dark:border-white/20 rounded-xl shadow-xl z-50 overflow-hidden">
-                      <div className="px-4 py-2 text-[10px] font-bold text-gray-500 uppercase bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/10">Pilih Gaya Bahasa</div>
-                      {['Storytelling', 'Edukatif', 'Profesional', 'Santai', 'Humor', 'Motivasi', 'Blak-blakan'].map(t => (
-                        <div key={t} onClick={() => { handleUpdateSetting('tone', t); setActiveSubMenu(null); }} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300 border-b border-gray-100/50 dark:border-white/10 last:border-0">{t}</div>
+        {/* TAG 1: FORMAT KONTEN */}
+        {scriptFormat && (
+          <span 
+            onClick={(e) => { 
+              e.stopPropagation();
+              if(activeSubMenu === 'badge_format') { setIsScriptMenuOpen(false); setActiveSubMenu(null); } 
+              else { setIsScriptMenuOpen(true); setActiveSubMenu('badge_format'); setActiveDeepMenu(null); } 
+            }}
+            className="relative group inline-flex h-8 md:h-9 items-center gap-1 bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 px-3 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shrink-0 whitespace-nowrap"
+          >
+            <span>{scriptFormat === 'Carousel' ? `Carousel (${scriptCarouselSlides})` : scriptFormat === 'Reels' ? `Reels (${scriptReelsDuration}s)` : scriptFormat}</span>
+            <button onClick={(e) => { e.stopPropagation(); setScriptFormat(''); setActiveSubMenu(null); setIsScriptMenuOpen(false); }} className="text-gray-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto group-hover:ml-1 overflow-hidden transition-all duration-200 ease-in-out shrink-0 flex items-center justify-center"><X size={12} strokeWidth={3}/></button>
+            
+            {/* POPUP KHUSUS FORMAT */}
+            {isScriptMenuOpen && activeSubMenu === 'badge_format' && (
+              <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-3 w-[220px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 py-2 animate-in fade-in zoom-in-95 overflow-hidden cursor-default">
+                <div className="px-4 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1c1c1f] mb-1">Ubah Format</div>
+                
+                <div className="flex flex-col">
+                  <div onClick={(e) => { e.stopPropagation(); setActiveDeepMenu(activeDeepMenu === 'carousel' ? null : 'carousel'); }} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300">
+                    Carousel <ChevronDown size={14} className={`transition-transform text-gray-400 dark:text-gray-400 ${activeDeepMenu === 'carousel' ? 'rotate-180' : ''}`}/>
+                  </div>
+                  {activeDeepMenu === 'carousel' && (
+                    <div className="bg-gray-50 dark:bg-[#1c1c1f] border-y border-gray-100 dark:border-white/10 py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
+                      {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(i => (
+                        <div key={i} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_carousel', i); setActiveSubMenu(null); setIsScriptMenuOpen(false); }} className="px-8 py-2 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{i} Slide</div>
                       ))}
                     </div>
                   )}
                 </div>
-              </div>
-
-              <div className={`p-1 bg-white dark:bg-[#1A1A1A] rounded-2xl border transition-all ${isListening ? 'border-red-400 shadow-[0_0_15px_rgba(248,113,113,0.2)]' : 'border-gray-200 dark:border-white/10 shadow-sm focus-within:border-rn-accent focus-within:ring-1 focus-within:ring-rn-accent/20'}`}>
-                <div className="flex items-end gap-2 p-1">
-                  <textarea 
-                    value={scriptPromptText}
-                    onChange={(e) => setScriptPromptText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter' && !e.shiftKey) {
-                        e.preventDefault();
-                        generateScript();
-                      }
-                    }}
-                    placeholder="Deskripsikan video apa yang ingin kamu buat..."
-                    className="w-full bg-transparent border-none outline-none resize-none min-h-[48px] max-h-[150px] py-3 px-3 text-[13px] text-gray-800 dark:text-gray-200 custom-scrollbar"
-                    rows={1}
-                  />
-                  <div className="flex items-center gap-1 pb-1 pr-1 shrink-0">
-                    <button 
-                      onClick={toggleListening}
-                      className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors border ${isListening ? 'bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-900/50 animate-pulse' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border-transparent'}`}
-                    >
-                      <Mic size={16} />
-                    </button>
-                    <button 
-                      onClick={() => {
-                        if (isLoading) {
-                          abortControllerRef.current?.abort();
-                        } else {
-                          generateScript();
-                        }
-                      }}
-                      disabled={!isLoading && !scriptPromptText.trim()}
-                      className="w-9 h-9 rounded-full bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors shadow-sm"
-                    >
-                      {isLoading ? <Square size={14} className="fill-current" /> : <Send size={14} className="-ml-0.5" />}
-                    </button>
+                <div className="flex flex-col">
+                  <div onClick={(e) => { e.stopPropagation(); setActiveDeepMenu(activeDeepMenu === 'reels' ? null : 'reels'); }} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300">
+                    Reels / TikTok <ChevronDown size={14} className={`transition-transform text-gray-400 dark:text-gray-400 ${activeDeepMenu === 'reels' ? 'rotate-180' : ''}`}/>
                   </div>
-                </div>
-              </div>
-            </div>
-            
-          </div>
-        </div>
-      ) : (
-        /* 2) CHAT HISTORY STATE */
-        <div className="flex-1 overflow-y-auto overflow-x-hidden relative custom-scrollbar pb-4 pt-4">
-          <div className="w-full max-w-3xl mx-auto px-4 flex flex-col space-y-6 pb-20">
-            {chatHistory.map((msg, idx) => (
-              <div key={msg.id || idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
-                
-                {/* User Message */}
-                {msg.role === "user" && (
-                  <div className="bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-gray-200 px-4 py-3 rounded-2xl rounded-tr-sm max-w-[85%] shadow-sm border border-gray-200 dark:border-white/5">
-                    <p className="text-[13px] whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-                  </div>
-                )}
-                
-                {/* Assistant Message */}
-                {msg.role === "assistant" && (
-                  <div className="flex gap-3 w-full max-w-full">
-                    <div className="w-8 h-8 rounded-full bg-rn-accent flex items-center justify-center shrink-0 shadow-sm mt-1">
-                      <Bot size={16} className="text-white" />
+                  {activeDeepMenu === 'reels' && (
+                    <div className="bg-gray-50 dark:bg-[#1c1c1f] border-y border-gray-100 dark:border-white/10 py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
+                      {[15, 30, 45, 60, 90, 120].map(s => (
+                        <div key={s} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_reels', s); setActiveSubMenu(null); setIsScriptMenuOpen(false); }} className="px-8 py-2 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{s} Detik</div>
+                      ))}
                     </div>
-                    
-                    <div className="flex-1 w-full max-w-[calc(100%-2.5rem)]">
-                      {msg.data?.is_error ? (
-                        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-4 py-3 rounded-2xl rounded-tl-sm border border-red-200 dark:border-red-900/30 inline-block break-words whitespace-pre-wrap max-w-full">
-                          <p className="text-[13px]">{msg.data.error_message}</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-4 w-full">
-                          {/* Strategic Analysis */}
-                          {msg.data?.analisis_strategi && (
-                            <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 rounded-2xl p-4 shadow-sm">
-                              <h3 className="text-xs font-bold font-heading text-gray-500 dark:text-gray-400 uppercase mb-2 flex items-center gap-1.5"><Bot size={14}/> Analisis AI</h3>
-                              <div className="prose prose-sm dark:prose-invert max-w-none text-[13px] prose-p:leading-relaxed prose-headings:font-heading prose-headings:font-bold prose-headings:mt-4 prose-headings:mb-2 prose-a:text-rn-accent">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.data.analisis_strategi}</ReactMarkdown>
-                              </div>
-                            </div>
-                          )}
-                          
-                          {/* Script Variations */}
-                          {msg.data?.variations && msg.data.variations.length > 0 && (
-                            <div className="w-full overflow-x-auto pb-4 custom-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
-                              <div className="flex flex-nowrap gap-4 w-max md:w-full md:grid md:grid-cols-1 md:gap-6">
-                                {msg.data.variations.map((ver, vidx) => (
-                                  <div key={vidx} className="w-[300px] md:w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm shrink-0 flex flex-col group">
-                                    <div className="p-4 border-b border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 relative">
-                                      <div className="flex flex-wrap items-center gap-1.5 mb-2.5">
-                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-rn-accent/10 text-rn-accent border border-rn-accent/20">Var {vidx + 1}</span>
-                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/30">{ver.framework_digunakan}</span>
-                                      </div>
-                                      <h4 className="font-bold font-heading text-[14px] text-gray-900 dark:text-white leading-tight mb-2 pr-8">{ver.judul}</h4>
-                                      
-                                      <button 
-                                        onClick={() => copyScriptToClipboard(ver, `${msg.id}-${vidx}`)}
-                                        className="absolute top-4 right-4 p-1.5 rounded-lg bg-white dark:bg-[#222] border border-gray-200 dark:border-white/10 text-gray-500 hover:text-rn-accent hover:border-rn-accent transition-colors shadow-sm"
-                                        title="Salin Naskah"
-                                      >
-                                        {copiedId === `${msg.id}-${vidx}` ? <Check size={14} className="text-green-500" /> : <Copy size={14} />}
-                                      </button>
-                                    </div>
-                                    
-                                    <div className="p-4 flex-1 flex flex-col gap-4 text-[13px]">
-                                      {/* Script Sections */}
-                                      <div className="space-y-3">
-                                        {ver.script_sections.map((sec, sidx) => (
-                                          <div key={sidx}>
-                                            <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">{sec.label}</div>
-                                            <div className="bg-gray-50 dark:bg-white/5 rounded-lg p-3 border border-gray-100 dark:border-white/5 text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
-                                              {sec.content}
-                                            </div>
-                                          </div>
-                                        ))}
-                                      </div>
-
-                                      {/* Caption */}
-                                      {ver.caption && (
-                                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/10">
-                                          <div className="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1"><MessageSquare size={12}/> Caption</div>
-                                          <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
-                                            {ver.caption}
-                                          </p>
-                                        </div>
-                                      )}
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-            
-            {/* Loading Indicator */}
-            {isLoading && (
-              <div className="flex gap-3 animate-in fade-in duration-300">
-                <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center shrink-0">
-                  <Bot size={16} className="text-gray-500 dark:text-gray-400 animate-pulse" />
-                </div>
-                <div className="bg-gray-100 dark:bg-[#111] px-5 py-3 rounded-2xl rounded-tl-sm flex items-center gap-2 border border-gray-200 dark:border-white/5">
-                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                  <span className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                  )}
                 </div>
               </div>
             )}
-            <div ref={chatEndRef} />
-          </div>
-        </div>
-      )}
+          </span>
+        )}
 
-      {/* 3) STICKY BOTTOM INPUT (Only show when chat history exists) */}
-      {chatHistory.length > 0 && (
-        <div className="border-t border-gray-200 dark:border-white/10 bg-white/95 dark:bg-[#0A0A0A]/95 backdrop-blur-md p-3 shrink-0 relative z-20">
-          <div className="max-w-3xl mx-auto w-full">
+        {/* TAG 3: TONE / GAYA BAHASA */}
+        {scriptTone && (
+          <span 
+            onClick={(e) => { 
+              e.stopPropagation();
+              if(activeSubMenu === 'badge_tone') { setIsScriptMenuOpen(false); setActiveSubMenu(null); } 
+              else { setIsScriptMenuOpen(true); setActiveSubMenu('badge_tone'); setActiveDeepMenu(null); } 
+            }}
+            className="relative group inline-flex h-8 md:h-9 items-center gap-1 bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 px-3 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shrink-0 whitespace-nowrap"
+          >
+            <span>{scriptTone}</span>
+            <button onClick={(e) => { e.stopPropagation(); setScriptTone(''); setActiveSubMenu(null); setIsScriptMenuOpen(false); }} className="text-gray-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto group-hover:ml-1 overflow-hidden transition-all duration-200 ease-in-out shrink-0 flex items-center justify-center"><X size={12} strokeWidth={3} /></button>
             
-            {/* Settings badges */}
-            <div className="flex flex-wrap gap-2 mb-2 px-1">
-                {/* Format Badge */}
-                <div className="relative">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setActiveSubMenu(activeSubMenu === 'format_sticky' ? null : 'format_sticky'); setActiveDeepMenu(null); }}
-                    className="inline-flex items-center gap-1 bg-white dark:bg-black border border-gray-300 dark:border-white/40 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg text-[11px] font-bold shadow-sm hover:border-gray-900 transition-all"
-                  >
-                    {scriptFormat === 'Carousel' ? `Carousel (${scriptCarouselSlides})` : scriptFormat === 'Reels' ? `Reels (${scriptReelsDuration}s)` : 'Format'} 
-                    {scriptFormat && <X size={12} onClick={(e) => { e.stopPropagation(); setScriptFormat(''); }} className="ml-1 hover:text-red-500" />}
-                  </button>
-
-                  {/* Format Menu */}
-                  {activeSubMenu === 'format_sticky' && (
-                    <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[220px] bg-white dark:bg-[#111] border border-gray-200 dark:border-white/20 rounded-xl shadow-xl z-50 overflow-hidden">
-                      <div className="px-4 py-2 text-[10px] font-bold text-gray-500 uppercase bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/10">Pilih Format</div>
-                      <div className="flex flex-col">
-                        <div onClick={() => setActiveDeepMenu(activeDeepMenu === 'carousel' ? null : 'carousel')} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300">
-                          Carousel <ChevronDown size={14} className={activeDeepMenu === 'carousel' ? 'rotate-180' : ''}/>
-                        </div>
-                        {activeDeepMenu === 'carousel' && (
-                          <div className="bg-gray-50 dark:bg-black/50 py-1 max-h-32 overflow-y-auto border-y border-gray-100 dark:border-white/10">
-                            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
-                              <div key={i} onClick={() => { handleUpdateSetting('format_carousel', i); setActiveSubMenu(null); }} className="px-8 py-2 hover:bg-gray-100 dark:hover:bg-white/10 cursor-pointer text-xs text-gray-600 dark:text-gray-400">{i} Slide</div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <div className="flex flex-col border-t border-gray-100 dark:border-white/10">
-                        <div onClick={() => setActiveDeepMenu(activeDeepMenu === 'reels' ? null : 'reels')} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300">
-                          Reels / TikTok <ChevronDown size={14} className={activeDeepMenu === 'reels' ? 'rotate-180' : ''}/>
-                        </div>
-                        {activeDeepMenu === 'reels' && (
-                          <div className="bg-gray-50 dark:bg-black/50 py-1 max-h-32 overflow-y-auto border-y border-gray-100 dark:border-white/10">
-                            {[15, 30, 45, 60, 90].map(s => (
-                              <div key={s} onClick={() => { handleUpdateSetting('format_reels', s); setActiveSubMenu(null); }} className="px-8 py-2 hover:bg-gray-100 dark:hover:bg-white/10 cursor-pointer text-xs text-gray-600 dark:text-gray-400">{s} Detik</div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {/* Tone Badge */}
-                <div className="relative">
-                  <button 
-                    onClick={(e) => { e.stopPropagation(); setActiveSubMenu(activeSubMenu === 'tone_sticky' ? null : 'tone_sticky'); setActiveDeepMenu(null); }}
-                    className="inline-flex items-center gap-1 bg-white dark:bg-black border border-gray-300 dark:border-white/40 text-gray-700 dark:text-white px-3 py-1.5 rounded-lg text-[11px] font-bold shadow-sm hover:border-gray-900 transition-all"
-                  >
-                    {scriptTone || 'Gaya Bahasa'}
-                    {scriptTone && <X size={12} onClick={(e) => { e.stopPropagation(); setScriptTone(''); }} className="ml-1 hover:text-red-500" />}
-                  </button>
-
-                  {/* Tone Menu */}
-                  {activeSubMenu === 'tone_sticky' && (
-                    <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[180px] bg-white dark:bg-[#111] border border-gray-200 dark:border-white/20 rounded-xl shadow-xl z-50 overflow-hidden">
-                      <div className="px-4 py-2 text-[10px] font-bold text-gray-500 uppercase bg-gray-50 dark:bg-white/5 border-b border-gray-100 dark:border-white/10">Pilih Gaya Bahasa</div>
-                      {['Storytelling', 'Edukatif', 'Profesional', 'Santai', 'Humor', 'Motivasi', 'Blak-blakan'].map(t => (
-                        <div key={t} onClick={() => { handleUpdateSetting('tone', t); setActiveSubMenu(null); }} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300 border-b border-gray-100/50 dark:border-white/10 last:border-0">{t}</div>
-                      ))}
-                    </div>
-                  )}
-                </div>
+            {/* POPUP KHUSUS TONE */}
+            {isScriptMenuOpen && activeSubMenu === 'badge_tone' && (
+              <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-3 w-[200px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 py-2 max-h-56 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 cursor-default">
+                <div className="px-4 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1c1c1f] mb-1">Ubah Gaya Bahasa</div>
+                {['Storytelling', 'Edukatif', 'Profesional', 'Santai', 'Humor', 'Inspiratif', 'Motivasi', 'Blak-blakan & Kritis'].map(t => (
+                  <div key={t} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('tone', t); setActiveSubMenu(null); setIsScriptMenuOpen(false); }} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-white/10 last:border-0">{t}</div>
+                ))}
               </div>
+            )}
+          </span>
+        )}
+      </div>
+    </div>
+  );
 
-            <div className={`p-1 bg-white dark:bg-[#1A1A1A] rounded-2xl border transition-all ${isListening ? 'border-red-400 shadow-[0_0_15px_rgba(248,113,113,0.2)]' : 'border-gray-200 dark:border-white/10 shadow-sm focus-within:border-rn-accent focus-within:ring-1 focus-within:ring-rn-accent/20'}`}>
-              <div className="flex items-end gap-2 p-1">
-                <textarea 
-                  value={scriptPromptText}
-                  onChange={(e) => setScriptPromptText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      generateScript();
-                    }
-                  }}
-                  placeholder="Ketik topik script videomu di sini..."
-                  className="w-full bg-transparent border-none outline-none resize-none min-h-[48px] max-h-[150px] py-3 px-3 text-[13px] text-gray-800 dark:text-gray-200 custom-scrollbar"
-                  rows={1}
-                />
+  return (
+    <div className="absolute left-0 right-0 top-[64px] md:top-[80px] bottom-[50px] flex flex-col overflow-hidden bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors z-10">
+      
+      {/* Main Content Area */}
+      <main className="flex-1 overflow-y-auto w-full flex flex-col items-center">
+        {chatHistory.length === 0 ? (
+          <div className="w-full max-w-3xl flex-1 flex flex-col items-center justify-center px-4 -mt-10">
+            <h2 className="text-3xl md:text-4xl font-bold mb-3 font-heading text-center flex items-center justify-center gap-2">
+              Script Builder <span className="text-2xl md:text-3xl">🎬</span>
+            </h2>
+            <p className="text-center text-gray-500 dark:text-gray-400 mb-8 max-w-lg text-sm">
+              Atur format konten, gaya bahasa, dan racik naskah komplit secara instan.
+            </p>
+
+            <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-sm flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
+              <textarea 
+                ref={textareaRef}
+                value={scriptPromptText + (interimText ? (scriptPromptText && !scriptPromptText.endsWith(' ') ? ' ' : '') + interimText : '')}
+                onChange={autoResizeTextarea}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    generateScript();
+                  }
+                }}
+                className="w-full bg-transparent p-4 min-h-[140px] max-h-[250px] resize-none outline-none text-gray-900 dark:text-white placeholder-gray-400 text-sm md:text-base leading-relaxed"
+                placeholder="Contoh: Bikin script reels tentang 3 kesalahan fatal konten kreator pemula..."
+              />
+              
+              <div className="px-4 pb-3 pt-1 flex items-center justify-between border-t border-transparent bg-transparent relative z-20">
+                {renderInputControls()}
                 
-                <div className="flex items-center gap-1 pb-1 pr-1 shrink-0">
+                <div className="flex items-center gap-2 shrink-0">
                   <button 
                     onClick={toggleListening}
-                    className={`w-9 h-9 rounded-full flex items-center justify-center shrink-0 transition-colors border ${isListening ? 'bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-900/50 animate-pulse' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border-transparent'}`}
+                    className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0 transition-colors border ${isListening ? 'bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-900/50 animate-pulse' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border-transparent'}`}
                     title={isListening ? "Hentikan merekam" : "Input menggunakan suara"}
                   >
                     <Mic size={16} />
@@ -613,9 +530,153 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
                       }
                     }}
                     disabled={!isLoading && !scriptPromptText.trim()}
-                    className="w-9 h-9 rounded-full bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 hover:bg-orange-600 transition-colors shadow-sm"
+                    className={`h-8 w-8 md:h-9 md:w-9 rounded-full transition-all flex items-center justify-center ${isLoading ? 'bg-red-500 text-white hover:bg-red-600' : scriptPromptText.trim() ? 'bg-rn-accent text-white hover:bg-rn-accent/90 shadow-md' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border border-transparent'}`}
                   >
-                    {isLoading ? <Square size={14} className="fill-current" /> : <Send size={14} className="-ml-0.5" />}
+                    {isLoading ? <Square size={14} className="fill-current" strokeWidth={2.5} /> : <Send size={14} className="-ml-0.5" strokeWidth={2.5} />}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="w-full max-w-3xl mx-auto px-4 flex flex-col space-y-8 pb-8 pt-6">
+            {chatHistory.map((msg, idx) => (
+              <div key={msg.id || idx} className={`flex w-full ${msg.role === "user" ? "justify-end" : "justify-start"} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
+                {msg.role === "user" && (
+                  <div className="flex flex-col items-end w-full">
+                    <div className="bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-gray-200 px-5 py-4 rounded-[20px] rounded-tr-sm max-w-[85%] md:max-w-[75%] shadow-sm border border-gray-200 dark:border-white/5">
+                      <p className="text-[14px] whitespace-pre-wrap leading-relaxed font-medium">{msg.content}</p>
+                    </div>
+                  </div>
+                )}
+                {msg.role === "assistant" && (
+                  <div className="flex flex-col w-full">
+                    {msg.data?.is_error ? (
+                      <div className="flex justify-start">
+                        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-5 py-4 rounded-[20px] rounded-tl-sm border border-red-200 dark:border-red-900/30 inline-block break-words whitespace-pre-wrap max-w-[85%] md:max-w-[75%]">
+                          <p className="text-[14px]">{msg.data.error_message}</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="space-y-6 w-full mt-2">
+                        {msg.data?.analisis_strategi && (
+                          <div className="bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 rounded-2xl p-5 shadow-sm">
+                            <h3 className="text-xs font-bold font-heading text-gray-500 dark:text-gray-400 uppercase mb-3 flex items-center gap-1.5"><Bot size={14}/> Analisis AI</h3>
+                            <div className="prose prose-sm dark:prose-invert max-w-none text-[14px] prose-p:leading-relaxed prose-headings:font-heading prose-headings:font-bold prose-headings:mt-4 prose-headings:mb-2 prose-a:text-rn-accent">
+                              <ReactMarkdown remarkPlugins={[remarkGfm]}>{msg.data.analisis_strategi}</ReactMarkdown>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {msg.data?.variations && msg.data.variations.length > 0 && (
+                          <div className="w-full overflow-x-auto pb-4 custom-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+                            <div className="flex flex-nowrap gap-4 w-max md:w-full md:grid md:grid-cols-1 md:gap-6">
+                              {msg.data.variations.map((ver, vidx) => (
+                                <div key={vidx} className="w-[300px] md:w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm shrink-0 flex flex-col group">
+                                  <div className="p-4 md:p-5 border-b border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 relative">
+                                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                                      <span className="px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold bg-rn-accent/10 text-rn-accent border border-rn-accent/20">Var {vidx + 1}</span>
+                                      <span className="px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/30">{ver.framework_digunakan}</span>
+                                    </div>
+                                    <h4 className="font-bold font-heading text-[15px] md:text-[16px] text-gray-900 dark:text-white leading-tight mb-2 pr-10">{ver.judul}</h4>
+                                    
+                                    <button 
+                                      onClick={() => copyScriptToClipboard(ver, `${msg.id}-${vidx}`)}
+                                      className="absolute top-4 right-4 p-2 rounded-xl bg-white dark:bg-[#222] border border-gray-200 dark:border-white/10 text-gray-500 hover:text-rn-accent hover:border-rn-accent transition-colors shadow-sm"
+                                      title="Salin Naskah"
+                                    >
+                                      {copiedId === `${msg.id}-${vidx}` ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
+                                    </button>
+                                  </div>
+                                  
+                                  <div className="p-4 md:p-5 flex-1 flex flex-col gap-4 text-[14px]">
+                                    <div className="space-y-4">
+                                      {ver.script_sections.map((sec, sidx) => (
+                                        <div key={sidx}>
+                                          <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-1.5">{sec.label}</div>
+                                          <div className="bg-gray-50 dark:bg-white/5 rounded-xl p-4 border border-gray-100 dark:border-white/5 text-gray-800 dark:text-gray-200 leading-relaxed whitespace-pre-wrap">
+                                            {sec.content}
+                                          </div>
+                                        </div>
+                                      ))}
+                                    </div>
+
+                                    {ver.caption && (
+                                      <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/10">
+                                        <div className="text-[11px] font-bold text-gray-400 uppercase tracking-wide mb-2 flex items-center gap-1.5"><MessageSquare size={14}/> Caption</div>
+                                        <p className="text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
+                                          {ver.caption}
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            ))}
+            
+            {isLoading && (
+              <div className="flex justify-start">
+                <div className="flex gap-1.5 p-4 bg-gray-50 dark:bg-[#121214] border border-gray-100 dark:border-white/5 rounded-2xl rounded-tl-sm w-fit">
+                  <span className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce"></span>
+                  <span className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce [animation-delay:0.2s]"></span>
+                  <span className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce [animation-delay:0.4s]"></span>
+                </div>
+              </div>
+            )}
+            <div ref={chatEndRef} className="h-4" />
+          </div>
+        )}
+      </main>
+
+      {/* Sticky Input Footer when Chat > 0 */}
+      {chatHistory.length > 0 && (
+        <div className="w-full shrink-0 bg-white/90 dark:bg-[#0A0A0A]/90 backdrop-blur-md pt-2 pb-4 px-4 z-40">
+          <div className="max-w-3xl mx-auto relative">
+            <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-lg flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
+              <textarea 
+                value={scriptPromptText + (interimText ? (scriptPromptText && !scriptPromptText.endsWith(' ') ? ' ' : '') + interimText : '')}
+                onChange={autoResizeTextarea}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    generateScript();
+                  }
+                }}
+                className="w-full bg-transparent px-4 py-3 min-h-[48px] max-h-[150px] resize-none outline-none text-gray-900 dark:text-white placeholder-gray-400 text-sm leading-relaxed"
+                placeholder="Tulis idemu..."
+              />
+              
+              <div className="px-4 pb-2 pt-0 flex items-center justify-between border-t border-transparent bg-transparent relative z-20">
+                {renderInputControls()}
+                
+                <div className="flex items-center gap-2 shrink-0">
+                  <button 
+                    onClick={toggleListening}
+                    className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0 transition-colors border ${isListening ? 'bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-900/50 animate-pulse' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border-transparent'}`}
+                    title={isListening ? "Hentikan merekam" : "Input menggunakan suara"}
+                  >
+                    <Mic size={16} />
+                  </button>
+                  <button 
+                    onClick={() => {
+                      if (isLoading) {
+                        abortControllerRef.current?.abort();
+                      } else {
+                        generateScript();
+                      }
+                    }}
+                    disabled={!isLoading && !scriptPromptText.trim()}
+                    className={`h-8 w-8 md:h-9 md:w-9 rounded-full transition-all flex items-center justify-center ${isLoading ? 'bg-red-500 text-white hover:bg-red-600' : scriptPromptText.trim() ? 'bg-rn-accent text-white hover:bg-rn-accent/90 shadow-md' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border border-transparent'}`}
+                  >
+                    {isLoading ? <Square size={14} className="fill-current" strokeWidth={2.5} /> : <Send size={14} className="-ml-0.5" strokeWidth={2.5} />}
                   </button>
                 </div>
               </div>
