@@ -53,6 +53,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
   const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash");
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
+  const [interimText, setInterimText] = useState("");
   const chatEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const recognitionRef = useRef<any>(null);
@@ -65,6 +66,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
     if (isListening) {
       recognitionRef.current?.stop();
       setIsListening(false);
+      setInterimText("");
       return;
     }
 
@@ -77,27 +79,33 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
         recognition.lang = 'id-ID';
 
         recognition.onresult = (event: any) => {
-          let finalTranscript = '';
+          let final = '';
+          let interim = '';
           for (let i = event.resultIndex; i < event.results.length; i++) {
             if (event.results[i].isFinal) {
-              finalTranscript += event.results[i][0].transcript;
+              final += event.results[i][0].transcript;
+            } else {
+              interim += event.results[i][0].transcript;
             }
           }
-          if (finalTranscript) {
+          if (final) {
             setIdeaPromptText((prev) => {
               const separator = prev && !prev.endsWith(' ') ? ' ' : '';
-              return prev + separator + finalTranscript;
+              return prev + separator + final;
             });
           }
+          setInterimText(interim);
         };
 
         recognition.onerror = (event: any) => {
           console.error("Speech recognition error", event.error);
           setIsListening(false);
+          setInterimText("");
         };
 
         recognition.onend = () => {
           setIsListening(false);
+          setInterimText("");
         };
 
         recognitionRef.current = recognition;
@@ -111,6 +119,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
 
   const autoResizeTextarea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setIdeaPromptText(e.target.value);
+    setInterimText("");
     e.target.style.height = "auto";
     e.target.style.height = `${Math.min(e.target.scrollHeight, 150)}px`;
   };
@@ -178,10 +187,10 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
   };
 
   return (
-    <div className="flex flex-col h-[100dvh] bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors relative">
+    <div className="flex flex-col flex-1 bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors relative">
       
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto w-full flex flex-col items-center pb-32">
+      <main className={`flex-1 overflow-y-auto w-full flex flex-col items-center ${chatHistory.length > 0 ? 'pb-32' : ''}`}>
         {chatHistory.length === 0 ? (
           /* Empty State - Hero UI like Screenshot */
           <div className="w-full max-w-3xl flex-1 flex flex-col items-center justify-center px-4 -mt-10">
@@ -193,10 +202,10 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
             </p>
 
             {/* Input Box Centered */}
-            <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-sm overflow-hidden flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
+            <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-sm flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
               <textarea 
                 ref={textareaRef}
-                value={ideaPromptText}
+                value={ideaPromptText + (interimText ? (ideaPromptText && !ideaPromptText.endsWith(' ') ? ' ' : '') + interimText : '')}
                 onChange={autoResizeTextarea}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -204,7 +213,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                     generateContentIdeas();
                   }
                 }}
-                className="w-full bg-transparent p-4 min-h-[100px] max-h-[250px] resize-none outline-none text-gray-900 dark:text-white placeholder-gray-400 text-sm md:text-base leading-relaxed"
+                className="w-full bg-transparent p-4 min-h-[140px] max-h-[250px] resize-none outline-none text-gray-900 dark:text-white placeholder-gray-400 text-sm md:text-base leading-relaxed"
                 placeholder="Contoh: Aplikasi tracking pengeluaran harian, bisa input lewat WhatsApp, ada dashboard ringkasan bulanan..."
               />
               
@@ -438,7 +447,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
 
             <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-lg flex items-end focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all p-2 relative">
               <textarea 
-                value={ideaPromptText}
+                value={ideaPromptText + (interimText ? (ideaPromptText && !ideaPromptText.endsWith(' ') ? ' ' : '') + interimText : '')}
                 onChange={autoResizeTextarea}
                 onKeyDown={(e) => {
                   if (e.key === 'Enter' && !e.shiftKey) {
@@ -446,7 +455,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                     generateContentIdeas();
                   }
                 }}
-                className="w-full bg-transparent px-3 py-2 min-h-[40px] max-h-[150px] resize-none outline-none text-gray-900 dark:text-white text-sm"
+                className="w-full bg-transparent px-3 py-2 min-h-[60px] max-h-[150px] resize-none outline-none text-gray-900 dark:text-white text-sm"
                 placeholder="Tulis idemu atau pilih aksi di atas..."
               />
               <div className="flex items-center gap-1.5 ml-2 mb-0.5">
