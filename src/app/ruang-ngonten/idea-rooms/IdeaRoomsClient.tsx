@@ -261,12 +261,22 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
     } catch (error: any) {
       if (error.name === 'AbortError') {
         console.log("Generation aborted by user");
+        setChatHistory(prev => [...prev, {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "",
+          data: {
+            is_error: true,
+            error_message: "Proses pembuatan ide dibatalkan."
+          }
+        }]);
         return;
       }
       console.error(error);
       setChatHistory(prev => [...prev, {
-        id: Date.now(),
+        id: Date.now().toString(),
         role: "assistant",
+        content: "",
         data: {
           is_error: true,
           error_message: error.message || "Maaf, terjadi kesalahan saat menyambung ke AI. Silakan coba beberapa saat lagi."
