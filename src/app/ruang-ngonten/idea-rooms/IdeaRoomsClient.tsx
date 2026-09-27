@@ -209,9 +209,30 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
       });
 
       const data = await res.json();
+      let errMessage = "Terjadi kesalahan saat menghubungi API AI.";
+      if (data.error) {
+        let rawErrorStr = typeof data.error === 'string' ? data.error : JSON.stringify(data.error);
+        try {
+          const match = rawErrorStr.match(/(\{.*\})/);
+          if (match) {
+            const parsed = JSON.parse(match[1]);
+            errMessage = parsed.error?.message || parsed.message || rawErrorStr;
+          } else {
+            errMessage = rawErrorStr;
+          }
+        } catch {
+          errMessage = rawErrorStr;
+        }
+      }
+
+      if (errMessage.includes("experiencing high demand") || errMessage.includes("503") || errMessage.includes("UNAVAILABLE")) {
+        errMessage = "Server AI sedang penuh (High Demand). Silakan tunggu beberapa detik dan coba lagi.";
+      } else if (errMessage.includes("API_KEY_INVALID")) {
+        errMessage = "API Key tidak valid. Silakan periksa di pengaturan profil Anda.";
+      }
       
       if (!res.ok || data.error) {
-        throw new Error(data.error || "Terjadi kesalahan saat menghubungi API AI.");
+        throw new Error(errMessage);
       }
 
       setChatHistory(prev => [...prev, {
