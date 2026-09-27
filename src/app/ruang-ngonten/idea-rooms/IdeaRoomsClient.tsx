@@ -238,12 +238,22 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
       }
       
       if (!res.ok || data.error) {
-        throw new Error(errMessage);
+        setChatHistory(prev => [...prev, {
+          id: Date.now().toString(),
+          role: "assistant",
+          content: "",
+          data: {
+            is_error: true,
+            error_message: errMessage
+          }
+        }]);
+        return;
       }
 
       setChatHistory(prev => [...prev, {
-        id: Date.now(),
+        id: Date.now().toString(),
         role: "assistant",
+        content: "",
         data
       }]);
     } catch (error: any) {
