@@ -267,7 +267,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
   };
 
   return (
-    <div className="flex flex-col flex-1 h-full overflow-hidden bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors relative">
+    <div className="absolute left-0 right-0 top-[64px] md:top-[80px] bottom-[50px] flex flex-col overflow-hidden bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors z-10">
       
       {/* Main Content Area */}
       <main className="flex-1 overflow-y-auto w-full flex flex-col items-center">
@@ -508,7 +508,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
 
       {/* Sticky Input Footer when Chat > 0 */}
       {chatHistory.length > 0 && (
-        <div className="w-full shrink-0 bg-white/90 dark:bg-rn-dark-bg/90 backdrop-blur-md pt-4 pb-8 px-4 z-40">
+        <div className="w-full shrink-0 bg-white/90 dark:bg-rn-dark-bg/90 backdrop-blur-md pt-2 pb-4 px-4 z-40">
           <div className="max-w-3xl mx-auto relative">
             
             <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-lg flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
@@ -521,11 +521,11 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                     generateContentIdeas();
                   }
                 }}
-                className="w-full bg-transparent p-4 min-h-[60px] max-h-[150px] resize-none outline-none text-gray-900 dark:text-white placeholder-gray-400 text-sm md:text-base leading-relaxed"
+                className="w-full bg-transparent px-4 py-3 min-h-[48px] max-h-[150px] resize-none outline-none text-gray-900 dark:text-white placeholder-gray-400 text-sm leading-relaxed"
                 placeholder="Tulis idemu..."
               />
               
-              <div className="px-4 pb-3 pt-1 flex items-center justify-between border-t border-transparent bg-transparent relative z-20">
+              <div className="px-4 pb-2 pt-0 flex items-center justify-between border-t border-transparent bg-transparent relative z-20">
                 <div className="flex items-center gap-2 overflow-visible flex-wrap">
                   {/* Dropdown Quick Actions (Plus Button) */}
                   <div className="relative">
