@@ -298,18 +298,19 @@ ${ver.caption}
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const renderInputControls = () => (
-    <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0 h-[42px]">
-      {/* Nested Menu Container & Seluruh Dropdown */}
-      <div className="relative shrink-0 flex items-center h-full" ref={scriptMenuRef}>
+  const renderInputControls = () => (const renderInputControls = () => (
+    <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
+      {/* 1. MAIN MENU DROPDOWN (Tombol Plus) */}
+      <div className="relative shrink-0 flex items-center" ref={scriptMenuRef}>
         <button 
           onClick={(e) => { e.stopPropagation(); setIsScriptMenuOpen(!isScriptMenuOpen); setActiveSubMenu(null); setActiveDeepMenu(null); }} 
           className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${isScriptMenuOpen && !activeSubMenu?.startsWith('badge_') ? 'bg-gray-100 dark:bg-white/10' : ''}`}
-        ><Plus size={18} className={`transition-transform duration-200 ${isScriptMenuOpen && !activeSubMenu?.startsWith('badge_') ? 'rotate-45' : ''}`} /></button>
+        >
+          <Plus size={18} className={`transition-transform duration-200 ${isScriptMenuOpen && !activeSubMenu?.startsWith('badge_') ? 'rotate-45' : ''}`} />
+        </button>
 
-        {/* 1. MAIN MENU DROPDOWN (Tombol Plus) */}
         {isScriptMenuOpen && !activeSubMenu?.startsWith('badge_') && (
-          <div className="absolute bottom-full left-0 mb-3 w-[280px] max-w-[calc(100vw-3rem)] md:w-[280px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 py-1.5 animate-in fade-in zoom-in-95 overflow-hidden">
+          <div className="absolute bottom-full left-0 mb-2 w-[280px] max-w-[calc(100vw-3rem)] md:w-[280px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 py-1.5 animate-in fade-in zoom-in-95 overflow-hidden">
             <div className="px-4 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1c1c1f] mb-1">Pengaturan Naskah</div>
             
             {/* Format Menu */}
@@ -330,7 +331,7 @@ ${ver.caption}
                       Carousel <ChevronDown size={14} className={`transition-transform text-gray-400 dark:text-gray-400 ${activeDeepMenu === 'carousel' ? 'rotate-180' : ''}`}/>
                     </div>
                     {activeDeepMenu === 'carousel' && (
-                      <div className="bg-white dark:bg-black border-y border-gray-100 dark:border-white/10 py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
+                      <div className="bg-white dark:bg-[#1c1c1f] border-y border-gray-100 dark:border-white/10 py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(i => (
                           <div key={i} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_carousel', i); setIsScriptMenuOpen(false); }} className="px-8 py-2 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{i} Slide</div>
                         ))}
@@ -345,7 +346,7 @@ ${ver.caption}
                       Reels / TikTok <ChevronDown size={14} className={`transition-transform text-gray-400 dark:text-gray-400 ${activeDeepMenu === 'reels' ? 'rotate-180' : ''}`}/>
                     </div>
                     {activeDeepMenu === 'reels' && (
-                      <div className="bg-white dark:bg-black border-y border-gray-100 dark:border-white/10 py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
+                      <div className="bg-white dark:bg-[#1c1c1f] border-y border-gray-100 dark:border-white/10 py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
                         {[15, 30, 45, 60, 90, 120].map(s => (
                           <div key={s} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_reels', s); setIsScriptMenuOpen(false); }} className="px-8 py-2 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{s} Detik</div>
                         ))}
@@ -376,36 +377,35 @@ ${ver.caption}
         )}
       </div>
 
-      {/* SCROLLABLE AREA for Model + Badges */}
-      <div className="flex flex-nowrap gap-1.5 sm:gap-2 items-center overflow-x-auto md:overflow-visible no-scrollbar w-full h-full">
-        {/* INLINED MODEL SELECTOR */}
-        <div className="relative z-10 flex shrink-0 h-8 md:h-9">
-          <div 
-            onClick={(e) => { e.stopPropagation(); setIsModelMenuOpen(!isModelMenuOpen); }}
-            className="flex items-center gap-1.5 h-full px-3 rounded-lg border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
-          >
-            <span>AI:</span>
-            <span className="text-gray-900 dark:text-white whitespace-nowrap">{AI_MODELS.find(m => m.value === selectedModel)?.label || 'Gemini 2.5 Flash'}</span>
-            <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform text-gray-400 dark:text-gray-400 ml-0.5 ${isModelMenuOpen ? 'rotate-180' : ''}`}/>
+      {/* 2. INLINED MODEL SELECTOR (Outside of scrollable area) */}
+      <div className="relative shrink-0 flex items-center">
+        <button 
+          onClick={(e) => { e.stopPropagation(); setIsModelMenuOpen(!isModelMenuOpen); }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+        >
+          <span>AI:</span>
+          <span className="text-gray-900 dark:text-white whitespace-nowrap">{AI_MODELS.find(m => m.value === selectedModel)?.label || 'Gemini 2.5 Flash'}</span>
+          <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform text-gray-400 dark:text-gray-400 ml-0.5 ${isModelMenuOpen ? 'rotate-180' : ''}`}/>
+        </button>
+        
+        {isModelMenuOpen && (
+          <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[180px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 cursor-default">
+            {AI_MODELS.map((m, i) => (
+              <button 
+                key={m.value} 
+                onClick={(e) => { e.stopPropagation(); setSelectedModel(m.value); setIsModelMenuOpen(false); }} 
+                className={`w-full text-left px-3 py-2 text-xs font-bold transition-colors ${selectedModel === m.value ? 'text-rn-accent bg-orange-50 dark:bg-orange-900/10' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+              >
+                {m.label}
+              </button>
+            ))}
           </div>
-          
-          {/* DESKTOP MENU ONLY */}
-          {isModelMenuOpen && (
-            <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-3 w-[200px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 py-2 max-h-56 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 cursor-default">
-              <div className="px-4 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1c1c1f] mb-1">Pilih Model AI</div>
-              {AI_MODELS.map(m => (
-                <div 
-                  key={m.value} 
-                  onClick={() => { setSelectedModel(m.value); setIsModelMenuOpen(false); }} 
-                  className={`px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-[12px] font-bold border-b border-gray-100 dark:border-white/10 last:border-0 ${selectedModel === m.value ? 'text-[#D0E206] dark:text-[#D0E206]' : 'text-gray-700 dark:text-gray-300'}`}
-                >
-                  {m.label}
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        )}
+      </div>
 
+      {/* 3. SCROLLABLE AREA ONLY for Badges */}
+      <div className="flex flex-nowrap gap-1.5 sm:gap-2 items-center overflow-x-auto no-scrollbar w-full py-1">
+        
         {/* TAG 1: FORMAT KONTEN */}
         {scriptFormat && (
           <span 
@@ -414,14 +414,14 @@ ${ver.caption}
               if(activeSubMenu === 'badge_format') { setIsScriptMenuOpen(false); setActiveSubMenu(null); } 
               else { setIsScriptMenuOpen(true); setActiveSubMenu('badge_format'); setActiveDeepMenu(null); } 
             }}
-            className="relative group inline-flex h-8 md:h-9 items-center gap-1 bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 px-3 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shrink-0 whitespace-nowrap"
+            className="relative group inline-flex py-1.5 items-center gap-1 bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 px-3 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shrink-0 whitespace-nowrap"
           >
             <span>{scriptFormat === 'Carousel' ? `Carousel (${scriptCarouselSlides})` : scriptFormat === 'Reels' ? `Reels (${scriptReelsDuration}s)` : scriptFormat}</span>
             <button onClick={(e) => { e.stopPropagation(); setScriptFormat(''); setActiveSubMenu(null); setIsScriptMenuOpen(false); }} className="text-gray-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto group-hover:ml-1 overflow-hidden transition-all duration-200 ease-in-out shrink-0 flex items-center justify-center"><X size={12} strokeWidth={3}/></button>
             
             {/* POPUP KHUSUS FORMAT */}
             {isScriptMenuOpen && activeSubMenu === 'badge_format' && (
-              <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-3 w-[220px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 py-2 animate-in fade-in zoom-in-95 overflow-hidden cursor-default">
+              <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[220px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 py-1 animate-in fade-in zoom-in-95 overflow-hidden cursor-default">
                 <div className="px-4 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1c1c1f] mb-1">Ubah Format</div>
                 
                 <div className="flex flex-col">
@@ -431,7 +431,7 @@ ${ver.caption}
                   {activeDeepMenu === 'carousel' && (
                     <div className="bg-gray-50 dark:bg-[#1c1c1f] border-y border-gray-100 dark:border-white/10 py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(i => (
-                        <div key={i} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_carousel', i); setActiveSubMenu(null); setIsScriptMenuOpen(false); }} className="px-8 py-2 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{i} Slide</div>
+                        <div key={i} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_carousel', i); setIsScriptMenuOpen(false); }} className="px-8 py-2 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{i} Slide</div>
                       ))}
                     </div>
                   )}
@@ -443,7 +443,7 @@ ${ver.caption}
                   {activeDeepMenu === 'reels' && (
                     <div className="bg-gray-50 dark:bg-[#1c1c1f] border-y border-gray-100 dark:border-white/10 py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
                       {[15, 30, 45, 60, 90, 120].map(s => (
-                        <div key={s} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_reels', s); setActiveSubMenu(null); setIsScriptMenuOpen(false); }} className="px-8 py-2 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{s} Detik</div>
+                        <div key={s} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_reels', s); setIsScriptMenuOpen(false); }} className="px-8 py-2 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{s} Detik</div>
                       ))}
                     </div>
                   )}
@@ -461,17 +461,17 @@ ${ver.caption}
               if(activeSubMenu === 'badge_tone') { setIsScriptMenuOpen(false); setActiveSubMenu(null); } 
               else { setIsScriptMenuOpen(true); setActiveSubMenu('badge_tone'); setActiveDeepMenu(null); } 
             }}
-            className="relative group inline-flex h-8 md:h-9 items-center gap-1 bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 px-3 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shrink-0 whitespace-nowrap"
+            className="relative group inline-flex py-1.5 items-center gap-1 bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 px-3 rounded-lg text-xs font-bold cursor-pointer hover:bg-gray-50 dark:hover:bg-white/5 transition-colors shrink-0 whitespace-nowrap"
           >
             <span>{scriptTone}</span>
             <button onClick={(e) => { e.stopPropagation(); setScriptTone(''); setActiveSubMenu(null); setIsScriptMenuOpen(false); }} className="text-gray-400 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400 opacity-0 w-0 group-hover:opacity-100 group-hover:w-auto group-hover:ml-1 overflow-hidden transition-all duration-200 ease-in-out shrink-0 flex items-center justify-center"><X size={12} strokeWidth={3} /></button>
             
             {/* POPUP KHUSUS TONE */}
             {isScriptMenuOpen && activeSubMenu === 'badge_tone' && (
-              <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-3 w-[200px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 py-2 max-h-56 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 cursor-default">
+              <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[200px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 py-1 max-h-56 overflow-y-auto custom-scrollbar animate-in fade-in zoom-in-95 cursor-default">
                 <div className="px-4 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1c1c1f] mb-1">Ubah Gaya Bahasa</div>
                 {['Storytelling', 'Edukatif', 'Profesional', 'Santai', 'Humor', 'Inspiratif', 'Motivasi', 'Blak-blakan & Kritis'].map(t => (
-                  <div key={t} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('tone', t); setActiveSubMenu(null); setIsScriptMenuOpen(false); }} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-white/10 last:border-0">{t}</div>
+                  <div key={t} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('tone', t); setIsScriptMenuOpen(false); }} className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300 border-b border-gray-100 dark:border-white/10 last:border-0">{t}</div>
                 ))}
               </div>
             )}
@@ -479,7 +479,7 @@ ${ver.caption}
         )}
       </div>
     </div>
-  );
+);
 
   return (
     <div className="absolute left-0 right-0 top-[64px] md:top-[80px] bottom-[50px] flex flex-col overflow-hidden bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors z-10">
@@ -519,7 +519,7 @@ ${ver.caption}
                     className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0 transition-colors border ${isListening ? 'bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-900/50 animate-pulse' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border-transparent'}`}
                     title={isListening ? "Hentikan merekam" : "Input menggunakan suara"}
                   >
-                    <Mic size={16} />
+                    <Mic size={18} />
                   </button>
                   <button 
                     onClick={() => {
@@ -530,7 +530,7 @@ ${ver.caption}
                       }
                     }}
                     disabled={!isLoading && !scriptPromptText.trim()}
-                    className={`h-8 w-8 md:h-9 md:w-9 rounded-full transition-all flex items-center justify-center ${isLoading ? 'bg-red-500 text-white hover:bg-red-600' : scriptPromptText.trim() ? 'bg-rn-accent text-white hover:bg-rn-accent/90 shadow-md' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border border-transparent'}`}
+                    className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors shadow-sm"
                   >
                     {isLoading ? <Square size={14} className="fill-current" strokeWidth={2.5} /> : <Send size={14} className="-ml-0.5" strokeWidth={2.5} />}
                   </button>
@@ -638,7 +638,7 @@ ${ver.caption}
 
       {/* Sticky Input Footer when Chat > 0 */}
       {chatHistory.length > 0 && (
-        <div className="w-full shrink-0 bg-white/90 dark:bg-[#0A0A0A]/90 backdrop-blur-md pt-2 pb-4 px-4 z-40">
+        <div className="w-full shrink-0 bg-white/90 dark:bg-rn-dark-bg/90 backdrop-blur-md pt-2 pb-4 px-4 z-40">
           <div className="max-w-3xl mx-auto relative">
             <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-lg flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
               <textarea 
@@ -663,7 +663,7 @@ ${ver.caption}
                     className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0 transition-colors border ${isListening ? 'bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-900/50 animate-pulse' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border-transparent'}`}
                     title={isListening ? "Hentikan merekam" : "Input menggunakan suara"}
                   >
-                    <Mic size={16} />
+                    <Mic size={18} />
                   </button>
                   <button 
                     onClick={() => {
@@ -674,7 +674,7 @@ ${ver.caption}
                       }
                     }}
                     disabled={!isLoading && !scriptPromptText.trim()}
-                    className={`h-8 w-8 md:h-9 md:w-9 rounded-full transition-all flex items-center justify-center ${isLoading ? 'bg-red-500 text-white hover:bg-red-600' : scriptPromptText.trim() ? 'bg-rn-accent text-white hover:bg-rn-accent/90 shadow-md' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border border-transparent'}`}
+                    className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 hover:bg-orange-600 transition-colors shadow-sm"
                   >
                     {isLoading ? <Square size={14} className="fill-current" strokeWidth={2.5} /> : <Send size={14} className="-ml-0.5" strokeWidth={2.5} />}
                   </button>
