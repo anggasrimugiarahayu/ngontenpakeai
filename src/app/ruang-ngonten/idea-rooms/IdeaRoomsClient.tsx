@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Square, CheckCircle2, MessageSquare, Search, UserCircle, Calendar, Bot, Lightbulb, Video, Filter, ChevronDown, Copy, Check, Save } from "lucide-react";
+import { Send, Square, CheckCircle2, MessageSquare, Search, UserCircle, Calendar, Bot, Lightbulb, Video, Filter, ChevronDown, Copy, Check, Save, Plus, Mic } from "lucide-react";
 
 interface Idea {
   tahap_funnel?: string;
@@ -52,12 +52,62 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash");
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
+  const [isListening, setIsListening] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const recognitionRef = useRef<any>(null);
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory, isLoading]);
+
+  const toggleListening = () => {
+    if (isListening) {
+      recognitionRef.current?.stop();
+      setIsListening(false);
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = true;
+        recognition.lang = 'id-ID';
+
+        recognition.onresult = (event: any) => {
+          let finalTranscript = '';
+          for (let i = event.resultIndex; i < event.results.length; i++) {
+            if (event.results[i].isFinal) {
+              finalTranscript += event.results[i][0].transcript;
+            }
+          }
+          if (finalTranscript) {
+            setIdeaPromptText((prev) => {
+              const separator = prev && !prev.endsWith(' ') ? ' ' : '';
+              return prev + separator + finalTranscript;
+            });
+          }
+        };
+
+        recognition.onerror = (event: any) => {
+          console.error("Speech recognition error", event.error);
+          setIsListening(false);
+        };
+
+        recognition.onend = () => {
+          setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+        setIsListening(true);
+      } else {
+        alert("Browser kamu tidak mendukung fitur input suara. Coba gunakan Google Chrome.");
+      }
+    }
+  };
 
   const autoResizeTextarea = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setIdeaPromptText(e.target.value);
@@ -160,13 +210,14 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
               
               <div className="px-4 pb-3 pt-1 flex items-center justify-between border-t border-transparent bg-transparent relative z-20">
                 <div className="flex items-center gap-2 overflow-visible flex-wrap">
-                  {/* Dropdown Quick Actions */}
+                  {/* Dropdown Quick Actions (Plus Button) */}
                   <div className="relative">
                     <button 
                       onClick={() => setIsActionsMenuOpen(!isActionsMenuOpen)}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                      className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${isActionsMenuOpen ? 'bg-gray-100 dark:bg-white/10' : ''}`}
+                      title="Quick Actions"
                     >
-                      <Bot size={14} /> Quick Actions <ChevronDown size={12} className={`transition-transform ${isActionsMenuOpen ? 'rotate-180' : ''}`} />
+                      <Plus size={18} className={`transition-transform duration-200 ${isActionsMenuOpen ? 'rotate-45' : ''}`} />
                     </button>
                     
                     {isActionsMenuOpen && (
@@ -211,19 +262,24 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                       </div>
                     )}
                   </div>
-
-                  <span className="px-3 py-1.5 rounded-lg bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 text-xs font-bold border border-orange-100 dark:border-orange-500/20 whitespace-nowrap">
-                    Blueprint Connected
-                  </span>
                 </div>
                 
-                <button 
-                  onClick={() => generateContentIdeas()}
-                  disabled={!ideaPromptText.trim() || isLoading}
-                  className="w-8 h-8 rounded-full bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors shadow-sm"
-                >
-                  {isLoading ? <Square size={14} className="fill-current" /> : <Send size={14} className="-ml-0.5" />}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={toggleListening}
+                    className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0 transition-colors border ${isListening ? 'bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-900/50 animate-pulse' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border-transparent'}`}
+                    title={isListening ? "Hentikan merekam" : "Input menggunakan suara"}
+                  >
+                    <Mic size={16} />
+                  </button>
+                  <button 
+                    onClick={() => generateContentIdeas()}
+                    disabled={!ideaPromptText.trim() || isLoading}
+                    className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-orange-600 transition-colors shadow-sm"
+                  >
+                    {isLoading ? <Square size={14} className="fill-current" /> : <Send size={14} className="-ml-0.5" />}
+                  </button>
+                </div>
               </div>
             </div>
             
@@ -393,13 +449,22 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                 className="w-full bg-transparent px-3 py-2 min-h-[40px] max-h-[150px] resize-none outline-none text-gray-900 dark:text-white text-sm"
                 placeholder="Tulis idemu atau pilih aksi di atas..."
               />
-              <button 
-                onClick={() => generateContentIdeas()}
-                disabled={!ideaPromptText.trim() || isLoading}
-                className="w-9 h-9 ml-2 rounded-xl bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 hover:bg-orange-600 transition-colors shadow-sm mb-0.5"
-              >
-                {isLoading ? <Square size={16} className="fill-current" /> : <Send size={16} className="-ml-0.5" />}
-              </button>
+              <div className="flex items-center gap-1.5 ml-2 mb-0.5">
+                <button 
+                  onClick={toggleListening}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors border ${isListening ? 'bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-900/50 animate-pulse' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border-transparent'}`}
+                  title={isListening ? "Hentikan merekam" : "Input menggunakan suara"}
+                >
+                  <Mic size={16} />
+                </button>
+                <button 
+                  onClick={() => generateContentIdeas()}
+                  disabled={!ideaPromptText.trim() || isLoading}
+                  className="w-9 h-9 rounded-xl bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 hover:bg-orange-600 transition-colors shadow-sm"
+                >
+                  {isLoading ? <Square size={16} className="fill-current" /> : <Send size={16} className="-ml-0.5" />}
+                </button>
+              </div>
             </div>
           </div>
         </div>
