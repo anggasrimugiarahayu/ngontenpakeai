@@ -261,10 +261,10 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
   };
 
   return (
-    <div className="absolute inset-0 flex flex-col bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors">
+    <div className="flex flex-col flex-1 bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors relative">
       
       {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto w-full flex flex-col items-center">
+      <main className="flex-1 w-full flex flex-col items-center">
         {chatHistory.length === 0 ? (
           /* Empty State - Hero UI like Screenshot */
           <div className="w-full max-w-3xl flex-1 flex flex-col items-center justify-center px-4 -mt-10">
@@ -372,7 +372,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
           </div>
         ) : (
           /* Chat History View */
-          <div className="w-full max-w-5xl px-4 py-8 flex flex-col gap-8">
+          <div className="w-full max-w-3xl px-4 py-8 flex flex-col gap-8">
             {chatHistory.map((msg) => (
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {msg.role === 'user' ? (
@@ -499,8 +499,8 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
 
       {/* Sticky Input Footer when Chat > 0 */}
       {chatHistory.length > 0 && (
-        <div className="w-full shrink-0 bg-white/80 dark:bg-rn-dark-bg/80 backdrop-blur-md pt-4 pb-6 px-4 z-40 border-t border-gray-100 dark:border-white/5">
-          <div className="max-w-5xl mx-auto relative">
+        <div className="sticky bottom-0 w-full bg-white/90 dark:bg-rn-dark-bg/90 backdrop-blur-md pt-4 pb-8 px-4 z-40">
+          <div className="max-w-3xl mx-auto relative">
             
             <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-lg flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
               <textarea 
