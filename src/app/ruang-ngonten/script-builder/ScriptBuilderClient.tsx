@@ -298,7 +298,7 @@ ${ver.caption}
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const renderInputControls = () => (const renderInputControls = () => (
+  const renderInputControls = () => (
     <div className="flex items-center gap-1.5 sm:gap-2 flex-1 min-w-0">
       {/* 1. MAIN MENU DROPDOWN (Tombol Plus) */}
       <div className="relative shrink-0 flex items-center" ref={scriptMenuRef}>
