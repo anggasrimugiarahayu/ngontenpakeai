@@ -39,9 +39,14 @@ const QUICK_ACTIONS = [
 ];
 
 const AI_MODELS = [
-  { value: "gemini-1.5-flash", label: "Gemini 1.5 Flash" },
-  { value: "gemini-1.5-pro", label: "Gemini 1.5 Pro" },
-  { value: "gemini-2.5-flash", label: "Gemini 2.5 Flash" },
+  { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash' },
+  { value: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash' },
+  { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash' },
+  { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite' },
+  { value: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash-Lite' },
+  { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' },
+  { value: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite' },
+  { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
 ];
 
 export default function IdeaRoomsClient({ blueprintId, blueprintData }: { blueprintId: string, blueprintData: any }) {
@@ -166,19 +171,23 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
 
       const data = await res.json();
       
+      if (!res.ok || data.error) {
+        throw new Error(data.error || "Terjadi kesalahan saat menghubungi API AI.");
+      }
+
       setChatHistory(prev => [...prev, {
         id: Date.now(),
         role: "assistant",
         data
       }]);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       setChatHistory(prev => [...prev, {
         id: Date.now(),
         role: "assistant",
         data: {
           is_error: true,
-          error_message: "Maaf, terjadi kesalahan saat menyambung ke AI. Silakan coba beberapa saat lagi."
+          error_message: error.message || "Maaf, terjadi kesalahan saat menyambung ke AI. Silakan coba beberapa saat lagi."
         }
       }]);
     } finally {
@@ -428,24 +437,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
         <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-white via-white to-transparent dark:from-rn-dark-bg dark:via-rn-dark-bg pt-10 pb-6 px-4 z-40">
           <div className="max-w-3xl mx-auto relative">
             
-            {/* Quick Actions Float */}
-            <div className="absolute bottom-full mb-3 left-0 w-full overflow-x-auto no-scrollbar flex gap-2">
-              {QUICK_ACTIONS.slice(0, 5).map((action, i) => {
-                const Icon = action.icon;
-                return (
-                  <button 
-                    key={i}
-                    onClick={() => generateContentIdeas(action.label)}
-                    disabled={isLoading}
-                    className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 rounded-full text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors whitespace-nowrap shadow-sm disabled:opacity-50"
-                  >
-                    <Icon size={12} /> {action.label}
-                  </button>
-                )
-              })}
-            </div>
-
-            <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-lg flex items-end focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all p-2 relative">
+            <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-lg flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
               <textarea 
                 value={ideaPromptText + (interimText ? (ideaPromptText && !ideaPromptText.endsWith(' ') ? ' ' : '') + interimText : '')}
                 onChange={autoResizeTextarea}
@@ -455,24 +447,82 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                     generateContentIdeas();
                   }
                 }}
-                className="w-full bg-transparent px-3 py-2 min-h-[60px] max-h-[150px] resize-none outline-none text-gray-900 dark:text-white text-sm"
-                placeholder="Tulis idemu atau pilih aksi di atas..."
+                className="w-full bg-transparent p-4 min-h-[60px] max-h-[150px] resize-none outline-none text-gray-900 dark:text-white placeholder-gray-400 text-sm md:text-base leading-relaxed"
+                placeholder="Tulis idemu..."
               />
-              <div className="flex items-center gap-1.5 ml-2 mb-0.5">
-                <button 
-                  onClick={toggleListening}
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-colors border ${isListening ? 'bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-900/50 animate-pulse' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border-transparent'}`}
-                  title={isListening ? "Hentikan merekam" : "Input menggunakan suara"}
-                >
-                  <Mic size={16} />
-                </button>
-                <button 
-                  onClick={() => generateContentIdeas()}
-                  disabled={!ideaPromptText.trim() || isLoading}
-                  className="w-9 h-9 rounded-xl bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 hover:bg-orange-600 transition-colors shadow-sm"
-                >
-                  {isLoading ? <Square size={16} className="fill-current" /> : <Send size={16} className="-ml-0.5" />}
-                </button>
+              
+              <div className="px-4 pb-3 pt-1 flex items-center justify-between border-t border-transparent bg-transparent relative z-20">
+                <div className="flex items-center gap-2 overflow-visible flex-wrap">
+                  {/* Dropdown Quick Actions (Plus Button) */}
+                  <div className="relative">
+                    <button 
+                      onClick={() => setIsActionsMenuOpen(!isActionsMenuOpen)}
+                      className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${isActionsMenuOpen ? 'bg-gray-100 dark:bg-white/10' : ''}`}
+                      title="Quick Actions"
+                    >
+                      <Plus size={18} className={`transition-transform duration-200 ${isActionsMenuOpen ? 'rotate-45' : ''}`} />
+                    </button>
+                    
+                    {isActionsMenuOpen && (
+                      <div className="absolute left-0 bottom-full mb-2 w-[220px] max-h-[250px] overflow-y-auto bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 rounded-xl shadow-lg z-50 py-1 animate-in fade-in zoom-in-95">
+                        {QUICK_ACTIONS.map((action, i) => {
+                          const Icon = action.icon;
+                          return (
+                            <button 
+                              key={i} 
+                              onClick={() => { setIsActionsMenuOpen(false); generateContentIdeas(action.label); }}
+                              className="w-full flex items-center gap-3 px-3 py-2 text-left text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                            >
+                              <Icon size={14} className="text-gray-500 shrink-0" /> {action.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Dropdown Model AI */}
+                  <div className="relative">
+                    <button 
+                      onClick={() => setIsModelMenuOpen(!isModelMenuOpen)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+                    >
+                      AI: <span className="text-gray-900 dark:text-white">{AI_MODELS.find(m => m.value === selectedModel)?.label}</span>
+                      <ChevronDown size={12} className={`transition-transform ${isModelMenuOpen ? 'rotate-180' : ''}`} />
+                    </button>
+                    
+                    {isModelMenuOpen && (
+                      <div className="absolute left-0 bottom-full mb-2 w-[180px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 rounded-xl shadow-lg z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95">
+                        {AI_MODELS.map((m, i) => (
+                          <button 
+                            key={i} 
+                            onClick={() => { setSelectedModel(m.value); setIsModelMenuOpen(false); }}
+                            className={`w-full text-left px-3 py-2 text-xs font-bold transition-colors ${selectedModel === m.value ? 'text-rn-accent bg-orange-50 dark:bg-orange-900/10' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                          >
+                            {m.label}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <button 
+                    onClick={toggleListening}
+                    className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0 transition-colors border ${isListening ? 'bg-red-50 dark:bg-red-900/20 text-red-500 border-red-200 dark:border-red-900/50 animate-pulse' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border-transparent'}`}
+                    title={isListening ? "Hentikan merekam" : "Input menggunakan suara"}
+                  >
+                    <Mic size={16} />
+                  </button>
+                  <button 
+                    onClick={() => generateContentIdeas()}
+                    disabled={!ideaPromptText.trim() || isLoading}
+                    className="w-8 h-8 md:w-9 md:h-9 rounded-full bg-rn-accent text-white flex items-center justify-center shrink-0 disabled:opacity-50 hover:bg-orange-600 transition-colors shadow-sm"
+                  >
+                    {isLoading ? <Square size={14} className="fill-current" /> : <Send size={14} className="-ml-0.5" />}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

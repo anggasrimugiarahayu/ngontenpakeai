@@ -29,7 +29,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { promptText, isFunneling, blueprintData, chatHistory } = body;
+    const { promptText, isFunneling, blueprintData, chatHistory, model } = body;
 
     const userRecord = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -113,7 +113,7 @@ ${promptText}
 `;
 
     const response = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: model || "gemini-2.5-flash",
       contents: userPrompt,
       config: {
         systemInstruction: systemPrompt,
