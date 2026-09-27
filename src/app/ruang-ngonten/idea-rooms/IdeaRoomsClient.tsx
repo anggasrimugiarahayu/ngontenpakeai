@@ -235,6 +235,8 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
         errMessage = "Server AI sedang penuh (High Demand). Silakan tunggu beberapa detik dan coba lagi.";
       } else if (errMessage.includes("API_KEY_INVALID")) {
         errMessage = "API Key tidak valid. Silakan periksa di pengaturan profil Anda.";
+      } else if (errMessage.toLowerCase().includes("quota") || errMessage.includes("429") || errMessage.toLowerCase().includes("rate limit")) {
+        errMessage = "Kuota AI telah mencapai batas atau Anda mengirim terlalu banyak permintaan. Silakan tunggu beberapa saat atau ganti model AI Anda.";
       }
       
       if (!res.ok || data.error) {
@@ -398,7 +400,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                 ) : (
                   <div className="w-full max-w-full space-y-5">
                     {msg.data?.is_error ? (
-                      <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl text-[13px] md:text-sm border border-red-100 dark:border-red-900/30">
+                      <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl text-[13px] md:text-sm border border-red-100 dark:border-red-900/30 break-words whitespace-pre-wrap">
                         {msg.data.error_message}
                       </div>
                     ) : (
