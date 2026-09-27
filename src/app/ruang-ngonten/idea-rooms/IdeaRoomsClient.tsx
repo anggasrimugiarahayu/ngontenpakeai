@@ -261,10 +261,10 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
   };
 
   return (
-    <div className="flex flex-col flex-1 bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors relative">
+    <div className="absolute inset-0 flex flex-col bg-transparent text-gray-900 dark:text-gray-100 font-sans transition-colors">
       
       {/* Main Content Area */}
-      <main className={`flex-1 overflow-y-auto w-full flex flex-col items-center ${chatHistory.length > 0 ? 'pb-32' : ''}`}>
+      <main className="flex-1 overflow-y-auto w-full flex flex-col items-center">
         {chatHistory.length === 0 ? (
           /* Empty State - Hero UI like Screenshot */
           <div className="w-full max-w-3xl flex-1 flex flex-col items-center justify-center px-4 -mt-10">
@@ -376,19 +376,19 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
             {chatHistory.map((msg) => (
               <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 {msg.role === 'user' ? (
-                  <div className="max-w-[80%] md:max-w-[60%] bg-gray-100 dark:bg-[#1c1c1f] text-gray-900 dark:text-white px-5 py-3 rounded-2xl rounded-tr-sm text-sm">
+                  <div className="max-w-[80%] md:max-w-[60%] bg-gray-100 dark:bg-[#1c1c1f] text-gray-900 dark:text-white px-4 py-2.5 rounded-2xl rounded-tr-sm text-[13px] md:text-sm shadow-sm border border-transparent dark:border-white/5">
                     {msg.content}
                   </div>
                 ) : (
-                  <div className="w-full max-w-full space-y-6">
+                  <div className="w-full max-w-full space-y-5">
                     {msg.data?.is_error ? (
-                      <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl text-sm border border-red-100 dark:border-red-900/30">
+                      <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl text-[13px] md:text-sm border border-red-100 dark:border-red-900/30">
                         {msg.data.error_message}
                       </div>
                     ) : (
                       <>
                         {msg.data?.conversation_reply && (
-                          <div className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed max-w-3xl" dangerouslySetInnerHTML={{__html: msg.data.conversation_reply.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-gray-900 dark:text-white">$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>')}} />
+                          <div className="text-[13px] md:text-sm text-gray-700 dark:text-gray-300 leading-relaxed max-w-4xl" dangerouslySetInnerHTML={{__html: msg.data.conversation_reply.replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-gray-900 dark:text-white">$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>')}} />
                         )}
                         
                         {msg.data?.proposed_ideas && msg.data.proposed_ideas.length > 0 && (
@@ -399,9 +399,9 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                             
                             {/* Desktop Table View */}
                             <div className="hidden lg:block w-full overflow-x-auto bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-sm">
-                              <table className="w-full text-left border-collapse text-sm">
+                              <table className="w-full text-left border-collapse text-[13px]">
                                 <thead>
-                                  <tr className="bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-white/10 text-xs uppercase tracking-wider text-gray-500">
+                                  <tr className="bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-white/10 text-[10px] md:text-xs uppercase tracking-wider text-gray-500">
                                     <th className="p-4 font-bold">Funnel</th>
                                     <th className="p-4 font-bold w-[250px]">Ide / Template</th>
                                     <th className="p-4 font-bold w-[250px]">Angle Unik</th>
@@ -413,7 +413,7 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                                   {msg.data.proposed_ideas.map((ide, idx) => (
                                     <tr key={idx} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors">
                                       <td className="p-4 align-top">
-                                        <span className={`text-[10px] font-bold tracking-widest px-2 py-1 rounded-md border block text-center
+                                        <span className={`text-[9px] md:text-[10px] font-bold tracking-widest px-2 py-1 rounded-md border block text-center
                                           ${ide.tahap_funnel?.toUpperCase().includes('TOFU') ? 'bg-blue-50 text-blue-600 border-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-900/50' : 
                                             ide.tahap_funnel?.toUpperCase().includes('MOFU') ? 'bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-900/50' : 
                                             ide.tahap_funnel?.toUpperCase().includes('BOFU') ? 'bg-orange-50 text-orange-600 border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-900/50' : 
@@ -422,14 +422,14 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
                                         </span>
                                       </td>
                                       <td className="p-4 align-top">
-                                        <p className="font-bold text-gray-900 dark:text-white leading-snug mb-2">{ide.nama_ide}</p>
-                                        <p className="text-[11px] text-gray-500 dark:text-gray-400">Template: <span className="italic">{ide.template_ide_digunakan}</span></p>
+                                        <p className="font-bold text-[13px] md:text-sm text-gray-900 dark:text-white leading-snug mb-2">{ide.nama_ide}</p>
+                                        <p className="text-[10px] md:text-[11px] text-gray-500 dark:text-gray-400">Template: <span className="italic">{ide.template_ide_digunakan}</span></p>
                                       </td>
                                       <td className="p-4 align-top">
-                                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-[13px]">{ide.angle}</p>
+                                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-[12px] md:text-[13px]">{ide.angle}</p>
                                       </td>
                                       <td className="p-4 align-top">
-                                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-[13px]">{ide.masalah_audiens}</p>
+                                        <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-[12px] md:text-[13px]">{ide.masalah_audiens}</p>
                                       </td>
                                       <td className="p-4 align-top text-center">
                                         <button 
@@ -499,8 +499,8 @@ export default function IdeaRoomsClient({ blueprintId, blueprintData }: { bluepr
 
       {/* Sticky Input Footer when Chat > 0 */}
       {chatHistory.length > 0 && (
-        <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-white via-white to-transparent dark:from-rn-dark-bg dark:via-rn-dark-bg pt-10 pb-6 px-4 z-40">
-          <div className="max-w-3xl mx-auto relative">
+        <div className="w-full shrink-0 bg-white/80 dark:bg-rn-dark-bg/80 backdrop-blur-md pt-4 pb-6 px-4 z-40 border-t border-gray-100 dark:border-white/5">
+          <div className="max-w-5xl mx-auto relative">
             
             <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-lg flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
               <textarea 
