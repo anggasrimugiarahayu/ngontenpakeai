@@ -1,7 +1,8 @@
 "use client";
 
+
 import React, { useState, useRef, useEffect } from "react";
-import { Send, Square, CheckCircle2, MessageSquare, Search, UserCircle, Calendar, Bot, Lightbulb, Video, Filter, ChevronDown, Copy, Check, Save, Plus, Mic, X, FileText } from "lucide-react";
+import { Send, Square, CheckCircle2, MessageSquare, Search, UserCircle, Calendar, Bot, Lightbulb, Video, Filter, ChevronDown, Copy, Check, Save, Plus, Mic, X, FileText, ChevronLeft, ChevronRight } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
@@ -43,6 +44,7 @@ const AI_MODELS = [
 ];
 
 export default function ScriptBuilderClient({ blueprintData }: { blueprintData: any }) {
+  
   const [scriptPromptText, setScriptPromptText] = useState("");
   const [interimText, setInterimText] = useState("");
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
@@ -52,6 +54,50 @@ export default function ScriptBuilderClient({ blueprintData }: { blueprintData: 
 
   const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash");
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
+
+  // Calendar States for "Jadwalkan" Feature
+  const [isAgendaFormOpen, setIsAgendaFormOpen] = useState(false);
+  const [agendaForm, setAgendaForm] = useState({ topic: '', script: '', caption: '', funnelStage: 'TOFU' });
+  const [isSavingAgenda, setIsSavingAgenda] = useState(false);
+  const [savedAgendaSuccess, setSavedAgendaSuccess] = useState(false);
+  
+  const handleSaveAgendaFromBuilder = async () => {
+    setIsSavingAgenda(true);
+    const newCalendarData = {
+      ...calendarData,
+      [selectedCalDate!]: {
+        topic: agendaForm.topic,
+        script: agendaForm.script, // we save the formatted string directly
+        caption: agendaForm.caption,
+        funnelStage: agendaForm.funnelStage
+      }
+    };
+    
+    setCalendarData(newCalendarData);
+    
+    try {
+      await fetch('/api/calendar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ calendarData: newCalendarData })
+      });
+      setSavedAgendaSuccess(true);
+      setTimeout(() => {
+        setIsAgendaFormOpen(false);
+        setSavedAgendaSuccess(false);
+      }, 1500);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsSavingAgenda(false);
+    }
+  };
+  const [isScriptDatePickerOpen, setIsScriptDatePickerOpen] = useState(false);
+  const [currentCalDate, setCurrentCalDate] = useState(new Date());
+  const [selectedCalDate, setSelectedCalDate] = useState<string | null>(null);
+  const [calendarData, setCalendarData] = useState<Record<string, any>>({});
+  const [activeScriptData, setActiveScriptData] = useState<any>(null);
+  const [scriptActionState, setScriptActionState] = useState<string | null>(null);
 
   // Script options
   const [scriptFormat, setScriptFormat] = useState<string>('');
@@ -572,20 +618,42 @@ ${ver.caption}
                             <div className="flex flex-nowrap gap-4 w-max md:w-full md:grid md:grid-cols-1 md:gap-6">
                               {msg.data.variations.map((ver, vidx) => (
                                 <div key={vidx} className="w-[300px] md:w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm shrink-0 flex flex-col group">
-                                  <div className="p-4 md:p-5 border-b border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 relative">
-                                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                                      <span className="px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold bg-rn-accent/10 text-rn-accent border border-rn-accent/20">Var {vidx + 1}</span>
-                                      <span className="px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/30">{ver.framework_digunakan}</span>
+                                  <div className="p-4 md:p-5 border-b border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 relative flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                                    <div className="flex-1 pr-0 sm:pr-4">
+                                      <div className="flex flex-wrap items-center gap-2 mb-3">
+                                        <span className="px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold bg-rn-accent/10 text-rn-accent border border-rn-accent/20">Var {vidx + 1}</span>
+                                        <span className="px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/30">{ver.framework_digunakan}</span>
+                                      </div>
+                                      <h4 className="font-bold font-heading text-[15px] md:text-[16px] text-gray-900 dark:text-white leading-tight mb-2">{ver.judul}</h4>
                                     </div>
-                                    <h4 className="font-bold font-heading text-[15px] md:text-[16px] text-gray-900 dark:text-white leading-tight mb-2 pr-10">{ver.judul}</h4>
                                     
-                                    <button 
-                                      onClick={() => copyScriptToClipboard(ver, `${msg.id}-${vidx}`)}
-                                      className="absolute top-4 right-4 p-2 rounded-xl bg-white dark:bg-[#222] border border-gray-200 dark:border-white/10 text-gray-500 hover:text-rn-accent hover:border-rn-accent transition-colors shadow-sm"
-                                      title="Salin Naskah"
-                                    >
-                                      {copiedId === `${msg.id}-${vidx}` ? <Check size={16} className="text-green-500" /> : <Copy size={16} />}
-                                    </button>
+                                    <div className="flex items-center gap-2 shrink-0 sm:mt-1">
+                                      <button 
+                                        onClick={() => {
+                                          setScriptActionState(`schedule-${msg.id}-${vidx}`);
+                                          setTimeout(() => {
+                                            setScriptActionState(null);
+                                            setActiveScriptData(ver);
+                                            setIsScriptDatePickerOpen(true);
+                                          }, 200);
+                                        }}
+                                        className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${scriptActionState === `schedule-${msg.id}-${vidx}` ? 'border-rn-accent bg-rn-accent text-white shadow-sm' : 'bg-white dark:bg-[#1A1A1A] border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'}`}
+                                      >
+                                        <Calendar size={14} /> Jadwalkan
+                                      </button>
+                                      <button 
+                                        onClick={() => {
+                                          setScriptActionState(`copy-${msg.id}-${vidx}`);
+                                          setTimeout(() => {
+                                            setScriptActionState(null);
+                                            copyScriptToClipboard(ver, `${msg.id}-${vidx}`);
+                                          }, 200);
+                                        }}
+                                        className={`flex items-center justify-center gap-1.5 px-3 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${scriptActionState === `copy-${msg.id}-${vidx}` || copiedId === `${msg.id}-${vidx}` ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-600 shadow-sm' : 'bg-white dark:bg-[#1A1A1A] border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'}`}
+                                      >
+                                        {copiedId === `${msg.id}-${vidx}` ? <Check size={14} className="text-green-500" /> : <Copy size={14} />} Salin
+                                      </button>
+                                    </div>
                                   </div>
                                   
                                   <div className="p-4 md:p-5 flex-1 flex flex-col gap-4 text-[14px]">
@@ -679,6 +747,199 @@ ${ver.caption}
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+
+      {/* Pop-Up Modal Tanggal untuk Script Builder */}
+      {isScriptDatePickerOpen && (
+        <div className="fixed inset-0 z-[100] bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setIsScriptDatePickerOpen(false)}>
+          <div className="bg-white dark:bg-[#121214] rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-sm overflow-hidden flex flex-col max-h-[85dvh]" onClick={e => e.stopPropagation()}>
+            <div className="px-5 py-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between bg-gray-50 dark:bg-white/5 shrink-0">
+               <h3 className="text-sm md:text-base font-bold font-heading text-gray-900 dark:text-white flex items-center gap-2">
+                 <Calendar size={18} strokeWidth={2.5} className="text-rn-accent"/> Pilih Tanggal Tayang
+               </h3>
+               <button onClick={() => setIsScriptDatePickerOpen(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-full p-1.5 transition-colors"><X size={16} strokeWidth={2.5}/></button>
+            </div>
+            
+            <div className="p-5 overflow-y-auto no-scrollbar bg-white dark:bg-transparent">
+               <div className="flex items-center justify-between mb-4">
+                 <h4 className="font-bold text-gray-900 dark:text-white font-heading uppercase tracking-wide text-sm">
+                   {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][currentCalDate.getMonth()]} {currentCalDate.getFullYear()}
+                 </h4>
+                 <div className="flex gap-2">
+                   <button onClick={() => setCurrentCalDate(new Date(currentCalDate.getFullYear(), currentCalDate.getMonth() - 1, 1))} className="p-1.5 border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 text-gray-600 dark:text-gray-300 transition-colors"><ChevronLeft size={16} strokeWidth={2.5}/></button>
+                   <button onClick={() => setCurrentCalDate(new Date(currentCalDate.getFullYear(), currentCalDate.getMonth() + 1, 1))} className="p-1.5 border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 text-gray-600 dark:text-gray-300 transition-colors"><ChevronRight size={16} strokeWidth={2.5}/></button>
+                 </div>
+               </div>
+               
+               <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase mb-2 font-heading">
+                 {['Min','Sen','Sel','Rab','Kam','Jum','Sab'].map(d => <div key={d} className={d === 'Min' ? 'text-red-500 dark:text-red-400' : ''}>{d}</div>)}
+               </div>
+               
+               <div className="grid grid-cols-7 gap-2">
+                 {(() => {
+                    const year = currentCalDate.getFullYear();
+                    const month = currentCalDate.getMonth();
+                    const daysInMonth = new Date(year, month + 1, 0).getDate();
+                    const firstDay = new Date(year, month, 1).getDay();
+                    
+                    const todayDate = new Date();
+                    const todayKey = `${todayDate.getFullYear()}-${String(todayDate.getMonth()+1).padStart(2,'0')}-${String(todayDate.getDate()).padStart(2,'0')}`;
+
+                    let cells = [];
+                    for(let i=0; i<firstDay; i++) cells.push(<div key={`blank-${i}`} className="h-8 md:h-10"/>);
+                    
+                    for(let i=1; i<=daysInMonth; i++) {
+                       const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                       const hasContent = !!calendarData[dateKey]?.topic;
+                       const isToday = dateKey === todayKey;
+                       const isPast = dateKey < todayKey;
+                       
+                       let btnClass = "h-8 md:h-10 rounded-xl flex items-center justify-center text-[13px] font-bold transition-all duration-200 border ";
+                       
+                       if (hasContent) {
+                          btnClass += "bg-rn-accent text-white border-rn-accent ";
+                          if (isToday) btnClass += "ring-2 ring-orange-300 dark:ring-orange-900 ring-offset-1 dark:ring-offset-[#121214] ";
+                          if (isPast) btnClass += "opacity-60 hover:opacity-100 ";
+                       } else if (isPast) {
+                          btnClass += "bg-transparent text-gray-300 dark:text-gray-600 border-transparent cursor-not-allowed";
+                       } else if (isToday) {
+                          btnClass += "bg-orange-100 dark:bg-orange-900/30 text-rn-accent border border-rn-accent";
+                       } else {
+                          btnClass += "hover:bg-gray-50 dark:hover:bg-white/10 text-gray-900 dark:text-white border-transparent hover:border-gray-200 dark:hover:border-white/20";
+                       }
+
+                       cells.push(
+                          <button 
+                            key={i} 
+                            disabled={isPast && !hasContent} 
+                            onClick={() => {
+                              setSelectedCalDate(dateKey);
+                              setIsScriptDatePickerOpen(false);
+                              
+                              let formattedScript = "";
+                              if (Array.isArray(activeScriptData?.script_sections)) {
+                                formattedScript = activeScriptData.script_sections.map((s: any) => `[${s.label}]\n${s.content}`).join('\n\n');
+                              } else {
+                                formattedScript = activeScriptData?.script_sections || "";
+                              }
+                              
+                              setAgendaForm({
+                                topic: activeScriptData?.judul || '',
+                                script: formattedScript,
+                                caption: activeScriptData?.caption || '',
+                                funnelStage: 'TOFU'
+                              });
+                              
+                              setTimeout(() => setIsAgendaFormOpen(true), 200);
+                            }}
+                            className={btnClass}
+                          >
+                            {i}
+                          </button>
+                       );
+                    }
+                    return cells;
+                 })()}
+               </div>
+            </div>
+            
+            <div className="p-4 border-t border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-xs text-gray-500 dark:text-gray-400 text-center">
+              Klik salah satu tanggal (hari ini atau ke depan) untuk menyimpan jadwal secara lokal.
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Agenda Form Modal in Script Builder */}
+      {isAgendaFormOpen && (
+        <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setIsAgendaFormOpen(false)}>
+          <div className="bg-white dark:bg-[#121214] rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="px-5 py-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between shrink-0 bg-gray-50 dark:bg-white/5">
+              <h3 className="font-bold text-gray-900 dark:text-white font-heading text-lg flex items-center gap-2">
+                <FileText className="text-rn-accent" size={18} /> 
+                Agenda: <span className="text-rn-accent">{selectedCalDate}</span>
+              </h3>
+              <button onClick={() => setIsAgendaFormOpen(false)} className="p-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+                <X size={20} strokeWidth={2.5}/>
+              </button>
+            </div>
+            
+            <div className="p-5 flex-1 overflow-y-auto custom-scrollbar space-y-5">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Tahap Funnel</label>
+                <div className="grid grid-cols-3 gap-2 md:gap-4">
+                  {[
+                    { val: 'TOFU', label: 'Top (Awareness)', color: 'bg-[#3b82f6]', border: 'border-[#3b82f6]', text: 'text-[#3b82f6]' },
+                    { val: 'MOFU', label: 'Middle (Consideration)', color: 'bg-[#eab308]', border: 'border-[#eab308]', text: 'text-[#eab308]' },
+                    { val: 'BOFU', label: 'Bottom (Conversion)', color: 'bg-[#f97316]', border: 'border-[#f97316]', text: 'text-[#f97316]' }
+                  ].map(f => (
+                    <button
+                      key={f.val}
+                      onClick={() => setAgendaForm({...agendaForm, funnelStage: f.val})}
+                      className={`py-2 px-2 md:px-4 rounded-xl text-xs md:text-sm font-bold border-2 transition-all flex flex-col items-center justify-center gap-1 ${
+                        agendaForm.funnelStage === f.val 
+                          ? `${f.border} ${f.color} text-white shadow-sm` 
+                          : `border-gray-200 dark:border-white/10 bg-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/20`
+                      }`}
+                    >
+                      <span className="font-heading tracking-widest">{f.val}</span>
+                      <span className="text-[9px] md:text-[10px] font-semibold opacity-80">{f.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Topik / Ide Konten</label>
+                <input 
+                  type="text" 
+                  value={agendaForm.topic}
+                  onChange={(e) => setAgendaForm({...agendaForm, topic: e.target.value})}
+                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none transition-all text-sm"
+                  placeholder="Contoh: 3 Rahasia Kenapa Gaji Rp 10 Juta..."
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Naskah / Skrip</label>
+                <textarea 
+                  value={agendaForm.script}
+                  onChange={(e) => setAgendaForm({...agendaForm, script: e.target.value})}
+                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none transition-all min-h-[250px] text-sm resize-none custom-scrollbar"
+                  placeholder="Isi skrip detail di sini..."
+                ></textarea>
+              </div>
+              
+              <div>
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 uppercase tracking-wider mb-2">Caption (Opsional)</label>
+                <textarea 
+                  value={agendaForm.caption}
+                  onChange={(e) => setAgendaForm({...agendaForm, caption: e.target.value})}
+                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none transition-all min-h-[80px] text-sm resize-none"
+                  placeholder="Tulis caption & hashtag..."
+                ></textarea>
+              </div>
+            </div>
+
+            <div className="p-5 border-t border-gray-200 dark:border-white/10 flex justify-end bg-gray-50 dark:bg-white/5 shrink-0">
+              <button 
+                onClick={handleSaveAgendaFromBuilder}
+                disabled={isSavingAgenda}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all text-sm shadow-sm ${savedAgendaSuccess ? 'bg-green-500 text-white border-green-500' : 'bg-rn-accent text-white border-rn-accent hover:bg-orange-600'} border disabled:opacity-70`}
+              >
+                {isSavingAgenda ? (
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                ) : savedAgendaSuccess ? (
+                  <Check size={16} strokeWidth={3} />
+                ) : (
+                  <Save size={16} />
+                )}
+                {isSavingAgenda ? "Menyimpan..." : savedAgendaSuccess ? "Tersimpan ke Kalender!" : "Simpan Agenda"}
+              </button>
             </div>
           </div>
         </div>

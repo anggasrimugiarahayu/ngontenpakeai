@@ -57,6 +57,8 @@ model User {
   masterBlueprints MasterBlueprint[]
   bioBuilders   BioBuilder[]
 
+    contentCalendars ContentCalendar[]
+
   @@map("users")
 }
 
@@ -137,4 +139,16 @@ model BioBuilder {
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("bio_builders")
+}
+
+model ContentCalendar {
+  id        String   @id @default(cuid())
+  userId    String   @map("user_id")
+  data      Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("content_calendars")
 }

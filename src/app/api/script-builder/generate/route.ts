@@ -1,18 +1,16 @@
-import { NextResponse } from "next/server";
-import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
-import { GoogleGenAI } from "@google/genai";
+import { NextResponse } from 'next/server';
+import { auth } from '@/auth';
+import { GoogleGenAI } from '@google/genai';
+import prisma from '@/lib/prisma';
 
 async function fetchKnowledgeBase() {
-  const [hooksRes, ctaRes, styleRes] = await Promise.all([
+  const [hooksRes, ctaRes] = await Promise.all([
     fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1785890379/hooks_yidiwm.txt', { next: { revalidate: 86400 } }),
-    fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1785833821/cta_ctv_h5kvdf.txt', { next: { revalidate: 86400 } }),
-    fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1786012414/writing_style_p4kjqk.txt', { next: { revalidate: 86400 } })
+    fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1785833821/cta_ctv_h5kvdf.txt', { next: { revalidate: 86400 } })
   ]);
   return {
     hooks: await hooksRes.text(),
-    cta: await ctaRes.text(),
-    style: await styleRes.text()
+    cta: await ctaRes.text()
   };
 }
 
@@ -24,7 +22,7 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { promptText, configContext, blueprintData, chatHistory, model } = body;
+    const { promptText, configContext, blueprintData, model } = body;
 
     const userRecord = await prisma.user.findUnique({
       where: { id: session.user.id },
@@ -40,9 +38,10 @@ export async function POST(req: Request) {
     const ai = new GoogleGenAI({ apiKey });
     const dbKnowledge = await fetchKnowledgeBase();
 
+    // 100% IDENTIK DENGAN REFERENSI LAMA
     const systemPrompt = `[MASTER PROMPT – RUANG NGONTEN AI]
 [KONDISI WAKTU SEKARANG]
-Saat ini adalah tahun ${new Date().getFullYear()}. JIKA ADA CONTOH DI DATABASE YANG MENGGUNAKAN TAHUN MASA LALU, WAJIB SESUAIKAN DENGAN TAHUN SAAT INI (${new Date().getFullYear()}) AGAR RELATE DENGAN KONDISI SEKARANG!
+Saat ini adalah tahun ${new Date().getFullYear()}. JIKA ADA CONTOH DI DATABASE YANG MENGGUNAKAN TAHUN MASA LALU (seperti 2024 atau 2025), WAJIB SESUAIKAN DENGAN TAHUN SAAT INI (${new Date().getFullYear()}) AGAR RELATE DENGAN KONDISI SEKARANG!
 
 [SOURCE OF TRUTH: MASTER BLUEPRINT]
 ${JSON.stringify(blueprintData, null, 2)}
@@ -54,8 +53,6 @@ PERHATIAN SANGAT KRITIKAL: Dokumen di bawah ini berisi ATURAN INTERNAL dan TEMPL
 ${dbKnowledge.hooks}
 2. CTA / CTV Database:
 ${dbKnowledge.cta}
-3. Writing Style Database (Jika Tersedia):
-${dbKnowledge.style}
 
 # ==========================================================
 # WRITING STYLE: HUMAN & AUTHENTIC VOICE
@@ -73,7 +70,7 @@ ${dbKnowledge.style}
 * Do not use overly formal or stiff language: Prefer simple, everyday wording. For example, use "bikin lebih bagus" instead of "mengoptimalkan", "jalankan" instead of "implementasi", and "penting" instead of "esensial".
 
 3. NATURAL WRITING ELEMENTS (MANDATORY):
-* Use the pronouns "Aku" dan "Kamu" atau "Saya" dan "Anda" sesuai tone. Dilarang keras menggunakan "Gue/Lu" untuk menjaga kesopanan.
+* Use the pronouns "Aku" and "Kamu". Do not use "Gue" or "Lu" to maintain the polite tone of the Feynman Muslim persona.
 * Include rhetorical questions to keep the reader engaged, such as "Kenapa? Karena...".
 * Use natural conversational transitions like "Nah...", "Terus...", "Oh iya...", or "Btw...".
 * Keep the closing simple. Avoid phrases like "Semoga bermanfaat." Instead, use casual endings such as "Itu aja sih.", "Gitu.", or "Simple."
@@ -95,9 +92,7 @@ ${dbKnowledge.style}
 [ ] Does the closing sound too formal? Keep it simple.
 
 [TASK SPESIFIK: SCRIPT BUILDER & ATURAN FORMAT]
-Berikut adalah preferensi format dari pengguna (Terapkan dengan ketat!):
 ${configContext}
-
 Jika format yang diminta adalah "Carousel", pecah naskah menjadi tepat slide yang diminta. DILARANG MENGGABUNGKAN SLIDE!
 Hasilkan TEPAT 3 (TIGA) variasi naskah final dengan kombinasi Hook, Framework, dan Angle yang BERBEDA-BEDA.
 PASTIKAN naskah padat, *punchy*, dan tidak terlalu panjang (bertele-tele) agar response JSON utuh dan tidak menyebabkan Error/Terpotong!
@@ -106,7 +101,7 @@ PASTIKAN naskah padat, *punchy*, dan tidak terlalu panjang (bertele-tele) agar r
 {
   "is_error": false,
   "tahap_funnel": "TOFU/MOFU/BOFU",
-  "analisis_strategi": "Awali dengan sapaan hangat yang natural (contoh: 'Hai! Aku sudah analisis permintaanmu untuk naskah konten.'). Setelah itu, jelaskan logikamu kenapa Framework ini dipilih. Buat simpel, to the point, dan tidak bertele-tele. Jika ada beberapa alasan, gunakan poin-poin (bullet points) yang singkat dan mudah dimengerti. Yang terpenting bahasanya tetap luwes layaknya obrolan santai dan tidak kaku seperti robot AI.",
+  "analisis_strategi": "Awali dengan sapaan hangat yang natural (contoh: 'Hai Papa! Aku sudah analisis permintaanmu untuk ide konten.'). Setelah itu, jelaskan logikamu kenapa Framework ini dipilih. Buat simpel, to the point, dan tidak bertele-tele. Jika ada beberapa alasan, gunakan poin-poin (bullet points) yang singkat dan mudah dimengerti. Yang terpenting bahasanya tetap luwes layaknya obrolan santai dan tidak kaku seperti robot AI.",
   "variations": [
     {
       "judul": "Judul/Angle Singkat Konten",
@@ -120,20 +115,13 @@ PASTIKAN naskah padat, *punchy*, dan tidak terlalu panjang (bertele-tele) agar r
         }
       ],
       "caption": "Teks caption final lengkap dengan hashtag..."
-    },
-    // Pastikan mengisi object array kedua (Variasi 2)
-    // Pastikan mengisi object array ketiga (Variasi 3)
+    }
   ]
 }
 `;
 
-    const userPrompt = `
-[HISTORI DISKUSI SEBELUMNYA]
-${chatHistory}
-
-[PROMPT PENGGUNA TERBARU]
-Topik/Instruksi: ${promptText}
-`;
+    // 100% IDENTIK DENGAN REFERENSI LAMA (Tanpa Histori Chat)
+    const userPrompt = `Ide Konten: ${promptText}`;
 
     const response = await ai.models.generateContent({
       model: model || "gemini-2.5-flash",
@@ -148,9 +136,58 @@ Topik/Instruksi: ${promptText}
     if (!response.text) {
       throw new Error("AI returned empty response");
     }
+    
+    // JSON Truncate Recovery Logic (Identik dari Referensi Lama)
+    let aiText = response.text;
+    let parsedData;
+    try {
+      const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+      const cleanJsonStr = jsonMatch ? jsonMatch[0] : aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      parsedData = JSON.parse(cleanJsonStr);
+    } catch(truncateErr) {
+      console.warn("Mencoba memperbaiki JSON yang terpotong...");
+      const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+      const cleanJsonStr = jsonMatch ? jsonMatch[0] : aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
+      const partialClean = cleanJsonStr.replace(/,\s*([\]}])/g, '$1'); 
+      try {
+        parsedData = JSON.parse(partialClean + (cleanJsonStr.endsWith('}') ? '' : ']}'));
+      } catch (fallbackErr) {
+        throw new Error("Failed to parse AI output. Try again with shorter request.");
+      }
+    }
 
-    const aiResult = JSON.parse(response.text);
-    return NextResponse.json(aiResult);
+    if (!parsedData.is_error) {
+      // Normalisasi & Sanitasi (Identik dari Referensi Lama)
+      if (!parsedData.variations && parsedData.script_sections) {
+        parsedData.variations = [parsedData];
+      } else if (!parsedData.variations || parsedData.variations.length === 0) {
+        parsedData.variations = [{
+          judul: promptText,
+          framework_digunakan: "Auto-Selected",
+          hook_digunakan: "Custom",
+          cta_digunakan: "Custom",
+          script_sections: [{ label: "Naskah Konten", content: aiText }],
+          caption: ""
+        }];
+      }
+
+      parsedData.variations.forEach((ver: any) => {
+        if (!ver.framework_digunakan) ver.framework_digunakan = "Storytelling";
+        if (!ver.hook_digunakan) ver.hook_digunakan = "Curiosity Hook";
+        if (!ver.cta_digunakan) ver.cta_digunakan = "Engagement CTA";
+
+        if (ver.script_sections) {
+          ver.script_sections.forEach((sec: any) => {
+            if (sec.content) sec.content = sec.content.replace(/\s*·\s*/g, ', ');
+          });
+        }
+        if (ver.caption) {
+          ver.caption = ver.caption.replace(/\s*·\s*/g, ', ');
+        }
+      });
+    }
+
+    return NextResponse.json(parsedData);
 
   } catch (error: any) {
     console.error("Script Builder Generation Error:", error);
