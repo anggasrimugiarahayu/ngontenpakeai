@@ -1,5 +1,6 @@
 "use client";
 
+import { useSessionState } from "@/hooks/useSessionState";
 import React, { useState } from "react";
 import GlobalChatLayout from "@/components/chat/GlobalChatLayout";
 import { useAIChat } from "@/hooks/useAIChat";
@@ -8,7 +9,7 @@ import { Copy, Check, Filter, Video, Lightbulb, MessageSquare, Search, UserCircl
 export default function IdeaRoomsClient({ blueprintId, blueprintData }: { blueprintId: string, blueprintData: any }) {
   const { fetchAI, isLoading, abort } = useAIChat();
   const [promptText, setPromptText] = useState("");
-  const [chatHistory, setChatHistory] = useState<any[]>([]);
+  const [chatHistory, setChatHistory] = useSessionState<any[]>("chat_idea_rooms", []);
   const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash");
 
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);

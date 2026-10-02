@@ -47,7 +47,17 @@ export default function ClientLayout({
     return () => window.removeEventListener('open-tools-drawer', handleOpen);
   }, []);
 
-  const isDashboard = pathname === '/ruang-ngonten' || pathname === '/ruang-ngonten/';
+  const isDashboard = pathname === '/ruang-ngonten' || pathname === '/ruang-ngonten/' || pathname.startsWith('/ruang-belajar') || pathname.startsWith('/ruang-growing');
+  const pathSegments = pathname.split('/').filter(Boolean);
+  const backHref = pathSegments.length > 1 ? '/' + pathSegments[0] : '/';
+
+
+  const GLOBAL_NAV = [
+    { label: "Ruang Belajar", href: "/ruang-belajar", icon: BookOpen },
+    { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate },
+    { label: "Ruang Growing", href: "/ruang-growing", icon: RefreshCw },
+  ];
+
   
   const mappedTools = TOOLS.map(tool => {
     const dbMatch = dbFeatures.find(db => db.name === tool.label);
@@ -64,9 +74,7 @@ export default function ClientLayout({
         FLOATING SIDEBAR (DESKTOP)
         Only visible if NOT on the main dashboard page
       */}
-      {!isDashboard && (
-        <aside 
-          className={`hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-[60] bg-white/90 dark:bg-[#121214]/90 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-2xl rounded-2xl flex-col transition-all duration-300 ease-in-out ${
+      <aside className={`hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-[60] bg-white/90 dark:bg-[#121214]/90 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-2xl rounded-2xl flex-col transition-all duration-300 ease-in-out ${
             isExpanded ? 'w-[260px]' : 'w-[64px]'
           } overflow-hidden`}
         >
@@ -83,10 +91,15 @@ export default function ClientLayout({
 
           {/* Tools Icons */}
           <div className="flex flex-col py-2 px-2 space-y-1 overflow-y-auto custom-scrollbar max-h-[calc(100vh-140px)]">
-            {mappedTools.map((tool) => {
+            {(isDashboard ? GLOBAL_NAV : mappedTools).map((tool) => {
               const Icon = tool.icon;
-              const isActive = pathname.startsWith(tool.href);
-              const isLocked = (!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || (tool.isProOnly && !isPro);
+              let isActive = false;
+              if (isDashboard) {
+                isActive = pathname === tool.href || (tool.href !== '/' && pathname.startsWith(tool.href));
+              } else {
+                isActive = pathname.startsWith(tool.href);
+              }
+              const isLocked = !isDashboard && ((!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || ((tool as any).isProOnly && !isPro));
               
               if (isLocked) {
                 return (
@@ -107,7 +120,7 @@ export default function ClientLayout({
               }
               
               return (
-                <Link 
+                <Link prefetch={true}
                   key={tool.href}
                   href={tool.href}
                   title={!isExpanded ? tool.label : undefined}
@@ -128,28 +141,26 @@ export default function ClientLayout({
 
           {/* BACK TO DASHBOARD BUTTON (BOTTOM) */}
           <div className="p-2 border-t border-gray-100 dark:border-white/5 mt-auto">
-            <Link 
-              href="/ruang-ngonten"
-              title={!isExpanded ? "Kembali ke Dashboard" : undefined}
+            <Link prefetch={true}
+              href={backHref}
+              title={!isExpanded ? "Back" : undefined}
               className={`flex items-center rounded-xl transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-500/10 dark:hover:text-orange-400 ${
                 isExpanded ? 'px-3 py-3 gap-3' : 'justify-center w-10 h-10 mx-auto'
               }`}
             >
               <LayoutGrid size={isExpanded ? 18 : 20} className="shrink-0" />
               {isExpanded && (
-                <span className="text-sm font-medium whitespace-nowrap truncate">Dashboard</span>
+                <span className="text-sm font-medium whitespace-nowrap truncate">Back</span>
               )}
             </Link>
           </div>
         </aside>
-      )}
 
       {/* 
         MOBILE DRAWER
         Visible only on mobile, toggleable via FAB or header button
       */}
-      {!isDashboard && (
-        <>
+      <>
           {/* Overlay */}
           {isOpen && (
             <div 
@@ -165,7 +176,7 @@ export default function ClientLayout({
             }`}
           >
             <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/5">
-              <span className="font-bold text-gray-900 dark:text-white">Menu Tools</span>
+              <span className="font-bold text-gray-900 dark:text-white">{isDashboard ? 'Navigasi' : 'Menu Tools'}</span>
               <button 
                 onClick={() => setIsOpen(false)}
                 className="p-2 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300"
@@ -176,10 +187,15 @@ export default function ClientLayout({
             <div className="flex flex-col py-4 px-3 overflow-y-auto space-y-1">
 
 
-              {mappedTools.map((tool) => {
+              {(isDashboard ? GLOBAL_NAV : mappedTools).map((tool) => {
                 const Icon = tool.icon;
-                const isActive = pathname.startsWith(tool.href);
-                const isLocked = (!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || (tool.isProOnly && !isPro);
+                let isActive = false;
+                if (isDashboard) {
+                  isActive = pathname === tool.href || (tool.href !== '/' && pathname.startsWith(tool.href));
+                } else {
+                  isActive = pathname.startsWith(tool.href);
+                }
+                const isLocked = !isDashboard && ((!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || ((tool as any).isProOnly && !isPro));
                 
                 if (isLocked) {
                   return (
@@ -197,8 +213,8 @@ export default function ClientLayout({
                 }
 
                 return (
-                  <Link 
-                    key={tool.href}
+                  <Link prefetch={true}
+                  key={tool.href}
                     href={tool.href}
                     className={`flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors ${
                       isActive 
@@ -215,21 +231,20 @@ export default function ClientLayout({
 
             {/* BACK TO DASHBOARD (BOTTOM) */}
             <div className="p-4 border-t border-gray-100 dark:border-white/5 mt-auto">
-              <Link 
-                href="/ruang-ngonten"
+              <Link prefetch={true}
+                href={backHref}
                 className="flex items-center gap-3 px-3 py-3 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/5 transition-colors hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-500/10 dark:hover:text-orange-400"
               >
                 <LayoutGrid size={18} />
-                <span className="text-sm">Dashboard</span>
+                <span className="text-sm">Back</span>
               </Link>
-            </div>
-          </aside>
+          </div>
+        </aside>
         </>
-      )}
 
       {/* Main Content Area */}
       {/* We apply left padding on desktop if the floating sidebar is present, to prevent content from hiding behind it */}
-      <div className={`flex-1 w-full flex flex-col transition-all duration-300 ${!isDashboard ? 'md:pl-[88px]' : ''}`}>
+      <div className={`flex-1 w-full flex flex-col transition-all duration-300`}>
         
 
 

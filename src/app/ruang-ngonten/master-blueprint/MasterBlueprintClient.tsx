@@ -245,7 +245,10 @@ export default function MasterBlueprintClient({ initialData, nicheReferences }: 
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: blueprintId, aiResult: canvasData }),
         });
-        if (res.ok) showToast("Perubahan berhasil disimpan ke database!");
+        if (res.ok) {
+          showToast("Perubahan berhasil disimpan ke database!");
+          router.refresh();
+        }
         else showToast("Gagal menyimpan perubahan.", "error");
       } else {
         // Create new
@@ -258,6 +261,7 @@ export default function MasterBlueprintClient({ initialData, nicheReferences }: 
           const data = await res.json();
           if (data.id) setBlueprintId(data.id);
           showToast("Data baru berhasil disimpan ke database!");
+          router.refresh();
         } else {
           showToast("Gagal menyimpan data baru.", "error");
         }

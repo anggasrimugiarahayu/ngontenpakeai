@@ -3,6 +3,7 @@
 import { useAIChat } from "@/hooks/useAIChat";
 
 import GlobalChatLayout, { ChatMessage } from "@/components/chat/GlobalChatLayout";
+import { useSessionState } from "@/hooks/useSessionState";
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -50,7 +51,7 @@ const AI_MODELS = [
 export default function CarouselBuilderClient({ blueprintData }: { blueprintData: any }) {
   const [carouselPromptText, setCarouselPromptText] = useState("");
   const [interimText, setInterimText] = useState("");
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_carousel_builder", []);
   const { fetchAI, isLoading, abort } = useAIChat();
   
   const [isScriptMenuOpen, setIsScriptMenuOpen] = useState(false);

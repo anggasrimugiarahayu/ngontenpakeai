@@ -1,5 +1,6 @@
 "use client";
 
+import { useSessionState } from "@/hooks/useSessionState";
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Lightbulb, Target, CheckCircle2, Copy, AlertCircle, BookOpen, Send
@@ -11,7 +12,7 @@ import { useAIChat } from '@/hooks/useAIChat';
 export default function EbookBuilderClient({ blueprintData = {} }: { blueprintData?: any }) {
   const { fetchAI, isLoading, setIsLoading, abort } = useAIChat();
   
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_ebook_builder", []);
   const [inputText, setInputText] = useState("");
   const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash");
   

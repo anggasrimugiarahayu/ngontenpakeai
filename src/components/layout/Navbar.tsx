@@ -65,7 +65,7 @@ export function Navbar({ followerCount = "144K", memberCount = "0" }: NavbarProp
   }, []);
 
   const isDark = mounted ? theme === "dark" : true;
-  const isWorkspace = pathname?.startsWith("/ruang-ngonten");
+  const isWorkspace = pathname?.startsWith("/ruang-ngonten") || pathname?.startsWith("/ruang-belajar") || pathname?.startsWith("/ruang-growing");
   
   // For now, mock the subscription status
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
@@ -74,7 +74,7 @@ export function Navbar({ followerCount = "144K", memberCount = "0" }: NavbarProp
   return (
     <nav className="fixed w-full top-0 z-50 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors duration-300 backdrop-blur-md bg-gray-50/80 dark:bg-[#0f0f11]/80">
       <div className="flex items-center shrink-0 gap-3">
-        {isWorkspace && pathname !== "/ruang-ngonten" && pathname !== "/ruang-ngonten/" && (
+        {isWorkspace && (
           <button 
             onClick={() => typeof window !== 'undefined' && window.dispatchEvent(new CustomEvent('open-tools-drawer'))}
             className="md:hidden p-1 -ml-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"

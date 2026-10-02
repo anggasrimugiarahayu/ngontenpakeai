@@ -2,6 +2,7 @@
 
 import GlobalChatLayout, { ChatMessage } from "@/components/chat/GlobalChatLayout";
 import { useAIChat } from "@/hooks/useAIChat";
+import { useSessionState } from "@/hooks/useSessionState";
 import React, { useState, useEffect, useRef } from "react";
 import { Calendar, Check, Copy, MessageSquare, Save, Square, X, CheckCircle2, ChevronLeft, ChevronRight, FileText, Plus, ChevronDown } from "lucide-react";
 
@@ -31,7 +32,7 @@ const AI_MODELS = [
 
 export default function ScriptBuilderClient({ blueprintData }: { blueprintData: any }) {
   const { fetchAI, isLoading, abort } = useAIChat();
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_script_builder", []);
   const [scriptPromptText, setScriptPromptText] = useState("");
   const [selectedModel, setSelectedModel] = useState("gemini-3.7-flash");
   
