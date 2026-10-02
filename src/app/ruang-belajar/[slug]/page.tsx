@@ -79,7 +79,9 @@ export default async function ReadEbookPage({ params }: { params: { slug: string
             productId={ebook.id} 
             initialIsFavorite={isFavorite} 
             canReview={true} 
-            userReview={userReview} 
+            userReview={userReview}
+            pdfUrl={ebook.fileUrl}
+            isDownloadable={ebook.isDownloadable} 
           />
         </div>
 
@@ -136,7 +138,7 @@ export default async function ReadEbookPage({ params }: { params: { slug: string
                       </div>
                     </div>
                     
-                    <EbookActions productId={ebook.id} initialIsFavorite={isFavorite} />
+                    <EbookActions productId={ebook.id} initialIsFavorite={isFavorite} pdfUrl={!isLocked ? ebook.fileUrl : null} isDownloadable={ebook.isDownloadable} />
                  </div>
                </div>
 

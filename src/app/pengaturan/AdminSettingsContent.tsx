@@ -486,6 +486,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 coverUrl3: uploadedUrls["coverUrl3Input"] || formData.get("coverUrl3"),
                 fileUrl: formData.get("fileUrl"),
                 isProOnly: formData.get("isProOnly") === "on",
+                isDownloadable: formData.get("isDownloadable") === "on",
               });
               setLoading(false);
               setShowAddProduct(false);
@@ -589,6 +590,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 coverUrl3: uploadedUrls["editCoverUrl3Input"] || formData.get("coverUrl3"),
                 fileUrl: formData.get("fileUrl"),
                 isProOnly: formData.get("isProOnly") === "on",
+                isDownloadable: formData.get("isDownloadable") === "on",
               });
               setLoading(false);
               setEditingProduct(null);

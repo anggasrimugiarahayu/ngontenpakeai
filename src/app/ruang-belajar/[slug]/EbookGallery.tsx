@@ -68,7 +68,7 @@ export default function EbookGallery({ title, images }: EbookGalleryProps) {
        </div>
        
        {/* Thumbnails (Selalu Muncul) */}
-       <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide items-center justify-start px-1">
+       <div className="flex gap-3 overflow-x-auto py-2 scrollbar-hide items-center justify-start px-1">
          {validImages.map((img, idx) => (
            <button 
              key={idx}

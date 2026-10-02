@@ -1,19 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Share2, Star, X } from "lucide-react";
+import { Heart, Share2, Star, X, Download } from "lucide-react";
 import { toggleFavorite, addReview } from "../actions";
 
 export default function EbookActions({ 
   productId, 
   initialIsFavorite,
   canReview = false,
-  userReview = null
+  userReview = null,
+  pdfUrl = null,
+  isDownloadable = false
 }: { 
   productId: string, 
   initialIsFavorite: boolean,
   canReview?: boolean,
-  userReview?: any
+  userReview?: any,
+  pdfUrl?: string | null,
+  isDownloadable?: boolean
 }) {
   const [isFav, setIsFav] = useState(initialIsFavorite);
   const [isSubmittingFav, setIsSubmittingFav] = useState(false);
@@ -76,6 +80,17 @@ export default function EbookActions({
   return (
     <>
       <div className="flex items-center gap-3 md:gap-4">
+        {isDownloadable && pdfUrl && (
+          <a 
+            href={pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
+          >
+            <Download className="w-4 h-4" /> 
+            <span className="hidden sm:inline">Download</span>
+          </a>
+        )}
         {canReview && (
           <button 
             onClick={() => setShowModal(true)}

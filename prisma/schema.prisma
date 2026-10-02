@@ -211,6 +211,7 @@ model DigitalProduct {
   coverUrl3   String?
   fileUrl     String?
   isProOnly   Boolean         @default(false)
+  isDownloadable Boolean      @default(false)
   isActive    Boolean         @default(true)
   createdAt   DateTime        @default(now()) @map("created_at")
   updatedAt   DateTime        @updatedAt @map("updated_at")
