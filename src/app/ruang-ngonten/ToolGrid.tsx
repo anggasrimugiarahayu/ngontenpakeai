@@ -1,6 +1,7 @@
 "use client";
 
 import { 
+  Images,
   Compass, 
   UserCircle, 
   Lightbulb, 
@@ -45,7 +46,7 @@ const features = [
     title: "Carousel Prompt Builder",
     description: "Desain alur cerita slide carousel yang edukatif, rapi, dan mudah dipahami.",
     points: ["Cover Slide", "Core Value", "Closing Slide"],
-    icon: Copy,
+    icon: Images,
     href: "/ruang-ngonten/carousel-builder"
   },
   {
@@ -71,11 +72,22 @@ const features = [
   }
 ];
 
-export default function ToolGrid({ hasBlueprint }: { hasBlueprint: boolean }) {
+export default function ToolGrid({ hasBlueprint, dbFeatures = [], isPro = false }: { hasBlueprint: boolean, dbFeatures?: any[], isPro?: boolean }) {
+  
+  // Map hardcoded features with DB features
+  const mappedFeatures = features.map(f => {
+    const dbMatch = dbFeatures.find(db => db.name === f.title);
+    return {
+      ...f,
+      isActive: dbMatch ? dbMatch.isActive : true,
+      isProOnly: dbMatch ? dbMatch.isProOnly : false
+    };
+  });
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
-      {features.map((feature, idx) => (
-        <ToolCard key={idx} feature={feature} hasBlueprint={hasBlueprint} />
+      {mappedFeatures.filter(f => f.isActive).map((feature, idx) => (
+        <ToolCard key={idx} feature={feature} hasBlueprint={hasBlueprint} isPro={isPro} />
       ))}
     </div>
   );

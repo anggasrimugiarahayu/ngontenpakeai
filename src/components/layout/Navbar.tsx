@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { User, BookOpen, Sun, Moon, LogOut } from "lucide-react";
+import { User, BookOpen, Sun, Moon, LogOut, Menu } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
@@ -65,13 +65,23 @@ export function Navbar({ followerCount = "144K", memberCount = "0" }: NavbarProp
   }, []);
 
   const isDark = mounted ? theme === "dark" : true;
+  const isWorkspace = pathname?.startsWith("/ruang-ngonten");
   
   // For now, mock the subscription status
-  const isPro = false; 
+  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
+  const isPro = isAdmin || false; // Later add actual Pro check for normal users 
 
   return (
     <nav className="fixed w-full top-0 z-50 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors duration-300 backdrop-blur-md bg-gray-50/80 dark:bg-[#0f0f11]/80">
-      <div className="flex items-center shrink-0">
+      <div className="flex items-center shrink-0 gap-3">
+        {isWorkspace && pathname !== "/ruang-ngonten" && pathname !== "/ruang-ngonten/" && (
+          <button 
+            onClick={() => typeof window !== 'undefined' && window.dispatchEvent(new CustomEvent('open-tools-drawer'))}
+            className="md:hidden p-1 -ml-1 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors"
+          >
+            <Menu size={22} />
+          </button>
+        )}
         <Link
           href="/"
           className="flex items-center gap-1.5 sm:gap-2.5 group"
@@ -128,7 +138,7 @@ export function Navbar({ followerCount = "144K", memberCount = "0" }: NavbarProp
             {/* Badge Free / Pro */}
             <div className={`px-2 py-1 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-sm font-bold shrink-0 transition-colors ${
               isPro 
-                ? "bg-purple-500/10 text-purple-500" 
+                ? "bg-orange-500/10 text-orange-500" 
                 : "bg-gray-200 dark:bg-[#27272a] text-gray-700 dark:text-gray-300"
             }`}>
               {isPro ? "PRO" : "Free"}
@@ -176,6 +186,7 @@ export function Navbar({ followerCount = "144K", memberCount = "0" }: NavbarProp
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{session.user?.email}</p>
                 </div>
                 <div className="py-1">
+                  
                   <Link href="/pengaturan" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
                     Pengaturan
                   </Link>

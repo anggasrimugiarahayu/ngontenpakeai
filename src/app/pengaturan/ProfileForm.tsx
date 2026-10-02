@@ -56,9 +56,9 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             </div>
           )}
         </div>
-        <div>
-          <div className="font-bold text-gray-900 dark:text-white">{user?.name || "Tanpa Nama"}</div>
-          <div className="text-sm text-gray-500 dark:text-gray-400">{user?.email || "Tidak ada email"}</div>
+        <div className="min-w-0 flex-1">
+          <div className="font-bold text-gray-900 dark:text-white truncate" title={user?.name || ""}>{user?.name || "Tanpa Nama"}</div>
+          <div className="text-sm text-gray-500 dark:text-gray-400 truncate" title={user?.email || ""}>{user?.email || "Tidak ada email"}</div>
         </div>
       </div>
 

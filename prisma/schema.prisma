@@ -8,26 +8,20 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
-// -----------------------------------------------------------------------------
-// STANDAR NEXTAUTH (Auth.js) SCHEMA
-// Jangan merubah struktur 4 tabel di bawah ini karena dibutuhkan oleh Auth.js
-// -----------------------------------------------------------------------------
-
 model Account {
-  id                 String  @id @default(cuid())
-  userId             String  @map("user_id")
-  type               String
-  provider           String
-  providerAccountId  String  @map("provider_account_id")
-  refresh_token      String? @db.Text
-  access_token       String? @db.Text
-  expires_at         Int?
-  token_type         String?
-  scope              String?
-  id_token           String? @db.Text
-  session_state      String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -44,20 +38,20 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
-  emailVerified DateTime? @map("email_verified")
-  image         String?
-  googleApiKey  String?   @map("google_api_key")
-  
-  accounts      Account[]
-  sessions      Session[]
-  usages        Usage[]
+  id               String            @id @default(cuid())
+  name             String?
+  email            String?           @unique
+  emailVerified    DateTime?         @map("email_verified")
+  image            String?
+  googleApiKey     String?           @map("google_api_key")
+  accounts         Account[]
+  bioBuilders      BioBuilder[]
+  contentCalendars ContentCalendar[]
   masterBlueprints MasterBlueprint[]
-  bioBuilders   BioBuilder[]
-
-    contentCalendars ContentCalendar[]
+  sessions         Session[]
+  usages           Usage[]
+  favorites        Favorite[]
+  reviews          Review[]
 
   @@map("users")
 }
@@ -71,17 +65,13 @@ model VerificationToken {
   @@map("verification_tokens")
 }
 
-// -----------------------------------------------------------------------------
-// APP MODELS
-// -----------------------------------------------------------------------------
-
 model Feature {
   id          String   @id @default(cuid())
   name        String   @unique
   description String?
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
-
+  isProOnly   Boolean  @default(false) @map("is_pro_only")
   usages      Usage[]
 
   @@map("features")
@@ -93,9 +83,8 @@ model Usage {
   featureId String   @map("feature_id")
   count     Int      @default(0)
   updatedAt DateTime @updatedAt
-
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   feature   Feature  @relation(fields: [featureId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, featureId])
   @@map("usages")
@@ -109,7 +98,6 @@ model MasterBlueprint {
   aiResult  Json     @map("ai_result")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("master_blueprints")
@@ -117,10 +105,10 @@ model MasterBlueprint {
 
 model NicheReference {
   id        String   @id @default(cuid())
-  nama      String   @map("nama")
-  data      Json     @map("data")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
+  data      Json     @map("data")
+  nama      String   @map("nama")
 
   @@map("niche_references")
 }
@@ -130,12 +118,11 @@ model BioBuilder {
   userId      String   @map("user_id")
   username    String?
   profileName String?
-  bioText     String?  @db.Text
-  avatarUrl   String?  @db.Text
+  bioText     String?
+  avatarUrl   String?
   suggestions Json?
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
-
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("bio_builders")
@@ -147,8 +134,117 @@ model ContentCalendar {
   data      Json     @default("{}")
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("content_calendars")
+}
+
+model AiModel {
+  id        String   @id @default(cuid())
+  modelId   String   @unique @map("model_id")
+  name      String
+  provider  String   @default("google")
+  isActive  Boolean  @default(true)
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("ai_models")
+}
+
+model CarouselStyleArt {
+  id              String   @id @default(cuid())
+  kode            String   @unique
+  namaLabel       String   @map("nama_label")
+  deskripsiPrompt String   @map("deskripsi_prompt")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("carousel_style_arts")
+}
+
+model CarouselFont {
+  id              String   @id @default(cuid())
+  kode            String   @unique
+  namaLabel       String   @map("nama_label")
+  deskripsiPrompt String   @map("deskripsi_prompt")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  @@map("carousel_fonts")
+}
+
+model AppSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("app_settings")
+}
+
+model DigitalCategory {
+  id          String           @id @default(cuid())
+  name        String
+  description String?
+  slug        String           @unique
+  icon        String?
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  products    DigitalProduct[]
+
+  @@map("digital_categories")
+}
+
+model DigitalProduct {
+  id          String          @id @default(cuid())
+  categoryId  String          @map("category_id")
+  title       String
+  description String?
+  slug        String          @unique
+  coverUrl    String?
+  coverUrl2   String?
+  coverUrl3   String?
+  fileUrl     String?
+  isProOnly   Boolean         @default(false)
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now()) @map("created_at")
+  updatedAt   DateTime        @updatedAt @map("updated_at")
+  category    DigitalCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  favorites   Favorite[]
+  reviews     Review[]
+
+  @@map("digital_products")
+}
+
+model Favorite {
+  id               String         @id @default(cuid())
+  userId           String         @map("user_id")
+  digitalProductId String         @map("digital_product_id")
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, digitalProductId])
+  @@map("favorites")
+}
+
+model Review {
+  id               String         @id @default(cuid())
+  userId           String         @map("user_id")
+  digitalProductId String         @map("digital_product_id")
+  rating           Int            @default(5)
+  comment          String?        @db.Text
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, digitalProductId])
+  @@map("reviews")
 }

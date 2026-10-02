@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useState } from "react";
 import { AlertCircle } from "lucide-react";
 
-export default function ToolCard({ feature, hasBlueprint}: { feature: any; hasBlueprint: boolean; }) {
+export default function ToolCard({ feature, hasBlueprint, isPro = false }: { feature: any; hasBlueprint: boolean; isPro?: boolean; }) {
   const [showError, setShowError] = useState(false);
   
   const Icon = feature.icon;
   const isMasterBlueprint = feature.href === "/ruang-ngonten/master-blueprint";
-  const canAccess = isMasterBlueprint || hasBlueprint;
+  const isProOnly = feature.isProOnly;
+  const isActive = feature.isActive;
+  const canAccess = (isMasterBlueprint || hasBlueprint) && isActive && (!isProOnly || isPro);
 
   const handleClick = (e: React.MouseEvent) => {
     if (!canAccess) {
@@ -31,7 +33,7 @@ export default function ToolCard({ feature, hasBlueprint}: { feature: any; hasBl
           <div className="absolute inset-0 bg-red-500/10 backdrop-blur-[1px] flex flex-col items-center justify-center z-50 animate-in fade-in duration-200">
             <div className="bg-red-50 dark:bg-red-950/80 text-red-600 dark:text-red-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-sm border border-red-200 dark:border-red-900">
               <AlertCircle className="w-4 h-4" />
-              Buat Master Blueprint Dulu!
+              {!isActive ? "Sedang Maintenance" : (isProOnly && !isPro ? "Fitur Khusus Pengguna PRO" : "Buat Master Blueprint Dulu!")}
             </div>
           </div>
         )}
@@ -41,9 +43,18 @@ export default function ToolCard({ feature, hasBlueprint}: { feature: any; hasBl
           <div className={`w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center transition-colors ${canAccess ? 'text-gray-600 dark:text-gray-400 group-hover:bg-rn-accent/10 group-hover:text-rn-accent' : 'text-gray-500'}`}>
             <Icon className="w-5 h-5" />
           </div>
-          <h3 className={`font-bold text-base leading-tight transition-colors ${canAccess ? 'text-gray-900 dark:text-white group-hover:text-rn-accent' : 'text-gray-900 dark:text-white'}`}>
+          <div className="flex flex-col gap-1 w-full"><div className="flex items-start justify-between w-full">
+            <h3 className={`font-bold text-base leading-tight transition-colors ${canAccess ? 'text-gray-900 dark:text-white group-hover:text-rn-accent' : 'text-gray-900 dark:text-white'}`}>
             {feature.title}
-          </h3>
+            </h3>
+            <div className="flex items-center gap-1">
+              {isProOnly ? (
+                <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${!isPro ? 'bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400' : 'bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400'}`}>PRO</span>
+              ) : (
+                <span className="text-[9px] font-bold bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded">FREE</span>
+              )}
+            </div>
+          </div></div>
         </div>
         
         {/* Description */}

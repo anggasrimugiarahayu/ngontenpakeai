@@ -1,3 +1,5 @@
+import { getDefaultAiModel } from "@/lib/get-ai-model";
+import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { GoogleGenAI } from '@google/genai';
@@ -29,7 +31,7 @@ export async function POST(req: Request) {
       select: { googleApiKey: true }
     });
 
-    const apiKey = userRecord?.googleApiKey || process.env.GEMINI_API_KEY;
+    const apiKey = await getApiKey(userRecord?.googleApiKey);
 
     if (!apiKey) {
       return NextResponse.json({ error: "Gemini API Key tidak ditemukan baik dari pengguna maupun sistem." }, { status: 400 });
@@ -101,7 +103,7 @@ PASTIKAN naskah padat, *punchy*, dan tidak terlalu panjang (bertele-tele) agar r
 {
   "is_error": false,
   "tahap_funnel": "TOFU/MOFU/BOFU",
-  "analisis_strategi": "Awali dengan sapaan hangat yang natural (contoh: 'Hai Papa! Aku sudah analisis permintaanmu untuk ide konten.'). Setelah itu, jelaskan logikamu kenapa Framework ini dipilih. Buat simpel, to the point, dan tidak bertele-tele. Jika ada beberapa alasan, gunakan poin-poin (bullet points) yang singkat dan mudah dimengerti. Yang terpenting bahasanya tetap luwes layaknya obrolan santai dan tidak kaku seperti robot AI.",
+  "analisis_strategi": "Awali dengan sapaan hangat yang natural (contoh: 'Halo! Aku sudah menganalisis permintaanmu untuk ide konten.'). Setelah itu, jelaskan logikamu kenapa Framework ini dipilih. Buat simpel, to the point, dan tidak bertele-tele. Jika ada beberapa alasan, gunakan poin-poin (bullet points) yang singkat dan mudah dimengerti. Yang terpenting bahasanya tetap luwes layaknya obrolan santai dan tidak kaku seperti robot AI.",
   "variations": [
     {
       "judul": "Judul/Angle Singkat Konten",
@@ -124,7 +126,7 @@ PASTIKAN naskah padat, *punchy*, dan tidak terlalu panjang (bertele-tele) agar r
     const userPrompt = `Ide Konten: ${promptText}`;
 
     const response = await ai.models.generateContent({
-      model: model || "gemini-2.5-flash",
+      model: model || await getDefaultAiModel("gemini-2.5-flash"),
       contents: userPrompt,
       config: {
         systemInstruction: systemPrompt,

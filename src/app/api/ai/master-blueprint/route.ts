@@ -1,3 +1,5 @@
+import { getDefaultAiModel } from "@/lib/get-ai-model";
+import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { GoogleGenAI } from "@google/genai";
@@ -18,7 +20,7 @@ export async function POST(req: Request) {
       select: { googleApiKey: true }
     });
 
-    const apiKey = dbUser?.googleApiKey || process.env.GEMINI_API_KEY;
+    const apiKey = await getApiKey(dbUser?.googleApiKey);
     if (!apiKey) {
       return NextResponse.json({ error: "API Key tidak ditemukan. Silakan tambahkan di Pengaturan." }, { status: 400 });
     }
@@ -124,7 +126,7 @@ Platform Dipilih: ${formData.platform ? (Array.isArray(formData.platform) ? form
 `;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
+      model: await getDefaultAiModel("gemini-2.5-flash"),
       contents: userPrompt,
       config: {
         systemInstruction,

@@ -1,3 +1,5 @@
+import { getDefaultAiModel } from "@/lib/get-ai-model";
+import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
@@ -36,7 +38,7 @@ export async function POST(req: Request) {
       select: { googleApiKey: true }
     });
 
-    const apiKey = userRecord?.googleApiKey || process.env.GEMINI_API_KEY;
+    const apiKey = await getApiKey(userRecord?.googleApiKey);
 
     if (!apiKey) {
       return NextResponse.json({ error: "Gemini API Key tidak ditemukan baik dari pengguna maupun sistem." }, { status: 400 });
@@ -106,16 +108,31 @@ Jika teks input tidak bermakna (contoh: "asdas"): Balas HANYA dengan JSON error:
 2. PASTIKAN key "tahap_funnel" TERISI.
 `;
 
+    // TRANSLATION LAYER
+    let actualPrompt = promptText;
+    
+    if (promptText === 'Ide Konten Funneling') {
+      actualPrompt = "Tolong buatkan strategi Ide Konten Funneling secara komprehensif berdasarkan analisa mendalam KESELURUHAN Master Blueprint saya. Berikan total 30 ide konten yang dibagi menjadi 10 TOFU, 10 MOFU, dan 10 BOFU. INGAT: Topik/Pembahasan KESELURUHAN ide WAJIB 100% diambil dari Niche Blueprint saya.";
+    } else if (promptText === 'Riset Topik & Trend') {
+      actualPrompt = "Gunakan akses pencarian internet (Search Grounding) untuk meriset topik, keresahan, dan tren terbaru saat ini (Tahun 2026) yang sedang viral/ramai dibicarakan KHUSUS di dalam Niche/Topik Master Blueprint saya. Setelah itu, buatkan ide konten berdasarkan tren tersebut. INGAT HARGA MATI: Topik idenya adalah Niche saya, BUKAN membuat konten edukasi tentang 'bagaimana cara meriset tren'!";
+    } else if (promptText === 'Ide Evergreen') {
+      actualPrompt = "Buatkan ide konten yang bersifat Evergreen (solusi untuk masalah mendasar/fundamental yang selalu dicari orang kapanpun, tidak lekang oleh waktu) KHUSUS untuk Niche/Topik Master Blueprint saya. INGAT HARGA MATI: Topik idenya adalah Niche saya, BUKAN membuat konten edukasi tentang 'apa itu konten evergreen'!";
+    } else if (promptText === 'Peluang Konten Viral') {
+      actualPrompt = "Berikan ide konten dengan potensi viral tinggi (bisa berupa kontroversi ringan, opini *unpopular/contrarian*, atau keresahan massal yang sangat *relatable*) KHUSUS untuk Niche/Topik Master Blueprint saya.";
+    } else if (promptText === 'Eksplor Angle') {
+      actualPrompt = "Pilih satu masalah/topik utama dari Master Blueprint saya, lalu berikan ide konten dengan sudut pandang (*angle*) yang sangat *out-of-the-box*, *contrarian*, atau tidak biasa dipikirkan oleh kompetitor di niche saya.";
+    }
+
     const userPrompt = `
 [HISTORI DISKUSI SEBELUMNYA]
 ${chatHistory}
 
 [PROMPT PENGGUNA TERBARU]
-${promptText}
+${actualPrompt}
 `;
 
     const response = await ai.models.generateContent({
-      model: model || "gemini-2.5-flash",
+      model: model || await getDefaultAiModel("gemini-2.5-flash"),
       contents: userPrompt,
       config: {
         systemInstruction: systemPrompt,
