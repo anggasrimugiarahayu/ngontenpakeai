@@ -4,6 +4,18 @@ import { useState } from "react";
 import { Heart, Share2, Star, X, Download } from "lucide-react";
 import { toggleFavorite, addReview } from "../actions";
 
+
+function getDirectDownloadUrl(url: string | null | undefined) {
+  if (!url) return "";
+  if (url.includes("drive.google.com/file/d/")) {
+    const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    if (match && match[1]) {
+      return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+    }
+  }
+  return url;
+}
+
 export default function EbookActions({ 
   productId, 
   initialIsFavorite,
@@ -82,7 +94,7 @@ export default function EbookActions({
       <div className="flex items-center gap-3 md:gap-4">
         {isDownloadable && pdfUrl && (
           <a 
-            href={pdfUrl}
+            href={getDirectDownloadUrl(pdfUrl)} download
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-1.5 text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
