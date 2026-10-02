@@ -76,7 +76,13 @@ export async function createProduct(data: any) {
       data.slug = `${data.slug}-${Math.random().toString(36).substring(2, 6)}`;
     }
   }
-  await prisma.digitalProduct.create({ data });
+  const { categoryId, ...restData } = data;
+  await prisma.digitalProduct.create({ 
+    data: {
+      ...restData,
+      category: categoryId ? { connect: { id: categoryId } } : undefined
+    } 
+  });
   revalidatePath("/pengaturan");
 }
 
@@ -101,9 +107,13 @@ export async function updateProduct(id: string, data: any) {
       data.slug = `${data.slug}-${Math.random().toString(36).substring(2, 6)}`;
     }
   }
+  const { categoryId, ...restData } = data;
   await prisma.digitalProduct.update({
     where: { id },
-    data
+    data: {
+      ...restData,
+      category: categoryId ? { connect: { id: categoryId } } : undefined
+    }
   });
   revalidatePath("/pengaturan");
 }
