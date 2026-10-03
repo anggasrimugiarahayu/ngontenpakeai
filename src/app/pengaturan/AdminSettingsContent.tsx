@@ -109,7 +109,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
       {/* Tab: API Key Global */}
       {activeTab === "api" && (
         <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
-          <div className="mb-6">
+          <div className="mb-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Pengaturan API Key Global</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">Atur Default API Key yang akan digunakan oleh sistem jika pengguna tidak memasukkan API Key mereka sendiri.</p>
           </div>
@@ -168,7 +168,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
 
 
           <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
-            <div className="mb-6">
+            <div className="mb-4">
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Daftar Model AI</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">Pilih model mana yang aktif, dan set model default sistem.</p>
             </div>
@@ -233,7 +233,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
       {/* Tab: Ruang Ngonten */}
       {activeTab === "fitur" && (
         <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
-          <div className="mb-6">
+          <div className="mb-4">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Manajemen Ruang Ngonten</h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">Atur ketersediaan alat dan status PRO untuk setiap fitur.</p>
           </div>
@@ -251,7 +251,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     )}
                   </div>
                 </div>
-                <div className="flex items-center justify-between gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-white/5">
+                <div className="flex items-center justify-between gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-white/5">
                   
                   {/* Toggle Aktif/Nonaktif */}
                   <div className="flex items-center justify-between flex-1">
@@ -306,7 +306,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Manajemen Ruang Belajar</h2>
               <p className="text-sm text-gray-500 dark:text-gray-400">Kelola kategori dan e-book yang tersedia untuk member.</p>
             </div>
-            <div className="flex items-stretch md:items-center gap-2 mt-4 md:mt-0 w-full md:w-auto">
+            <div className="flex items-stretch md:items-center gap-2 mt-2 md:mt-0 w-full md:w-auto">
               <button 
                 onClick={() => setShowAddCategory(true)}
                 className="flex-1 md:flex-none justify-center bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 px-2 sm:px-4 py-2.5 sm:py-2 rounded-lg text-xs sm:text-sm font-bold transition-colors flex items-center gap-1.5 sm:gap-2 whitespace-nowrap"
@@ -411,8 +411,8 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
       {/* Modal Kategori Baru */}
       {showAddCategory && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121214] p-6 rounded-3xl border border-gray-200 dark:border-white/10 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-6">
+          <div className="bg-white dark:bg-[#121214] p-5 rounded-2xl border border-gray-200 dark:border-white/10 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2"><Tag className="text-rn-accent" size={20}/> Kelola Kategori</h3>
               <button onClick={() => setShowAddCategory(false)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 transition-colors">
                 <X size={20} />
@@ -423,16 +423,16 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               setLoading(true);
               await createCategory({ name: formData.get("name"), slug: formData.get("slug") });
               setLoading(false);
-            }} className="flex flex-col gap-4 mb-6 pb-6 border-b border-gray-100 dark:border-white/10">
+            }} className="flex flex-col gap-4 mb-4 pb-6 border-b border-gray-100 dark:border-white/10">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Tambah Kategori Baru</label>
-                <input name="name" placeholder="Contoh: Bisnis & Keuangan" required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                <input name="name" placeholder="Contoh: Bisnis & Keuangan" required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
               </div>
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Slug URL</label>
-                <input name="slug" placeholder="Contoh: bisnis-keuangan" required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                <input name="slug" placeholder="Contoh: bisnis-keuangan" required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
               </div>
-              <button type="submit" disabled={loading} className="w-full bg-rn-accent hover:bg-orange-600 text-white py-3 rounded-xl text-sm font-bold disabled:opacity-50 transition-colors mt-2">
+              <button type="submit" disabled={loading} className="w-full bg-rn-accent hover:bg-orange-600 text-white py-2.5 mt-2 rounded-xl text-sm font-bold disabled:opacity-50 transition-colors mt-2">
                 Simpan Kategori Baru
               </button>
             </form>
@@ -466,8 +466,8 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
       {/* Modal Add Product */}
       {showAddProduct && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121214] p-6 rounded-3xl border border-gray-200 dark:border-white/10 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-6">
+          <div className="bg-white dark:bg-[#121214] p-5 rounded-2xl border border-gray-200 dark:border-white/10 w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2"><BookOpen className="text-rn-accent" size={20}/> Tambah E-Book / Produk</h3>
               <button onClick={() => { setShowAddProduct(false);
               setUploadedUrls({});  }} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 transition-colors">
@@ -492,23 +492,23 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               setShowAddProduct(false);
               setUploadedUrls({});
               
-            }} className="flex flex-col gap-4">
+            }} className="flex flex-col gap-3">
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Judul Konten</label>
-                  <input name="title" placeholder="Contoh: 100 Template Carousel" required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                  <input name="title" placeholder="Contoh: 100 Template Carousel" required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Slug URL</label>
-                  <input name="slug" placeholder="template-carousel" required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                  <input name="slug" placeholder="template-carousel" required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kategori</label>
-                  <select name="categoryId" required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all appearance-none">
+                  <select name="categoryId" required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all appearance-none">
                     <option value="">Pilih Kategori...</option>
                     {categories.map((c: any) => (
                       <option key={c.id} value={c.id}>{c.name}</option>
@@ -517,20 +517,20 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 </div>
                 <div className="col-span-2 space-y-3">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Galeri Gambar E-Book (Maks 3)</label>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-200 dark:border-white/10 relative">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative">
                       <span id="label-coverUrlInput" className="text-[10px] font-bold text-gray-400 block mb-1">1. COVER UTAMA</span>
                       <img id="preview-coverUrlInput" src={undefined} className="hidden w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300" />
                       <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrlInput")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
                       <input type="hidden" name="coverUrl" id="coverUrlInput" />
                     </div>
-                    <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-200 dark:border-white/10 relative">
+                    <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative">
                       <span id="label-coverUrl2Input" className="text-[10px] font-bold text-gray-400 block mb-1">2. PREVIEW 1</span>
                       <img id="preview-coverUrl2Input" src={undefined} className="hidden w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300" />
                       <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrl2Input")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
                       <input type="hidden" name="coverUrl2" id="coverUrl2Input" />
                     </div>
-                    <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-200 dark:border-white/10 relative">
+                    <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative">
                       <span id="label-coverUrl3Input" className="text-[10px] font-bold text-gray-400 block mb-1">3. PREVIEW 2</span>
                       <img id="preview-coverUrl3Input" src={undefined} className="hidden w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300" />
                       <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrl3Input")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
@@ -542,16 +542,16 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Deskripsi Singkat (Opsional)</label>
-                <textarea name="description" rows={2} placeholder="Penjelasan singkat mengenai produk ini..." className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all custom-scrollbar"></textarea>
+                <textarea name="description" rows={2} placeholder="Penjelasan singkat mengenai produk ini..." className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all custom-scrollbar"></textarea>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Link Google Drive PDF (Opsional)</label>
-                <input name="fileUrl" type="url" placeholder="https://drive.google.com/file/d/..." className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                <input name="fileUrl" type="url" placeholder="https://drive.google.com/file/d/..." className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
                 <p className="text-[10px] text-gray-400 mt-1">Ganti "view" menjadi "preview" otomatis oleh sistem.</p>
               </div>
 
-              <label className="mt-2 flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800/30 rounded-xl cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors">
+              <label className="mt-2 flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800/30 rounded-lg cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors">
                 <input type="checkbox" name="isProOnly" className="w-5 h-5 rounded text-orange-600 focus:ring-orange-600 border-orange-300" />
                 <div>
                   <div className="font-bold text-sm text-orange-900 dark:text-orange-300">Khusus Pengguna PRO</div>
@@ -559,7 +559,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 </div>
               </label>
 
-              <label className="mt-2 flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-xl cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors">
+              <label className="mt-2 flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors">
                 <input type="checkbox" name="isDownloadable" className="w-5 h-5 rounded text-blue-600 focus:ring-blue-600 border-blue-300" />
                 <div>
                   <div className="font-bold text-sm text-blue-900 dark:text-blue-300">Izinkan Download PDF</div>
@@ -567,7 +567,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 </div>
               </label>
 
-              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-white/5">
+              <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-white/5">
                 <button type="button" onClick={() => setShowAddProduct(false)} className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">Batal</button>
                 <button type="submit" disabled={loading} className="bg-rn-accent hover:bg-orange-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50 hover:scale-105 transition-transform">Simpan E-Book</button>
               </div>
@@ -579,8 +579,8 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
       {/* Modal Edit Product */}
       {editingProduct && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121214] p-6 rounded-3xl border border-gray-200 dark:border-white/10 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200">
-            <div className="flex justify-between items-center mb-6">
+          <div className="bg-white dark:bg-[#121214] p-5 rounded-2xl border border-gray-200 dark:border-white/10 w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar shadow-2xl animate-in zoom-in-95 duration-200">
+            <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2"><BookOpen className="text-rn-accent" size={20}/> Edit E-Book</h3>
               <button onClick={() => setEditingProduct(null)} className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 transition-colors">
                 <X size={20} />
@@ -603,23 +603,23 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               setLoading(false);
               setEditingProduct(null);
               setUploadedUrls({});
-            }} className="flex flex-col gap-4">
+            }} className="flex flex-col gap-3">
               
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Judul Konten</label>
-                  <input name="title" defaultValue={editingProduct.title} required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                  <input name="title" defaultValue={editingProduct.title} required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
                 </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Slug URL</label>
-                  <input name="slug" defaultValue={editingProduct.slug} required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                  <input name="slug" defaultValue={editingProduct.slug} required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kategori</label>
-                  <select name="categoryId" defaultValue={editingProduct.categoryId} required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all appearance-none">
+                  <select name="categoryId" defaultValue={editingProduct.categoryId} required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all appearance-none">
                     {categories.map((c: any) => (
                       <option key={c.id} value={c.id}>{c.name}</option>
                     ))}
@@ -627,20 +627,20 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 </div>
                 <div className="col-span-2 space-y-3">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Galeri Gambar E-Book (Maks 3)</label>
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-200 dark:border-white/10 relative">
+                  <div className="grid grid-cols-3 gap-2">
+                    <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative">
                       <span id="label-editCoverUrlInput" className="text-[10px] font-bold text-gray-400 block mb-1">1. COVER UTAMA</span>
                       <img id="preview-editCoverUrlInput" src={editingProduct.coverUrl || undefined} className={`w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300 ${editingProduct.coverUrl ? '' : 'hidden'}`} />
                       <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrlInput")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
                       <input type="hidden" name="coverUrl" id="editCoverUrlInput" defaultValue={editingProduct.coverUrl || ''} />
                     </div>
-                    <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-200 dark:border-white/10 relative">
+                    <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative">
                       <span id="label-editCoverUrl2Input" className="text-[10px] font-bold text-gray-400 block mb-1">2. PREVIEW 1</span>
                       <img id="preview-editCoverUrl2Input" src={editingProduct.coverUrl2 || undefined} className={`w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300 ${editingProduct.coverUrl2 ? '' : 'hidden'}`} />
                       <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrl2Input")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
                       <input type="hidden" name="coverUrl2" id="editCoverUrl2Input" defaultValue={editingProduct.coverUrl2 || ''} />
                     </div>
-                    <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-200 dark:border-white/10 relative">
+                    <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative">
                       <span id="label-editCoverUrl3Input" className="text-[10px] font-bold text-gray-400 block mb-1">3. PREVIEW 2</span>
                       <img id="preview-editCoverUrl3Input" src={editingProduct.coverUrl3 || undefined} className={`w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300 ${editingProduct.coverUrl3 ? '' : 'hidden'}`} />
                       <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrl3Input")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
@@ -652,15 +652,15 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Deskripsi Singkat</label>
-                <textarea name="description" defaultValue={editingProduct.description || ''} rows={2} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all custom-scrollbar"></textarea>
+                <textarea name="description" defaultValue={editingProduct.description || ''} rows={2} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all custom-scrollbar"></textarea>
               </div>
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Link Google Drive PDF</label>
-                <input name="fileUrl" type="url" defaultValue={editingProduct.fileUrl || ''} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                <input name="fileUrl" type="url" defaultValue={editingProduct.fileUrl || ''} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
               </div>
 
-              <label className="mt-2 flex items-center gap-3 p-4 bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800/30 rounded-xl cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors">
+              <label className="mt-2 flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800/30 rounded-lg cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors">
                 <input type="checkbox" name="isProOnly" defaultChecked={editingProduct.isProOnly} className="w-5 h-5 rounded text-orange-600 focus:ring-orange-600 border-orange-300" />
                 <div>
                   <div className="font-bold text-sm text-orange-900 dark:text-orange-300">Khusus Pengguna PRO</div>
@@ -668,7 +668,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 </div>
               </label>
 
-              <label className="mt-2 flex items-center gap-3 p-4 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-xl cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors">
+              <label className="mt-2 flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors">
                 <input type="checkbox" name="isDownloadable" defaultChecked={editingProduct.isDownloadable} className="w-5 h-5 rounded text-blue-600 focus:ring-blue-600 border-blue-300" />
                 <div>
                   <div className="font-bold text-sm text-blue-900 dark:text-blue-300">Izinkan Download PDF</div>
@@ -676,7 +676,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 </div>
               </label>
 
-              <div className="flex justify-end gap-3 mt-4 pt-4 border-t border-gray-100 dark:border-white/5">
+              <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-white/5">
                 <button type="button" onClick={() => setEditingProduct(null)} className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">Batal</button>
                 <button type="submit" disabled={loading} className="bg-rn-accent hover:bg-orange-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50 hover:scale-105 transition-transform">Simpan Perubahan</button>
               </div>
