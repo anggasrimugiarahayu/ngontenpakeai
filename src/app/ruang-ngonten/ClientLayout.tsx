@@ -47,7 +47,7 @@ export default function ClientLayout({
     return () => window.removeEventListener('open-tools-drawer', handleOpen);
   }, []);
 
-  const isDashboard = pathname === '/ruang-ngonten' || pathname === '/ruang-ngonten/' || pathname.startsWith('/ruang-belajar') || pathname.startsWith('/ruang-growing');
+  const isDashboard = pathname === '/ruang-ngonten' || pathname === '/ruang-ngonten/' || pathname.startsWith('/ruang-belajar') || pathname.startsWith('/ruang-growing') || pathname.startsWith('/pengaturan') || pathname.startsWith('/bantuan') || pathname.startsWith('/feedback');
   const pathSegments = pathname.split('/').filter(Boolean);
   const backHref = pathSegments.length > 1 ? '/' + pathSegments[0] : '/';
 
