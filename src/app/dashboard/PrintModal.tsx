@@ -1,0 +1,158 @@
+import React, { useState, useEffect } from 'react';
+import { X, ChevronDown } from 'lucide-react';
+
+export default function PrintModal({ isOpen, onClose, order }: { isOpen: boolean, onClose: () => void, order: any }) {
+  const [showLogo, setShowLogo] = useState(true);
+  const [hideProduct, setHideProduct] = useState(false);
+  const [showNote, setShowNote] = useState(true);
+  const [size, setSize] = useState<'100mm' | '58mm'>('100mm');
+  
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
+  if (!isOpen || !order) return null;
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm print:bg-transparent print:backdrop-blur-none p-4">
+      <div className="bg-gray-50 dark:bg-[#121214] w-full max-w-5xl h-[85vh] rounded-2xl flex flex-col md:flex-row overflow-hidden shadow-2xl relative print:hidden">
+        
+        <button onClick={onClose} className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-white dark:bg-black text-gray-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 shadow-sm border border-gray-200 dark:border-white/10">
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="w-full md:w-[340px] bg-white dark:bg-[#1a1a1c] p-6 sm:p-8 border-r border-gray-200 dark:border-white/10 flex flex-col shrink-0 overflow-y-auto">
+          <div className="flex justify-between items-center mb-8 border-b border-gray-100 dark:border-white/5 pb-4">
+            <h3 className="text-gray-500 dark:text-gray-400 font-bold text-sm tracking-wide">LABEL OPTION</h3>
+            <ChevronDown className="w-4 h-4 text-gray-400" />
+          </div>
+
+          <div className="space-y-6 flex-1">
+            <Toggle label="Show store logo" checked={showLogo} onChange={setShowLogo} />
+            <Toggle label="Hide product info" checked={hideProduct} onChange={setHideProduct} />
+            <Toggle label="Show order note" checked={showNote} onChange={setShowNote} />
+            <Toggle label="Print for thermal printer (58mm)" checked={size === '58mm'} onChange={() => { setSize('58mm'); }} />
+            <Toggle label="Print for thermal printer (100mm)" checked={size === '100mm'} onChange={() => { setSize('100mm'); }} />
+          </div>
+
+          <div className="mt-8 flex gap-3">
+            <button onClick={handlePrint} className="flex-1 py-3 border-2 border-emerald-500 text-emerald-500 font-bold rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors text-sm">
+              Export as PDF
+            </button>
+            <button onClick={handlePrint} className="flex-1 py-3 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors text-sm shadow-md shadow-emerald-500/20">
+              Print Now
+            </button>
+          </div>
+        </div>
+
+        <div className="flex-1 bg-[#f0f2f5] dark:bg-black/60 p-6 sm:p-10 flex flex-col overflow-y-auto items-center">
+          <h3 className="text-gray-500 dark:text-gray-400 font-bold text-sm tracking-wide mb-8 self-start w-full max-w-[450px] mx-auto">LABEL PREVIEW ({size})</h3>
+          
+          <div className={`bg-white text-black shrink-0 shadow-lg border border-dashed border-gray-300 relative transition-all duration-300 ${size === '100mm' ? 'w-full max-w-[450px]' : 'w-[280px]'}`}>
+             <ReceiptContent order={order} showLogo={showLogo} hideProduct={hideProduct} showNote={showNote} />
+          </div>
+        </div>
+      </div>
+
+      <div id="print-area" className="hidden print:block absolute top-0 left-0 bg-white text-black" style={{ width: size === '100mm' ? '100mm' : '58mm', padding: '0', margin: '0' }}>
+         <ReceiptContent order={order} showLogo={showLogo} hideProduct={hideProduct} showNote={showNote} />
+      </div>
+    </div>
+  );
+}
+
+function Toggle({ label, checked, onChange }: { label: string, checked: boolean, onChange: (v: boolean) => void }) {
+  return (
+    <div className="flex justify-between items-center gap-4 cursor-pointer" onClick={() => onChange(!checked)}>
+      <span className="text-sm font-bold text-gray-700 dark:text-gray-200 select-none">{label}</span>
+      <button 
+        className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-1 shrink-0 ${checked ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+      >
+        <div className={`w-4 h-4 bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
+      </button>
+    </div>
+  );
+}
+
+function ReceiptContent({ order, showLogo, hideProduct, showNote }: { order: any, showLogo: boolean, hideProduct: boolean, showNote: boolean }) {
+  const trxId = order.midtransId || `#${order.id || '91e70c8b92cf9bf3cb587dac3940ff3c'}`;
+  
+  return (
+    <div className="p-5 font-mono text-[12px] leading-tight text-gray-900 bg-white">
+      {showLogo && (
+        <div className="mb-4">
+          <div className="w-12 h-12 bg-[#C8FF00] text-black font-black leading-none text-[9px] p-1.5 uppercase flex items-center justify-center tracking-tighter text-center">
+            RUANG<br/>CREATIVE<br/>MUSLIM
+          </div>
+        </div>
+      )}
+      
+      <div className="text-center border-b border-t border-gray-900 py-3 mb-4">
+        <h2 className="font-bold text-base mb-1">Shipping Label</h2>
+        <p className="text-[11px] break-all">{trxId}</p>
+      </div>
+
+      <div className="flex justify-between gap-4 mb-4 border-b border-gray-900 pb-4">
+        <div className="flex-1">
+          <p className="font-bold mb-2 text-[10px] text-gray-500">SENDER</p>
+          <p className="font-bold mb-1">Harits | Contentpreneur</p>
+          <p>6281286254954</p>
+        </div>
+        <div className="flex-1">
+          <p className="font-bold mb-2 text-[10px] text-gray-500">RECEIVER</p>
+          <p className="font-bold mb-1">{order.user?.name || 'Faceless Aldin'}</p>
+          <p className="break-all">{order.user?.email}</p>
+          <p>085156339329</p>
+          <p>None</p>
+        </div>
+      </div>
+
+      <div className="mb-5 border-b border-gray-900 pb-4 space-y-2">
+        <p className="font-bold mb-3 text-[10px] text-gray-500">SHIPPING INFO</p>
+        <div className="flex justify-between">
+          <span>Shipping Fee</span>
+          <span>Rp 0</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Total weight</span>
+          <span>0.0 kg</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Total item</span>
+          <span>1 item</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Shipping No</span>
+          <span>-</span>
+        </div>
+        <div className="flex justify-between">
+          <span>Shipping Method</span>
+          <span>-</span>
+        </div>
+        <div className="text-center mt-6 text-gray-400 text-[10px]">
+          Powered by <span className="font-bold text-gray-500">LYNK</span>
+        </div>
+      </div>
+
+      <div className="space-y-3">
+        {!hideProduct && (
+          <p className="uppercase leading-relaxed">1x {order.product?.title || 'TOOLS RUANG NGONTEN'}</p>
+        )}
+        {showNote && (
+          <p>Notes:<br/>-</p>
+        )}
+      </div>
+    </div>
+  );
+}

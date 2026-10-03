@@ -11,6 +11,7 @@ import {
 } from 'recharts';
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format, subDays, eachDayOfInterval } from 'date-fns';
+import PrintModal from './PrintModal';
 import 'react-day-picker/dist/style.css';
 
 const MOCK_PRODUCTS = [
@@ -38,6 +39,7 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
   const [orderStatus, setOrderStatus] = useState('all');
   const [orderPage, setOrderPage] = useState(1);
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
+  const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
 
   React.useEffect(() => {
     if (data.fullOrders && data.fullOrders.length > 0 && typeof window !== 'undefined' && window.innerWidth >= 1024) {
@@ -153,13 +155,13 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
       const waUrl = `https://wa.me/6285156339329?text=${encodeURIComponent(whatsappMsg)}`;
 
       return (
-        <div className="p-0 sm:p-4 text-sm" id="print-area">
+        <div className="p-0 sm:p-4 text-sm">
           {/* Header */}
           <div className="flex justify-between items-center mb-4 px-4 sm:px-0">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white print:hidden">Order Details</h3>
             <h3 className="text-lg font-bold text-gray-900 dark:text-white hidden print:block">Invoice</h3>
             <button 
-              onClick={() => window.print()}
+              onClick={() => setIsPrintModalOpen(true)}
               className="print:hidden flex items-center gap-2 px-4 py-1.5 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-lg font-bold transition-colors text-xs tracking-wide">
               <Printer className="w-4 h-4" />
               PRINT
@@ -983,6 +985,11 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
 
       {activeTab === 'orders' && renderOrdersTab()}
 
+      <PrintModal 
+        isOpen={isPrintModalOpen} 
+        onClose={() => setIsPrintModalOpen(false)} 
+        order={selectedOrder} 
+      />
     </div>
     </>
   );
