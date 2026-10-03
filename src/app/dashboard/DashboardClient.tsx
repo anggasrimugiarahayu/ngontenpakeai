@@ -134,12 +134,41 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
     });
 
     // Pagination logic
-    const itemsPerPage = 3;
+    const itemsPerPage = 5;
     const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
     const paginatedOrders = filteredOrders.slice((orderPage - 1) * itemsPerPage, orderPage * itemsPerPage);
 
     const OrderDetailsContent = ({ order }: { order: any }) => {
       if (!order) return (
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #print-area, #print-area * {
+            visibility: visible;
+          }
+          #print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: auto;
+            margin: 0;
+            padding: 20px;
+            background: white !important;
+            box-shadow: none !important;
+            border: none !important;
+          }
+          .print\\:hidden {
+            display: none !important;
+          }
+          .print\\:block {
+            display: block !important;
+          }
+        }
+      `}</style>
+      
         <div className="flex flex-col items-center justify-center h-full text-gray-400 p-10">
           <ShoppingBag className="w-12 h-12 mb-4 opacity-20" />
           <p>Pilih transaksi untuk melihat detail</p>
@@ -147,15 +176,20 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
       );
       
       const orderDate = new Date(order.createdAt);
-      // Dummy date for payment, just adding 2 minutes to order date for realism
       const paymentDate = new Date(orderDate.getTime() + 2 * 60000);
+      
+      const whatsappMsg = `Halo kak ${order.user?.name || ''}, terima kasih sudah memesan ${order.product?.title || 'Produk'}.`;
+      const waUrl = `https://wa.me/6285156339329?text=${encodeURIComponent(whatsappMsg)}`;
 
       return (
-        <div className="p-0 sm:p-4 text-sm">
+        <div className="p-0 sm:p-4 text-sm" id="print-area">
           {/* Header */}
           <div className="flex justify-between items-center mb-4 px-4 sm:px-0">
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Order Details</h3>
-            <button className="flex items-center gap-2 px-4 py-1.5 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-lg font-bold transition-colors text-xs tracking-wide">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white print:hidden">Order Details</h3>
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white hidden print:block">Invoice</h3>
+            <button 
+              onClick={() => window.print()}
+              className="print:hidden flex items-center gap-2 px-4 py-1.5 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-lg font-bold transition-colors text-xs tracking-wide">
               <Printer className="w-4 h-4" />
               PRINT
             </button>
@@ -165,12 +199,18 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
             
             {/* Box 1: Status & Item */}
             <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm">
-              <div className="flex justify-between items-start border-b border-gray-100 dark:border-white/10 pb-4 mb-4">
-                <div className="space-y-1 text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
-                  <p>Order time: <span className="font-semibold text-gray-900 dark:text-gray-200">{format(orderDate, 'dd MMM yyyy HH:mm')}</span></p>
-                  <p>Payment: <span className="font-semibold text-gray-900 dark:text-gray-200">{format(paymentDate, 'dd MMM yyyy HH:mm')}</span></p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 dark:border-white/10 pb-4 mb-4 gap-3">
+                <div className="space-y-1.5 text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
+                  <div className="flex items-center gap-2">
+                    <span className="w-20">Order time:</span> 
+                    <span className="font-semibold text-gray-900 dark:text-gray-200">{format(orderDate, 'dd MMM yyyy HH:mm')}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="w-20">Payment:</span> 
+                    <span className="font-semibold text-gray-900 dark:text-gray-200">{format(paymentDate, 'dd MMM yyyy HH:mm')}</span>
+                  </div>
                 </div>
-                <span className={`font-bold text-xs uppercase tracking-wide px-2 py-1 rounded ${
+                <span className={`font-bold text-xs uppercase tracking-wide px-3 py-1.5 rounded-md bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-white/5 ${
                   order.status === 'SUCCESS' ? 'text-orange-500' : 
                   order.status === 'FAILED' ? 'text-red-500' : 'text-gray-500'
                 }`}>
@@ -178,23 +218,27 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                 </span>
               </div>
               
-              <div className="flex gap-4 items-start mb-4">
-                <div className="w-16 h-16 bg-gray-100 dark:bg-[#121214] rounded-md overflow-hidden shrink-0 border border-gray-200 dark:border-white/10">
+              <div className="flex gap-4 items-start mb-5">
+                <div className="w-16 h-20 bg-gray-50 dark:bg-[#121214] rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-white/10 p-1 flex items-center justify-center">
                   {order.product?.coverUrl ? (
-                    <img src={order.product.coverUrl} className="w-full h-full object-cover" alt="Product" />
+                    <img src={order.product.coverUrl} className="max-w-full max-h-full object-contain drop-shadow-sm" alt="Product" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">No Img</div>
+                    <span className="text-[10px] text-gray-400">No Img</span>
                   )}
                 </div>
-                <div className="flex-1">
-                  <div className="flex gap-1 items-start">
-                    <span className="font-bold text-gray-900 dark:text-white">1x</span>
-                    <p className="font-bold text-gray-900 dark:text-white leading-tight">{order.product?.title || 'Unknown Product'}</p>
+                <div className="flex-1 space-y-2 pt-1">
+                  <div className="flex gap-2 items-start">
+                    <span className="font-bold text-gray-900 dark:text-white mt-0.5">1x</span>
+                    <p className="font-bold text-gray-900 dark:text-white leading-snug">{order.product?.title || 'Unknown Product'}</p>
                   </div>
-                  <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 border border-gray-200 dark:border-white/20 rounded-full text-gray-500 dark:text-gray-400">
-                    digital
-                  </span>
-                  <p className="text-gray-900 dark:text-gray-300 mt-1 font-medium">1 x {formatIDR(order.amount)}</p>
+                  <div className="pl-6">
+                    <span className="inline-block text-[10px] font-bold px-2.5 py-0.5 border border-gray-200 dark:border-white/20 rounded-full text-gray-500 dark:text-gray-400">
+                      digital
+                    </span>
+                  </div>
+                  <div className="pl-6 pt-1">
+                    <p className="text-gray-900 dark:text-gray-200 text-sm font-semibold">1 x {formatIDR(order.amount)}</p>
+                  </div>
                 </div>
               </div>
               
@@ -245,12 +289,12 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
               <div className="space-y-1.5 text-sm text-gray-800 dark:text-gray-300">
                 <p>{order.user?.name || 'Unknown User'}</p>
                 <p>{order.user?.email || '-'}</p>
-                <a href="#" className="inline-block text-emerald-500 font-medium hover:underline mt-1">085156339329</a>
+                <a href={waUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-emerald-500 font-medium hover:underline mt-1">085156339329</a>
               </div>
             </div>
 
             {/* Box 4: Email Delivery Tracking */}
-            <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm">
+            <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm print:hidden">
               <h4 className="font-bold text-gray-400 dark:text-gray-500 uppercase text-xs tracking-wider mb-5">Email Delivery Tracking</h4>
               
               <div className="relative pl-6 space-y-6 before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700">
@@ -277,7 +321,7 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
             </div>
 
             {/* Box 5: Follow Up Text */}
-            <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm">
+            <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm print:hidden">
               <div className="flex justify-between items-center mb-4">
                 <h4 className="font-bold text-gray-900 dark:text-white text-lg">Follow Up Text</h4>
                 <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
@@ -285,7 +329,9 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                 </button>
               </div>
               
-              <button className="w-full py-3 mb-6 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl font-bold transition-colors">
+              <button 
+                onClick={() => window.open(waUrl, '_blank')}
+                className="w-full py-3 mb-6 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl font-bold transition-colors">
                 Send Follow Up Text via WhatsApp
               </button>
               
@@ -377,11 +423,13 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                           </div>
                           
                           <div className="flex gap-4">
-                            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-white/10">
+                            <div className="w-14 h-20 bg-gray-50 dark:bg-[#121214] rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-white/10 p-1 flex items-center justify-center">
                               {order.product?.coverUrl ? (
-                                <img src={order.product.coverUrl} className="w-full h-full object-cover" alt="Product" />
+                                <img src={order.product.coverUrl} className="max-w-full max-h-full object-contain drop-shadow-sm" alt="Product" />
                               ) : (
-                                <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">IMG</div>
+                                <span className="text-[10px] text-gray-400">No Img</span>
+                              )}
+                            </div>
                               )}
                             </div>
                             <div className="flex-1 flex flex-col justify-start">
