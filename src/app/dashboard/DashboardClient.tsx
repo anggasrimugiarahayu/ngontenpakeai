@@ -36,6 +36,7 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatus, setOrderStatus] = useState('all');
+  const [orderPage, setOrderPage] = useState(1);
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
 
   React.useEffect(() => {
@@ -131,6 +132,11 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
       }
       return matches;
     });
+
+    // Pagination logic
+    const itemsPerPage = 3;
+    const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
+    const paginatedOrders = filteredOrders.slice((orderPage - 1) * itemsPerPage, orderPage * itemsPerPage);
 
     const OrderDetailsContent = ({ order }: { order: any }) => {
       if (!order) return (
@@ -296,11 +302,11 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
 
     return (
       <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
           
           {/* Left Column: Order List */}
           <div className="lg:col-span-2 flex flex-col space-y-4">
-            <div className="bg-white dark:bg-[#121214] rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm overflow-hidden flex flex-col h-[calc(100vh-180px)]">
+            <div className="bg-white dark:bg-[#121214] rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm overflow-hidden flex flex-col h-full">
               {/* Header & Filters */}
               <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-white/10 space-y-4 shrink-0">
                 <div className="flex justify-between items-center">
@@ -340,7 +346,7 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                     Belum ada data transaksi yang sesuai filter.
                   </div>
                 ) : (
-                  filteredOrders.map((order: any) => {
+                  paginatedOrders.map((order: any) => {
                     const isSelected = selectedOrder?.id === order.id;
                     return (
                       <div 
@@ -403,12 +409,52 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                   })
                 )}
               </div>
+            
+              {/* Pagination UI */}
+              {totalPages > 1 && (
+                <div className="p-4 sm:p-6 border-t border-gray-100 dark:border-white/10 flex items-center justify-between bg-gray-50 dark:bg-black/20 shrink-0">
+                  <span className="text-sm text-gray-500 hidden sm:block">
+                    Showing <span className="font-bold text-gray-900 dark:text-white">{((orderPage - 1) * itemsPerPage) + 1}</span> to <span className="font-bold text-gray-900 dark:text-white">{Math.min(orderPage * itemsPerPage, filteredOrders.length)}</span> of <span className="font-bold text-gray-900 dark:text-white">{filteredOrders.length}</span>
+                  </span>
+                  <div className="flex gap-1 w-full sm:w-auto justify-between sm:justify-end">
+                    <button 
+                      onClick={() => setOrderPage(p => Math.max(1, p - 1))}
+                      disabled={orderPage === 1}
+                      className="px-3 py-1 border border-gray-200 dark:border-white/10 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Prev
+                    </button>
+                    <div className="flex gap-1">
+                      {Array.from({ length: totalPages }).map((_, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setOrderPage(idx + 1)}
+                          className={`w-8 h-8 flex items-center justify-center border rounded-lg text-sm font-bold ${
+                            orderPage === idx + 1 
+                              ? 'bg-orange-500 border-orange-500 text-white' 
+                              : 'border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5'
+                          }`}
+                        >
+                          {idx + 1}
+                        </button>
+                      ))}
+                    </div>
+                    <button 
+                      onClick={() => setOrderPage(p => Math.min(totalPages, p + 1))}
+                      disabled={orderPage === totalPages}
+                      className="px-3 py-1 border border-gray-200 dark:border-white/10 rounded-lg text-sm font-medium hover:bg-gray-100 dark:hover:bg-white/5 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Next
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Right Column: Order Details (Desktop) */}
           <div className="hidden lg:block lg:col-span-1">
-            <div className="bg-white dark:bg-[#121214] rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm sticky top-[100px] overflow-hidden">
+            <div className="bg-white dark:bg-[#121214] rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm overflow-hidden h-full">
               <OrderDetailsContent order={selectedOrder} />
             </div>
           </div>
