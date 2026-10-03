@@ -20,22 +20,65 @@ export default async function DashboardPage() {
     redirect("/");
   }
 
-  // Fetch real data where possible
+  // Fetch users & products
   const totalUsers = await prisma.user.count();
   const totalProducts = await prisma.digitalProduct.count();
 
-  // Dummy data for missing backend implementation (sales, orders, etc.)
+  // Fetch real orders
+  const successfulOrders = await prisma.order.aggregate({
+    _sum: { amount: true },
+    _count: { id: true },
+    where: { status: 'SUCCESS' }
+  });
+
+  const lifetimeSalesIDR = successfulOrders._sum.amount || 0;
+  const lifetimeOrders = successfulOrders._count.id;
+
+  // Group orders by product for the table
+  const topProducts = await prisma.order.groupBy({
+    by: ['digitalProductId'],
+    _sum: { amount: true },
+    _count: { id: true },
+    where: { status: 'SUCCESS' },
+    orderBy: {
+      _sum: { amount: 'desc' }
+    }
+  });
+
+  // Fetch product details for the grouped data
+  const productIds = topProducts.map(p => p.digitalProductId);
+  const products = await prisma.digitalProduct.findMany({
+    where: { id: { in: productIds } },
+    select: { id: true, title: true, coverUrl: true }
+  });
+
+  // Format real product sales data
+  const realProductSales = topProducts.map(p => {
+    const productDef = products.find(prod => prod.id === p.digitalProductId);
+    return {
+      id: p.digitalProductId,
+      title: productDef?.title || "Unknown Product",
+      views: 0, // No analytics tracked yet
+      sold: p._count.id,
+      amount: p._sum.amount || 0,
+      conversion: 0, 
+      image: productDef?.coverUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=100&h=100&fit=crop'
+    };
+  });
+
+  // Real data structure
   const dashboardData = {
     totalUsers,
-    totalUsersFree: totalUsers, // assuming all free until PRO role is added
+    totalUsersFree: totalUsers, 
     totalUsersPro: 0,
     totalSubscribers: 0,
-    earningsIDR: 0,
-    lifetimeSalesIDR: 0,
-    lifetimeOrders: 0,
+    earningsIDR: lifetimeSalesIDR,
+    lifetimeSalesIDR: lifetimeSalesIDR,
+    lifetimeOrders: lifetimeOrders,
     totalDigitalProducts: totalProducts,
     totalViews: 0,
-    totalClicks: 0
+    totalClicks: 0,
+    realProductSales
   };
 
   return (

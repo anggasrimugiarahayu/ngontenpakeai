@@ -388,7 +388,7 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                   <div className="w-2 h-2 rounded-full bg-blue-500"></div> 
                   Total Sales
                </div>
-               <h3 className="text-3xl font-black text-gray-900 dark:text-white">1,093</h3>
+               <h3 className="text-3xl font-black text-gray-900 dark:text-white">{data.lifetimeOrders}</h3>
             </div>
             <div className="bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col justify-center relative overflow-hidden">
                <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3"></div>
@@ -397,7 +397,7 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                   Sales Value (IDR)
                </div>
                <div className="flex items-baseline gap-2">
-                 <h3 className="text-3xl font-black text-gray-900 dark:text-white">2,925,000</h3>
+                 <h3 className="text-3xl font-black text-gray-900 dark:text-white">{formatIDR(data.lifetimeSalesIDR)}</h3>
                  <span className="text-xs font-bold text-emerald-500 flex items-center"><ArrowUp size={12}/> 84.19%</span>
                </div>
             </div>
@@ -415,7 +415,7 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                        <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Sales Value (IDR)</h3>
                     </div>
                     <div className="flex items-baseline gap-2">
-                       <h2 className="text-2xl font-black text-gray-900 dark:text-white">2,925,000</h2>
+                       <h2 className="text-2xl font-black text-gray-900 dark:text-white">{formatIDR(data.lifetimeSalesIDR)}</h2>
                        <div className="flex flex-col text-[10px] font-bold text-emerald-500 leading-tight">
                          <span className="flex items-center"><ArrowUp size={10}/> 84.19%</span>
                          <span className="text-gray-400 font-medium">vs previous period</span>
@@ -497,7 +497,7 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                  {MOCK_PRODUCTS.map((product) => (
+                  {(data.realProductSales && data.realProductSales.length > 0 ? data.realProductSales : []).map((product: any) => (
                     <tr key={product.id} className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group">
                       <td className="px-6 py-4">
                          <div className="flex items-center gap-4 max-w-[320px]">

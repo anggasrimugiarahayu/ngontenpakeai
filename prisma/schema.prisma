@@ -52,6 +52,7 @@ model User {
   usages           Usage[]
   favorites        Favorite[]
   reviews          Review[]
+  orders           Order[]
 
   @@map("users")
 }
@@ -204,6 +205,7 @@ model DigitalProduct {
   id          String          @id @default(cuid())
   categoryId  String          @map("category_id")
   title       String
+  price       Int             @default(0)
   description String?
   slug        String          @unique
   coverUrl    String?
@@ -218,6 +220,8 @@ model DigitalProduct {
   category    DigitalCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   favorites   Favorite[]
   reviews     Review[]
+  orders      Order[]
+  analytics   ProductAnalytics[]
 
   @@map("digital_products")
 }
@@ -248,4 +252,35 @@ model Review {
 
   @@unique([userId, digitalProductId])
   @@map("reviews")
+}
+
+
+model Order {
+  id               String         @id @default(cuid())
+  userId           String         @map("user_id")
+  digitalProductId String         @map("digital_product_id")
+  amount           Int
+  status           String         @default("PENDING") // PENDING, SUCCESS, FAILED
+  paymentUrl       String?
+  midtransId       String?        @unique
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime       @updatedAt @map("updated_at")
+
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
+
+  @@map("orders")
+}
+
+model ProductAnalytics {
+  id               String         @id @default(cuid())
+  digitalProductId String         @map("digital_product_id")
+  date             DateTime       @db.Date
+  views            Int            @default(0)
+  clicks           Int            @default(0)
+  
+  product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
+
+  @@unique([digitalProductId, date])
+  @@map("product_analytics")
 }
