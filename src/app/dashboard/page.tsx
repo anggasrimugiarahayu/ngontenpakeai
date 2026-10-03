@@ -25,7 +25,7 @@ export default async function DashboardPage() {
   const totalProducts = await prisma.digitalProduct.count();
 
   // Fetch real orders (safeguard for dev server restart)
-  let successfulOrders = { _sum: { amount: 0 }, _count: { id: 0 } };
+  let successfulOrders: any = { _sum: { amount: 0 }, _count: { id: 0 } };
   let topProducts: any[] = [];
   
   if (prisma.order) {
@@ -49,7 +49,7 @@ export default async function DashboardPage() {
   const lifetimeSalesIDR = successfulOrders._sum?.amount || 0;
   const lifetimeOrders = successfulOrders._count?.id || 0;
 
-  let fullOrders = [];
+  let fullOrders: any[] = [];
   if (prisma.order) {
     fullOrders = await prisma.order.findMany({
       include: {
