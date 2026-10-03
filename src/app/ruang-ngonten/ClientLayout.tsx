@@ -6,7 +6,7 @@ import { usePathname } from 'next/navigation';
 import { 
   Compass, User, Lightbulb, FileText, LayoutTemplate, 
   RefreshCw, BookOpen, Calendar, Menu, X, ChevronRight, ChevronLeft, ArrowLeft, Lock, LayoutGrid
-} from 'lucide-react';
+, Settings, HelpCircle, MessageSquare} from 'lucide-react';
 
 const TOOLS = [
   { href: '/ruang-ngonten/master-blueprint', label: 'Master Blueprint', icon: Compass },
@@ -47,9 +47,9 @@ export default function ClientLayout({
     return () => window.removeEventListener('open-tools-drawer', handleOpen);
   }, []);
 
-  const isDashboard = pathname === '/ruang-ngonten' || pathname === '/ruang-ngonten/' || pathname.startsWith('/ruang-belajar') || pathname.startsWith('/ruang-growing') || pathname.startsWith('/pengaturan') || pathname.startsWith('/bantuan') || pathname.startsWith('/feedback');
+  const isDashboard = pathname === '/ruang-ngonten' || pathname === '/ruang-ngonten/' || pathname.startsWith('/ruang-belajar') || pathname.startsWith('/ruang-growing');
   const pathSegments = pathname.split('/').filter(Boolean);
-  const backHref = pathSegments.length > 1 ? '/' + pathSegments[0] : '/';
+  const backHref = isSettingsArea ? '/' : (pathSegments.length > 1 ? '/' + pathSegments[0] : '/');
 
 
   const GLOBAL_NAV = [
@@ -57,6 +57,15 @@ export default function ClientLayout({
     { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate },
     { label: "Ruang Growing", href: "/ruang-growing", icon: RefreshCw },
   ];
+
+  const SETTINGS_NAV = [
+    { label: "Pengaturan", href: "/pengaturan", icon: Settings },
+    { label: "Bantuan", href: "/bantuan", icon: HelpCircle },
+    { label: "Feedback", href: "/feedback", icon: MessageSquare },
+  ];
+
+  const isSettingsArea = pathname.startsWith('/pengaturan') || pathname.startsWith('/bantuan') || pathname.startsWith('/feedback');
+
 
   
   const mappedTools = TOOLS.map(tool => {
@@ -91,7 +100,7 @@ export default function ClientLayout({
 
           {/* Tools Icons */}
           <div className="flex flex-col py-2 px-2 space-y-1 overflow-y-auto custom-scrollbar max-h-[calc(100vh-140px)]">
-            {(isDashboard ? GLOBAL_NAV : mappedTools).map((tool) => {
+            {(isSettingsArea ? SETTINGS_NAV : isDashboard ? GLOBAL_NAV : mappedTools).map((tool) => {
               const Icon = tool.icon;
               let isActive = false;
               if (isDashboard) {
@@ -99,7 +108,7 @@ export default function ClientLayout({
               } else {
                 isActive = pathname.startsWith(tool.href);
               }
-              const isLocked = !isDashboard && ((!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || ((tool as any).isProOnly && !isPro));
+              const isLocked = !isDashboard && !isSettingsArea && ((!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || ((tool as any).isProOnly && !isPro));
               
               if (isLocked) {
                 return (
@@ -187,7 +196,7 @@ export default function ClientLayout({
             <div className="flex flex-col py-4 px-3 overflow-y-auto space-y-1">
 
 
-              {(isDashboard ? GLOBAL_NAV : mappedTools).map((tool) => {
+              {(isSettingsArea ? SETTINGS_NAV : isDashboard ? GLOBAL_NAV : mappedTools).map((tool) => {
                 const Icon = tool.icon;
                 let isActive = false;
                 if (isDashboard) {
@@ -195,7 +204,7 @@ export default function ClientLayout({
                 } else {
                   isActive = pathname.startsWith(tool.href);
                 }
-                const isLocked = !isDashboard && ((!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || ((tool as any).isProOnly && !isPro));
+                const isLocked = !isDashboard && !isSettingsArea && ((!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || ((tool as any).isProOnly && !isPro));
                 
                 if (isLocked) {
                   return (
