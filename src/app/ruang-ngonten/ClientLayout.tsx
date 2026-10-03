@@ -46,7 +46,7 @@ export default function ClientLayout({
 
   const isDashboard = pathname === '/ruang-ngonten' || pathname === '/ruang-ngonten/' || pathname.startsWith('/ruang-belajar') || pathname.startsWith('/ruang-growing');
   const pathSegments = pathname.split('/').filter(Boolean);
-  const isSettingsArea = pathname.startsWith('/pengaturan') || pathname.startsWith('/bantuan') || pathname.startsWith('/feedback');
+  const isSettingsArea = pathname === '/dashboard' || pathname.startsWith('/dashboard') || pathname.startsWith('/pengaturan') || pathname.startsWith('/bantuan') || pathname.startsWith('/feedback');
   const backHref = isSettingsArea ? '/' : (pathSegments.length > 1 ? '/' + pathSegments[0] : '/');
 
 
