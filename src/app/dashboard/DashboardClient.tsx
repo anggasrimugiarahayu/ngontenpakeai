@@ -121,6 +121,69 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
 
   const renderOrdersTab = () => {
     const ordersList = data.fullOrders || [];
+    
+    const handleExportExcel = () => {
+      const headers = [
+        'Judul Barang', 'Varian', 'Harga', 'qty', 'sub total', 'Voucher', 'shipping fee',
+        'Total Addon', 'Notif fee', 'Affiliate fee', 'Affiliator email', 'Public Affiliate fee',
+        'Convenience Fee', 'Total', 'Tanggal', 'Status', 'Buyer Email', 'Buyer Name (opsional)',
+        'Buyer Phone (Opsional)', 'Notes (Opsional)', 'Addon Detail', 'Voucher Code',
+        'Shipping Address', 'Shipping Method', 'Appointment info', 'Ref', 'PayPal Ref'
+      ];
+
+      const rows = filteredOrders.map((o: any) => {
+        const rowData = [
+          o.product?.title || '',
+          '',
+          o.amount || 0,
+          1,
+          o.amount || 0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          '',
+          0,
+          0,
+          o.amount || 0,
+          format(new Date(o.createdAt), 'dd-MM-yyyy HH:mm'),
+          o.status || '',
+          o.user?.email || '',
+          o.user?.name || '',
+          o.user?.phone || '',
+          o.note || '',
+          '',
+          '',
+          '',
+          '',
+          '',
+          o.id || '',
+          ''
+        ];
+
+        return rowData.map(field => {
+          const str = String(field);
+          if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+            return `"${str.replace(/"/g, '""')}"`;
+          }
+          return str;
+        }).join(',');
+      });
+
+      // Add BOM for Excel UTF-8 recognition
+      const csvContent = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('href', url);
+      a.setAttribute('download', `Orders_Export_${format(new Date(), 'yyyyMMdd_HHmmss')}.csv`);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
+
     const filteredOrders = ordersList.filter((o: any) => {
       let matches = true;
       if (orderStatus !== 'all' && o.status !== orderStatus) matches = false;
@@ -330,7 +393,7 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
               <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-white/10 space-y-4 shrink-0">
                 <div className="flex justify-between items-center">
                   <h2 className="text-lg font-bold text-gray-900 dark:text-white">Product Orders</h2>
-                  <button className="flex items-center justify-center p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors">
+                  <button onClick={handleExportExcel} className="flex items-center justify-center p-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors" title="Export to Excel">
                     <Download className="w-4 h-4" />
                   </button>
                 </div>
