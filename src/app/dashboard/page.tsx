@@ -49,6 +49,17 @@ export default async function DashboardPage() {
   const lifetimeSalesIDR = successfulOrders._sum?.amount || 0;
   const lifetimeOrders = successfulOrders._count?.id || 0;
 
+  let fullOrders = [];
+  if (prisma.order) {
+    fullOrders = await prisma.order.findMany({
+      include: {
+        user: { select: { name: true, email: true } },
+        product: { select: { title: true, coverUrl: true, isProOnly: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    });
+  }
+
   // Fetch product details for the grouped data
   const productIds = topProducts.map(p => p.digitalProductId);
   const products = await prisma.digitalProduct.findMany({
@@ -82,7 +93,8 @@ export default async function DashboardPage() {
     totalDigitalProducts: totalProducts,
     totalViews: 0,
     totalClicks: 0,
-    realProductSales
+    realProductSales,
+    fullOrders
   };
 
   return (

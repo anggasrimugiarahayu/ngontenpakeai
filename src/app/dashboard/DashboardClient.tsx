@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { 
   User, CheckCircle2, Link as LinkIcon, 
-  TrendingUp, Layers, Users, ShoppingBag, Calendar as CalendarIcon, Eye, Send, ArrowUp, Search, Image as ImageIcon
+  TrendingUp, Layers, Users, ShoppingBag, Calendar as CalendarIcon, Eye, Send, ArrowUp, Search, Image as ImageIcon, Download, Printer, ArrowLeft, ArrowRight, X
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
