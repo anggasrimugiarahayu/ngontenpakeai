@@ -12,6 +12,7 @@ import {
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format, subDays, eachDayOfInterval } from 'date-fns';
 import PrintModal from './PrintModal';
+import WhatsAppModal from './WhatsAppModal';
 import 'react-day-picker/dist/style.css';
 
 const MOCK_PRODUCTS = [
@@ -40,6 +41,9 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
   const [orderPage, setOrderPage] = useState(1);
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
+  const [isWaModalOpen, setIsWaModalOpen] = useState(false);
+  const [waMessage, setWaMessage] = useState('');
+  const [waOrder, setWaOrder] = useState<any>(null);
 
   React.useEffect(() => {
     if (data.fullOrders && data.fullOrders.length > 0 && typeof window !== 'undefined' && window.innerWidth >= 1024) {
@@ -213,9 +217,6 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
       
       const orderDate = new Date(order.createdAt);
       const paymentDate = new Date(orderDate.getTime() + 2 * 60000);
-      
-      const whatsappMsg = `Halo kak ${order.user?.name || ''}, terima kasih sudah memesan ${order.product?.title || 'Produk'}.`;
-      const waUrl = `https://wa.me/6285156339329?text=${encodeURIComponent(whatsappMsg)}`;
 
       return (
         <div className="p-0 sm:p-4 text-sm">
@@ -325,7 +326,7 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
               <div className="space-y-1.5 text-sm text-gray-800 dark:text-gray-300">
                 <p>{order.user?.name || 'Unknown User'}</p>
                 <p>{order.user?.email || '-'}</p>
-                <a href={waUrl} target="_blank" rel="noopener noreferrer" className="inline-block text-emerald-500 font-medium hover:underline mt-1">085156339329</a>
+                <a href={`https://wa.me/${(order.user?.phone || '085156339329').replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noopener noreferrer" className="inline-block text-emerald-500 font-medium hover:underline mt-1">{order.user?.phone || '085156339329'}</a>
               </div>
             </div>
 
@@ -366,7 +367,13 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
               </div>
               
               <button 
-                onClick={() => window.open(waUrl, '_blank')}
+                onClick={() => {
+                  const name = order.user?.name || 'Kak';
+                  const product = order.product?.title || 'Produk';
+                  setWaMessage(`Halo ${name},\n\nTerima kasih sudah memesan *${product}*.\n\nApakah ada yang bisa kami bantu terkait pesanan ini?`);
+                  setWaOrder(order);
+                  setIsWaModalOpen(true);
+                }}
                 className="w-full py-3 mb-6 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl font-bold transition-colors">
                 Send Follow Up Text via WhatsApp
               </button>
@@ -1052,6 +1059,14 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
         isOpen={isPrintModalOpen} 
         onClose={() => setIsPrintModalOpen(false)} 
         order={selectedOrder} 
+      />
+
+      <WhatsAppModal 
+        isOpen={isWaModalOpen}
+        onClose={() => setIsWaModalOpen(false)}
+        order={waOrder}
+        message={waMessage}
+        setMessage={setWaMessage}
       />
     </div>
     </>
