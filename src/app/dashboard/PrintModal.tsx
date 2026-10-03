@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { X, ChevronDown } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 export default function PrintModal({ isOpen, onClose, order }: { isOpen: boolean, onClose: () => void, order: any }) {
+  const { data: session } = useSession();
+  
   const [showLogo, setShowLogo] = useState(true);
   const [hideProduct, setHideProduct] = useState(false);
   const [showNote, setShowNote] = useState(true);
@@ -60,13 +63,13 @@ export default function PrintModal({ isOpen, onClose, order }: { isOpen: boolean
           <h3 className="text-gray-500 dark:text-gray-400 font-bold text-sm tracking-wide mb-8 self-start w-full max-w-[450px] mx-auto">LABEL PREVIEW ({size})</h3>
           
           <div className={`bg-white text-black shrink-0 shadow-lg border border-dashed border-gray-300 relative transition-all duration-300 ${size === '100mm' ? 'w-full max-w-[450px]' : 'w-[280px]'}`}>
-             <ReceiptContent order={order} showLogo={showLogo} hideProduct={hideProduct} showNote={showNote} />
+             <ReceiptContent order={order} showLogo={showLogo} hideProduct={hideProduct} showNote={showNote} size={size} session={session} />
           </div>
         </div>
       </div>
 
       <div id="print-area" className="hidden print:block absolute top-0 left-0 bg-white text-black" style={{ width: size === '100mm' ? '100mm' : '58mm', padding: '0', margin: '0' }}>
-         <ReceiptContent order={order} showLogo={showLogo} hideProduct={hideProduct} showNote={showNote} />
+         <ReceiptContent order={order} showLogo={showLogo} hideProduct={hideProduct} showNote={showNote} size={size} session={session} />
       </div>
     </div>
   );
@@ -85,16 +88,38 @@ function Toggle({ label, checked, onChange }: { label: string, checked: boolean,
   );
 }
 
-function ReceiptContent({ order, showLogo, hideProduct, showNote }: { order: any, showLogo: boolean, hideProduct: boolean, showNote: boolean }) {
-  const trxId = order.midtransId || `#${order.id || '91e70c8b92cf9bf3cb587dac3940ff3c'}`;
+function ReceiptContent({ order, showLogo, hideProduct, showNote, size, session }: { order: any, showLogo: boolean, hideProduct: boolean, showNote: boolean, size: string, session: any }) {
+  const trxId = order.midtransId || `#${order.id || 'TRX-UNKNOWN'}`;
   
+  const formatIDR = (num: number) => {
+    return new Intl.NumberFormat('id-ID', {
+      style: 'currency',
+      currency: 'IDR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0
+    }).format(num);
+  };
+  
+  const senderName = session?.user?.name || 'Toko Digital';
+  const senderPhone = session?.user?.phone || '-';
+  const senderImage = session?.user?.image;
+  
+  const receiverName = order.user?.name || order.customerName || 'Pelanggan';
+  const receiverEmail = order.user?.email || order.customerEmail || '-';
+  const receiverPhone = order.user?.phone || order.customerPhone || '-';
+  const notes = order.note || '-';
+
   return (
     <div className="p-5 font-mono text-[12px] leading-tight text-gray-900 bg-white">
       {showLogo && (
         <div className="mb-4">
-          <div className="w-12 h-12 bg-[#C8FF00] text-black font-black leading-none text-[9px] p-1.5 uppercase flex items-center justify-center tracking-tighter text-center">
-            RUANG<br/>CREATIVE<br/>MUSLIM
-          </div>
+          {senderImage ? (
+            <img src={senderImage} alt="Store Logo" className="w-12 h-12 object-cover rounded-md" />
+          ) : (
+            <div className="w-12 h-12 bg-gray-900 text-white font-black leading-none text-[9px] p-1.5 uppercase flex items-center justify-center tracking-tighter text-center rounded-md">
+              STORE<br/>LOGO
+            </div>
+          )}
         </div>
       )}
       
@@ -103,18 +128,17 @@ function ReceiptContent({ order, showLogo, hideProduct, showNote }: { order: any
         <p className="text-[11px] break-all">{trxId}</p>
       </div>
 
-      <div className="flex justify-between gap-4 mb-4 border-b border-gray-900 pb-4">
+      <div className={`flex ${size === '58mm' ? 'flex-col space-y-4' : 'justify-between gap-4'} mb-4 border-b border-gray-900 pb-4`}>
         <div className="flex-1">
           <p className="font-bold mb-2 text-[10px] text-gray-500">SENDER</p>
-          <p className="font-bold mb-1">Harits | Contentpreneur</p>
-          <p>6281286254954</p>
+          <p className="font-bold mb-1">{senderName}</p>
+          <p>{senderPhone}</p>
         </div>
         <div className="flex-1">
           <p className="font-bold mb-2 text-[10px] text-gray-500">RECEIVER</p>
-          <p className="font-bold mb-1">{order.user?.name || 'Faceless Aldin'}</p>
-          <p className="break-all">{order.user?.email}</p>
-          <p>085156339329</p>
-          <p>None</p>
+          <p className="font-bold mb-1">{receiverName}</p>
+          <p className="break-words" style={{ wordBreak: 'break-all' }}>{receiverEmail}</p>
+          <p>{receiverPhone}</p>
         </div>
       </div>
 
@@ -133,12 +157,8 @@ function ReceiptContent({ order, showLogo, hideProduct, showNote }: { order: any
           <span>1 item</span>
         </div>
         <div className="flex justify-between">
-          <span>Shipping No</span>
-          <span>-</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Shipping Method</span>
-          <span>-</span>
+          <span>Total Harga</span>
+          <span className="font-bold">{formatIDR(order.amount || 0)}</span>
         </div>
         <div className="text-center mt-6 text-gray-400 text-[10px]">
           Powered by <span className="font-bold text-gray-500">LYNK</span>
@@ -147,10 +167,10 @@ function ReceiptContent({ order, showLogo, hideProduct, showNote }: { order: any
 
       <div className="space-y-3">
         {!hideProduct && (
-          <p className="uppercase leading-relaxed">1x {order.product?.title || 'TOOLS RUANG NGONTEN'}</p>
+          <p className="uppercase leading-relaxed">1x {order.product?.title || 'Produk Digital'}</p>
         )}
         {showNote && (
-          <p>Notes:<br/>-</p>
+          <p>Notes:<br/>{notes}</p>
         )}
       </div>
     </div>
