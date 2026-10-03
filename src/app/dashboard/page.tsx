@@ -57,7 +57,7 @@ export default async function DashboardPage() {
     try {
       fullOrders = await prisma.order.findMany({
         include: {
-          user: { select: { name: true, email: true } },
+          user: { select: { name: true, email: true, phone: true } },
           product: { select: { title: true, coverUrl: true, isProOnly: true } }
         },
         orderBy: { createdAt: 'desc' }
