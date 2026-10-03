@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import EbookActions from "./EbookActions";
 import EbookGallery from "./EbookGallery";
 import ReviewSection from "./ReviewSection";
+import PdfViewer from "./PdfViewer";
 
 export const dynamic = "force-dynamic";
 
@@ -86,14 +87,7 @@ export default async function ReadEbookPage({ params }: { params: { slug: string
         </div>
 
         {/* PDF Viewer */}
-        <div className="flex-1 w-full bg-[#0f0f0f] relative overflow-hidden">
-          <iframe 
-            src={embedUrl} 
-            className="absolute -top-[56px] left-0 w-full h-[calc(100%+56px)] border-0"
-            allow="autoplay"
-            title={ebook.title}
-          />
-        </div>
+        <PdfViewer embedUrl={embedUrl} title={ebook.title} />
       </div>
     );
   }
