@@ -86,10 +86,10 @@ export default async function ReadEbookPage({ params }: { params: { slug: string
         </div>
 
         {/* PDF Viewer */}
-        <div className="flex-1 w-full bg-transparent relative">
+        <div className="flex-1 w-full bg-[#0f0f0f] relative overflow-hidden">
           <iframe 
             src={embedUrl} 
-            className="w-full h-full border-0"
+            className="absolute -top-[56px] left-0 w-full h-[calc(100%+56px)] border-0"
             allow="autoplay"
             title={ebook.title}
           />
