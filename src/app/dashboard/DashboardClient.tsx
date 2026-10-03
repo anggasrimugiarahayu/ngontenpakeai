@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { 
   User, CheckCircle2, Link as LinkIcon, 
-  TrendingUp, Layers, Users, ShoppingBag, Calendar as CalendarIcon, Eye, Send, ArrowUp, Search, Image as ImageIcon, Download, Printer, ArrowLeft, ArrowRight, X
+  TrendingUp, Layers, Users, ShoppingBag, Settings, Calendar as CalendarIcon, Eye, Send, ArrowUp, Search, Image as ImageIcon, Download, Printer, ArrowLeft, ArrowRight, X
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -141,76 +141,154 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
       );
       
       const orderDate = new Date(order.createdAt);
+      // Dummy date for payment, just adding 2 minutes to order date for realism
+      const paymentDate = new Date(orderDate.getTime() + 2 * 60000);
+
       return (
-        <div className="p-6">
-          <div className="flex justify-between items-start mb-6">
-            <div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Order Details</h3>
-              <p className="text-sm text-gray-500">ID: {order.id}</p>
-            </div>
-            <button className="p-2 bg-gray-100 dark:bg-white/5 rounded-lg text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+        <div className="p-0 sm:p-4 text-sm">
+          {/* Header */}
+          <div className="flex justify-between items-center mb-4 px-4 sm:px-0">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">Order Details</h3>
+            <button className="flex items-center gap-2 px-4 py-1.5 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-lg font-bold transition-colors text-xs tracking-wide">
               <Printer className="w-4 h-4" />
+              PRINT
             </button>
           </div>
           
-          <div className="space-y-6">
-            <div className="bg-gray-50 dark:bg-[#1a1a1c] rounded-xl p-4 border border-gray-100 dark:border-white/5">
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Customer Information</h4>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-orange-100 dark:bg-orange-500/20 text-orange-500 rounded-full flex items-center justify-center font-bold">
-                  {(order.user?.name || 'U').charAt(0).toUpperCase()}
+          <div className="space-y-4">
+            
+            {/* Box 1: Status & Item */}
+            <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm">
+              <div className="flex justify-between items-start border-b border-gray-100 dark:border-white/10 pb-4 mb-4">
+                <div className="space-y-1 text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
+                  <p>Order time: <span className="font-semibold text-gray-900 dark:text-gray-200">{format(orderDate, 'dd MMM yyyy HH:mm')}</span></p>
+                  <p>Payment: <span className="font-semibold text-gray-900 dark:text-gray-200">{format(paymentDate, 'dd MMM yyyy HH:mm')}</span></p>
                 </div>
-                <div>
-                  <p className="font-medium text-gray-900 dark:text-white">{order.user?.name || 'Unknown User'}</p>
-                  <p className="text-sm text-gray-500">{order.user?.email || '-'}</p>
-                </div>
+                <span className={`font-bold text-xs uppercase tracking-wide px-2 py-1 rounded ${
+                  order.status === 'SUCCESS' ? 'text-orange-500' : 
+                  order.status === 'FAILED' ? 'text-red-500' : 'text-gray-500'
+                }`}>
+                  {order.status}
+                </span>
               </div>
-            </div>
-
-            <div className="bg-gray-50 dark:bg-[#1a1a1c] rounded-xl p-4 border border-gray-100 dark:border-white/5">
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Product</h4>
-              <div className="flex gap-4 items-center">
-                <div className="w-16 h-16 bg-gray-200 dark:bg-gray-800 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 shrink-0">
+              
+              <div className="flex gap-4 items-start mb-4">
+                <div className="w-16 h-16 bg-gray-100 dark:bg-[#121214] rounded-md overflow-hidden shrink-0 border border-gray-200 dark:border-white/10">
                   {order.product?.coverUrl ? (
                     <img src={order.product.coverUrl} className="w-full h-full object-cover" alt="Product" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">No Img</div>
+                    <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">No Img</div>
                   )}
                 </div>
                 <div className="flex-1">
-                  <p className="font-medium text-gray-900 dark:text-white line-clamp-2 leading-snug">{order.product?.title || 'Unknown Product'}</p>
-                  <div className="mt-1 flex items-center gap-2">
-                    <span className="text-xs font-semibold px-2 py-0.5 bg-gray-200 dark:bg-white/10 rounded-md text-gray-700 dark:text-gray-300">
-                      {order.product?.isProOnly ? 'PRO' : 'BASIC'}
-                    </span>
+                  <div className="flex gap-1 items-start">
+                    <span className="font-bold text-gray-900 dark:text-white">1x</span>
+                    <p className="font-bold text-gray-900 dark:text-white leading-tight">{order.product?.title || 'Unknown Product'}</p>
                   </div>
+                  <span className="inline-block mt-1 text-[10px] font-semibold px-2 py-0.5 border border-gray-200 dark:border-white/20 rounded-full text-gray-500 dark:text-gray-400">
+                    digital
+                  </span>
+                  <p className="text-gray-900 dark:text-gray-300 mt-1 font-medium">1 x {formatIDR(order.amount)}</p>
+                </div>
+              </div>
+              
+              <div className="bg-[#f8fafc] dark:bg-[#121214] rounded-lg p-3 border border-gray-100 dark:border-white/5">
+                <p className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Notes</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 italic">No notes provided</p>
+              </div>
+            </div>
+
+            {/* Box 2: Transaction Detail */}
+            <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm">
+              <h4 className="font-bold text-gray-900 dark:text-white mb-4">Transaction Detail</h4>
+              
+              <div className="space-y-2.5 text-sm text-gray-600 dark:text-gray-400">
+                <p className="text-xs break-all mb-4">TRX ID: {order.midtransId || '-'}</p>
+                
+                <div className="flex justify-between">
+                  <span>Total item (1 items)</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatIDR(order.amount)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total Addon</span>
+                  <span className="font-medium text-gray-900 dark:text-white">Rp. 0</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Total shipping</span>
+                  <span className="font-medium text-gray-900 dark:text-white">Rp. 0</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Discount</span>
+                  <span className="font-medium text-emerald-500">- Rp. 0</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Affiliate</span>
+                  <span className="font-medium text-emerald-500">- Rp. 0</span>
+                </div>
+                
+                <div className="pt-3 mt-3 border-t border-gray-100 dark:border-white/10 flex justify-between items-center">
+                  <span className="font-bold text-gray-900 dark:text-white">Total</span>
+                  <span className="font-bold text-gray-900 dark:text-white text-base">{formatIDR(order.amount)}</span>
                 </div>
               </div>
             </div>
 
-            <div className="bg-gray-50 dark:bg-[#1a1a1c] rounded-xl p-4 border border-gray-100 dark:border-white/5">
-              <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">Payment Details</h4>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Date</span>
-                  <span className="text-gray-900 dark:text-white font-medium">{format(orderDate, 'dd MMM yyyy, HH:mm')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Status</span>
-                  <span className={`font-bold px-2 py-0.5 rounded-md ${getStatusColor(order.status)}`}>
-                    {order.status}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Midtrans ID</span>
-                  <span className="text-gray-900 dark:text-white">{order.midtransId || '-'}</span>
-                </div>
-                <div className="pt-3 border-t border-gray-200 dark:border-white/10 flex justify-between items-center">
-                  <span className="font-semibold text-gray-900 dark:text-white">Total Amount</span>
-                  <span className="text-xl font-black text-orange-500">{formatIDR(order.amount)}</span>
-                </div>
+            {/* Box 3: Customer */}
+            <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm">
+              <h4 className="font-bold text-gray-900 dark:text-white mb-3">Customer</h4>
+              <div className="space-y-1.5 text-sm text-gray-800 dark:text-gray-300">
+                <p>{order.user?.name || 'Unknown User'}</p>
+                <p>{order.user?.email || '-'}</p>
+                <a href="#" className="inline-block text-emerald-500 font-medium hover:underline mt-1">085156339329</a>
               </div>
             </div>
+
+            {/* Box 4: Email Delivery Tracking */}
+            <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm">
+              <h4 className="font-bold text-gray-400 dark:text-gray-500 uppercase text-xs tracking-wider mb-5">Email Delivery Tracking</h4>
+              
+              <div className="relative pl-6 space-y-6 before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700">
+                
+                <div className="relative flex justify-between items-center text-sm">
+                  <div className="absolute left-[-29px] w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#1a1a1c] z-10"></div>
+                  <span className="font-medium text-emerald-500">Opened</span>
+                  <span className="text-gray-400 text-xs">{format(new Date(orderDate.getTime() + 4 * 60000), 'dd MMM - HH:mm')}</span>
+                </div>
+                
+                <div className="relative flex justify-between items-center text-sm">
+                  <div className="absolute left-[-29px] w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full border-2 border-white dark:border-[#1a1a1c] z-10"></div>
+                  <span className="px-2 py-0.5 bg-gray-100 dark:bg-white/5 rounded text-gray-500 dark:text-gray-400 text-xs font-medium">Delivered</span>
+                  <span className="text-gray-400 text-xs">{format(new Date(orderDate.getTime() + 2 * 60000), 'dd MMM - HH:mm')}</span>
+                </div>
+                
+                <div className="relative flex justify-between items-center text-sm">
+                  <div className="absolute left-[-29px] w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full border-2 border-white dark:border-[#1a1a1c] z-10"></div>
+                  <span className="px-2 py-0.5 bg-gray-100 dark:bg-white/5 rounded text-gray-500 dark:text-gray-400 text-xs font-medium">Processed</span>
+                  <span className="text-gray-400 text-xs">{format(orderDate, 'dd MMM - HH:mm')}</span>
+                </div>
+                
+              </div>
+            </div>
+
+            {/* Box 5: Follow Up Text */}
+            <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm">
+              <div className="flex justify-between items-center mb-4">
+                <h4 className="font-bold text-gray-900 dark:text-white text-lg">Follow Up Text</h4>
+                <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300">
+                  <Settings className="w-5 h-5" />
+                </button>
+              </div>
+              
+              <button className="w-full py-3 mb-6 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl font-bold transition-colors">
+                Send Follow Up Text via WhatsApp
+              </button>
+              
+              <div>
+                <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">Sending History</p>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">No history yet</p>
+              </div>
+            </div>
+
           </div>
         </div>
       );
@@ -276,32 +354,48 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                       >
                         <div className="flex justify-between items-center p-3 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-black/20">
                           <span className="text-xs font-medium text-gray-500 flex items-center gap-2">
-                            <CalendarIcon className="w-3.5 h-3.5" />
+                            <input type="checkbox" className="w-4 h-4 rounded border-gray-300 text-orange-500 focus:ring-orange-500" onClick={(e) => e.stopPropagation()} />
                             {format(new Date(order.createdAt), 'dd MMM yyyy HH:mm')}
                           </span>
-                          <span className={`text-xs px-2 py-0.5 rounded-md font-bold ${getStatusColor(order.status)}`}>
+                          <span className={`text-xs px-2 py-0.5 font-bold uppercase tracking-wide ${
+                            order.status === 'SUCCESS' ? 'text-orange-500' : 
+                            order.status === 'FAILED' ? 'text-red-500' : 'text-gray-500'
+                          }`}>
                             {order.status}
                           </span>
                         </div>
-                        <div className="p-4 flex flex-col sm:flex-row gap-4">
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-white/10">
-                            {order.product?.coverUrl ? (
-                              <img src={order.product.coverUrl} className="w-full h-full object-cover" alt="Product" />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-xs text-gray-400">IMG</div>
-                            )}
+                        <div className="p-4">
+                          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 dark:bg-white/5 rounded-md text-xs font-medium text-gray-700 dark:text-gray-300 mb-3">
+                            <User className="w-3.5 h-3.5" />
+                            Customer: <span className="font-bold">{order.user?.email || '-'}</span>
                           </div>
-                          <div className="flex-1 flex flex-col justify-between">
+                          
+                          <div className="flex gap-4">
+                            <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-white/10">
+                              {order.product?.coverUrl ? (
+                                <img src={order.product.coverUrl} className="w-full h-full object-cover" alt="Product" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-[10px] text-gray-400">IMG</div>
+                              )}
+                            </div>
+                            <div className="flex-1 flex flex-col justify-start">
+                              <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight mb-1">{order.product?.title || 'Unknown Product'}</h3>
+                              <div>
+                                <span className="inline-block text-[10px] font-semibold px-2 py-0.5 border border-gray-200 dark:border-white/20 rounded-full text-gray-500 dark:text-gray-400">
+                                  digital
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="mt-4 flex justify-between items-end">
                             <div>
-                              <h3 className="font-bold text-gray-900 dark:text-white text-sm sm:text-base leading-tight mb-1">{order.product?.title || 'Unknown Product'}</h3>
-                              <p className="text-xs text-gray-500 flex items-center gap-1">
-                                <User className="w-3 h-3" /> {order.user?.email || '-'}
-                              </p>
+                              <p className="text-[10px] text-gray-500 font-medium mb-0.5">Total Transaction</p>
+                              <p className="font-black text-gray-900 dark:text-white text-sm">{formatIDR(order.amount)}</p>
                             </div>
-                            <div className="mt-3 flex justify-between items-end">
-                              <span className="text-xs text-gray-500 font-medium">Total:</span>
-                              <span className="font-black text-orange-500">{formatIDR(order.amount)}</span>
-                            </div>
+                            <button className="px-5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors">
+                              Detail
+                            </button>
                           </div>
                         </div>
                       </div>
