@@ -10,7 +10,8 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
 import { DayPicker, DateRange } from 'react-day-picker';
-import { format, subDays, eachDayOfInterval } from 'date-fns';\nimport { useEffect } from 'react';
+import { format, subDays, eachDayOfInterval } from 'date-fns';
+import { useEffect } from 'react';
 import 'react-day-picker/dist/style.css';
 
 
