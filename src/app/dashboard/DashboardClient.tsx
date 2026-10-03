@@ -23,7 +23,7 @@ const MOCK_PRODUCTS = [
   { id: 7, title: 'Ebook Art Ilustrator Ruang Gambar', views: 472, sold: 13, amount: 637000, conversion: 2.75, image: 'https://images.unsplash.com/photo-1611162618071-b39a2ec055fb?w=100&h=100&fit=crop' },
 ];
 
-const DONUT_COLORS = ['#10b981', '#fde68a', '#d1fae5', '#34d399', '#059669'];
+const DONUT_COLORS = ['#059669', '#f59e0b', '#10b981', '#d97706', '#047857'];
 const MOCK_DONUT_DATA = [
   { name: 'Scale Plan', value: 60 },
   { name: 'Basic Plan', value: 38 },
