@@ -377,25 +377,25 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
           {/* Top Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col justify-center">
-               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+               <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full bg-orange-500"></div> 
                   Total Views & Clicks
-               </p>
+               </div>
                <h3 className="text-3xl font-black text-gray-900 dark:text-white">{formatIDR(dynamicTotalViews + dynamicTotalClicks)}</h3>
             </div>
             <div className="bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col justify-center">
-               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+               <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full bg-blue-500"></div> 
                   Total Sales
-               </p>
+               </div>
                <h3 className="text-3xl font-black text-gray-900 dark:text-white">1,093</h3>
             </div>
             <div className="bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col justify-center relative overflow-hidden">
                <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3"></div>
-               <p className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+               <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full bg-emerald-500"></div> 
                   Sales Value (IDR)
-               </p>
+               </div>
                <div className="flex items-baseline gap-2">
                  <h3 className="text-3xl font-black text-gray-900 dark:text-white">2,925,000</h3>
                  <span className="text-xs font-bold text-emerald-500 flex items-center"><ArrowUp size={12}/> 84.19%</span>
