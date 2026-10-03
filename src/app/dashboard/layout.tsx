@@ -29,7 +29,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   try {
     dbFeatures = await prisma.feature.findMany();
   } catch (e) {
-    console.error("Supabase cold start error for features:", e);
+    console.log("Supabase cold start error for features");
   }
   const isPro = session?.user?.role === "PRO" || session?.user?.role === "ADMIN" || isAdmin;
   

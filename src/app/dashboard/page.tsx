@@ -21,8 +21,14 @@ export default async function DashboardPage() {
   }
 
   // Fetch users & products
-  const totalUsers = await prisma.user.count();
-  const totalProducts = await prisma.digitalProduct.count();
+  let totalUsers = 0;
+  let totalProducts = 0;
+  try {
+    totalUsers = await prisma.user.count();
+    totalProducts = await prisma.digitalProduct.count();
+  } catch (e) {
+    console.log("Supabase timeout on counting users/products");
+  }
 
   // Fetch real orders (safeguard for dev server restart)
   let successfulOrders: any = { _sum: { amount: 0 }, _count: { id: 0 } };

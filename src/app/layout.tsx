@@ -27,7 +27,7 @@ export default async function RootLayout({
   try {
     memberCount = await prisma.user.count();
   } catch (error) {
-    console.error("Error fetching member count:", error);
+    console.log("Error fetching member count (Supabase cold start)");
   }
 
   return (
