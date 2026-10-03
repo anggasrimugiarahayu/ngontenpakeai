@@ -3,10 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { 
-  Compass, User, Lightbulb, FileText, LayoutTemplate, 
-  RefreshCw, BookOpen, Calendar, Menu, X, ChevronRight, ChevronLeft, ArrowLeft, Lock, LayoutGrid
-, Settings, HelpCircle, MessageSquare} from 'lucide-react';
+import { Compass, User, Lightbulb, FileText, LayoutTemplate, RefreshCw, BookOpen, Calendar, Menu, X, ChevronRight, ChevronLeft, ArrowLeft, Lock, LayoutGrid, Settings, HelpCircle, MessageSquare, LayoutDashboard } from 'lucide-react';
 
 const TOOLS = [
   { href: '/ruang-ngonten/master-blueprint', label: 'Master Blueprint', icon: Compass },
@@ -60,10 +57,11 @@ export default function ClientLayout({
   ];
 
   const SETTINGS_NAV = [
-    { label: "Pengaturan", href: "/pengaturan", icon: Settings },
-    { label: "Bantuan", href: "/bantuan", icon: HelpCircle },
-    { label: "Feedback", href: "/feedback", icon: MessageSquare },
-  ];
+  { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
+  { label: 'Pengaturan', icon: Settings, href: '/pengaturan' },
+  { label: 'Bantuan', icon: HelpCircle, href: '/bantuan' },
+  { label: 'Feedback', icon: MessageSquare, href: '/feedback' },
+];
 
   
 
