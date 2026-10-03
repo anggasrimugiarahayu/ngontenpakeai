@@ -187,6 +187,11 @@ export function Navbar({ followerCount = "144K", memberCount = "0" }: NavbarProp
                 </div>
                 <div className="py-1">
                   
+                  {isAdmin && (
+                    <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
+                      Dashboard
+                    </Link>
+                  )}
                   <Link href="/pengaturan" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
                     Pengaturan
                   </Link>
