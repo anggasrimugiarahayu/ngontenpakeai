@@ -140,35 +140,6 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
 
     const OrderDetailsContent = ({ order }: { order: any }) => {
       if (!order) return (
-      <style jsx global>{`
-        @media print {
-          body * {
-            visibility: hidden;
-          }
-          #print-area, #print-area * {
-            visibility: visible;
-          }
-          #print-area {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: auto;
-            margin: 0;
-            padding: 20px;
-            background: white !important;
-            box-shadow: none !important;
-            border: none !important;
-          }
-          .print\\:hidden {
-            display: none !important;
-          }
-          .print\\:block {
-            display: block !important;
-          }
-        }
-      `}</style>
-      
         <div className="flex flex-col items-center justify-center h-full text-gray-400 p-10">
           <ShoppingBag className="w-12 h-12 mb-4 opacity-20" />
           <p>Pilih transaksi untuk melihat detail</p>
@@ -430,8 +401,6 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                                 <span className="text-[10px] text-gray-400">No Img</span>
                               )}
                             </div>
-                              )}
-                            </div>
                             <div className="flex-1 flex flex-col justify-start">
                               <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight mb-1">{order.product?.title || 'Unknown Product'}</h3>
                               <div>
@@ -533,6 +502,35 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
   };
   
   return (
+    <>
+      <style jsx global>{`
+        @media print {
+          body * {
+            visibility: hidden;
+          }
+          #print-area, #print-area * {
+            visibility: visible;
+          }
+          #print-area {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: auto;
+            margin: 0;
+            padding: 20px;
+            background: white !important;
+            box-shadow: none !important;
+            border: none !important;
+          }
+          .print\\:hidden {
+            display: none !important;
+          }
+          .print\\:block {
+            display: block !important;
+          }
+        }
+      `}</style>
     <div className="space-y-6">
       
       {/* HEADLINE & TABS HEADERS */}
@@ -986,5 +984,6 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
       {activeTab === 'orders' && renderOrdersTab()}
 
     </div>
+    </>
   );
 }
