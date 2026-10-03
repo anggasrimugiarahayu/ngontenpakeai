@@ -24,26 +24,30 @@ export default async function DashboardPage() {
   const totalUsers = await prisma.user.count();
   const totalProducts = await prisma.digitalProduct.count();
 
-  // Fetch real orders
-  const successfulOrders = await prisma.order.aggregate({
-    _sum: { amount: true },
-    _count: { id: true },
-    where: { status: 'SUCCESS' }
-  });
+  // Fetch real orders (safeguard for dev server restart)
+  let successfulOrders = { _sum: { amount: 0 }, _count: { id: 0 } };
+  let topProducts: any[] = [];
+  
+  if (prisma.order) {
+    successfulOrders = await prisma.order.aggregate({
+      _sum: { amount: true },
+      _count: { id: true },
+      where: { status: 'SUCCESS' }
+    });
+    
+    topProducts = await prisma.order.groupBy({
+      by: ['digitalProductId'],
+      _sum: { amount: true },
+      _count: { id: true },
+      where: { status: 'SUCCESS' },
+      orderBy: {
+        _sum: { amount: 'desc' }
+      }
+    });
+  }
 
-  const lifetimeSalesIDR = successfulOrders._sum.amount || 0;
-  const lifetimeOrders = successfulOrders._count.id;
-
-  // Group orders by product for the table
-  const topProducts = await prisma.order.groupBy({
-    by: ['digitalProductId'],
-    _sum: { amount: true },
-    _count: { id: true },
-    where: { status: 'SUCCESS' },
-    orderBy: {
-      _sum: { amount: 'desc' }
-    }
-  });
+  const lifetimeSalesIDR = successfulOrders._sum?.amount || 0;
+  const lifetimeOrders = successfulOrders._count?.id || 0;
 
   // Fetch product details for the grouped data
   const productIds = topProducts.map(p => p.digitalProductId);
