@@ -13,14 +13,24 @@ export default async function DashboardLayout({ children }: { children: React.Re
 
   let hasBlueprint = false;
   if (session?.user?.id) {
-    const blueprint = await prisma.masterBlueprint.findFirst({
-      where: { userId: session.user.id },
-      select: { id: true }
-    });
+    let blueprint = null;
+    try {
+      blueprint = await prisma.masterBlueprint.findFirst({
+        where: { userId: session.user.id },
+        select: { id: true }
+      });
+    } catch (e) {
+      console.error("Supabase cold start error for blueprint:", e);
+    }
     hasBlueprint = !!blueprint;
   }
   
-  const dbFeatures = await prisma.feature.findMany();
+  let dbFeatures: any[] = [];
+  try {
+    dbFeatures = await prisma.feature.findMany();
+  } catch (e) {
+    console.error("Supabase cold start error for features:", e);
+  }
   const isPro = session?.user?.role === "PRO" || session?.user?.role === "ADMIN" || isAdmin;
   
   return <ClientLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro}>{children}</ClientLayout>;

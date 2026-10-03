@@ -29,21 +29,24 @@ export default async function DashboardPage() {
   let topProducts: any[] = [];
   
   if (prisma.order) {
-    successfulOrders = await prisma.order.aggregate({
-      _sum: { amount: true },
-      _count: { id: true },
-      where: { status: 'SUCCESS' }
-    });
+    try {
+      successfulOrders = await prisma.order.aggregate({
+        _sum: { amount: true },
+        _count: { id: true },
+        where: { status: 'SUCCESS' }
+      });
+    } catch(e) { console.error("Prisma error successfulOrders:", e); }
     
-    topProducts = await prisma.order.groupBy({
-      by: ['digitalProductId'],
-      _sum: { amount: true },
-      _count: { id: true },
-      where: { status: 'SUCCESS' },
-      orderBy: {
-        _sum: { amount: 'desc' }
-      }
-    });
+    try {
+      topProducts = await prisma.order.groupBy({
+        by: ['digitalProductId'],
+        _sum: { amount: true },
+        _count: { id: true },
+        where: { status: 'SUCCESS' },
+        orderBy: { _sum: { amount: 'desc' } },
+        take: 5
+      });
+    } catch(e) { console.error("Prisma error topProducts:", e); }
   }
 
   const lifetimeSalesIDR = successfulOrders._sum?.amount || 0;
@@ -51,13 +54,15 @@ export default async function DashboardPage() {
 
   let fullOrders: any[] = [];
   if (prisma.order) {
-    fullOrders = await prisma.order.findMany({
-      include: {
-        user: { select: { name: true, email: true } },
-        product: { select: { title: true, coverUrl: true, isProOnly: true } }
-      },
-      orderBy: { createdAt: 'desc' }
-    });
+    try {
+      fullOrders = await prisma.order.findMany({
+        include: {
+          user: { select: { name: true, email: true } },
+          product: { select: { title: true, coverUrl: true, isProOnly: true } }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
+    } catch(e) { console.error("Prisma error fullOrders:", e); }
   }
 
   // Fetch product details for the grouped data

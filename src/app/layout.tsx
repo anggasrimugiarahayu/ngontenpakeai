@@ -31,11 +31,7 @@ export default async function RootLayout({
   }
 
   return (
-    <html suppressHydrationWarning
-      lang="id"
-      className="scroll-smooth"
-      suppressHydrationWarning
-    >
+    <html lang="id" className="scroll-smooth" suppressHydrationWarning>
       <body
         className={`bg-gray-50 text-gray-800 dark:bg-rn-dark-bg dark:text-gray-200 font-sans selection:bg-rn-accent selection:text-black antialiased relative min-h-screen`}
         suppressHydrationWarning
@@ -56,17 +52,9 @@ export default async function RootLayout({
               </main>
               <Footer />
             </div>
-            <Script src="https://unpkg.com/lucide@latest" strategy="beforeInteractive" />
-            <Script id="lucide-init" strategy="lazyOnload">
-              {`
-                setInterval(() => {
-                  if (window.lucide) {
-                    window.lucide.createIcons();
-                  }
-                }, 1000);
-              `}
-            </Script>
+
           </ThemeProvider>
+
         </AuthProvider>
       </body>
     </html>
