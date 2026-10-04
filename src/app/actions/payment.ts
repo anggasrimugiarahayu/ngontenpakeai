@@ -50,6 +50,10 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | 
   });
 
   // Call Midtrans SNAP API
+  if (!process.env.MIDTRANS_SERVER_KEY || process.env.MIDTRANS_SERVER_KEY === 'SB-Mid-server-YOUR_SERVER_KEY') {
+    throw new Error("Midtrans Server Key belum disetel di .env. Silakan tambahkan MIDTRANS_SERVER_KEY.");
+  }
+  
   const parameter = {
     transaction_details: {
       order_id: order.id,
@@ -86,6 +90,6 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | 
     return { token: transaction.token, redirectUrl: transaction.redirect_url };
   } catch (error: any) {
     console.error("Midtrans Error:", error.message);
-    throw new Error("Gagal membuat transaksi pembayaran.");
+    throw new Error(`Gagal membuat transaksi: ${error.message}`);
   }
 }
