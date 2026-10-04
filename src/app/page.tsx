@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { createCheckoutToken } from "@/app/actions/payment";
 import { redirect } from "next/navigation";
 import { LayoutDashboard, UserCircle, Lightbulb, Camera, Calendar, BookOpen,
   Wrench,
@@ -341,16 +340,7 @@ function HomeContent() {
                 </ul>
               </div>
 
-              <form action={async () => {
-                const res = await createCheckoutToken({ type: "PRO_BASIC", redirectUrl: window.location.origin + "/ruang-belajar" });
-                if (res?.redirectUrl) {
-                  window.location.href = res.redirectUrl;
-                }
-              }}>
-                <button type="submit" className={`w-full mt-6 block text-center font-bold py-3 rounded-xl transition-all bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white`}>
-                  Pilih Paket Basic
-                </button>
-              </form>
+              <Link href="/checkout?type=PRO_BASIC" className="w-full mt-6 block text-center font-bold py-3 rounded-xl transition-all bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white">Pilih Paket Basic</Link>
             </div>
 
             {/* PAKET TOOLS */}
@@ -407,16 +397,7 @@ function HomeContent() {
                 </ul>
               </div>
 
-              <form action={async () => {
-                const res = await createCheckoutToken({ type: "PRO_TOOLS", redirectUrl: window.location.origin + "/ruang-belajar" });
-                if (res?.redirectUrl) {
-                  window.location.href = res.redirectUrl;
-                }
-              }}>
-                <button type="submit" className={`w-full mt-6 block text-center font-bold py-3 rounded-xl transition-all bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white`}>
-                  Pilih Sistem Tools
-                </button>
-              </form>
+              <Link href="/checkout?type=PRO_TOOLS" className="w-full mt-6 block text-center font-bold py-3 rounded-xl transition-all bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white">Pilih Sistem Tools</Link>
             </div>
 
             {/* PAKET EBOOK LENGKAP */}
@@ -483,16 +464,7 @@ function HomeContent() {
                 </ul>
               </div>
 
-              <form action={async () => {
-                const res = await createCheckoutToken({ type: "PRO_LENGKAP", redirectUrl: window.location.origin + "/ruang-belajar" });
-                if (res?.redirectUrl) {
-                  window.location.href = res.redirectUrl;
-                }
-              }}>
-                <button type="submit" className="w-full mt-6 block text-center bg-rn-accent text-black font-black py-3 rounded-xl hover:bg-white transition-all shadow-[0_0_20px_rgba(208,226,6,0.2)]">
-                  Pilih Paket Lengkap
-                </button>
-              </form>
+              <Link href="/checkout?type=PRO_LENGKAP" className="w-full mt-6 block text-center bg-rn-accent text-black font-black py-3 rounded-xl hover:bg-white transition-all shadow-[0_0_20px_rgba(208,226,6,0.2)]">Pilih Paket Lengkap</Link>
             </div>
           </div>
         </main>

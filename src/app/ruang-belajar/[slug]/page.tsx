@@ -15,11 +15,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ReadEbookPage({ params, searchParams }: { params: { slug: string }, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const session = await auth();
-    const resolvedSearchParams = await searchParams;
-    if (resolvedSearchParams?.order_id && typeof resolvedSearchParams.order_id === 'string') {
-      const { verifyPayment } = await import("@/app/actions/payment");
-      await verifyPayment(resolvedSearchParams.order_id);
-    }
+    
   
   if (!session?.user) {
     redirect("/login");
@@ -215,19 +211,9 @@ export default async function ReadEbookPage({ params, searchParams }: { params: 
                            ) : (
                              /* For PRO ebook (User is FREE) or PREMIUM ebook -> Needs actual Checkout! */
                              <div className="w-full flex flex-col gap-3">
-                               <form action={async () => {
-                                 "use server";
-                                 const res = await createCheckoutToken({ 
-                                 type: "EBOOK", 
-                                 productId: ebook.id,
-                                 redirectUrl: `${(await headers()).get("host")?.includes("localhost") ? "http" : "https"}://${(await headers()).get("host")}/ruang-belajar/${ebook.slug}`
-                               });
-                                 if (res?.redirectUrl) redirect(res.redirectUrl);
-                               }} className="w-full">
-                                 <button type="submit" className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg">
+                               <Link href={`/checkout?type=EBOOK&productId=${ebook.id}`} className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg">
                                    Beli Satuan (Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'})
-                                 </button>
-                               </form>
+                               </Link>
                                {isProEbook && (
                                  <Link 
                                    href="/?pricing=true" 

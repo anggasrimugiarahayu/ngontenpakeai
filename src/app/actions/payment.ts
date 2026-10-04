@@ -2,12 +2,14 @@
 
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
-import { snap } from "@/lib/midtrans";
-import { revalidatePath } from "next/cache";
+import { snap, isProduction } from "@/lib/midtrans";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { coreApi } from "@/lib/midtrans";
 
-export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | "PRO_TOOLS" | "PRO_LENGKAP", productId?: string, redirectUrl?: string }) {
+const ADMIN_FEE = 3000;
+
+export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | "PRO_TOOLS" | "PRO_LENGKAP", productId?: string }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -15,7 +17,7 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | 
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
 
-  let amount = 0;
+  let baseAmount = 0;
   let orderName = "";
   
   if (data.type === "EBOOK") {
@@ -27,18 +29,20 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | 
       throw new Error("Produk ini gratis, silakan gunakan tombol klaim.");
     }
     
-    amount = product.price;
-    orderName = `Pembelian E-Book: ${product.title}`;
+    baseAmount = product.price;
+    orderName = `E-Book: ${product.title}`;
   } else if (data.type === "PRO_BASIC") {
-    amount = 99000;
-    orderName = "Paket Basic (Ebook)";
+    baseAmount = 99000;
+    orderName = "Paket Basic";
   } else if (data.type === "PRO_TOOLS") {
-    amount = 99000;
+    baseAmount = 99000;
     orderName = "Paket Sistem Tools";
   } else if (data.type === "PRO_LENGKAP") {
-    amount = 149000;
-    orderName = "Paket Lengkap (Ebook + Tools)";
+    baseAmount = 149000;
+    orderName = "Paket Lengkap";
   }
+
+  const grossAmount = baseAmount + ADMIN_FEE;
 
   // Create an Order in DB
   const order = await prisma.order.create({
@@ -46,12 +50,11 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | 
       userId,
       digitalProductId: data.type === "EBOOK" ? data.productId : null,
       orderType: data.type,
-      amount,
+      amount: grossAmount,
       status: "PENDING",
     }
   });
 
-  // Call Midtrans SNAP API
   if (!process.env.MIDTRANS_SERVER_KEY || process.env.MIDTRANS_SERVER_KEY === 'SB-Mid-server-YOUR_SERVER_KEY') {
     throw new Error("Midtrans Server Key belum disetel di .env. Silakan tambahkan MIDTRANS_SERVER_KEY.");
   }
@@ -59,7 +62,7 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | 
   const parameter = {
     transaction_details: {
       order_id: order.id,
-      gross_amount: amount
+      gross_amount: grossAmount
     },
     customer_details: {
       first_name: user.name || "Customer",
@@ -68,14 +71,17 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | 
     item_details: [
       {
         id: data.type === "EBOOK" ? data.productId : data.type,
-        price: amount,
+        price: baseAmount,
         quantity: 1,
         name: orderName
+      },
+      {
+        id: "FEE_ADMIN",
+        price: ADMIN_FEE,
+        quantity: 1,
+        name: "Biaya Layanan"
       }
-    ],
-    callbacks: {
-      finish: data.redirectUrl || ((await headers()).get("host")?.includes("localhost") ? "http://localhost:3000/ruang-belajar" : "https://ngontenpakeai.com/ruang-belajar")
-    }
+    ]
   };
 
   try {
@@ -89,7 +95,7 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | 
       }
     });
 
-    return { token: transaction.token, redirectUrl: transaction.redirect_url };
+    return { token: transaction.token, orderId: order.id };
   } catch (error: any) {
     console.error("Midtrans Error:", error.message);
     throw new Error(`Gagal membuat transaksi: ${error.message}`);
@@ -131,7 +137,7 @@ export async function verifyPayment(orderId: string) {
           await tx.user.update({ where: { id: order.userId }, data: { role: "PRO" } });
         }
       });
-      
+      revalidatePath("/ruang-belajar");
       return { success: true, status: finalStatus, justUpdated: true };
     }
     

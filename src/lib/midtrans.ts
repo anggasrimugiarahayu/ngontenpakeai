@@ -3,8 +3,8 @@ import midtransClient from 'midtrans-client';
 const serverKey = process.env.MIDTRANS_SERVER_KEY || '';
 const clientKey = process.env.MIDTRANS_CLIENT_KEY || '';
 
-// Force sandbox mode for now because the key works on sandbox
-const isProduction = false;
+// Exporting it so we can use it to determine the script URL
+export const isProduction = false;
 
 export const snap = new midtransClient.Snap({
   isProduction: isProduction,
