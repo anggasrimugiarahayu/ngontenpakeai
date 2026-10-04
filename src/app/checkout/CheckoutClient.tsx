@@ -63,7 +63,7 @@ export default function CheckoutClient({
     return calculatePaymentFees(baseAmount, selectedMethod);
   }, [baseAmount, selectedMethod]);
 
-  // Countdown Effect
+  // Countdown Effect for expiration check in background
   useEffect(() => {
     if (paymentState !== "pending" || !expiryTime) return;
 
@@ -79,14 +79,6 @@ export default function CheckoutClient({
         setErrorMessage("Waktu pembayaran telah habis. Silakan buat pesanan baru.");
         return;
       }
-
-      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      setTimeLeft(
-        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
-      );
     }, 1000);
 
     return () => clearInterval(interval);
@@ -166,23 +158,6 @@ export default function CheckoutClient({
     }
   };
 
-  const handleCancelPayment = async () => {
-    if (!currentOrderId) return;
-    setLoading(true);
-    const res = await cancelPayment(currentOrderId);
-    if (res.success) {
-      setPaymentState("idle");
-      setCurrentToken("");
-      setCurrentOrderId("");
-      setExpiryTime("");
-      setTimeLeft("");
-      setLoading(false);
-    } else {
-      setErrorMessage(res.message || "Gagal membatalkan pesanan.");
-      setLoading(false);
-    }
-  };
-
   const snapScriptUrl = isProduction 
     ? "https://app.midtrans.com/snap/snap.js" 
     : "https://app.sandbox.midtrans.com/snap/snap.js";
@@ -209,46 +184,6 @@ export default function CheckoutClient({
     );
   }
 
-  if (paymentState === "pending") {
-    return (
-      <div className="bg-white dark:bg-[#18181b] p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 max-w-md w-full mx-auto text-center mt-10 relative overflow-hidden">
-        <Script src={snapScriptUrl} data-client-key={clientKey} strategy="afterInteractive" />
-        
-        <div className="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
-          <Clock className="w-10 h-10" />
-        </div>
-        <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">Menunggu Pembayaran</h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm">
-          Selesaikan pembayaran Anda menggunakan <strong className="text-gray-900 dark:text-white">{PAYMENT_METHODS[selectedMethod]?.name || "Metode Terpilih"}</strong>
-        </p>
-
-        <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
-          <p className="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wider">Bayar Sebelum (Pay Within)</p>
-          <div className="text-3xl font-black text-rn-accent tracking-widest">{timeLeft || "..."}</div>
-        </div>
-
-        <div className="space-y-3">
-          <button 
-            onClick={() => openSnap(currentToken, currentOrderId)} 
-            disabled={loading}
-            className="w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
-          >
-            <RefreshCcw className="w-5 h-5" /> Lanjutkan Pembayaran
-          </button>
-          
-          <button 
-            onClick={handleCancelPayment}
-            disabled={loading}
-            className="w-full bg-transparent border border-red-500 text-red-500 font-bold py-3.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2"
-          >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5" />}
-            Batalkan Pesanan
-          </button>
-        </div>
-      </div>
-    );
-  }
-
   if (paymentState === "verifying") {
     return (
       <div className="bg-white dark:bg-[#18181b] p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 max-w-md w-full mx-auto text-center mt-10">
@@ -258,6 +193,9 @@ export default function CheckoutClient({
       </div>
     );
   }
+
+  // Disable forms if pending
+  const isPending = paymentState === "pending";
 
   return (
     <div className="w-full relative">
@@ -303,8 +241,9 @@ export default function CheckoutClient({
                 <input 
                   type="email" 
                   value={customerEmail} 
-                  onChange={(e) => setCustomerEmail(e.target.value)} 
-                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all" 
+                  onChange={(e) => setCustomerEmail(e.target.value)} disabled={paymentState === "pending"} 
+                  disabled={isPending}
+                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
                   placeholder="Your Email" 
                 />
               </div>
@@ -316,8 +255,9 @@ export default function CheckoutClient({
                 <input 
                   type="text" 
                   value={customerName} 
-                  onChange={(e) => setCustomerName(e.target.value)} 
-                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all" 
+                  onChange={(e) => setCustomerName(e.target.value)} disabled={paymentState === "pending"} 
+                  disabled={isPending}
+                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
                   placeholder="Your Name" 
                 />
               </div>
@@ -329,8 +269,9 @@ export default function CheckoutClient({
                 <input 
                   type="tel" 
                   value={customerPhone} 
-                  onChange={(e) => setCustomerPhone(e.target.value)} 
-                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all" 
+                  onChange={(e) => setCustomerPhone(e.target.value)} disabled={paymentState === "pending"} 
+                  disabled={isPending}
+                  className="w-full px-3 py-2.5 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed" 
                   placeholder="08xxxxxxx" 
                 />
               </div>
@@ -364,8 +305,9 @@ export default function CheckoutClient({
 
           <div className="border border-rn-accent/50 dark:border-rn-accent/40 rounded-xl overflow-hidden mb-5 relative flex-none">
             <button 
-              onClick={() => setShowPaymentModal(true)}
-              className="w-full p-3.5 flex items-center justify-between bg-white dark:bg-gray-900 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+              onClick={() => !isPending && setShowPaymentModal(true)}
+              disabled={isPending}
+              className={`w-full p-3.5 flex items-center justify-between bg-white dark:bg-gray-900 transition-colors ${isPending ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-gray-800'}`}
             >
               <div className="flex items-center gap-3">
                 <div className="w-10 h-7 border border-gray-200 dark:border-gray-700 rounded flex items-center justify-center bg-white shrink-0">
@@ -393,8 +335,9 @@ export default function CheckoutClient({
                 <input 
                   type="checkbox" 
                   checked={agreeToTerms}
-                  onChange={(e) => setAgreeToTerms(e.target.checked)}
-                  className="peer appearance-none w-4 h-4 border-2 border-gray-300 dark:border-gray-600 rounded checked:border-rn-accent checked:bg-rn-accent outline-none focus:ring-2 focus:ring-rn-accent/30 transition-all cursor-pointer"
+                  onChange={(e) => setAgreeToTerms(e.target.checked)} disabled={paymentState === "pending"}
+                  disabled={isPending}
+                  className="peer appearance-none w-4 h-4 border-2 border-gray-300 dark:border-gray-600 rounded checked:border-rn-accent checked:bg-rn-accent outline-none focus:ring-2 focus:ring-rn-accent/30 transition-all cursor-pointer disabled:opacity-50"
                 />
                 <CheckCircle2 className="w-3 h-3 text-white absolute opacity-0 peer-checked:opacity-100 pointer-events-none" />
               </div>
@@ -406,8 +349,9 @@ export default function CheckoutClient({
               <div className="relative flex items-center justify-center mt-0.5 shrink-0">
                 <input 
                   type="checkbox" 
-                  className="peer appearance-none w-4 h-4 border-2 border-gray-300 dark:border-gray-600 rounded checked:border-rn-accent checked:bg-rn-accent outline-none focus:ring-2 focus:ring-rn-accent/30 transition-all cursor-pointer"
+                  className="peer appearance-none w-4 h-4 border-2 border-gray-300 dark:border-gray-600 rounded checked:border-rn-accent checked:bg-rn-accent outline-none focus:ring-2 focus:ring-rn-accent/30 transition-all cursor-pointer disabled:opacity-50"
                   defaultChecked
+                  disabled={isPending}
                 />
                 <CheckCircle2 className="w-3 h-3 text-white absolute opacity-0 peer-checked:opacity-100 pointer-events-none" />
               </div>
@@ -424,12 +368,32 @@ export default function CheckoutClient({
           )}
 
           <button 
-            onClick={paymentState === "error" ? () => setPaymentState("idle") : handlePay} 
+            onClick={
+              paymentState === "error" 
+                ? () => {
+                    setPaymentState("idle");
+                    setCurrentToken("");
+                    setCurrentOrderId("");
+                  }
+                : paymentState === "pending"
+                ? () => openSnap(currentToken, currentOrderId)
+                : handlePay
+            } 
             disabled={loading}
-            className="w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 mt-auto flex-none"
+            className={`w-full text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 mt-auto flex-none shadow-md ${
+              isPending ? 'bg-orange-500 hover:bg-orange-600 animate-pulse shadow-orange-500/20' : 'bg-rn-accent hover:bg-rn-accent/90'
+            }`}
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-            {paymentState === "error" ? "Buat Pesanan Baru" : loading ? "Processing..." : `Buy Now - IDR ${formatRupiah(grossAmount)}`}
+            {
+              paymentState === "error" 
+                ? "Buat Pesanan Baru" 
+                : paymentState === "pending" 
+                ? "Menunggu Pembayaran" 
+                : loading 
+                ? "Processing..." 
+                : `Buy Now - IDR ${formatRupiah(grossAmount)}`
+            }
           </button>
         </div>
       </div>
