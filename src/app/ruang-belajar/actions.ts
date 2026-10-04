@@ -41,3 +41,38 @@ export async function addReview(productId: string, rating: number, comment: stri
   revalidatePath(`/ruang-belajar`);
   revalidatePath(`/ruang-belajar/[slug]`);
 }
+
+export async function claimFreeEbook(productId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const userId = session.user.id;
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  
+  if (!user) throw new Error("User not found");
+
+  const product = await prisma.digitalProduct.findUnique({ where: { id: productId } });
+  if (!product) throw new Error("Product not found");
+
+  const isFree = product.accessLevel === "FREE";
+  const isProEbook = product.accessLevel === "PRO";
+  
+  // Calculate if the user has an active PRO subscription
+  // In the original code, PRO is determined by: user.role === "PRO"
+  const isPro = user.role === "PRO" || user.email === "anggasrimugiarahayu@gmail.com";
+
+  // Check if they are allowed to claim for free
+  if (!isFree && !(isProEbook && isPro)) {
+    throw new Error("Produk ini tidak bisa diklaim gratis. Anda harus berlangganan PRO atau membelinya.");
+  }
+
+  // Insert into UserOwnedProduct
+  await prisma.userOwnedProduct.upsert({
+    where: { userId_digitalProductId: { userId, digitalProductId: productId } },
+    update: {},
+    create: { userId, digitalProductId: productId }
+  });
+
+  revalidatePath(`/ruang-belajar`);
+  revalidatePath(`/ruang-belajar/[slug]`);
+}

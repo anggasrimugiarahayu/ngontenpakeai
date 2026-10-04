@@ -47,9 +47,10 @@ export default async function RuangBelajarPage() {
               
               const isOwned = ownedProductIds.has(ebook.id);
               
+              // For Admin, everything is unlocked. For others, ONLY if they own it.
+              const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
               let isLocked = true;
-              if (isFree) isLocked = false;
-              else if (isProEbook && isPro) isLocked = false;
+              if (isAdmin) isLocked = false;
               else if (isOwned) isLocked = false;
 
               const reviewCount = ebook.reviews?.length || 0;
@@ -119,9 +120,7 @@ export default async function RuangBelajarPage() {
                       
                       <div className="mt-auto pt-2.5 flex items-center justify-between border-t border-gray-100 dark:border-white/5">
                         {isOwned ? (
-                          <span className="text-[17px] font-black text-green-600 dark:text-green-500">Akses Terbuka</span>
-                        ) : (!isLocked && isProEbook) ? (
-                          <span className="text-[17px] font-black text-rn-accent">Akses Terbuka (PRO)</span>
+                          <span className="text-[17px] font-black text-green-600 dark:text-green-500">Dimiliki</span>
                         ) : isFree ? (
                           <span className="text-[17px] font-black text-green-600 dark:text-green-500">Rp 0</span>
                         ) : (
@@ -130,7 +129,7 @@ export default async function RuangBelajarPage() {
                               Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
                             </span>
                             {isProEbook && (
-                               <span className="text-[8px] text-rn-accent font-bold mt-1 uppercase tracking-wider">Atau Gratis dgn PRO</span>
+                               <span className="text-[8px] text-rn-accent font-bold mt-1 uppercase tracking-wider">Atau Klaim Rp 0 dgn PRO</span>
                             )}
                           </div>
                         )}
