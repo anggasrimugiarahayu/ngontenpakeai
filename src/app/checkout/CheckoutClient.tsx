@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Script from "next/script";
-import { createCheckoutToken, verifyPayment } from "@/app/actions/payment";
+import { createCheckoutToken, verifyPayment, cancelPayment } from "@/app/actions/payment";
 import { useRouter } from "next/navigation";
-import { Loader2, CheckCircle2, ArrowLeft, ShieldCheck, ChevronRight, X, Info, Lock, CreditCard } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowLeft, ShieldCheck, ChevronRight, X, Info, Lock, CreditCard, Clock, XCircle, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import { PAYMENT_METHODS, calculatePaymentFees, PaymentMethodKey } from "@/lib/payment-calc";
 
@@ -35,7 +35,7 @@ export default function CheckoutClient({
 }: CheckoutClientProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "success" | "error">("idle");
+  const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "success" | "pending" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey>("QRIS");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -45,6 +45,11 @@ export default function CheckoutClient({
   const [customerPhone, setCustomerPhone] = useState(initialPhone);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
+  const [currentToken, setCurrentToken] = useState("");
+  const [currentOrderId, setCurrentOrderId] = useState("");
+  const [expiryTime, setExpiryTime] = useState("");
+  const [timeLeft, setTimeLeft] = useState("");
+
   const formatRupiah = (num: number) => {
     return new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(num);
   };
@@ -52,6 +57,78 @@ export default function CheckoutClient({
   const { grossAmount, adminFee } = useMemo(() => {
     return calculatePaymentFees(baseAmount, selectedMethod);
   }, [baseAmount, selectedMethod]);
+
+  // Countdown Effect
+  useEffect(() => {
+    if (paymentState !== "pending" || !expiryTime) return;
+
+    const interval = setInterval(() => {
+      const expiry = new Date(expiryTime).getTime();
+      const now = new Date().getTime();
+      const distance = expiry - now;
+
+      if (distance < 0) {
+        clearInterval(interval);
+        setTimeLeft("EXPIRED");
+        setPaymentState("error");
+        setErrorMessage("Waktu pembayaran telah habis. Silakan buat pesanan baru.");
+        return;
+      }
+
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      setTimeLeft(
+        `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
+      );
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [paymentState, expiryTime]);
+
+  const openSnap = (token: string, orderId: string) => {
+    // @ts-ignore
+    window.snap.pay(token, {
+      onSuccess: async function (result: any) {
+        setPaymentState("verifying");
+        const verifyRes = await verifyPayment(orderId);
+        if (verifyRes.success && verifyRes.status === "SUCCESS") {
+          setPaymentState("success");
+        } else {
+          setPaymentState("error");
+          setErrorMessage("Pembayaran berhasil di Midtrans, tetapi gagal diverifikasi sistem. Silakan hubungi admin.");
+        }
+      },
+      onPending: async function (result: any) {
+        // Just closed or actually pending
+        setPaymentState("verifying");
+        const verifyRes = await verifyPayment(orderId);
+        if (verifyRes.success && verifyRes.status === "PENDING") {
+          setExpiryTime(verifyRes.expiryTime || "");
+          setPaymentState("pending");
+        }
+      },
+      onError: function (result: any) {
+        alert("Pembayaran gagal!");
+        setLoading(false);
+      },
+      onClose: async function () {
+        // User closed the popup window
+        setPaymentState("verifying");
+        const verifyRes = await verifyPayment(orderId);
+        if (verifyRes.success && verifyRes.status === "SUCCESS") {
+           setPaymentState("success");
+        } else if (verifyRes.success && verifyRes.status === "PENDING") {
+           setExpiryTime(verifyRes.expiryTime || "");
+           setPaymentState("pending");
+        } else {
+           setLoading(false);
+           setPaymentState("idle");
+        }
+      }
+    });
+  };
 
   const handlePay = async () => {
     if (!customerName || !customerEmail || !customerPhone) {
@@ -75,33 +152,30 @@ export default function CheckoutClient({
         customerPhone
       });
       
-      if (res?.token) {
-        // @ts-ignore
-        window.snap.pay(res.token, {
-          onSuccess: async function (result: any) {
-            setPaymentState("verifying");
-            const verifyRes = await verifyPayment(result.order_id);
-            if (verifyRes.success) {
-              setPaymentState("success");
-            } else {
-              setPaymentState("error");
-              setErrorMessage("Pembayaran berhasil, tetapi gagal diverifikasi sistem. Silakan hubungi admin.");
-            }
-          },
-          onPending: function (result: any) {
-            alert("Menunggu pembayaran Anda!");
-          },
-          onError: function (result: any) {
-            alert("Pembayaran gagal!");
-            setLoading(false);
-          },
-          onClose: function () {
-            setLoading(false);
-          }
-        });
+      if (res?.token && res?.orderId) {
+        setCurrentToken(res.token);
+        setCurrentOrderId(res.orderId);
+        openSnap(res.token, res.orderId);
       }
     } catch (error: any) {
       setErrorMessage(error.message);
+      setLoading(false);
+    }
+  };
+
+  const handleCancelPayment = async () => {
+    if (!currentOrderId) return;
+    setLoading(true);
+    const res = await cancelPayment(currentOrderId);
+    if (res.success) {
+      setPaymentState("idle");
+      setCurrentToken("");
+      setCurrentOrderId("");
+      setExpiryTime("");
+      setTimeLeft("");
+      setLoading(false);
+    } else {
+      setErrorMessage(res.message || "Gagal membatalkan pesanan.");
       setLoading(false);
     }
   };
@@ -110,9 +184,9 @@ export default function CheckoutClient({
     ? "https://app.midtrans.com/snap/snap.js" 
     : "https://app.sandbox.midtrans.com/snap/snap.js";
 
-  // Grouping Payment Methods
+  // Grouping Payment Methods exactly matching expanded keys
   const groupedMethods = {
-    "Transfer Bank (Virtual Account)": ["BCA_VA", "BNI_VA", "MANDIRI_VA", "BRI_VA", "PERMATA_VA", "BSI_VA", "OTHER_VA"],
+    "Transfer Bank (Virtual Account)": ["BCA_VA", "BNI_VA", "MANDIRI_VA", "BRI_VA", "PERMATA_VA", "CIMB_VA", "OTHER_VA"],
     "E-Wallet & QRIS": ["QRIS", "GOPAY", "SHOPEEPAY", "OVO", "DANA"],
     "Minimarket": ["ALFAMART", "INDOMARET"],
     "Kartu Kredit & Cicilan": ["CREDIT_CARD", "AKULAKU", "KREDIVO"]
@@ -133,12 +207,52 @@ export default function CheckoutClient({
     );
   }
 
+  if (paymentState === "pending") {
+    return (
+      <div className="bg-white dark:bg-[#18181b] p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 max-w-md w-full mx-auto text-center mt-10 relative overflow-hidden">
+        <Script src={snapScriptUrl} data-client-key={clientKey} strategy="afterInteractive" />
+        
+        <div className="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 text-orange-500 rounded-full flex items-center justify-center mx-auto mb-6">
+          <Clock className="w-10 h-10" />
+        </div>
+        <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">Menunggu Pembayaran</h2>
+        <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm">
+          Selesaikan pembayaran Anda menggunakan <strong className="text-gray-900 dark:text-white">{PAYMENT_METHODS[selectedMethod].name}</strong>
+        </p>
+
+        <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
+          <p className="text-xs text-gray-500 mb-1 font-semibold uppercase tracking-wider">Bayar Sebelum (Pay Within)</p>
+          <div className="text-3xl font-black text-rn-accent tracking-widest">{timeLeft || "..."}</div>
+        </div>
+
+        <div className="space-y-3">
+          <button 
+            onClick={() => openSnap(currentToken, currentOrderId)} 
+            disabled={loading}
+            className="w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+          >
+            <RefreshCcw className="w-5 h-5" /> Lanjutkan Pembayaran
+          </button>
+          
+          <button 
+            onClick={handleCancelPayment}
+            disabled={loading}
+            className="w-full bg-transparent border border-red-500 text-red-500 font-bold py-3.5 rounded-xl hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors flex items-center justify-center gap-2"
+          >
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <XCircle className="w-5 h-5" />}
+            Batalkan Pesanan
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (paymentState === "verifying") {
     return (
       <div className="bg-white dark:bg-[#18181b] p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 max-w-md w-full mx-auto text-center mt-10">
         <Loader2 className="w-16 h-16 text-rn-accent animate-spin mx-auto mb-6" />
-        <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Memverifikasi Pembayaran...</h2>
-        <p className="text-gray-500 text-sm">Mohon tunggu sebentar, sistem sedang mengonfirmasi status pembayaran Anda.</p>
+        <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Memverifikasi Status...</h2>
+        <p className="text-gray-500 text-sm">Mohon tunggu sebentar, sistem sedang menghubungi Midtrans.</p>
       </div>
     );
   }
@@ -170,7 +284,7 @@ export default function CheckoutClient({
                   <h4 className="font-bold text-gray-900 dark:text-white text-sm max-w-[200px] leading-snug">{itemName}</h4>
                 </div>
               </div>
-              <span className="font-medium text-gray-900 dark:text-white text-sm">{formatRupiah(baseAmount)}</span>
+              <span className="font-medium text-gray-900 dark:text-white text-sm">Rp {formatRupiah(baseAmount)}</span>
             </div>
           </div>
 
@@ -311,7 +425,7 @@ export default function CheckoutClient({
           <button 
             onClick={handlePay} 
             disabled={loading}
-            className="w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50 mt-auto flex-none"
+            className="w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 mt-auto flex-none"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
             {loading ? "Processing..." : `Buy Now - IDR ${formatRupiah(grossAmount)}`}

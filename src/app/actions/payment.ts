@@ -122,11 +122,41 @@ export async function createCheckoutToken(data: {
   }
 }
 
+export async function cancelPayment(orderId: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) throw new Error("Unauthorized");
+
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order || order.userId !== session.user.id) return { success: false, message: "Order not found" };
+
+    if (order.status === "SUCCESS") return { success: false, message: "Cannot cancel successful order" };
+
+    try {
+      await coreApi.transaction.cancel(orderId);
+    } catch (midtransErr) {
+      console.log("Midtrans cancel warning:", midtransErr);
+      // Even if Midtrans throws (e.g. because it's not strictly pending or already expired), we can still mark it FAILED locally
+    }
+
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { status: "FAILED" }
+    });
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("Cancel Error:", error);
+    return { success: false, message: error.message };
+  }
+}
+
 export async function verifyPayment(orderId: string) {
   try {
     const statusResponse = await coreApi.transaction.status(orderId);
     const transactionStatus = statusResponse.transaction_status;
     const fraudStatus = statusResponse.fraud_status;
+    const expiryTime = statusResponse.expiry_time; // Provided by Midtrans
 
     let finalStatus = "PENDING";
     if (transactionStatus === "capture") {
@@ -158,10 +188,15 @@ export async function verifyPayment(orderId: string) {
         }
       });
       revalidatePath("/ruang-belajar");
-      return { success: true, status: finalStatus, justUpdated: true };
+      return { success: true, status: finalStatus, justUpdated: true, expiryTime };
     }
     
-    return { success: true, status: order.status, justUpdated: false };
+    // Update to failed if midtrans says it failed but our DB is still pending
+    if (order.status === "PENDING" && finalStatus === "FAILED") {
+       await prisma.order.update({ where: { id: orderId }, data: { status: "FAILED" } });
+    }
+
+    return { success: true, status: finalStatus, justUpdated: false, expiryTime };
   } catch (error) {
     console.error("Verification Error:", error);
     return { success: false };

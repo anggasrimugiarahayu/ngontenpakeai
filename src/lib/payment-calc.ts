@@ -4,9 +4,16 @@ export type PaymentMethodKey =
   | "SHOPEEPAY"
   | "OVO"
   | "DANA"
-  | "VA"
+  | "BCA_VA"
+  | "BNI_VA"
+  | "BRI_VA"
+  | "MANDIRI_VA"
+  | "PERMATA_VA"
+  | "CIMB_VA"
+  | "OTHER_VA"
+  | "INDOMARET"
+  | "ALFAMART"
   | "CREDIT_CARD"
-  | "MINIMARKET"
   | "AKULAKU"
   | "KREDIVO";
 
@@ -23,8 +30,18 @@ export const PAYMENT_METHODS: Record<PaymentMethodKey, {
   SHOPEEPAY: { name: 'ShopeePay', enabled: ['shopeepay'], feeType: 'MDR_NO_PPN', mdr: 0.02 },
   OVO: { name: 'OVO', enabled: ['ovo'], feeType: 'MDR_PPN', mdr: 0.015 },
   DANA: { name: 'DANA', enabled: ['dana'], feeType: 'MDR_PPN', mdr: 0.015 },
-  VA: { name: 'Virtual Account (Transfer Bank)', enabled: ['bca_va', 'bni_va', 'bri_va', 'mandiri_va', 'permata_va', 'other_va', 'cimb_va'], feeType: 'FLAT_PPN', flat: 4000 },
-  MINIMARKET: { name: 'Minimarket (Indomaret / Alfamart)', enabled: ['indomaret', 'alfamart'], feeType: 'FLAT_PPN', flat: 5000 },
+  
+  BCA_VA: { name: 'BCA Virtual Account', enabled: ['bca_va'], feeType: 'FLAT_PPN', flat: 4000 },
+  BNI_VA: { name: 'BNI Virtual Account', enabled: ['bni_va'], feeType: 'FLAT_PPN', flat: 4000 },
+  BRI_VA: { name: 'BRI Virtual Account', enabled: ['bri_va'], feeType: 'FLAT_PPN', flat: 4000 },
+  MANDIRI_VA: { name: 'Mandiri Virtual Account', enabled: ['mandiri_va'], feeType: 'FLAT_PPN', flat: 4000 },
+  PERMATA_VA: { name: 'Permata Virtual Account', enabled: ['permata_va'], feeType: 'FLAT_PPN', flat: 4000 },
+  CIMB_VA: { name: 'CIMB Niaga Virtual Account', enabled: ['cimb_va'], feeType: 'FLAT_PPN', flat: 4000 },
+  OTHER_VA: { name: 'Other Bank Virtual Account', enabled: ['other_va'], feeType: 'FLAT_PPN', flat: 4000 },
+  
+  INDOMARET: { name: 'Indomaret', enabled: ['indomaret'], feeType: 'FLAT_PPN', flat: 5000 },
+  ALFAMART: { name: 'Alfamart', enabled: ['alfamart'], feeType: 'FLAT_PPN', flat: 5000 },
+  
   CREDIT_CARD: { name: 'Kartu Kredit', enabled: ['credit_card'], feeType: 'MIXED_PPN', mdr: 0.029, flat: 2000 },
   AKULAKU: { name: 'Akulaku PayLater', enabled: ['akulaku'], feeType: 'MDR_PPN', mdr: 0.017 },
   KREDIVO: { name: 'Kredivo', enabled: ['kredivo'], feeType: 'MDR_PPN', mdr: 0.02 },
