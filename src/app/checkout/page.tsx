@@ -56,7 +56,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
   const clientKey = isProduction ? process.env.MIDTRANS_CLIENT_KEY : process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "SB-Mid-client-rIaAV5Qv-Ue28a9u";
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-10 px-4 md:py-20 flex justify-center">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 md:py-8 min-h-[calc(100vh-100px)] flex justify-center">
       <div className="w-full max-w-5xl">
         <CheckoutClient 
           type={type as any} 
