@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from "react";
 import Script from "next/script";
 import { createCheckoutToken, verifyPayment } from "@/app/actions/payment";
 import { useRouter } from "next/navigation";
-import { Loader2, CheckCircle2, ArrowLeft, ChevronRight, X, Lock, CreditCard } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowLeft, ChevronRight, X, Lock, CreditCard, AlertCircle } from "lucide-react";
 import Link from "next/link";
 import { PAYMENT_METHODS, calculatePaymentFees, PaymentMethodKey } from "@/lib/payment-calc";
 
@@ -47,7 +47,9 @@ export default function CheckoutClient({
   const [customerName, setCustomerName] = useState(initialName);
   const [customerEmail, setCustomerEmail] = useState(initialEmail);
   const [customerPhone, setCustomerPhone] = useState(initialPhone);
+  
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [agreeToMarketing, setAgreeToMarketing] = useState(false);
 
   const [currentToken, setCurrentToken] = useState(existingPendingOrder?.token || "");
   const [currentOrderId, setCurrentOrderId] = useState(existingPendingOrder?.orderId || "");
@@ -71,6 +73,10 @@ export default function CheckoutClient({
         setTimeLeft("EXPIRED");
         setPaymentState("error");
         setErrorMessage("Waktu pembayaran telah habis. Silakan buat pesanan baru.");
+      } else {
+        const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+        setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -97,7 +103,8 @@ export default function CheckoutClient({
         }
       },
       onError: function () {
-        alert("Pembayaran gagal!");
+        setPaymentState("error");
+        setErrorMessage("Pembayaran gagal ditagihkan.");
         setLoading(false);
       },
       onClose: async function () {
@@ -117,15 +124,19 @@ export default function CheckoutClient({
 
   const handlePay = async () => {
     if (!customerName || !customerEmail || !customerPhone) return setErrorMessage("Mohon lengkapi Email, Nama, dan Phone Number Anda.");
-    if (!agreeToTerms) return setErrorMessage("Anda harus menyetujui Terms of Use untuk melanjutkan.");
-    setLoading(true); setErrorMessage("");
+    if (!agreeToTerms || !agreeToMarketing) return setErrorMessage("Anda harus menyetujui kedua persyaratan di atas untuk melanjutkan.");
+    
+    setLoading(true); 
+    setErrorMessage("");
     try {
       const res = await createCheckoutToken({ type, productId, paymentMethodKey: selectedMethod, customerName, customerEmail, customerPhone });
       if (res?.token && res?.orderId) {
         setCurrentToken(res.token); setCurrentOrderId(res.orderId); openSnap(res.token, res.orderId);
       }
     } catch (error: any) {
-      setErrorMessage(error.message); setLoading(false);
+      setErrorMessage(error.message); 
+      setPaymentState("error");
+      setLoading(false);
     }
   };
 
@@ -256,23 +267,47 @@ export default function CheckoutClient({
             </div>
           </div>
 
-          <div className="space-y-2 mb-5 flex-1">
-            <label className="flex items-start gap-2.5 cursor-pointer group">
-              <div className="relative flex items-center justify-center mt-0.5 shrink-0">
-                <input type="checkbox" checked={agreeToTerms} onChange={(e) => setAgreeToTerms(e.target.checked)} disabled={isPending}
-                  className="peer appearance-none w-4 h-4 border-2 border-gray-300 dark:border-gray-600 rounded checked:border-rn-accent checked:bg-rn-accent outline-none focus:ring-2 focus:ring-rn-accent/30 transition-all cursor-pointer disabled:opacity-50" />
-                <CheckCircle2 className="w-3 h-3 text-white absolute opacity-0 peer-checked:opacity-100 pointer-events-none" />
+          <div className="mb-5 flex-1 flex flex-col justify-end min-h-[90px]">
+            {isPending ? (
+              <div className="bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/50 rounded-xl p-4 flex flex-col items-center justify-center text-center h-full">
+                <p className="text-xs text-orange-600 dark:text-orange-400 font-medium uppercase tracking-wider mb-1">Pay Within</p>
+                <div className="text-2xl font-black text-rn-accent mb-1 tracking-widest">{timeLeft || "..."}</div>
+                <div className="text-xs font-semibold text-gray-600 dark:text-gray-300">Status: Menunggu Pembayaran</div>
               </div>
-              <span className="text-[11px] text-gray-600 dark:text-gray-400 pt-0.5">I agree to the <Link href="#" className="text-rn-accent font-medium hover:underline">Terms of Use</Link></span>
-            </label>
+            ) : (
+              <div className="space-y-3">
+                {errorMessage && (
+                  <div className="p-3 bg-red-50 dark:bg-red-950/30 text-red-600 dark:text-red-400 text-xs rounded-xl border border-red-100 dark:border-red-900/50 flex items-start gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+                    <span className="font-medium">{errorMessage}</span>
+                  </div>
+                )}
+                <label className="flex items-start gap-2.5 cursor-pointer group">
+                  <div className="relative flex items-center justify-center mt-0.5 shrink-0">
+                    <input type="checkbox" checked={agreeToTerms} onChange={(e) => setAgreeToTerms(e.target.checked)} 
+                      className="peer appearance-none w-4 h-4 border-2 border-gray-300 dark:border-gray-600 rounded checked:border-rn-accent checked:bg-rn-accent outline-none focus:ring-2 focus:ring-rn-accent/30 transition-all cursor-pointer disabled:opacity-50" />
+                    <CheckCircle2 className="w-3 h-3 text-white absolute opacity-0 peer-checked:opacity-100 pointer-events-none" />
+                  </div>
+                  <span className="text-[11px] text-gray-600 dark:text-gray-400 pt-0.5 leading-tight">I agree to the <Link href="#" className="text-rn-accent font-medium hover:underline">Terms of Use</Link></span>
+                </label>
+                <label className="flex items-start gap-2.5 cursor-pointer group">
+                  <div className="relative flex items-center justify-center mt-0.5 shrink-0">
+                    <input type="checkbox" checked={agreeToMarketing} onChange={(e) => setAgreeToMarketing(e.target.checked)} 
+                      className="peer appearance-none w-4 h-4 border-2 border-gray-300 dark:border-gray-600 rounded checked:border-rn-accent checked:bg-rn-accent outline-none focus:ring-2 focus:ring-rn-accent/30 transition-all cursor-pointer disabled:opacity-50" />
+                    <CheckCircle2 className="w-3 h-3 text-white absolute opacity-0 peer-checked:opacity-100 pointer-events-none" />
+                  </div>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 pt-0.5 leading-tight">
+                    I agree that the creator may contact me by email or phone about my purchase, updates, offers, and other relevant information. I can unsubscribe at any time.
+                  </span>
+                </label>
+              </div>
+            )}
           </div>
 
-          {errorMessage && <div className="mb-3 p-2.5 bg-red-50 text-red-600 text-xs rounded-xl border border-red-100 text-center font-medium">{errorMessage}</div>}
-
-          <button onClick={paymentState === "error" ? () => { setPaymentState("idle"); setCurrentToken(""); setCurrentOrderId(""); } : paymentState === "pending" ? () => openSnap(currentToken, currentOrderId) : handlePay} disabled={loading}
-            className={`w-full text-white font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2 mt-auto flex-none shadow-md ${isPending ? 'bg-orange-500 hover:bg-orange-600 animate-pulse shadow-orange-500/20' : 'bg-rn-accent hover:bg-rn-accent/90'}`}>
+          <button onClick={paymentState === "error" ? () => { setCurrentToken(""); setCurrentOrderId(""); handlePay(); } : paymentState === "pending" ? () => openSnap(currentToken, currentOrderId) : handlePay} disabled={loading}
+            className={`w-full text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 mt-auto flex-none shadow-md ${'bg-rn-accent hover:bg-rn-accent/90'}`}>
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-            {paymentState === "error" ? "Buat Pesanan Baru" : paymentState === "pending" ? "Menunggu Pembayaran" : loading ? "Processing..." : `Buy Now - IDR ${formatRupiah(grossAmount)}`}
+            {paymentState === "pending" ? "Menunggu Pembayaran" : loading ? "Processing..." : `Buy Now - IDR ${formatRupiah(grossAmount)}`}
           </button>
         </div>
       </div>
