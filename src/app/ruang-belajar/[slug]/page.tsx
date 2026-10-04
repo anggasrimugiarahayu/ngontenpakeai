@@ -36,8 +36,26 @@ export default async function ReadEbookPage({ params }: { params: { slug: string
     notFound();
   }
 
-  const isLocked = ebook.isProOnly && !isPro;
+
+  const userProducts = await prisma.userOwnedProduct.findMany({
+    where: { userId: session.user.id },
+    select: { digitalProductId: true }
+  });
+  const ownedProductIds = new Set(userProducts.map(up => up.digitalProductId));
+
+  const isFree = ebook.accessLevel === "FREE";
+  const isProEbook = ebook.accessLevel === "PRO";
+  const isPremiumEbook = ebook.accessLevel === "PREMIUM";
+  
+  const isOwned = ownedProductIds.has(ebook.id);
+  
+  let isLocked = true;
+  if (isFree) isLocked = false;
+  else if (isProEbook && isPro) isLocked = false;
+  else if (isOwned) isLocked = false;
+
   const isFavorite = ebook.favorites.length > 0;
+
   
   // Calculate average rating
   const totalReviews = ebook.reviews.length;

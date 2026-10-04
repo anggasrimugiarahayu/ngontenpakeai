@@ -72,6 +72,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
   };
 
   const [showAddProduct, setShowAddProduct] = useState(false);
+  const [addAccessLevel, setAddAccessLevel] = useState("FREE");
   const [editingProduct, setEditingProduct] = useState<any>(null);
   const [showAddCategory, setShowAddCategory] = useState(false);
   const [newModel, setNewModel] = useState({ name: "", modelId: "", provider: "google" });
@@ -487,6 +488,8 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 fileUrl: formData.get("fileUrl"),
                 accessLevel: formData.get("accessLevel") as string,
                 isProOnly: formData.get("accessLevel") === "PRO" || formData.get("accessLevel") === "PREMIUM",
+                price: formData.get("price") ? parseInt(formData.get("price") as string) : 0,
+                price: formData.get("price") ? parseInt(formData.get("price") as string) : 0,
                 isDownloadable: formData.get("isDownloadable") === "on",
               });
               setLoading(false);
@@ -555,13 +558,19 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               
               <div className="mt-4">
                 <label className="block text-xs font-bold text-gray-500 mb-1">LEVEL AKSES E-BOOK</label>
-                <select name="accessLevel" defaultValue="FREE" className="w-full p-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-[#18181b] focus:outline-none focus:ring-2 focus:ring-rn-accent text-sm">
+                <select name="accessLevel" value={addAccessLevel} onChange={(e) => setAddAccessLevel(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-[#18181b] focus:outline-none focus:ring-2 focus:ring-rn-accent text-sm">
                   <option value="FREE">Free (Gratis untuk semua)</option>
                   <option value="PRO">Pro (Khusus Member Bundle)</option>
                   <option value="PREMIUM">Premium (Pembelian Eceran / Ala Carte)</option>
                 </select>
               </div>
-
+              
+              {addAccessLevel === "PREMIUM" && (
+                <div className="mt-4">
+                  <label className="block text-xs font-bold text-gray-500 mb-1">HARGA E-BOOK (Rp)</label>
+                  <input name="price" type="number" min="0" placeholder="Contoh: 49000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" required />
+                </div>
+              )}
 
               <label className="mt-2 flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors">
                 <input type="checkbox" name="isDownloadable" className="w-5 h-5 rounded text-blue-600 focus:ring-blue-600 border-blue-300" />
@@ -674,7 +683,13 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                   <option value="PREMIUM">Premium (Pembelian Eceran / Ala Carte)</option>
                 </select>
               </div>
-
+              
+              {addAccessLevel === "PREMIUM" && (
+                <div className="mt-4">
+                  <label className="block text-xs font-bold text-gray-500 mb-1">HARGA E-BOOK (Rp)</label>
+                  <input name="price" type="number" min="0" placeholder="Contoh: 49000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" required />
+                </div>
+              )}
 
               <label className="mt-2 flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors">
                 <input type="checkbox" name="isDownloadable" defaultChecked={editingProduct.isDownloadable} className="w-5 h-5 rounded text-blue-600 focus:ring-blue-600 border-blue-300" />
