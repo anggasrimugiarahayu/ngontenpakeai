@@ -139,9 +139,9 @@ export default function CheckoutClient({
   };
 
   const groupedMethods = {
-    "Transfer Bank (Virtual Account)": ["BCA_VA", "BNI_VA", "MANDIRI_VA", "BRI_VA", "PERMATA_VA", "CIMB_VA", "OTHER_VA"],
-    "E-Wallet & QRIS": ["QRIS", "GOPAY", "SHOPEEPAY", "OVO", "DANA"],
-    "Minimarket": ["ALFAMART", "INDOMARET"],
+    "Transfer Bank (Virtual Account)": ["BCA_VA", "BRI_VA", "BNI_VA", "MANDIRI_VA", "PERMATA_VA", "CIMB_VA", "DANAMON_VA", "BSI_VA", "SEABANK_VA", "BANK_SAQU_VA"],
+    "E-Wallet & QRIS": ["GOPAY", "QRIS", "SHOPEEPAY", "DANA", "OVO"],
+    "Minimarket": ["INDOMARET", "ALFAMART", "ALFAMIDI", "DAN_DAN"],
     "Kartu Kredit & Cicilan": ["CREDIT_CARD", "AKULAKU", "KREDIVO"]
   } as Record<string, PaymentMethodKey[]>;
 
