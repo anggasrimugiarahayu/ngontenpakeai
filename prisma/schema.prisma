@@ -233,12 +233,11 @@ model DigitalProduct {
 model Favorite {
   id               String         @id @default(cuid())
   userId           String         @map("user_id")
-  digitalProductId String?        @map("digital_product_id")
-  orderType        String         @default("EBOOK") // EBOOK, PRO_SUBSCRIPTION
+  digitalProductId String         @map("digital_product_id")
   createdAt        DateTime       @default(now()) @map("created_at")
 
   user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product          DigitalProduct? @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
+  product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
 
   @@unique([userId, digitalProductId])
   @@map("favorites")
@@ -263,7 +262,8 @@ model Review {
 model Order {
   id               String         @id @default(cuid())
   userId           String         @map("user_id")
-  digitalProductId String         @map("digital_product_id")
+  digitalProductId String?        @map("digital_product_id")
+  orderType        String         @default("EBOOK") // EBOOK, PRO_SUBSCRIPTION
   amount           Int
   status           String         @default("PENDING") // PENDING, SUCCESS, FAILED
   paymentUrl       String?
@@ -272,7 +272,7 @@ model Order {
   updatedAt        DateTime       @updatedAt @map("updated_at")
 
   user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
+  product          DigitalProduct? @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
 
   @@map("orders")
 }
