@@ -19,7 +19,8 @@ export default async function ReadEbookPage({ params }: { params: { slug: string
   }
 
   const userId = session.user.id;
-  const isPro = session?.user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const userObj = await prisma.user.findUnique({ where: { id: userId } });
+  const isPro = userObj?.role === "PRO" || session?.user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
 
   const ebook = await prisma.digitalProduct.findFirst({
     where: { slug: (await params).slug, isActive: true },
@@ -48,7 +49,8 @@ export default async function ReadEbookPage({ params }: { params: { slug: string
   const isProEbook = ebook.accessLevel === "PRO";
   const isPremiumEbook = ebook.accessLevel === "PREMIUM";
   
-  const isOwned = ownedProductIds.has(ebook.id);
+  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
+  const isOwned = ownedProductIds.has(ebook.id) || isAdmin;
   
   let isLocked = true;
   if (isOwned) isLocked = false;

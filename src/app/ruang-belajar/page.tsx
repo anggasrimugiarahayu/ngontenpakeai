@@ -8,9 +8,9 @@ export const dynamic = "force-dynamic";
 export default async function RuangBelajarPage() {
   const session = await auth();
   let isPro = false;
-
-  if (session?.user?.email) {
-    isPro = session.user.email.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  if (session?.user?.id) {
+    const userObj = await prisma.user.findUnique({ where: { id: session.user.id } });
+    isPro = userObj?.role === "PRO" || session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
   }
 
   
