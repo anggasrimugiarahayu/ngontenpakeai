@@ -74,7 +74,7 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | 
       }
     ],
     callbacks: {
-      finish: data.redirectUrl || (headers().get("host")?.includes("localhost") ? "http://localhost:3000/ruang-belajar" : "https://ngontenpakeai.com/ruang-belajar")
+      finish: data.redirectUrl || ((await headers()).get("host")?.includes("localhost") ? "http://localhost:3000/ruang-belajar" : "https://ngontenpakeai.com/ruang-belajar")
     }
   };
 

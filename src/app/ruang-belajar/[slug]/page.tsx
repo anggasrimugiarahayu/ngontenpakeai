@@ -13,11 +13,12 @@ import PdfViewer from "./PdfViewer";
 
 export const dynamic = "force-dynamic";
 
-export default async function ReadEbookPage({ params, searchParams }: { params: { slug: string }, searchParams: { [key: string]: string | string[] | undefined } }) {
+export default async function ReadEbookPage({ params, searchParams }: { params: { slug: string }, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const session = await auth();
-    if (searchParams?.order_id && typeof searchParams.order_id === 'string') {
+    const resolvedSearchParams = await searchParams;
+    if (resolvedSearchParams?.order_id && typeof resolvedSearchParams.order_id === 'string') {
       const { verifyPayment } = await import("@/app/actions/payment");
-      await verifyPayment(searchParams.order_id);
+      await verifyPayment(resolvedSearchParams.order_id);
     }
   
   if (!session?.user) {
@@ -219,7 +220,7 @@ export default async function ReadEbookPage({ params, searchParams }: { params: 
                                  const res = await createCheckoutToken({ 
                                  type: "EBOOK", 
                                  productId: ebook.id,
-                                 redirectUrl: `${headers().get("host")?.includes("localhost") ? "http" : "https"}://${headers().get("host")}/ruang-belajar/${ebook.slug}`
+                                 redirectUrl: `${(await headers()).get("host")?.includes("localhost") ? "http" : "https"}://${(await headers()).get("host")}/ruang-belajar/${ebook.slug}`
                                });
                                  if (res?.redirectUrl) redirect(res.redirectUrl);
                                }} className="w-full">

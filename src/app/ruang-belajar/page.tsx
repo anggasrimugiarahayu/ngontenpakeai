@@ -6,11 +6,12 @@ import { verifyPayment } from "@/app/actions/payment";
 
 export const dynamic = "force-dynamic";
 
-export default async function RuangBelajarPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
+export default async function RuangBelajarPage({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   const session = await auth();
   
-  if (searchParams?.order_id && typeof searchParams.order_id === 'string') {
-    await verifyPayment(searchParams.order_id);
+  const resolvedSearchParams = await searchParams;
+  if (resolvedSearchParams?.order_id && typeof resolvedSearchParams.order_id === 'string') {
+    await verifyPayment(resolvedSearchParams.order_id);
   }
   
   let isPro = false;
