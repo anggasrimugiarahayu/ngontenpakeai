@@ -245,9 +245,11 @@ export default function CheckoutClient({
           <div className="border border-rn-accent/50 dark:border-rn-accent/40 rounded-xl overflow-hidden mb-4 relative flex-none">
             <button onClick={() => !isPending && setShowPaymentModal(true)} disabled={isPending} className={`w-full p-3 flex items-center justify-between bg-white dark:bg-white/[0.02] transition-colors ${isPending ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-white/[0.05]'}`}>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-7 bg-white rounded flex items-center justify-center shrink-0 shadow-sm border border-gray-200 dark:border-gray-800 p-1">
-                   {PAYMENT_METHODS[selectedMethod]?.iconUrl ? (
-                     <img src={PAYMENT_METHODS[selectedMethod].iconUrl} alt={selectedMethod} className="max-w-full max-h-full object-contain" />
+                <div className="bg-white rounded border border-gray-200 dark:border-gray-800 shadow-sm flex items-center justify-center shrink-0 gap-[2px] px-1 py-0.5 h-8 w-[76px] flex-wrap overflow-hidden content-center">
+                   {PAYMENT_METHODS[selectedMethod]?.iconUrls ? (
+                     PAYMENT_METHODS[selectedMethod].iconUrls.map((url, i) => (
+                       <img key={i} src={url} alt={selectedMethod} className={`max-w-full object-contain ${PAYMENT_METHODS[selectedMethod].iconUrls.length > 1 ? 'h-2.5' : 'h-5 max-h-full'}`} />
+                     ))
                    ) : (
                      <span className="text-[10px] font-bold text-gray-800">{PAYMENT_METHODS[selectedMethod]?.name.slice(0,4)}</span>
                    )}
@@ -335,8 +337,8 @@ export default function CheckoutClient({
                             className={`flex items-center gap-3 p-3 border rounded-xl cursor-pointer transition-all ${
                               isSelected ? 'border-rn-accent bg-rn-accent/5 shadow-sm' : 'border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 bg-white dark:bg-white/[0.02]'
                             }`}>
-                            <div className="bg-white rounded border border-gray-100 dark:border-gray-800 p-1 flex items-center justify-center shrink-0 gap-1 px-1.5 h-8">
-                               {method.iconUrls ? method.iconUrls.map((url, i) => <img key={i} src={url} alt={method.name} className="max-w-full max-h-full object-contain" />) : <span className="text-[8px] font-bold text-gray-800">{method.name.slice(0,3)}</span>}
+                            <div className="bg-white rounded border border-gray-100 dark:border-gray-800 flex items-center justify-center shrink-0 gap-[2px] px-1 py-0.5 h-8 w-[76px] flex-wrap overflow-hidden content-center">
+                               {method.iconUrls ? method.iconUrls.map((url, i) => <img key={i} src={url} alt={method.name} className={`max-w-full object-contain ${method.iconUrls.length > 1 ? 'h-2.5' : 'h-5 max-h-full'}`} />) : <span className="text-[8px] font-bold text-gray-800">{method.name.slice(0,3)}</span>}
                             </div>
                             <div className="flex-1">
                                <span className={`text-sm font-bold leading-tight ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-700 dark:text-gray-300'}`}>{method.name}</span>
