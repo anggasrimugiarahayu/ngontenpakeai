@@ -47,7 +47,7 @@ export default async function RootLayout({
               <Suspense>
                 <Navbar memberCount={memberCount.toString()} />
               </Suspense>
-              <main className="flex-1 flex flex-col pt-16 md:pt-20">
+              <main className="flex-1 flex flex-col pt-16 md:pt-20 pb-4 md:pb-8">
                 {children}
               </main>
               <Footer />
