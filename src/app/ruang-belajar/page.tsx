@@ -13,11 +13,19 @@ export default async function RuangBelajarPage() {
     isPro = session.user.email.toLowerCase() === "anggasrimugiarahayu@gmail.com";
   }
 
+  
   const products = await prisma.digitalProduct.findMany({
     where: { isActive: true },
     include: { category: true, reviews: { select: { rating: true } } },
     orderBy: { createdAt: 'desc' }
   });
+
+  const userProducts = session?.user?.id ? await prisma.userOwnedProduct.findMany({
+    where: { userId: session.user.id },
+    select: { digitalProductId: true }
+  }) : [];
+  const ownedProductIds = new Set(userProducts.map(up => up.digitalProductId));
+
 
   return (
     <div className="flex-1 flex flex-col p-4 md:p-8 max-w-7xl mx-auto w-full">
@@ -31,10 +39,21 @@ export default async function RuangBelajarPage() {
       <div className="space-y-6">
         {products.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 max-w-7xl mx-auto">
+            
             {products.map((ebook: any) => {
-              const isFree = !ebook.isProOnly;
-              const isLocked = ebook.isProOnly && !isPro;
+              const isFree = ebook.accessLevel === "FREE";
+              const isProEbook = ebook.accessLevel === "PRO";
+              const isPremiumEbook = ebook.accessLevel === "PREMIUM";
+              
+              const isOwned = ownedProductIds.has(ebook.id);
+              
+              let isLocked = true;
+              if (isFree) isLocked = false;
+              else if (isProEbook && isPro) isLocked = false;
+              else if (isOwned) isLocked = false;
+
               const reviewCount = ebook.reviews?.length || 0;
+
               const averageRating = reviewCount > 0 
                 ? (ebook.reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviewCount).toFixed(1)
                 : "0.0";
@@ -79,11 +98,23 @@ export default async function RuangBelajarPage() {
                            </p>
                         )}
                         
+                        
                         <div className="flex flex-wrap gap-1.5 mb-4 mt-auto">
-                          <div className={`font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider ${isFree ? 'bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300' : (isPro ? 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400' : 'bg-rn-accent/10 text-rn-accent dark:bg-rn-accent/20 dark:text-rn-accent')}`}>
-                            {isFree ? "Gratis" : (isPro ? "Akses Terbuka" : "Premium")}
+                          <div className={`font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider ${!isLocked ? 'bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300' : 'bg-rn-accent/10 text-rn-accent dark:bg-rn-accent/20 dark:text-rn-accent'}`}>
+                            {isFree ? "Gratis" : (isPremiumEbook ? "Premium" : "Pro Only")}
                           </div>
+                          {isOwned && (
+                             <div className="font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                               Dimiliki
+                             </div>
+                          )}
                           {ebook.category && (
+                            <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                              {ebook.category.name}
+                            </div>
+                          )}
+                        </div>
+{ebook.category && (
                             <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                               {ebook.category.name}
                             </div>
@@ -91,16 +122,22 @@ export default async function RuangBelajarPage() {
                         </div>
                       </div>
 
+                      
                       <div className="mt-auto pt-2.5 flex items-center justify-between border-t border-gray-100 dark:border-white/5">
                         {isFree ? (
                           <span className="text-[17px] font-black text-green-600 dark:text-green-500">Gratis</span>
+                        ) : isOwned ? (
+                          <span className="text-[17px] font-black text-green-600 dark:text-green-500">Akses Terbuka</span>
                         ) : (
-                          <span className={`text-[17px] font-black ${isPro ? 'text-gray-400 dark:text-gray-500' : 'text-rn-accent'}`}>Pro Only</span>
+                          <span className={`text-[17px] font-black ${isLocked ? 'text-rn-accent' : 'text-gray-400 dark:text-gray-500'}`}>
+                             {isPremiumEbook ? "Premium" : "Pro"}
+                          </span>
                         )}
                         <button className="bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg px-4 py-2 text-xs font-bold shadow-sm transition-colors">
                           Buka E-Book
                         </button>
                       </div>
+
                     </div>
                   </div>
                 </Link>

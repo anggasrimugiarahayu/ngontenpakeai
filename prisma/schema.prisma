@@ -54,6 +54,7 @@ model User {
   favorites        Favorite[]
   reviews          Review[]
   orders           Order[]
+  ownedProducts    UserOwnedProduct[]
 
   @@map("users")
 }
@@ -214,6 +215,7 @@ model DigitalProduct {
   coverUrl3   String?
   fileUrl     String?
   isProOnly   Boolean         @default(false)
+  accessLevel String          @default("FREE")
   isDownloadable Boolean      @default(false)
   isActive    Boolean         @default(true)
   createdAt   DateTime        @default(now()) @map("created_at")
@@ -223,6 +225,7 @@ model DigitalProduct {
   reviews     Review[]
   orders      Order[]
   analytics   ProductAnalytics[]
+  owners      UserOwnedProduct[]
 
   @@map("digital_products")
 }
@@ -284,4 +287,17 @@ model ProductAnalytics {
 
   @@unique([digitalProductId, date])
   @@map("product_analytics")
+}
+
+model UserOwnedProduct {
+  id               String         @id @default(cuid())
+  userId           String         @map("user_id")
+  digitalProductId String         @map("digital_product_id")
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, digitalProductId])
+  @@map("user_owned_products")
 }

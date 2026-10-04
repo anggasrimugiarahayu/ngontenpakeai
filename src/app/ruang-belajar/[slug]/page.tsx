@@ -66,7 +66,7 @@ export default async function ReadEbookPage({ params }: { params: { slug: string
             <div className="min-w-0">
               <h1 className="font-bold text-sm md:text-base text-gray-900 dark:text-white leading-none flex items-center gap-2 truncate">
                 {ebook.title}
-                {ebook.isProOnly && (
+                {!isFree && !isOwned && (
                    <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-gray-100 dark:bg-white/10 text-gray-500 shrink-0 hidden sm:inline-block">
                      PRO
                    </span>
@@ -211,7 +211,7 @@ export default async function ReadEbookPage({ params }: { params: { slug: string
                    </div>
                    <div className="grid grid-cols-3 gap-2">
                      <span className="text-gray-500 font-medium col-span-1">Akses</span>
-                     <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2"><span>:</span> {ebook.isProOnly ? 'Premium (PRO)' : 'Gratis'}</span>
+                     <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2"><span>:</span> {isFree ? 'Gratis' : isPremiumEbook ? 'Premium' : 'Pro Only'}</span>
                    </div>
                  </div>
                </div>

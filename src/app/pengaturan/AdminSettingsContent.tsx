@@ -366,7 +366,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
 
                    <div className="border-t border-gray-100 dark:border-white/5 pt-2 sm:pt-3 flex items-center justify-between gap-1.5">
                      <span className="text-orange-600 dark:text-orange-400 font-bold text-[10px] sm:text-xs whitespace-nowrap truncate">
-                       {prod.isProOnly ? "Pro Only" : "Gratis"}
+                       {prod.accessLevel}
                      </span>
                      
                      {/* Action Buttons - COMPACT & RESPONSIVE */}
@@ -485,7 +485,8 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 coverUrl2: uploadedUrls["coverUrl2Input"] || formData.get("coverUrl2"),
                 coverUrl3: uploadedUrls["coverUrl3Input"] || formData.get("coverUrl3"),
                 fileUrl: formData.get("fileUrl"),
-                isProOnly: formData.get("isProOnly") === "on",
+                accessLevel: formData.get("accessLevel") as string,
+                isProOnly: formData.get("accessLevel") === "PRO" || formData.get("accessLevel") === "PREMIUM",
                 isDownloadable: formData.get("isDownloadable") === "on",
               });
               setLoading(false);
@@ -551,13 +552,16 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 <p className="text-[10px] text-gray-400 mt-1">Ganti "view" menjadi "preview" otomatis oleh sistem.</p>
               </div>
 
-              <label className="mt-2 flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800/30 rounded-lg cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors">
-                <input type="checkbox" name="isProOnly" className="w-5 h-5 rounded text-orange-600 focus:ring-orange-600 border-orange-300" />
-                <div>
-                  <div className="font-bold text-sm text-orange-900 dark:text-orange-300">Khusus Pengguna PRO</div>
-                  <div className="text-xs text-orange-700/70 dark:text-orange-400/70">Hanya member berbayar yang dapat mengakses konten ini</div>
-                </div>
-              </label>
+              
+              <div className="mt-4">
+                <label className="block text-xs font-bold text-gray-500 mb-1">LEVEL AKSES E-BOOK</label>
+                <select name="accessLevel" defaultValue="FREE" className="w-full p-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-[#18181b] focus:outline-none focus:ring-2 focus:ring-rn-accent text-sm">
+                  <option value="FREE">Free (Gratis untuk semua)</option>
+                  <option value="PRO">Pro (Khusus Member Bundle)</option>
+                  <option value="PREMIUM">Premium (Pembelian Eceran / Ala Carte)</option>
+                </select>
+              </div>
+
 
               <label className="mt-2 flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors">
                 <input type="checkbox" name="isDownloadable" className="w-5 h-5 rounded text-blue-600 focus:ring-blue-600 border-blue-300" />
@@ -597,7 +601,8 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 coverUrl2: uploadedUrls["editCoverUrl2Input"] || formData.get("coverUrl2"),
                 coverUrl3: uploadedUrls["editCoverUrl3Input"] || formData.get("coverUrl3"),
                 fileUrl: formData.get("fileUrl"),
-                isProOnly: formData.get("isProOnly") === "on",
+                accessLevel: formData.get("accessLevel") as string,
+                isProOnly: formData.get("accessLevel") === "PRO" || formData.get("accessLevel") === "PREMIUM",
                 isDownloadable: formData.get("isDownloadable") === "on",
               });
               setLoading(false);
@@ -660,13 +665,16 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 <input name="fileUrl" type="url" defaultValue={editingProduct.fileUrl || ''} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
               </div>
 
-              <label className="mt-2 flex items-center gap-3 p-3 bg-orange-50 dark:bg-orange-900/10 border border-orange-100 dark:border-orange-800/30 rounded-lg cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/20 transition-colors">
-                <input type="checkbox" name="isProOnly" defaultChecked={editingProduct.isProOnly} className="w-5 h-5 rounded text-orange-600 focus:ring-orange-600 border-orange-300" />
-                <div>
-                  <div className="font-bold text-sm text-orange-900 dark:text-orange-300">Khusus Pengguna PRO</div>
-                  <div className="text-xs text-orange-700/70 dark:text-orange-400/70">Hanya member berbayar yang dapat mengakses konten ini</div>
-                </div>
-              </label>
+              
+              <div className="mt-4">
+                <label className="block text-xs font-bold text-gray-500 mb-1">LEVEL AKSES E-BOOK</label>
+                <select name="accessLevel" defaultValue={editingProduct.accessLevel || 'FREE'} className="w-full p-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-[#18181b] focus:outline-none focus:ring-2 focus:ring-rn-accent text-sm">
+                  <option value="FREE">Free (Gratis untuk semua)</option>
+                  <option value="PRO">Pro (Khusus Member Bundle)</option>
+                  <option value="PREMIUM">Premium (Pembelian Eceran / Ala Carte)</option>
+                </select>
+              </div>
+
 
               <label className="mt-2 flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transition-colors">
                 <input type="checkbox" name="isDownloadable" defaultChecked={editingProduct.isDownloadable} className="w-5 h-5 rounded text-blue-600 focus:ring-blue-600 border-blue-300" />
