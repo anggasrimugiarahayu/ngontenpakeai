@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 import { notFound, redirect } from "next/navigation";
+import { headers } from "next/headers";
 import Link from "next/link";
 import { ArrowLeft, Lock, Crown, Star, BookOpen, Tag } from "lucide-react";
 import { auth } from "@/auth";
