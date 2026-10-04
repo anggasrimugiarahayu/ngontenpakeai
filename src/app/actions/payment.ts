@@ -2,14 +2,12 @@
 
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
-import { snap, isProduction } from "@/lib/midtrans";
+import { snap, coreApi } from "@/lib/midtrans";
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
-import { coreApi } from "@/lib/midtrans";
+import { calculatePaymentFees, PAYMENT_METHODS, PaymentMethodKey } from "@/lib/payment-calc";
 
-const ADMIN_FEE = 3000;
-
-export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | "PRO_TOOLS" | "PRO_LENGKAP", productId?: string }) {
+export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | "PRO_TOOLS" | "PRO_LENGKAP", productId?: string, paymentMethodKey: PaymentMethodKey }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -42,7 +40,12 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | 
     orderName = "Paket Lengkap";
   }
 
-  const grossAmount = baseAmount + ADMIN_FEE;
+  if (!data.paymentMethodKey || !PAYMENT_METHODS[data.paymentMethodKey]) {
+    throw new Error("Metode pembayaran tidak valid");
+  }
+
+  const { grossAmount, adminFee } = calculatePaymentFees(baseAmount, data.paymentMethodKey);
+  const paymentMethod = PAYMENT_METHODS[data.paymentMethodKey];
 
   // Create an Order in DB
   const order = await prisma.order.create({
@@ -77,11 +80,12 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | 
       },
       {
         id: "FEE_ADMIN",
-        price: ADMIN_FEE,
+        price: adminFee,
         quantity: 1,
         name: "Biaya Layanan"
       }
-    ]
+    ],
+    enabled_payments: paymentMethod.enabled
   };
 
   try {

@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo } from "react";
 import Script from "next/script";
 import { createCheckoutToken, verifyPayment } from "@/app/actions/payment";
 import { useRouter } from "next/navigation";
-import { Loader2, CheckCircle2, ArrowLeft, ShieldCheck } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowLeft, ShieldCheck, Wallet } from "lucide-react";
 import Link from "next/link";
+import { PAYMENT_METHODS, calculatePaymentFees, PaymentMethodKey } from "@/lib/payment-calc";
 
 interface CheckoutClientProps {
   type: "EBOOK" | "PRO_BASIC" | "PRO_TOOLS" | "PRO_LENGKAP";
@@ -13,8 +14,6 @@ interface CheckoutClientProps {
   itemName: string;
   itemDescription: string;
   baseAmount: number;
-  adminFee: number;
-  grossAmount: number;
   clientKey: string;
   isProduction: boolean;
 }
@@ -25,8 +24,6 @@ export default function CheckoutClient({
   itemName,
   itemDescription,
   baseAmount,
-  adminFee,
-  grossAmount,
   clientKey,
   isProduction
 }: CheckoutClientProps) {
@@ -34,16 +31,21 @@ export default function CheckoutClient({
   const [loading, setLoading] = useState(false);
   const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "success" | "error">("idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey>("QRIS");
 
   const formatRupiah = (num: number) => {
     return new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 }).format(num);
   };
 
+  const { grossAmount, adminFee } = useMemo(() => {
+    return calculatePaymentFees(baseAmount, selectedMethod);
+  }, [baseAmount, selectedMethod]);
+
   const handlePay = async () => {
     setLoading(true);
     setErrorMessage("");
     try {
-      const res = await createCheckoutToken({ type, productId });
+      const res = await createCheckoutToken({ type, productId, paymentMethodKey: selectedMethod });
       
       if (res?.token) {
         // @ts-ignore
@@ -106,7 +108,7 @@ export default function CheckoutClient({
   }
 
   return (
-    <div className="max-w-md w-full">
+    <div className="max-w-md w-full my-8">
       <Script src={snapScriptUrl} data-client-key={clientKey} strategy="afterInteractive" />
       
       <button onClick={() => router.back()} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors">
@@ -118,7 +120,7 @@ export default function CheckoutClient({
           <h1 className="text-2xl font-black mb-1 text-gray-900 dark:text-white">Checkout</h1>
           <p className="text-gray-500 text-sm mb-6">Selesaikan pembayaran Anda dengan aman.</p>
           
-          <div className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl mb-6">
+          <div className="flex items-start gap-4 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-2xl mb-8">
             <div className="flex-1">
               <h3 className="font-bold text-gray-900 dark:text-white mb-1">{itemName}</h3>
               <p className="text-xs text-gray-500 leading-relaxed">{itemDescription}</p>
@@ -128,13 +130,44 @@ export default function CheckoutClient({
             </div>
           </div>
 
+          <h3 className="font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
+            <Wallet className="w-4 h-4" /> Pilih Metode Pembayaran
+          </h3>
+          <div className="space-y-2 mb-8 max-h-[240px] overflow-y-auto pr-2 custom-scrollbar">
+            {(Object.keys(PAYMENT_METHODS) as PaymentMethodKey[]).map((key) => {
+              const method = PAYMENT_METHODS[key];
+              const isSelected = selectedMethod === key;
+              return (
+                <label 
+                  key={key} 
+                  className={`flex items-center justify-between p-3 border rounded-xl cursor-pointer transition-all ${
+                    isSelected 
+                      ? 'border-rn-accent bg-rn-accent/5 ring-1 ring-rn-accent' 
+                      : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                      isSelected ? 'border-rn-accent' : 'border-gray-400'
+                    }`}>
+                      {isSelected && <div className="w-2 h-2 rounded-full bg-rn-accent" />}
+                    </div>
+                    <span className={`text-sm font-medium ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-600 dark:text-gray-400'}`}>
+                      {method.name}
+                    </span>
+                  </div>
+                </label>
+              );
+            })}
+          </div>
+
           <div className="space-y-3 mb-6 pb-6 border-b border-gray-100 dark:border-gray-800">
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-500">Harga Item</span>
               <span className="font-medium text-gray-900 dark:text-white">{formatRupiah(baseAmount)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-500">Biaya Layanan & Admin</span>
+              <span className="text-gray-500">Biaya Layanan (Gross-Up)</span>
               <span className="font-medium text-gray-900 dark:text-white">{formatRupiah(adminFee)}</span>
             </div>
           </div>
@@ -156,7 +189,7 @@ export default function CheckoutClient({
             className="w-full bg-gray-900 dark:bg-white text-white dark:text-black font-black py-4 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ShieldCheck className="w-5 h-5" />}
-            {loading ? "Memproses..." : "Bayar Sekarang"}
+            {loading ? "Memproses..." : `Bayar ${formatRupiah(grossAmount)}`}
           </button>
           <div className="text-center mt-4 flex items-center justify-center gap-2">
              <span className="text-xs text-gray-400 font-medium tracking-wide">SECURE PAYMENT BY MIDTRANS</span>

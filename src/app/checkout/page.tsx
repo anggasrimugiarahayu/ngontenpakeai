@@ -45,8 +45,6 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
     return notFound();
   }
 
-  const adminFee = 3000;
-  const grossAmount = baseAmount + adminFee;
   const clientKey = process.env.MIDTRANS_CLIENT_KEY || "";
 
   return (
@@ -57,8 +55,6 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
         itemName={itemName}
         itemDescription={itemDescription}
         baseAmount={baseAmount}
-        adminFee={adminFee}
-        grossAmount={grossAmount}
         clientKey={clientKey}
         isProduction={isProduction}
       />
