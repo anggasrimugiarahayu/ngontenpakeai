@@ -107,7 +107,7 @@ export default function CheckoutClient({
 
   return (
     <div className="max-w-md w-full">
-      <Script src={snapScriptUrl} data-client-key={clientKey} strategy="beforeInteractive" />
+      <Script src={snapScriptUrl} data-client-key={clientKey} strategy="afterInteractive" />
       
       <button onClick={() => router.back()} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white mb-6 transition-colors">
         <ArrowLeft className="w-4 h-4" /> Kembali
