@@ -62,7 +62,8 @@ export async function POST(req: NextRequest) {
               digitalProductId: order.digitalProductId
             }
           });
-        } else if (order.orderType === "PRO_SUBSCRIPTION") {
+        } else if (order.orderType === "PRO_BASIC" || order.orderType === "PRO_TOOLS" || order.orderType === "PRO_LENGKAP") {
+          // For now, any of these packages gives them the "PRO" role
           await tx.user.update({
             where: { id: order.userId },
             data: { role: "PRO" }

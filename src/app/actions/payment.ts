@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { snap } from "@/lib/midtrans";
 import { revalidatePath } from "next/cache";
 
-export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_SUBSCRIPTION", productId?: string, redirectUrl?: string }) {
+export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | "PRO_TOOLS" | "PRO_LENGKAP", productId?: string, redirectUrl?: string }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -21,16 +21,21 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_SUBSCRIPT
     const product = await prisma.digitalProduct.findUnique({ where: { id: data.productId } });
     if (!product) throw new Error("Product not found");
     
-    // Safety check if it's actually Rp 0, they should just claim it instead of buy it
     if (!product.price || product.price <= 0) {
       throw new Error("Produk ini gratis, silakan gunakan tombol klaim.");
     }
     
     amount = product.price;
     orderName = `Pembelian E-Book: ${product.title}`;
-  } else if (data.type === "PRO_SUBSCRIPTION") {
+  } else if (data.type === "PRO_BASIC") {
     amount = 99000;
-    orderName = "Langganan PRO (1 Bulan)";
+    orderName = "Paket Basic (Ebook)";
+  } else if (data.type === "PRO_TOOLS") {
+    amount = 99000;
+    orderName = "Paket Sistem Tools";
+  } else if (data.type === "PRO_LENGKAP") {
+    amount = 149000;
+    orderName = "Paket Lengkap (Ebook + Tools)";
   }
 
   // Create an Order in DB
@@ -56,13 +61,12 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_SUBSCRIPT
     },
     item_details: [
       {
-        id: data.type === "EBOOK" ? data.productId : "PRO_SUBS",
+        id: data.type === "EBOOK" ? data.productId : data.type,
         price: amount,
         quantity: 1,
         name: orderName
       }
     ],
-    // Let's set a custom callback or redirect
     callbacks: {
       finish: data.redirectUrl || "https://ngontenpakeai.com/ruang-belajar"
     }
@@ -71,11 +75,10 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_SUBSCRIPT
   try {
     const transaction = await snap.createTransaction(parameter);
     
-    // Update order with paymentUrl (Token)
     await prisma.order.update({
       where: { id: order.id },
       data: {
-        paymentUrl: transaction.redirect_url, // Or just save the token itself if we use Snap.js
+        paymentUrl: transaction.redirect_url,
         midtransId: transaction.token
       }
     });
