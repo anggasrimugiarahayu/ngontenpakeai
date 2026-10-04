@@ -14,7 +14,7 @@ export function Footer() {
   const isDark = mounted ? theme === "dark" : true;
 
   return (
-    <footer className="w-full py-4 md:py-6 flex flex-col items-center justify-center mt-auto">
+    <footer className="w-full py-2 flex flex-col items-center justify-center mt-auto">
       <div className="text-gray-500 text-xs flex items-center gap-2">
         Product by
         <a
