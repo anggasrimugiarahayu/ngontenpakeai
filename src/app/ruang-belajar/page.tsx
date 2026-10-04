@@ -114,12 +114,6 @@ export default async function RuangBelajarPage() {
                             </div>
                           )}
                         </div>
-{ebook.category && (
-                            <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                              {ebook.category.name}
-                            </div>
-                          )}
-                        </div>
                       </div>
 
                       
