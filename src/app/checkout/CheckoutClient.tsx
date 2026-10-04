@@ -248,7 +248,7 @@ export default function CheckoutClient({
                    {PAYMENT_METHODS[selectedMethod]?.iconUrls ? (
                      <div className="flex items-center gap-1.5 flex-wrap">
                        {PAYMENT_METHODS[selectedMethod].iconUrls.map((url, i) => (
-                         <img key={i} src={url} alt={selectedMethod} className={`max-w-[140px] object-contain ${PAYMENT_METHODS[selectedMethod].iconUrls.length > 1 ? 'h-4' : 'h-8'}`} />
+                         <img key={i} src={url} alt={selectedMethod} className={`max-w-[140px] object-contain ${PAYMENT_METHODS[selectedMethod].iconUrls.length > 1 ? 'h-4' : 'h-5'}`} />
                        ))}
                      </div>
                    ) : (
@@ -340,7 +340,7 @@ export default function CheckoutClient({
                                {method.iconUrls ? (
                                   <div className="flex items-center gap-1.5 flex-wrap">
                                     {method.iconUrls.map((url, i) => (
-                                      <img key={i} src={url} alt={method.name} className={`max-w-[140px] object-contain ${method.iconUrls.length > 1 ? 'h-4' : 'h-8'}`} />
+                                      <img key={i} src={url} alt={method.name} className={`max-w-[140px] object-contain ${method.iconUrls.length > 1 ? 'h-4' : 'h-5'}`} />
                                     ))}
                                   </div>
                                ) : (
