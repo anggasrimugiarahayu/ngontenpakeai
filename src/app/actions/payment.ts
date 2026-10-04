@@ -7,13 +7,28 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { calculatePaymentFees, PAYMENT_METHODS, PaymentMethodKey } from "@/lib/payment-calc";
 
-export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | "PRO_TOOLS" | "PRO_LENGKAP", productId?: string, paymentMethodKey: PaymentMethodKey }) {
+export async function createCheckoutToken(data: { 
+  type: "EBOOK" | "PRO_BASIC" | "PRO_TOOLS" | "PRO_LENGKAP", 
+  productId?: string, 
+  paymentMethodKey: PaymentMethodKey,
+  customerName: string,
+  customerEmail: string,
+  customerPhone: string
+}) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const userId = session.user.id;
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
+
+  // Save phone number if they provided a new one
+  if (data.customerPhone && user.phone !== data.customerPhone) {
+    await prisma.user.update({
+      where: { id: userId },
+      data: { phone: data.customerPhone }
+    });
+  }
 
   let baseAmount = 0;
   let orderName = "";
@@ -68,8 +83,9 @@ export async function createCheckoutToken(data: { type: "EBOOK" | "PRO_BASIC" | 
       gross_amount: grossAmount
     },
     customer_details: {
-      first_name: user.name || "Customer",
-      email: user.email,
+      first_name: data.customerName || user.name || "Customer",
+      email: data.customerEmail || user.email,
+      phone: data.customerPhone || user.phone || ""
     },
     item_details: [
       {

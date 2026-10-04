@@ -1,63 +1,76 @@
-import prisma from "@/lib/prisma";
-import { notFound, redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import prisma from "@/lib/prisma";
 import CheckoutClient from "./CheckoutClient";
-import { isProduction } from "@/lib/midtrans";
 
-export const dynamic = "force-dynamic";
-
-export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ type?: string, productId?: string }> }) {
+export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ type: string, productId?: string }> }) {
   const session = await auth();
-  if (!session?.user) {
-    redirect("/login");
+  if (!session?.user?.id) {
+    redirect("/auth/login?callbackUrl=/checkout");
   }
 
-  const resolved = await searchParams;
-  const type = resolved.type;
-  const productId = resolved.productId;
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id }
+  });
 
-  if (!type) return notFound();
+  if (!user) {
+    redirect("/auth/login");
+  }
+
+  const { type, productId } = await searchParams;
+
+  if (!type) {
+    redirect("/");
+  }
 
   let baseAmount = 0;
   let itemName = "";
   let itemDescription = "";
 
   if (type === "EBOOK") {
-    if (!productId) return notFound();
+    if (!productId) redirect("/ruang-belajar");
     const product = await prisma.digitalProduct.findUnique({ where: { id: productId } });
-    if (!product || !product.price || product.price <= 0) return notFound();
+    if (!product) redirect("/ruang-belajar");
+    if (!product.price || product.price <= 0) redirect(`/ruang-belajar/${product.slug}`);
+    
     baseAmount = product.price;
     itemName = product.title;
     itemDescription = "Akses selamanya untuk E-book ini.";
   } else if (type === "PRO_BASIC") {
     baseAmount = 99000;
-    itemName = "Paket Basic";
-    itemDescription = "Akses semua E-book PRO.";
+    itemName = "Ruang Ngonten Faceless (PRO Basic)";
+    itemDescription = "Akses modul dasar, tanpa AI tools.";
   } else if (type === "PRO_TOOLS") {
     baseAmount = 99000;
-    itemName = "Paket Sistem Tools";
-    itemDescription = "Akses AI Tools.";
+    itemName = "Sistem Tools AI (PRO Tools)";
+    itemDescription = "Akses sistem prompt AI khusus untuk ngonten.";
   } else if (type === "PRO_LENGKAP") {
     baseAmount = 149000;
-    itemName = "Paket Lengkap";
-    itemDescription = "Akses semua E-book PRO + AI Tools + Bonus PLR.";
+    itemName = "Paket Lengkap (Modul + Tools)";
+    itemDescription = "Akses seluruh modul dan sistem tools AI.";
   } else {
-    return notFound();
+    redirect("/");
   }
 
-  const clientKey = process.env.MIDTRANS_CLIENT_KEY || "";
+  const isProduction = process.env.NODE_ENV === "production" && process.env.MIDTRANS_IS_PRODUCTION === "true";
+  const clientKey = isProduction ? process.env.MIDTRANS_CLIENT_KEY : process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "SB-Mid-client-rIaAV5Qv-Ue28a9u";
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-[#09090b] flex items-center justify-center p-4">
-      <CheckoutClient 
-        type={type as any}
-        productId={productId}
-        itemName={itemName}
-        itemDescription={itemDescription}
-        baseAmount={baseAmount}
-        clientKey={clientKey}
-        isProduction={isProduction}
-      />
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-10 px-4 md:py-20 flex justify-center">
+      <div className="w-full max-w-5xl">
+        <CheckoutClient 
+          type={type as any} 
+          productId={productId} 
+          itemName={itemName}
+          itemDescription={itemDescription}
+          baseAmount={baseAmount}
+          clientKey={clientKey!}
+          isProduction={isProduction}
+          initialName={user.name || ""}
+          initialEmail={user.email || ""}
+          initialPhone={user.phone || ""}
+        />
+      </div>
     </div>
   );
 }
