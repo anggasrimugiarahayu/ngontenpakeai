@@ -2,12 +2,11 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Script from "next/script";
-import { createCheckoutToken, verifyPayment, cancelPayment } from "@/app/actions/payment";
+import { createCheckoutToken, verifyPayment } from "@/app/actions/payment";
 import { useRouter } from "next/navigation";
-import { Loader2, CheckCircle2, ArrowLeft, ShieldCheck, ChevronRight, X, Info, Lock, CreditCard, Clock, XCircle, RefreshCcw } from "lucide-react";
+import { Loader2, CheckCircle2, ArrowLeft, ChevronRight, X, Lock, CreditCard } from "lucide-react";
 import Link from "next/link";
 import { PAYMENT_METHODS, calculatePaymentFees, PaymentMethodKey } from "@/lib/payment-calc";
-import Image from "next/image";
 
 interface CheckoutClientProps {
   type: "EBOOK" | "PRO_BASIC" | "PRO_TOOLS" | "PRO_LENGKAP";
@@ -139,7 +138,7 @@ export default function CheckoutClient({
 
   if (paymentState === "success") {
     return (
-      <div className="bg-white dark:bg-white/[0.03] p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-white/10 max-w-md w-full mx-auto text-center mt-10">
+      <div className="bg-white dark:bg-[#18181b] p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-white/10 max-w-md w-full mx-auto text-center mt-10">
         <div className="w-20 h-20 bg-rn-accent/20 text-rn-accent rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 className="w-10 h-10" />
         </div>
@@ -152,7 +151,7 @@ export default function CheckoutClient({
 
   if (paymentState === "verifying") {
     return (
-      <div className="bg-white dark:bg-white/[0.03] p-8 rounded-3xl shadow-xl border border-gray-100 dark:border-white/10 max-w-md w-full mx-auto text-center mt-10">
+      <div className="bg-white dark:bg-[#18181b] p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-white/10 max-w-md w-full mx-auto text-center mt-10">
         <Loader2 className="w-16 h-16 text-rn-accent animate-spin mx-auto mb-6" />
         <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Memverifikasi Status...</h2>
         <p className="text-gray-500 text-sm">Sistem sedang menghubungi Midtrans.</p>
@@ -163,56 +162,59 @@ export default function CheckoutClient({
   const isPending = paymentState === "pending";
 
   return (
-    <div className="w-full relative">
+    <div className="w-full relative h-full flex flex-col justify-center">
       <Script src={isProduction ? "https://app.midtrans.com/snap/snap.js" : "https://app.sandbox.midtrans.com/snap/snap.js"} data-client-key={clientKey} strategy="afterInteractive" />
       
       <button onClick={() => router.back()} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white mb-3 transition-colors w-fit">
         <ArrowLeft className="w-4 h-4" /> Kembali
       </button>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-5 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4 lg:gap-6 items-stretch">
         
         <div className="flex flex-col space-y-4">
-          <div className="bg-white dark:bg-white/[0.03] rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 p-4 md:p-5 flex-none">
+          <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 p-4 md:p-5 flex-none">
             <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-3 uppercase">PRODUCT</h3>
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-4">
                 <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 mt-1">1x</span>
-                <div className="w-16 h-16 bg-gray-100 dark:bg-white/[0.05] rounded-xl overflow-hidden flex items-center justify-center shrink-0">
-                  {productImage ? <img src={productImage} alt={itemName} className="w-full h-full object-cover" /> : <CreditCard className="w-6 h-6 text-gray-300 dark:text-gray-600" />}
+                <div className="w-16 h-16 bg-gray-50 dark:bg-black/20 rounded-xl overflow-hidden flex items-center justify-center shrink-0 border border-gray-100 dark:border-white/5 p-1">
+                  {productImage ? <img src={productImage} alt={itemName} className="w-full h-full object-contain" /> : <CreditCard className="w-6 h-6 text-gray-300 dark:text-gray-600" />}
                 </div>
                 <div>
                   <h4 className="font-bold text-gray-900 dark:text-white text-sm md:text-base leading-snug mb-1">{itemName}</h4>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 max-w-[220px]">{itemDescription}</p>
+                  <div 
+                    className="text-xs text-gray-500 dark:text-gray-400 max-w-[250px] line-clamp-2 prose prose-sm dark:prose-invert"
+                    dangerouslySetInnerHTML={{ __html: itemDescription || "Akses selamanya untuk E-book ini." }}
+                  />
                 </div>
               </div>
-              <span className="font-medium text-gray-900 dark:text-white text-sm md:text-base">Rp {formatRupiah(baseAmount)}</span>
+              <span className="font-medium text-gray-900 dark:text-white text-sm md:text-base shrink-0 ml-2">Rp {formatRupiah(baseAmount)}</span>
             </div>
           </div>
 
-          <div className="bg-white dark:bg-white/[0.03] rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 p-4 md:p-5 flex-1 flex flex-col">
+          <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 p-4 md:p-5 flex-1 flex flex-col">
             <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-4 uppercase">BUYER INFO</h3>
             <div className="space-y-3.5 flex-1">
               <div className="space-y-1">
                 <label className="text-xs font-medium text-gray-700 dark:text-gray-300"><span className="text-red-500">*</span> Email</label>
                 <input type="email" value={customerEmail} onChange={(e) => setCustomerEmail(e.target.value)} disabled={isPending}
-                  className="w-full px-3 py-2 bg-white dark:bg-white/[0.05] border border-gray-300 dark:border-white/10 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
+                  className="w-full px-3 py-2 bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-gray-700 dark:text-gray-300"><span className="text-red-500">*</span> Name</label>
                 <input type="text" value={customerName} onChange={(e) => setCustomerName(e.target.value)} disabled={isPending}
-                  className="w-full px-3 py-2 bg-white dark:bg-white/[0.05] border border-gray-300 dark:border-white/10 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
+                  className="w-full px-3 py-2 bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
               </div>
               <div className="space-y-1">
                 <label className="text-xs font-medium text-gray-700 dark:text-gray-300"><span className="text-red-500">*</span> Phone Number</label>
                 <input type="tel" value={customerPhone} onChange={(e) => setCustomerPhone(e.target.value)} disabled={isPending}
-                  className="w-full px-3 py-2 bg-white dark:bg-white/[0.05] border border-gray-300 dark:border-white/10 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
+                  className="w-full px-3 py-2 bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed" />
               </div>
             </div>
           </div>
         </div>
 
-        <div className="w-full bg-white dark:bg-white/[0.03] rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 p-4 md:p-5 flex flex-col h-full">
+        <div className="w-full bg-white dark:bg-[#18181b] rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 p-4 md:p-5 flex flex-col h-full">
           <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-4 uppercase">PAYMENT DETAIL</h3>
           
           <div className="space-y-2 mb-4">
@@ -232,9 +234,9 @@ export default function CheckoutClient({
           </div>
 
           <div className="border border-rn-accent/50 dark:border-rn-accent/40 rounded-xl overflow-hidden mb-4 relative flex-none">
-            <button onClick={() => !isPending && setShowPaymentModal(true)} disabled={isPending} className={`w-full p-3 flex items-center justify-between bg-white dark:bg-white/[0.05] transition-colors ${isPending ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-white/[0.08]'}`}>
+            <button onClick={() => !isPending && setShowPaymentModal(true)} disabled={isPending} className={`w-full p-3 flex items-center justify-between bg-white dark:bg-white/[0.02] transition-colors ${isPending ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-white/[0.05]'}`}>
               <div className="flex items-center gap-3">
-                <div className="w-12 h-7 bg-white rounded flex items-center justify-center shrink-0 shadow-sm border border-gray-100 dark:border-gray-800 p-1">
+                <div className="w-12 h-7 bg-white rounded flex items-center justify-center shrink-0 shadow-sm border border-gray-200 dark:border-gray-800 p-1">
                    {PAYMENT_METHODS[selectedMethod]?.iconUrl ? (
                      <img src={PAYMENT_METHODS[selectedMethod].iconUrl} alt={selectedMethod} className="max-w-full max-h-full object-contain" />
                    ) : (
@@ -276,11 +278,11 @@ export default function CheckoutClient({
       </div>
 
       {showPaymentModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#121215] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200 border dark:border-white/10">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-white/10">
             <div className="p-4 border-b border-gray-100 dark:border-white/10 flex items-center justify-between shrink-0">
               <h3 className="font-bold text-gray-900 dark:text-white">Select Payment Method</h3>
-              <button onClick={() => setShowPaymentModal(false)} className="p-2 hover:bg-gray-100 dark:hover:white/5 rounded-full transition-colors text-gray-500"><X className="w-5 h-5" /></button>
+              <button onClick={() => setShowPaymentModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-gray-500"><X className="w-5 h-5" /></button>
             </div>
             
             <div className="p-5 overflow-y-auto space-y-6">

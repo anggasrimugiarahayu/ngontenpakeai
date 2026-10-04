@@ -24,7 +24,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
     redirect("/");
   }
 
-    let baseAmount = 0;
+  let baseAmount = 0;
   let itemName = "";
   let itemDescription = "";
   let productImage = "";
@@ -37,7 +37,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
     
     baseAmount = product.price;
     itemName = product.title;
-    itemDescription = "Akses selamanya untuk E-book ini.";
+    itemDescription = product.description || "Akses selamanya untuk produk ini.";
     productImage = product.coverUrl || "";
   } else if (type === "PRO_BASIC") {
     baseAmount = 99000;
@@ -55,10 +55,9 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
     redirect("/");
   }
 
-    const isProduction = process.env.NODE_ENV === "production" && process.env.MIDTRANS_IS_PRODUCTION === "true";
+  const isProduction = process.env.NODE_ENV === "production" && process.env.MIDTRANS_IS_PRODUCTION === "true";
   const clientKey = isProduction ? process.env.MIDTRANS_CLIENT_KEY : process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "SB-Mid-client-rIaAV5Qv-Ue28a9u";
 
-  // Check for existing pending order
   let existingPendingOrder = null;
   const pendingDbOrder = await prisma.order.findFirst({
     where: {
@@ -71,20 +70,19 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
   });
 
   if (pendingDbOrder && pendingDbOrder.midtransId) {
-    // Check status in midtrans
     const verifyRes = await verifyPayment(pendingDbOrder.id);
     if (verifyRes.success && verifyRes.status === "PENDING" && verifyRes.expiryTime) {
       existingPendingOrder = {
         token: pendingDbOrder.midtransId,
         orderId: pendingDbOrder.id,
         expiryTime: verifyRes.expiryTime,
-        paymentMethodKey: pendingDbOrder.paymentMethod || "QRIS" // Fallback if not saved
+        paymentMethodKey: pendingDbOrder.paymentMethod || "QRIS"
       };
     }
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-6 px-4 md:py-8 min-h-[calc(100vh-100px)] flex justify-center">
+    <div className="flex-1 w-full flex justify-center py-6 px-4 sm:py-8 items-center h-full">
       <div className="w-full max-w-5xl">
         <CheckoutClient 
           type={type as any} 
