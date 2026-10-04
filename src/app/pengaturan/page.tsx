@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getAiModels, getAppSettings, getFeatures, getCategories, getProducts } from "./admin-actions";
 import { SettingsTabs } from "./SettingsTabs";
+import prisma from "@/lib/prisma";
 
 export const metadata = {
   title: "Pengaturan - Ngonten Pakai AI",
@@ -17,6 +18,12 @@ export default async function SettingsPage() {
 
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
   const isPro = isAdmin || false; // Later add actual Pro check for normal users
+
+  const [features, usages] = await Promise.all([
+    prisma.feature.findMany({ where: { isActive: true }, orderBy: { createdAt: 'asc' } }),
+    prisma.usage.findMany({ where: { userId: session.user.id } })
+  ]);
+  const userData = { features, usages };
 
   let adminData: any = null;
   if (isAdmin) {
@@ -40,7 +47,8 @@ export default async function SettingsPage() {
         user={session.user} 
         isAdmin={isAdmin} 
         isPro={isPro} 
-        adminData={adminData} 
+        adminData={adminData}
+        userData={userData} 
       />
     </div>
   );

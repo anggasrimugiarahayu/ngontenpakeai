@@ -3,25 +3,13 @@
 import { useEffect, useState } from "react";
 import ApiKeyForm from "./ApiKeyForm";
 
-const DEFAULT_FEATURES = [
-  { id: "cm1ibtwf2000213d2f9o8593a", name: "Ruang Belajar" },
-  { id: "cm1ibtwf2000313d2r9lve0g3", name: "Ruang Ngonten" },
-  { id: "cm1ibtwf2000413d2kxy758ed", name: "Ruang Growing" },
-];
 
-export function PlanUsageSection({ isPro }: { isPro: boolean }) {
-  const [features, setFeatures] = useState(DEFAULT_FEATURES);
-  const [usages, setUsages] = useState<any[]>([]);
 
-  useEffect(() => {
-    fetch("/api/settings")
-      .then(res => res.json())
-      .then(data => {
-        if (data.features) setFeatures(data.features);
-        if (data.usages) setUsages(data.usages);
-      })
-      .catch(console.error);
-  }, []);
+export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData?: any }) {
+  const [features, setFeatures] = useState(userData?.features || []);
+  const [usages, setUsages] = useState<any[]>(userData?.usages || []);
+
+
 
   const usageMap = usages.reduce((acc: any, usage: any) => {
     acc[usage.featureId] = usage.count;

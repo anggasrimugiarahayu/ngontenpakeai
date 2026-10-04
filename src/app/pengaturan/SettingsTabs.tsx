@@ -9,12 +9,14 @@ export function SettingsTabs({
   user, 
   isAdmin, 
   isPro, 
-  adminData 
+  adminData, 
+  userData 
 }: { 
   user: any; 
   isAdmin: boolean; 
   isPro: boolean; 
   adminData?: any; 
+  userData?: any; 
 }) {
   const [activeTab, setActiveTab] = useState("profil");
 
@@ -64,7 +66,7 @@ export function SettingsTabs({
         {/* USER: LANGGANAN */}
         {activeTab === "langganan" && !isAdmin && (
           <div className="space-y-6">
-            <PlanUsageSection isPro={isPro} />
+            <PlanUsageSection isPro={isPro} userData={userData} />
             
             <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
               <div className="mb-6">
