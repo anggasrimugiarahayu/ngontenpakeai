@@ -2,11 +2,17 @@ import prisma from "@/lib/prisma";
 import Link from "next/link";
 import { BookOpen, Star, Lock } from "lucide-react";
 import { auth } from "@/auth";
+import { verifyPayment } from "@/app/actions/payment";
 
 export const dynamic = "force-dynamic";
 
-export default async function RuangBelajarPage() {
+export default async function RuangBelajarPage({ searchParams }: { searchParams: { [key: string]: string | string[] | undefined } }) {
   const session = await auth();
+  
+  if (searchParams?.order_id && typeof searchParams.order_id === 'string') {
+    await verifyPayment(searchParams.order_id);
+  }
+  
   let isPro = false;
   if (session?.user?.id) {
     const userObj = await prisma.user.findUnique({ where: { id: session.user.id } });

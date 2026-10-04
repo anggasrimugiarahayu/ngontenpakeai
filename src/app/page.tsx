@@ -342,7 +342,7 @@ function HomeContent() {
               </div>
 
               <form action={async () => {
-                const res = await createCheckoutToken({ type: "PRO_BASIC" });
+                const res = await createCheckoutToken({ type: "PRO_BASIC", redirectUrl: window.location.origin + "/ruang-belajar" });
                 if (res?.redirectUrl) {
                   window.location.href = res.redirectUrl;
                 }
@@ -408,7 +408,7 @@ function HomeContent() {
               </div>
 
               <form action={async () => {
-                const res = await createCheckoutToken({ type: "PRO_TOOLS" });
+                const res = await createCheckoutToken({ type: "PRO_TOOLS", redirectUrl: window.location.origin + "/ruang-belajar" });
                 if (res?.redirectUrl) {
                   window.location.href = res.redirectUrl;
                 }
@@ -484,7 +484,7 @@ function HomeContent() {
               </div>
 
               <form action={async () => {
-                const res = await createCheckoutToken({ type: "PRO_LENGKAP" });
+                const res = await createCheckoutToken({ type: "PRO_LENGKAP", redirectUrl: window.location.origin + "/ruang-belajar" });
                 if (res?.redirectUrl) {
                   window.location.href = res.redirectUrl;
                 }
