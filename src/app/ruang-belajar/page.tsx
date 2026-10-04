@@ -45,13 +45,12 @@ export default async function RuangBelajarPage() {
               const isProEbook = ebook.accessLevel === "PRO";
               const isPremiumEbook = ebook.accessLevel === "PREMIUM";
               
-              const isOwned = ownedProductIds.has(ebook.id);
+              const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
+              const isOwned = ownedProductIds.has(ebook.id) || isAdmin;
               
               // For Admin, everything is unlocked. For others, ONLY if they own it.
-              const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
               let isLocked = true;
-              if (isAdmin) isLocked = false;
-              else if (isOwned) isLocked = false;
+              if (isOwned) isLocked = false;
 
               const reviewCount = ebook.reviews?.length || 0;
 

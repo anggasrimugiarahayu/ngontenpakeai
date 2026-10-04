@@ -355,9 +355,9 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                    )}
                    
                    <div className="flex flex-wrap gap-1.5 mb-2 sm:mb-3 mt-auto">
-                      {prod.isProOnly && (
-                        <span className="text-[8px] sm:text-[9px] font-bold text-orange-700 dark:text-gray-300 bg-orange-100 dark:bg-[#222225] px-1.5 py-0.5 rounded uppercase tracking-wider border border-orange-200 dark:border-white/5 whitespace-nowrap">
-                          PREMIUM
+                      {prod.accessLevel !== 'FREE' && (
+                        <span className={`text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider border whitespace-nowrap ${prod.accessLevel === 'PREMIUM' ? 'text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/30 border-red-200 dark:border-red-800/30' : 'text-orange-700 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 border-orange-200 dark:border-orange-800/30'}`}>
+                          {prod.accessLevel}
                         </span>
                       )}
                       <span className="text-[8px] sm:text-[9px] font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#222225] px-1.5 py-0.5 rounded uppercase tracking-wider border border-gray-200 dark:border-white/5 whitespace-nowrap truncate max-w-[80px] sm:max-w-[100px]">
@@ -367,7 +367,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
 
                    <div className="border-t border-gray-100 dark:border-white/5 pt-2 sm:pt-3 flex items-center justify-between gap-1.5">
                      <span className="text-orange-600 dark:text-orange-400 font-bold text-[10px] sm:text-xs whitespace-nowrap truncate">
-                       {prod.accessLevel}
+                       {(prod.accessLevel === "PREMIUM" || prod.accessLevel === "PRO") ? `Rp ${(prod.price || 0).toLocaleString("id-ID")}` : "Rp 0"}
                      </span>
                      
                      {/* Action Buttons - COMPACT & RESPONSIVE */}
@@ -488,7 +488,6 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 fileUrl: formData.get("fileUrl"),
                 accessLevel: formData.get("accessLevel") as string,
                 isProOnly: formData.get("accessLevel") === "PRO" || formData.get("accessLevel") === "PREMIUM",
-                price: formData.get("price") ? parseInt(formData.get("price") as string) : 0,
                 price: formData.get("price") ? parseInt(formData.get("price") as string) : 0,
                 isDownloadable: formData.get("isDownloadable") === "on",
               });
@@ -612,6 +611,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 fileUrl: formData.get("fileUrl"),
                 accessLevel: formData.get("accessLevel") as string,
                 isProOnly: formData.get("accessLevel") === "PRO" || formData.get("accessLevel") === "PREMIUM",
+                price: formData.get("price") ? parseInt(formData.get("price") as string) : 0,
                 isDownloadable: formData.get("isDownloadable") === "on",
               });
               setLoading(false);

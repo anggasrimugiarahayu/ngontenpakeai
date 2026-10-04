@@ -49,10 +49,8 @@ export default async function ReadEbookPage({ params }: { params: { slug: string
   
   const isOwned = ownedProductIds.has(ebook.id);
   
-  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
   let isLocked = true;
-  if (isAdmin) isLocked = false;
-  else if (isOwned) isLocked = false;
+  if (isOwned) isLocked = false;
 
   const isFavorite = ebook.favorites.length > 0;
 
