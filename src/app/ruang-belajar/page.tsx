@@ -118,14 +118,21 @@ export default async function RuangBelajarPage() {
 
                       
                       <div className="mt-auto pt-2.5 flex items-center justify-between border-t border-gray-100 dark:border-white/5">
-                        {isFree ? (
-                          <span className="text-[17px] font-black text-green-600 dark:text-green-500">Gratis</span>
-                        ) : isOwned ? (
+                        {isOwned ? (
                           <span className="text-[17px] font-black text-green-600 dark:text-green-500">Akses Terbuka</span>
+                        ) : (!isLocked && isProEbook) ? (
+                          <span className="text-[17px] font-black text-rn-accent">Akses Terbuka (PRO)</span>
+                        ) : isFree ? (
+                          <span className="text-[17px] font-black text-green-600 dark:text-green-500">Rp 0</span>
                         ) : (
-                          <span className={`text-[17px] font-black ${isLocked ? 'text-rn-accent' : 'text-gray-400 dark:text-gray-500'}`}>
-                             {isPremiumEbook ? "Premium" : "Pro"}
-                          </span>
+                          <div className="flex flex-col">
+                            <span className="text-[17px] font-black text-gray-900 dark:text-white leading-none">
+                              Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
+                            </span>
+                            {isProEbook && (
+                               <span className="text-[8px] text-rn-accent font-bold mt-1 uppercase tracking-wider">Atau Gratis dgn PRO</span>
+                            )}
+                          </div>
                         )}
                         <button className="bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg px-4 py-2 text-xs font-bold shadow-sm transition-colors">
                           Buka E-Book

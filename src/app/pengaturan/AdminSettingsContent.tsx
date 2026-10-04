@@ -565,7 +565,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 </select>
               </div>
               
-              {addAccessLevel === "PREMIUM" && (
+              {(addAccessLevel === "PREMIUM" || addAccessLevel === "PRO") && (
                 <div className="mt-4">
                   <label className="block text-xs font-bold text-gray-500 mb-1">HARGA E-BOOK (Rp)</label>
                   <input name="price" type="number" min="0" placeholder="Contoh: 49000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" required />
@@ -677,17 +677,17 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               
               <div className="mt-4">
                 <label className="block text-xs font-bold text-gray-500 mb-1">LEVEL AKSES E-BOOK</label>
-                <select name="accessLevel" defaultValue={editingProduct.accessLevel || 'FREE'} className="w-full p-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-[#18181b] focus:outline-none focus:ring-2 focus:ring-rn-accent text-sm">
+                <select name="accessLevel" value={editingProduct.accessLevel || "FREE"} onChange={(e) => setEditingProduct({...editingProduct, accessLevel: e.target.value})} className="w-full p-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-[#18181b] focus:outline-none focus:ring-2 focus:ring-rn-accent text-sm">
                   <option value="FREE">Free (Gratis untuk semua)</option>
                   <option value="PRO">Pro (Khusus Member Bundle)</option>
                   <option value="PREMIUM">Premium (Pembelian Eceran / Ala Carte)</option>
                 </select>
               </div>
               
-              {addAccessLevel === "PREMIUM" && (
+              {(editingProduct.accessLevel === "PREMIUM" || editingProduct.accessLevel === "PRO") && (
                 <div className="mt-4">
                   <label className="block text-xs font-bold text-gray-500 mb-1">HARGA E-BOOK (Rp)</label>
-                  <input name="price" type="number" min="0" placeholder="Contoh: 49000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" required />
+                  <input name="price" type="number" min="0" defaultValue={editingProduct.price || 0} placeholder="Contoh: 49000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" required />
                 </div>
               )}
 
