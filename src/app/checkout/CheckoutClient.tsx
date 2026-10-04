@@ -95,11 +95,10 @@ export default function CheckoutClient({
         }
       },
       onPending: async function () {
-        setPaymentState("verifying");
+        setPaymentState("pending");
         const verifyRes = await verifyPayment(orderId);
         if (verifyRes.success && verifyRes.status === "PENDING") {
           setExpiryTime(verifyRes.expiryTime || "");
-          setPaymentState("pending");
         }
       },
       onError: function () {
@@ -108,12 +107,11 @@ export default function CheckoutClient({
         setLoading(false);
       },
       onClose: async function () {
-        setPaymentState("verifying");
+        setPaymentState("pending");
         const verifyRes = await verifyPayment(orderId);
         if (verifyRes.success && verifyRes.status === "SUCCESS") setPaymentState("success");
         else if (verifyRes.success && verifyRes.status === "PENDING") {
            setExpiryTime(verifyRes.expiryTime || "");
-           setPaymentState("pending");
         } else {
            setLoading(false);
            setPaymentState("idle");
