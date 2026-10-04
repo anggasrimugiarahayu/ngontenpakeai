@@ -15,9 +15,9 @@ export interface PaymentMethodDef {
 
 export const PAYMENT_METHODS: Record<PaymentMethodKey, PaymentMethodDef> = {
   BCA_VA:      { name: 'BCA Virtual Account', enabled: ['bca_va'], feeType: 'FIXED', fixedFee: 4000, iconUrl: "https://upload.wikimedia.org/wikipedia/commons/5/5c/Bank_Central_Asia.svg" },
-  BNI_VA:      { name: 'BNI Virtual Account', enabled: ['bni_va'], feeType: 'FIXED', fixedFee: 4000, iconUrl: "https://icon.horse/icon/bni.co.id" },
+  BNI_VA:      { name: 'BNI Virtual Account', enabled: ['bni_va'], feeType: 'FIXED', fixedFee: 4000, iconUrl: "https://midtrans-website.al-mp-id-p.cdn.gtflabs.io/uploads/2020/09/f6f57e9126c57179cf729cc9586e47c0_e26ce4cce944fe379072ae509fe72ec1_compressed.png" },
   BRI_VA:      { name: 'BRI Virtual Account', enabled: ['bri_va'], feeType: 'FIXED', fixedFee: 4000, iconUrl: "https://upload.wikimedia.org/wikipedia/commons/2/2e/BRI_2020.svg" },
-  MANDIRI_VA:  { name: 'Mandiri Virtual Account', enabled: ['echannel'], feeType: 'FIXED', fixedFee: 4000, iconUrl: "https://icon.horse/icon/bankmandiri.co.id" },
+  MANDIRI_VA:  { name: 'Mandiri Virtual Account', enabled: ['echannel'], feeType: 'FIXED', fixedFee: 4000, iconUrl: "https://midtrans-website.al-mp-id-p.cdn.gtflabs.io/uploads/2020/09/11f8970a182ad8cf6aaf0a0cd22dd9ad_3948cb3bf5c4887c7cca7ca7ee421708_compressed.png" },
   PERMATA_VA:  { name: 'Permata Virtual Account', enabled: ['permata_va'], feeType: 'FIXED', fixedFee: 4000, iconUrl: "https://icon.horse/icon/permatabank.com" },
   CIMB_VA:     { name: 'CIMB Niaga Virtual Account', enabled: ['cimb_va'], feeType: 'FIXED', fixedFee: 4000, iconUrl: "https://icon.horse/icon/cimbniaga.co.id" },
   OTHER_VA:    { name: 'Other Virtual Account', enabled: ['other_va'], feeType: 'FIXED', fixedFee: 4000 },

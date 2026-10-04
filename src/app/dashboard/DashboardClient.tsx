@@ -35,10 +35,6 @@ const MOCK_DONUT_DATA = [
 ];
 
 export default function DashboardClient({ data, user }: { data: any, user: any }) {
-  const donutData = data.realProductSales && data.realProductSales.length > 0 
-    ? data.realProductSales.map((p) => ({ name: p.title.slice(0, 20) + '...', value: p.sold })) 
-    : [{ name: 'No Sales', value: 1 }];
-
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatus, setOrderStatus] = useState('all');
@@ -79,40 +75,13 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
   });
 
   const { chartData, dynamicTotalViews, dynamicTotalClicks, salesChartData } = React.useMemo(() => {
-    if (!date?.from) return { chartData: [], dynamicTotalViews: 0, dynamicTotalClicks: 0, salesChartData: [] };
-    const endDate = date.to || date.from;
-    try {
-      const days = eachDayOfInterval({ start: date.from, end: endDate });
-      let tViews = 0;
-      let tClicks = 0;
-      
-      const salesData: any[] = [];
-      const newData = days.map((day) => {
-        const seed = day.getTime();
-        const views = Math.floor(Math.abs(Math.sin(seed)) * 150) + 20;
-        const clicks = Math.floor(Math.abs(Math.cos(seed)) * 70) + 5;
-        const sales = Math.floor(Math.abs(Math.sin(seed * 2)) * 500000) + 50000;
-        
-        tViews += views;
-        tClicks += clicks;
-        
-        salesData.push({
-          date: format(day, "d MMM"),
-          sales
-        });
-        
-        return {
-          date: format(day, "d MMM"),
-          views,
-          clicks
-        };
-      });
-      return { chartData: newData, dynamicTotalViews: tViews, dynamicTotalClicks: tClicks, salesChartData: salesData };
-    } catch (e) {
-      console.error(e);
-      return { chartData: [], dynamicTotalViews: 0, dynamicTotalClicks: 0, salesChartData: [] };
-    }
-  }, [date]);
+    return { 
+       chartData: [], 
+       dynamicTotalViews: data.totalViews || 0, 
+       dynamicTotalClicks: data.totalClicks || 0, 
+       salesChartData: [] 
+    };
+  }, [date, data.totalViews, data.totalClicks]);
 
   const formatIDR = (num: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -736,6 +705,121 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
           </div>
         </div>
 
+        {/* Chart Section */}
+        <div className="bg-white dark:bg-[#121214] rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-white/10">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+            <div>
+              <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">Total Views & Clicks</h2>
+              <div className="flex items-center gap-5">
+                <div>
+                  <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium mb-1">
+                    <div className="w-2.5 h-2.5 rounded-full bg-orange-500"></div> Views
+                  </div>
+                  <div className="text-xl font-black text-gray-900 dark:text-white">{formatIDR(dynamicTotalViews)}</div>
+                </div>
+                <div>
+                  <div className="flex items-center gap-1.5 text-gray-500 text-xs font-medium mb-1">
+                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div> Clicks
+                  </div>
+                  <div className="text-xl font-black text-gray-900 dark:text-white">{formatIDR(dynamicTotalClicks)}</div>
+                </div>
+              </div>
+            </div>
+            
+            {/* Popover Date Filter */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowDatePicker(!showDatePicker)}
+                className="flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+              >
+                <CalendarIcon size={16} className="text-gray-500 mr-2" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  {date?.from ? (
+                    date.to ? (
+                      <>{format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}</>
+                    ) : (
+                      format(date.from, "LLL dd, y")
+                    )
+                  ) : (
+                    <span>Select Date..</span>
+                  )}
+                </span>
+              </button>
+              
+              {showDatePicker && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowDatePicker(false)}></div>
+                  <div className="absolute right-0 top-full mt-2 z-50 bg-white dark:bg-[#1c1c1e] rounded-xl shadow-lg border border-gray-100 dark:border-white/10 p-3">
+                    <style>{`
+                      .rdp {
+                        --rdp-cell-size: 32px !important;
+                        --rdp-accent-color: #f97316 !important;
+                        --rdp-background-color: #f97316 !important;
+                        --rdp-accent-color-dark: #f97316 !important;
+                        --rdp-background-color-dark: #ea580c !important;
+                        --rdp-outline: 2px solid var(--rdp-accent-color);
+                        --rdp-outline-selected: 2px solid var(--rdp-accent-color);
+                        margin: 0;
+                      }
+                      .dark .rdp-day_selected, .dark .rdp-day_selected:focus-visible, .dark .rdp-day_selected:hover {
+                         color: white;
+                         background-color: #ea580c;
+                      }
+                      .rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
+                         color: white;
+                         background-color: #f97316;
+                      }
+                    `}</style>
+                    <DayPicker
+                      mode="range"
+                      defaultMonth={date?.from}
+                      selected={date}
+                      onSelect={(newDate) => {
+                        setDate(newDate);
+                        if (newDate?.from && newDate?.to) {
+                          setShowDatePicker(false);
+                        }
+                      }}
+                      numberOfMonths={1}
+                      disabled={(d) => d > new Date()}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="h-[250px] w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData}
+                margin={{ top: 10, right: 0, left: -20, bottom: 0 }}
+                barGap={0}
+              >
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" opacity={0.15} />
+                <XAxis 
+                  dataKey="date" 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#9ca3af' }}
+                  dy={10}
+                />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{ fontSize: 10, fill: '#9ca3af' }}
+                />
+                <Tooltip 
+                  cursor={{ fill: 'transparent' }}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
+                />
+                <Bar dataKey="clicks" stackId="a" fill="#10b981" radius={[0, 0, 4, 4]} barSize={8} />
+                <Bar dataKey="views" stackId="a" fill="#f97316" radius={[4, 4, 0, 0]} barSize={8} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
         {/* Bottom Stats Row */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           
@@ -777,18 +861,79 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
       {activeTab === 'statistics' && (
         <div className="space-y-6 animate-in fade-in duration-300">
           
+          {/* Top Summary Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col justify-center">
+               <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-orange-500"></div> 
+                  Total Views & Clicks
+               </div>
+               <h3 className="text-3xl font-black text-gray-900 dark:text-white">{formatIDR(dynamicTotalViews + dynamicTotalClicks)}</h3>
+            </div>
+            <div className="bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col justify-center">
+               <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-blue-500"></div> 
+                  Total Sales
+               </div>
+               <h3 className="text-3xl font-black text-gray-900 dark:text-white">{data.lifetimeOrders}</h3>
+            </div>
+            <div className="bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col justify-center relative overflow-hidden">
+               <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3"></div>
+               <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500"></div> 
+                  Sales Value (IDR)
+               </div>
+               <div className="flex items-baseline gap-2">
+                 <h3 className="text-3xl font-black text-gray-900 dark:text-white">{formatIDR(data.lifetimeSalesIDR)}</h3>
+                 <span className="text-xs font-bold text-emerald-500 flex items-center"><ArrowUp size={12}/> 84.19%</span>
+               </div>
+            </div>
+          </div>
+
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             
+            {/* Sales Value Bar Chart */}
+            <div className="lg:col-span-2 bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10">
+              <div className="flex justify-between items-start mb-6">
+                 <div>
+                    <div className="flex items-center gap-2 mb-1">
+                       <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
+                       <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">Sales Value (IDR)</h3>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                       <h2 className="text-2xl font-black text-gray-900 dark:text-white">{formatIDR(data.lifetimeSalesIDR)}</h2>
+                       <div className="flex flex-col text-[10px] font-bold text-emerald-500 leading-tight">
+                         <span className="flex items-center"><ArrowUp size={10}/> 84.19%</span>
+                         <span className="text-gray-400 font-medium">vs previous period</span>
+                       </div>
+                    </div>
+                 </div>
+              </div>
+              <div className="h-[220px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={salesChartData} margin={{ top: 10, right: 0, left: -20, bottom: 0 }} barGap={0}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#333" opacity={0.1} />
+                    <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#9ca3af' }} dy={10} />
+                    <YAxis axisLine={false} tickLine={false} tick={false} width={10} />
+                    <Tooltip cursor={{ fill: 'transparent' }} contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
+                    <Bar dataKey="sales" fill="#10b981" radius={[4, 4, 4, 4]} barSize={8} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
             {/* Sales Distribution Donut */}
-            <div className="w-full max-w-xl mx-auto bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6 text-center">Sales Distribution (Total Terjual)</h3>
+            <div className="lg:col-span-1 bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6">Sales Distribution</h3>
               <div className="flex-1 flex flex-col items-center justify-center relative">
                  <div className="h-[200px] w-full relative">
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={donutData}
+                          data={(data.realProductSales && data.realProductSales.length > 0 
+    ? data.realProductSales.filter(p => p.sold > 0).map((p) => ({ name: p.title.substring(0, 15) + '...', value: p.sold })) 
+    : [{ name: 'No Sales', value: 1 }])}
                           cx="50%"
                           cy="50%"
                           innerRadius={60}
@@ -797,7 +942,9 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                           dataKey="value"
                           stroke="none"
                         >
-                          {donutData.map((entry, index) => (
+                          {(data.realProductSales && data.realProductSales.length > 0 
+    ? data.realProductSales.filter(p => p.sold > 0).map((p) => ({ name: p.title.substring(0, 15) + '...', value: p.sold })) 
+    : [{ name: 'No Sales', value: 1 }]).map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={DONUT_COLORS[index % DONUT_COLORS.length]} />
                           ))}
                         </Pie>
@@ -833,10 +980,10 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                 <thead>
                   <tr className="bg-gray-50/50 dark:bg-white/[0.02] border-b border-gray-100 dark:border-white/10 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                     <th className="px-6 py-4 font-bold">Product Title</th>
-                    
+                    <th className="px-6 py-4 font-bold text-center">Views</th>
                     <th className="px-6 py-4 font-bold text-center">Sold</th>
                     <th className="px-6 py-4 font-bold text-center">Amount (IDR)</th>
-                    
+                    <th className="px-6 py-4 font-bold text-center">Conversion</th>
                     <th className="px-6 py-4 font-bold text-center">Actions</th>
                   </tr>
                 </thead>
@@ -856,14 +1003,18 @@ export default function DashboardClient({ data, user }: { data: any, user: any }
                             </div>
                          </div>
                       </td>
-                      
+                      <td className="px-6 py-4 text-center">
+                         <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{product.views}</span>
+                      </td>
                       <td className="px-6 py-4 text-center">
                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{product.sold}</span>
                       </td>
                       <td className="px-6 py-4 text-center">
                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{formatShortIDR(product.amount)}</span>
                       </td>
-                      
+                      <td className="px-6 py-4 text-center">
+                         <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{product.conversion}%</span>
+                      </td>
                       <td className="px-6 py-4 text-center">
                          <button className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-emerald-500/20">
                            View
