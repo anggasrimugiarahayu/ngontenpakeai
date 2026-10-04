@@ -131,7 +131,7 @@ export async function verifyPayment(orderId: string) {
           await tx.user.update({ where: { id: order.userId }, data: { role: "PRO" } });
         }
       });
-      revalidatePath("/ruang-belajar");
+      
       return { success: true, status: finalStatus, justUpdated: true };
     }
     
