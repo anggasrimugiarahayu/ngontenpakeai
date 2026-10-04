@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowLeft, Lock, Crown, Star, BookOpen, Tag } from "lucide-react";
 import { auth } from "@/auth";
 import { claimFreeEbook } from "../actions";
+import { createCheckoutToken } from "@/app/actions/payment";
 import EbookActions from "./EbookActions";
 import EbookGallery from "./EbookGallery";
 import ReviewSection from "./ReviewSection";
@@ -207,20 +208,28 @@ export default async function ReadEbookPage({ params }: { params: { slug: string
                              </form>
                            ) : (
                              /* For PRO ebook (User is FREE) or PREMIUM ebook -> Needs actual Checkout! */
-                             <>
-                               <button className="flex-1 flex items-center justify-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg">
-                                 Beli Eceran (Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'})
-                               </button>
+                             <div className="w-full flex flex-col gap-3">
+                               <form action={async () => {
+                                 "use server";
+                                 const res = await createCheckoutToken({ type: "EBOOK", productId: ebook.id });
+                                 if (res?.redirectUrl) redirect(res.redirectUrl);
+                               }} className="w-full">
+                                 <button type="submit" className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg">
+                                   Beli Eceran (Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'})
+                                 </button>
+                               </form>
                                {isProEbook && (
-                                 <Link 
-                                   href="/?pricing=true" 
-                                   className="flex-1 flex items-center justify-center gap-2 bg-rn-accent hover:bg-orange-600 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-rn-accent/20"
-                                 >
-                                   <Crown className="w-5 h-5" />
-                                   Langganan PRO
-                                 </Link>
+                                 <form action={async () => {
+                                   "use server";
+                                   const res = await createCheckoutToken({ type: "PRO_SUBSCRIPTION" });
+                                   if (res?.redirectUrl) redirect(res.redirectUrl);
+                                 }} className="w-full">
+                                   <button type="submit" className="w-full flex items-center justify-center gap-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 px-6 py-3.5 rounded-xl font-bold transition-all border border-orange-200 dark:border-orange-500/20">
+                                     <Crown className="w-5 h-5" /> Upgrade PRO (Akses Semua E-book)
+                                   </button>
+                                 </form>
                                )}
-                             </>
+                             </div>
                            )}
                          </>
                        )}
