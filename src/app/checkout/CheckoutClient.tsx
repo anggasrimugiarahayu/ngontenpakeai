@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, ArrowLeft, ShieldCheck, ChevronRight, X, Info, Lock, CreditCard, Clock, XCircle, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import { PAYMENT_METHODS, calculatePaymentFees, PaymentMethodKey } from "@/lib/payment-calc";
+import Image from "next/image";
 
 interface CheckoutClientProps {
   type: "EBOOK" | "PRO_BASIC" | "PRO_TOOLS" | "PRO_LENGKAP";
@@ -19,6 +20,8 @@ interface CheckoutClientProps {
   initialName: string;
   initialEmail: string;
   initialPhone: string;
+  productImage?: string;
+  existingPendingOrder?: { token: string, orderId: string, expiryTime: string, paymentMethodKey: string } | null;
 }
 
 export default function CheckoutClient({
@@ -31,13 +34,15 @@ export default function CheckoutClient({
   isProduction,
   initialName,
   initialEmail,
-  initialPhone
+  initialPhone,
+  productImage,
+  existingPendingOrder
 }: CheckoutClientProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
-  const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "success" | "pending" | "error">("idle");
+  const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "success" | "pending" | "error">(existingPendingOrder ? "pending" : "idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey>("QRIS");
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey>((existingPendingOrder?.paymentMethodKey as PaymentMethodKey) || "QRIS");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
 
   const [customerName, setCustomerName] = useState(initialName);
@@ -45,9 +50,9 @@ export default function CheckoutClient({
   const [customerPhone, setCustomerPhone] = useState(initialPhone);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
 
-  const [currentToken, setCurrentToken] = useState("");
-  const [currentOrderId, setCurrentOrderId] = useState("");
-  const [expiryTime, setExpiryTime] = useState("");
+  const [currentToken, setCurrentToken] = useState(existingPendingOrder?.token || "");
+  const [currentOrderId, setCurrentOrderId] = useState(existingPendingOrder?.orderId || "");
+  const [expiryTime, setExpiryTime] = useState(existingPendingOrder?.expiryTime || "");
   const [timeLeft, setTimeLeft] = useState("");
 
   const formatRupiah = (num: number) => {
@@ -101,7 +106,6 @@ export default function CheckoutClient({
         }
       },
       onPending: async function (result: any) {
-        // Just closed or actually pending
         setPaymentState("verifying");
         const verifyRes = await verifyPayment(orderId);
         if (verifyRes.success && verifyRes.status === "PENDING") {
@@ -114,7 +118,6 @@ export default function CheckoutClient({
         setLoading(false);
       },
       onClose: async function () {
-        // User closed the popup window
         setPaymentState("verifying");
         const verifyRes = await verifyPayment(orderId);
         if (verifyRes.success && verifyRes.status === "SUCCESS") {
@@ -184,7 +187,6 @@ export default function CheckoutClient({
     ? "https://app.midtrans.com/snap/snap.js" 
     : "https://app.sandbox.midtrans.com/snap/snap.js";
 
-  // Grouping Payment Methods exactly matching expanded keys
   const groupedMethods = {
     "Transfer Bank (Virtual Account)": ["BCA_VA", "BNI_VA", "MANDIRI_VA", "BRI_VA", "PERMATA_VA", "CIMB_VA", "OTHER_VA"],
     "E-Wallet & QRIS": ["QRIS", "GOPAY", "SHOPEEPAY", "OVO", "DANA"],
@@ -217,7 +219,7 @@ export default function CheckoutClient({
         </div>
         <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">Menunggu Pembayaran</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm">
-          Selesaikan pembayaran Anda menggunakan <strong className="text-gray-900 dark:text-white">{PAYMENT_METHODS[selectedMethod].name}</strong>
+          Selesaikan pembayaran Anda menggunakan <strong className="text-gray-900 dark:text-white">{PAYMENT_METHODS[selectedMethod]?.name || "Metode Terpilih"}</strong>
         </p>
 
         <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-xl border border-gray-200 dark:border-gray-700 mb-8">
@@ -265,20 +267,21 @@ export default function CheckoutClient({
         <ArrowLeft className="w-4 h-4" /> Kembali
       </button>
 
-      {/* Grid container with items-stretch to align bottoms */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-6 items-stretch">
         
         {/* Kolom Kiri */}
         <div className="flex flex-col space-y-6">
-          
-          {/* Card: PRODUCT */}
           <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-5 md:p-6 flex-none">
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-4">PRODUCT</h3>
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-4">
                 <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 mt-1">1x</span>
                 <div className="w-14 h-14 bg-gray-100 dark:bg-gray-800 rounded-xl overflow-hidden flex items-center justify-center shrink-0">
-                  <CreditCard className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+                  {productImage ? (
+                    <img src={productImage} alt={itemName} className="w-full h-full object-cover" />
+                  ) : (
+                    <CreditCard className="w-6 h-6 text-gray-300 dark:text-gray-600" />
+                  )}
                 </div>
                 <div>
                   <h4 className="font-bold text-gray-900 dark:text-white text-sm max-w-[200px] leading-snug">{itemName}</h4>
@@ -288,7 +291,6 @@ export default function CheckoutClient({
             </div>
           </div>
 
-          {/* Card: BUYER INFO (flex-1 so it stretches to fill remaining height to match right column) */}
           <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-5 md:p-6 flex-1 flex flex-col">
             <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-5">BUYER INFO</h3>
             
@@ -334,10 +336,9 @@ export default function CheckoutClient({
               </div>
             </div>
           </div>
-
         </div>
 
-        {/* Kolom Kanan: PAYMENT DETAIL */}
+        {/* Kolom Kanan */}
         <div className="w-full bg-white dark:bg-[#18181b] rounded-2xl shadow-sm border border-gray-200 dark:border-gray-800 p-5 md:p-6 flex flex-col h-full">
           <h3 className="text-xs font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-5">PAYMENT DETAIL</h3>
           
@@ -370,7 +371,7 @@ export default function CheckoutClient({
                 <div className="w-10 h-7 border border-gray-200 dark:border-gray-700 rounded flex items-center justify-center bg-white shrink-0">
                    <span className="text-[9px] font-bold text-gray-400">LOGO</span>
                 </div>
-                <span className="font-bold text-sm text-rn-accent">{PAYMENT_METHODS[selectedMethod].name}</span>
+                <span className="font-bold text-sm text-rn-accent">{PAYMENT_METHODS[selectedMethod]?.name || "Pilih Metode"}</span>
               </div>
               <ChevronRight className="w-4 h-4 text-rn-accent" />
             </button>
@@ -423,17 +424,17 @@ export default function CheckoutClient({
           )}
 
           <button 
-            onClick={handlePay} 
+            onClick={paymentState === "error" ? () => setPaymentState("idle") : handlePay} 
             disabled={loading}
             className="w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90 transition-opacity flex items-center justify-center gap-2 mt-auto flex-none"
           >
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-            {loading ? "Processing..." : `Buy Now - IDR ${formatRupiah(grossAmount)}`}
+            {paymentState === "error" ? "Buat Pesanan Baru" : loading ? "Processing..." : `Buy Now - IDR ${formatRupiah(grossAmount)}`}
           </button>
         </div>
       </div>
 
-      {/* Modal Pemilihan Metode Pembayaran */}
+      {/* Modal */}
       {showPaymentModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
@@ -449,7 +450,6 @@ export default function CheckoutClient({
             
             <div className="p-5 overflow-y-auto space-y-6">
               {Object.entries(groupedMethods).map(([groupName, keys]) => {
-                // Filter out keys that don't exist in PAYMENT_METHODS just in case
                 const validKeys = keys.filter(k => PAYMENT_METHODS[k]);
                 if (validKeys.length === 0) return null;
                 

@@ -23,9 +23,8 @@ export const PAYMENT_METHODS: Record<PaymentMethodKey, {
   feeType: 'MDR_NO_PPN' | 'MDR_PPN' | 'FLAT_PPN' | 'MIXED_PPN'; 
   mdr?: number; 
   flat?: number;
-  icon?: string;
 }> = {
-  QRIS: { name: 'QRIS', enabled: ['qris'], feeType: 'MDR_NO_PPN', mdr: 0.007 },
+  QRIS: { name: 'QRIS', enabled: ['other_qris'], feeType: 'MDR_NO_PPN', mdr: 0.007 },
   GOPAY: { name: 'GoPay', enabled: ['gopay'], feeType: 'MDR_NO_PPN', mdr: 0.02 },
   SHOPEEPAY: { name: 'ShopeePay', enabled: ['shopeepay'], feeType: 'MDR_NO_PPN', mdr: 0.02 },
   OVO: { name: 'OVO', enabled: ['ovo'], feeType: 'MDR_PPN', mdr: 0.015 },
@@ -34,7 +33,7 @@ export const PAYMENT_METHODS: Record<PaymentMethodKey, {
   BCA_VA: { name: 'BCA Virtual Account', enabled: ['bca_va'], feeType: 'FLAT_PPN', flat: 4000 },
   BNI_VA: { name: 'BNI Virtual Account', enabled: ['bni_va'], feeType: 'FLAT_PPN', flat: 4000 },
   BRI_VA: { name: 'BRI Virtual Account', enabled: ['bri_va'], feeType: 'FLAT_PPN', flat: 4000 },
-  MANDIRI_VA: { name: 'Mandiri Virtual Account', enabled: ['mandiri_va'], feeType: 'FLAT_PPN', flat: 4000 },
+  MANDIRI_VA: { name: 'Mandiri Virtual Account', enabled: ['echannel'], feeType: 'FLAT_PPN', flat: 4000 },
   PERMATA_VA: { name: 'Permata Virtual Account', enabled: ['permata_va'], feeType: 'FLAT_PPN', flat: 4000 },
   CIMB_VA: { name: 'CIMB Niaga Virtual Account', enabled: ['cimb_va'], feeType: 'FLAT_PPN', flat: 4000 },
   OTHER_VA: { name: 'Other Bank Virtual Account', enabled: ['other_va'], feeType: 'FLAT_PPN', flat: 4000 },
