@@ -85,6 +85,9 @@ function HomeContent() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-5xl">
             {/* EBOOK CARD */}
             <Link
+              prefetch={true}
+              onMouseEnter={() => { if (isLoggedIn) preload("ruangBelajar", getRuangBelajarDataAction) }}
+              onTouchStart={() => { if (isLoggedIn) preload("ruangBelajar", getRuangBelajarDataAction) }}
               href={isLoggedIn ? "/ruang-belajar" : "/login?redirect=/ruang-belajar"}
               className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 cursor-pointer z-0 overflow-hidden bg-white border-gray-200 hover:border-rn-orange shadow-gray-200 dark:bg-[#18181b] dark:border-white/5 dark:hover:border-rn-orange/50 dark:shadow-black/50`}
             >
@@ -115,7 +118,7 @@ function HomeContent() {
             </Link>
 
             {/* TOOLS CARD */}
-            <Link
+            <Link prefetch={true}
               href={isLoggedIn ? "/ruang-ngonten" : "/login?redirect=/ruang-ngonten"}
               className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 cursor-pointer z-0 overflow-hidden bg-white border-gray-200 hover:border-rn-accent shadow-gray-200 dark:bg-[#18181b] dark:border-white/5 dark:hover:border-rn-accent/50 dark:shadow-black/50`}
             >
@@ -231,7 +234,7 @@ function HomeContent() {
             </Link>
 
             {/* E-LEARNING CARD */}
-            <Link
+            <Link prefetch={true}
               href={isLoggedIn ? "/ruang-growing" : "/login?redirect=/ruang-growing"}
               className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 cursor-pointer z-0 overflow-hidden bg-white border-gray-200 shadow-gray-200 hover:border-purple-400 dark:bg-[#18181b] dark:border-white/5 dark:shadow-black/50 dark:hover:border-purple-500/50`}
             >

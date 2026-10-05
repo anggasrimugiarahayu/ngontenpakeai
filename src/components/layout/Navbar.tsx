@@ -1,6 +1,17 @@
 "use client";
 
 import Link from "next/link";
+import { preload } from "swr";
+import { getDashboardDataAction } from "@/app/actions/dashboard";
+import { getPengaturanDataAction } from "@/app/actions/pengaturan";
+import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
+
+const handleHoverPrefetch = (href: string) => {
+  if (href === '/dashboard') preload("dashboard", getDashboardDataAction);
+  else if (href === '/pengaturan') preload("pengaturan", getPengaturanDataAction);
+  else if (href === '/ruang-belajar') preload("ruangBelajar", getRuangBelajarDataAction);
+};
+
 import Image from "next/image";
 import { User, BookOpen, Sun, Moon, LogOut, Menu } from "lucide-react";
 import { useTheme } from "next-themes";
@@ -188,11 +199,11 @@ export function Navbar({ followerCount = "144K", memberCount = "0" }: NavbarProp
                 <div className="py-1">
                   
                   {isAdmin && (
-                    <Link href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <Link prefetch={true} onMouseEnter={() => handleHoverPrefetch("/dashboard")} onTouchStart={() => handleHoverPrefetch("/dashboard")} href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
                       Dashboard
                     </Link>
                   )}
-                  <Link href="/pengaturan" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
+                  <Link prefetch={true} onMouseEnter={() => handleHoverPrefetch("/pengaturan")} onTouchStart={() => handleHoverPrefetch("/pengaturan")} href="/pengaturan" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
                     Pengaturan
                   </Link>
                   <Link href="/bantuan" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
