@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { BookOpen, Star, Loader2 } from "lucide-react";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import useSWR, { preload } from "swr";
 import { getRuangBelajarDataAction, getEbookDetailAction } from "@/app/actions/ruangBelajar";
 
 export default function RuangBelajarClient() {
   const { data, isLoading } = useSWR("ruangBelajar", getRuangBelajarDataAction);
 
-  if (!data) {
+  if (isLoading || !data) {
     return (
       <div className="flex-1 flex flex-col p-4 md:p-8 max-w-7xl mx-auto w-full">
         <div className="mb-10 text-center max-w-2xl mx-auto">
@@ -17,6 +18,7 @@ export default function RuangBelajarClient() {
             Temukan E-book, strategi, dan blueprint premium untuk membangun fondasi bisnis kontenmu.
           </p>
         </div>
+        <LoadingSpinner message="Memuat Katalog E-Book..." />
       </div>
     );
   }
