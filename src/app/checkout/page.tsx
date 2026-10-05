@@ -1,104 +1,21 @@
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
-import prisma from "@/lib/prisma";
-import CheckoutClient from "./CheckoutClient";
-import { verifyPayment } from "@/app/actions/payment";
+import { Suspense } from "react";
+import CheckoutWrapperClient from "./CheckoutWrapperClient";
 
-export default async function CheckoutPage({ searchParams }: { searchParams: Promise<{ type: string, productId?: string }> }) {
-  const session = await auth();
-  if (!session?.user?.id) {
-    redirect("/auth/login?callbackUrl=/checkout");
-  }
+export const metadata = {
+  title: "Checkout - Ruang Ngonten",
+};
 
-  const user = await prisma.user.findUnique({
-    where: { id: session.user.id }
-  });
-
-  if (!user) {
-    redirect("/auth/login");
-  }
-
-  const { type, productId } = await searchParams;
-
-  if (!type) {
-    redirect("/");
-  }
-
-  let baseAmount = 0;
-  let itemName = "";
-  let itemDescription = "";
-  let productImage = "";
-
-  if (type === "EBOOK") {
-    if (!productId) redirect("/ruang-belajar");
-    const product = await prisma.digitalProduct.findUnique({ where: { id: productId } });
-    if (!product) redirect("/ruang-belajar");
-    if (!product.price || product.price <= 0) redirect(`/ruang-belajar/${product.slug}`);
-    
-    baseAmount = product.price;
-    itemName = product.title;
-    itemDescription = product.description || "Akses selamanya untuk produk ini.";
-    productImage = product.coverUrl || "";
-  } else if (type === "PRO_BASIC") {
-    baseAmount = 99000;
-    itemName = "Ruang Ngonten Faceless (PRO Basic)";
-    itemDescription = "Akses modul dasar, tanpa AI tools.";
-  } else if (type === "PRO_TOOLS") {
-    baseAmount = 99000;
-    itemName = "Sistem Tools AI (PRO Tools)";
-    itemDescription = "Akses sistem prompt AI khusus untuk ngonten.";
-  } else if (type === "PRO_LENGKAP") {
-    baseAmount = 149000;
-    itemName = "Paket Lengkap (Modul + Tools)";
-    itemDescription = "Akses seluruh modul dan sistem tools AI.";
-  } else {
-    redirect("/");
-  }
-
-  const isProduction = process.env.NODE_ENV === "production" && process.env.MIDTRANS_IS_PRODUCTION === "true";
-  const clientKey = isProduction ? process.env.MIDTRANS_CLIENT_KEY : process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "SB-Mid-client-rIaAV5Qv-Ue28a9u";
-
-  let existingPendingOrder = null;
-  const pendingDbOrder = await prisma.order.findFirst({
-    where: {
-      userId: user.id,
-      orderType: type as any,
-      ...(productId ? { digitalProductId: productId } : {}),
-      status: "PENDING"
-    },
-    orderBy: { createdAt: 'desc' }
-  });
-
-  if (pendingDbOrder && pendingDbOrder.midtransId) {
-    const verifyRes = await verifyPayment(pendingDbOrder.id);
-    if (verifyRes.success && verifyRes.status === "PENDING" && verifyRes.expiryTime) {
-      existingPendingOrder = {
-        token: pendingDbOrder.midtransId,
-        orderId: pendingDbOrder.id,
-        expiryTime: verifyRes.expiryTime,
-        paymentMethodKey: pendingDbOrder.paymentMethod || "QRIS"
-      };
-    }
-  }
-
+export default function CheckoutPage() {
   return (
-    <div className="flex-1 w-full flex justify-center py-6 px-4 sm:py-8 items-center h-full">
-      <div className="w-full max-w-5xl">
-        <CheckoutClient 
-          type={type as any} 
-          productId={productId} 
-          itemName={itemName}
-          itemDescription={itemDescription}
-          baseAmount={baseAmount}
-          clientKey={clientKey!}
-          isProduction={isProduction}
-          initialName={user.name || ""}
-          initialEmail={user.email || ""}
-          initialPhone={user.phone || ""}
-          productImage={productImage}
-          existingPendingOrder={existingPendingOrder}
-        />
+    <Suspense fallback={
+      <div className="flex-1 w-full flex justify-center py-6 px-4 sm:py-8 items-center h-[50vh]">
+        <div className="flex flex-col items-center gap-4 animate-pulse">
+          <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500 font-medium">Memuat...</p>
+        </div>
       </div>
-    </div>
+    }>
+      <CheckoutWrapperClient />
+    </Suspense>
   );
 }
