@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from 'react';
+import useSWR from 'swr';
+import { getDashboardDataAction } from '@/app/actions/dashboard';
 import { 
   User, CheckCircle2, Link as LinkIcon, 
   TrendingUp, Layers, Users, ShoppingBag, Settings, Calendar as CalendarIcon, Eye, Send, ArrowUp, Search, Image as ImageIcon, Download, Printer, ArrowLeft, ArrowRight, X

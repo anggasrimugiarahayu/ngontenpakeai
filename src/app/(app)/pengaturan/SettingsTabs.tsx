@@ -7,19 +7,10 @@ import ProfileForm from "./ProfileForm";
 import { PlanUsageSection, ApiKeySection } from "./SettingsClientData";
 import { AdminSettingsContent } from "./AdminSettingsContent";
 
-export function SettingsTabs({ 
-  user, 
-  isAdmin, 
-  isPro, 
-  adminData, 
-  userData 
-}: { 
-  user: any; 
-  isAdmin: boolean; 
-  isPro: boolean; 
-  adminData?: any; 
-  userData?: any; 
-}) {
+export function SettingsTabs({ user }: { user: any }) {
+  const { data } = useSWR("pengaturan", getPengaturanDataAction);
+  if (!data) return <div className="p-8 text-center animate-pulse">Loading settings...</div>;
+  const { userData, adminData, isPro, isAdmin } = data;
   const [activeTab, setActiveTab] = useState("profil");
 
   const adminTabs = [
