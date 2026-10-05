@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 import { getBlueprintAction } from "@/app/actions/blueprint";
+import { getBioBuilderAction } from "@/app/actions/toolsData";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -22,6 +23,7 @@ interface BioSuggestions {
 }
 
 export default function BioBuilderClient() {
+  const { data: initialData } = useSWR("bioBuilder", getBioBuilderAction);
   const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
   const blueprintId = blueprint?.id;
   const blueprintData = blueprint?.aiResult;
@@ -47,6 +49,27 @@ export default function BioBuilderClient() {
     if (initialData?.username) return 2;
     return 1;
   });
+
+  
+  useEffect(() => {
+    if (initialData) {
+      setId(initialData.id);
+      setSelectedBio({
+        username: initialData.username || "",
+        name: initialData.profileName || "",
+        bioText: initialData.bioText || ""
+      });
+      setAvatarUrl(initialData.avatarUrl || "https://placehold.co/150x150/e2e8f0/475569?text=Photo");
+      setSuggestions({
+        usernames: initialData.suggestions?.usernames || null,
+        names: initialData.suggestions?.names || null,
+        bios: initialData.suggestions?.bios || null
+      });
+      if (initialData.profileName) setStep(3);
+      else if (initialData.username) setStep(2);
+      else setStep(1);
+    }
+  }, [initialData]);
 
   const [loadingStep, setLoadingStep] = useState<"username" | "name" | "bio" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);

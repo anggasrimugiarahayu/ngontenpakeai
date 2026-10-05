@@ -2,11 +2,13 @@
 
 import useSWR from "swr";
 import { getBlueprintAction } from "@/app/actions/blueprint";
+import { getContentCalendarAction } from "@/app/actions/toolsData";
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, ChevronLeft, ChevronRight, X, Save, Trash2, Check, FileText } from 'lucide-react';
 
 export default function ContentCalendarClient() {
+  const { data: initialData } = useSWR("contentCalendar", getContentCalendarAction);
   const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
   const blueprintId = blueprint?.id;
   const blueprintData = blueprint?.aiResult;
@@ -16,6 +18,13 @@ export default function ContentCalendarClient() {
   const [calendarData, setCalendarData] = useState<Record<string, any>>(initialData || {});
   const [currentCalDate, setCurrentCalDate] = useState(new Date());
   
+  
+  useEffect(() => {
+    if (initialData) {
+      setCalendarData(initialData);
+    }
+  }, [initialData]);
+
   // Agenda Modal States
   const [isAgendaOpen, setIsAgendaOpen] = useState(false);
   const [selectedCalDate, setSelectedCalDate] = useState<string | null>(null);
