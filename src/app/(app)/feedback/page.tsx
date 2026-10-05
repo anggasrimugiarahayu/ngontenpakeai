@@ -1,5 +1,6 @@
 "use client";
 import { useState } from "react";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { MessageSquare, Mic, Loader2, ArrowLeft } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
@@ -55,9 +56,7 @@ export default function FeedbackPage() {
 
   if (status === "loading") {
     return (
-      <div className="flex-1 flex justify-center items-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-      </div>
+      <LoadingSpinner message="Memuat Feedback..." />
     );
   }
 

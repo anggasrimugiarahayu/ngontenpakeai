@@ -86,7 +86,7 @@ export default function DashboardClient({ user }: { user: any }) {
     };
   }, [date, data?.totalViews, data?.totalClicks]);
 
-  if (!data) return <div className="p-8 text-center animate-pulse">Loading dashboard...</div>;
+  if (!data) return <LoadingSpinner message="Memuat Dashboard..." />;
 
   const formatIDR = (num: number) => {
     return new Intl.NumberFormat('id-ID', {

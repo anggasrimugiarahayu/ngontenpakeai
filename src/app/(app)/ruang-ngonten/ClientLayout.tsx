@@ -3,6 +3,21 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { preload } from "swr";
+import { getDashboardDataAction } from "@/app/actions/dashboard";
+import { getPengaturanDataAction } from "@/app/actions/pengaturan";
+import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
+
+const handleHoverPrefetch = (href: string) => {
+  if (href === '/dashboard') {
+    preload("dashboard", getDashboardDataAction);
+  } else if (href === '/pengaturan') {
+    preload("pengaturan", getPengaturanDataAction);
+  } else if (href === '/ruang-belajar') {
+    preload("ruangBelajar", getRuangBelajarDataAction);
+  }
+};
+
 import { Compass, User, Lightbulb, FileText, LayoutTemplate, RefreshCw, BookOpen, Calendar, Menu, X, ChevronRight, ChevronLeft, ArrowLeft, Lock, LayoutGrid, Settings, HelpCircle, MessageSquare, LayoutDashboard } from 'lucide-react';
 
 const TOOLS = [
@@ -131,6 +146,8 @@ export default function ClientLayout({
                 <Link prefetch={true}
                   key={tool.href}
                   href={tool.href}
+                  onMouseEnter={() => handleHoverPrefetch(tool.href)}
+                  onTouchStart={() => handleHoverPrefetch(tool.href)}
                   title={!isExpanded ? tool.label : undefined}
                   className={`flex items-center rounded-xl transition-all duration-200 ${
                     isActive 
@@ -224,6 +241,8 @@ export default function ClientLayout({
                   <Link prefetch={true}
                   key={tool.href}
                     href={tool.href}
+                    onMouseEnter={() => handleHoverPrefetch(tool.href)}
+                    onTouchStart={() => handleHoverPrefetch(tool.href)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors ${
                       isActive 
                         ? "bg-orange-500 text-white" 

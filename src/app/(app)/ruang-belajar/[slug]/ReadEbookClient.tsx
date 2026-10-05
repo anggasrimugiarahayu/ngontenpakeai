@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import useSWR, { preload } from "swr";
 import { getEbookDetailAction } from "@/app/actions/ruangBelajar";
 import { getCheckoutDetailsAction } from "@/app/actions/checkout";
@@ -23,7 +24,7 @@ export default function ReadEbookClient({ slug }: { slug: string }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   if (isLoading || !data) {
-    return <div className="p-12 text-center animate-pulse flex flex-col items-center justify-center min-h-[50vh]"><div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mb-4"></div><p className="text-gray-500">Memuat E-Book...</p></div>;
+    return <LoadingSpinner message="Memuat E-Book..." />;
   }
 
   if (data.notFound) {

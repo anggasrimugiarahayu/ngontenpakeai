@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import useSWR from "swr";
 import { getPengaturanDataAction } from "@/app/actions/pengaturan";
 import ProfileForm from "./ProfileForm";
@@ -11,7 +12,7 @@ export function SettingsTabs({ user }: { user: any }) {
   const { data } = useSWR("pengaturan", getPengaturanDataAction);
   const [activeTab, setActiveTab] = useState("profil");
 
-  if (!data) return <div className="p-8 text-center animate-pulse">Loading settings...</div>;
+  if (!data) return <LoadingSpinner message="Memuat Pengaturan..." />;
   const { userData, adminData, isPro, isAdmin } = data;
 
   const adminTabs = [

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { Mail, Send, Loader2, CheckCircle, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
@@ -91,9 +92,7 @@ export default function BantuanPage() {
         </h2>
 
         {status === "loading" ? (
-          <div className="flex justify-center items-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-          </div>
+          <LoadingSpinner message="Memuat Bantuan..." />
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 animate-in fade-in duration-300">
             {!session && (
