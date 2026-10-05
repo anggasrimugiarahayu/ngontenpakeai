@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import useSWR from 'swr';
+import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { getDashboardDataAction } from '@/app/actions/dashboard';
 import { 
   User, CheckCircle2, Link as LinkIcon, 
