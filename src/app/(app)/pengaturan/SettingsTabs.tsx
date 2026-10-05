@@ -9,9 +9,10 @@ import { AdminSettingsContent } from "./AdminSettingsContent";
 
 export function SettingsTabs({ user }: { user: any }) {
   const { data } = useSWR("pengaturan", getPengaturanDataAction);
+  const [activeTab, setActiveTab] = useState("profil");
+
   if (!data) return <div className="p-8 text-center animate-pulse">Loading settings...</div>;
   const { userData, adminData, isPro, isAdmin } = data;
-  const [activeTab, setActiveTab] = useState("profil");
 
   const adminTabs = [
     { id: "profil", label: "Profil" },
