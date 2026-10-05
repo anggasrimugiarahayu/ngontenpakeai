@@ -48,6 +48,8 @@ export default function DashboardClient({ user }: { user: any }) {
   const [waMessage, setWaMessage] = useState('');
   const [waOrder, setWaOrder] = useState<any>(null);
 
+  if (!data) return <div className="p-8 text-center animate-pulse">Loading dashboard...</div>;
+
   React.useEffect(() => {
     if (data.fullOrders && data.fullOrders.length > 0 && typeof window !== 'undefined' && window.innerWidth >= 1024) {
       setSelectedOrder(data.fullOrders[0]);
