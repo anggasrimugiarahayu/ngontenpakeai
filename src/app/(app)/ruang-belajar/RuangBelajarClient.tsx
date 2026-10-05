@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { BookOpen, Star, Loader2 } from "lucide-react";
-import useSWR from "swr";
-import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
+import useSWR, { preload } from "swr";
+import { getRuangBelajarDataAction, getEbookDetailAction } from "@/app/actions/ruangBelajar";
 
 export default function RuangBelajarClient() {
   const { data, isLoading } = useSWR("ruangBelajar", getRuangBelajarDataAction);
@@ -52,7 +52,10 @@ export default function RuangBelajarClient() {
                 : "0.0";
 
               return (
-                <Link href={`/ruang-belajar/${ebook.slug}`} key={ebook.id} className="group flex">
+                <Link 
+                  href={`/ruang-belajar/${ebook.slug}`} 
+                  onMouseEnter={() => preload(["ebookDetail", ebook.slug], () => getEbookDetailAction(ebook.slug))}
+                  onTouchStart={() => preload(["ebookDetail", ebook.slug], () => getEbookDetailAction(ebook.slug))} key={ebook.id} className="group flex">
                   <div className="flex flex-col sm:flex-row w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-2xl overflow-hidden relative p-4 gap-4">
                     
                     <div className="w-full sm:w-[120px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-xl shadow-sm">

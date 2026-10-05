@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import useSWR from "swr";
+import useSWR, { preload } from "swr";
 import { getEbookDetailAction } from "@/app/actions/ruangBelajar";
+import { getCheckoutDetailsAction } from "@/app/actions/checkout";
 import { useRouter } from "next/navigation";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -197,7 +198,11 @@ export default function ReadEbookClient({ slug }: { slug: string }) {
                            ) : (
                              /* For PRO ebook (User is FREE) or PREMIUM ebook -> Needs actual Checkout! */
                              <div className="w-full flex flex-col gap-3">
-                               <Link href={`/checkout?type=EBOOK&productId=${ebook.id}`} className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg">
+                               <Link 
+                                 href={`/checkout?type=EBOOK&productId=${ebook.id}`} 
+                                 onMouseEnter={() => preload(["checkout", "EBOOK", ebook.id], () => getCheckoutDetailsAction("EBOOK", ebook.id))}
+                                 onTouchStart={() => preload(["checkout", "EBOOK", ebook.id], () => getCheckoutDetailsAction("EBOOK", ebook.id))}
+                                 className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg">
                                    Beli Satuan (Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'})
                                </Link>
                                {isProEbook && (
