@@ -1,9 +1,9 @@
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
 import { getCachedFeatures, getCachedHasBlueprint } from "@/lib/cache";
-import ClientLayout from "@/app/ruang-ngonten/ClientLayout";
+import ClientLayout from "./ruang-ngonten/ClientLayout";
+import { redirect } from "next/navigation";
 
-export default async function RuangGrowingLayout({ children }: { children: React.ReactNode }) {
+export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   let hasBlueprint = false;
   
@@ -13,5 +13,6 @@ export default async function RuangGrowingLayout({ children }: { children: React
   
   const dbFeatures = await getCachedFeatures();
   const isPro = session?.user?.role === "PRO" || session?.user?.role === "ADMIN" || session?.user?.email === "anggasrimugiarahayu@gmail.com";
+  
   return <ClientLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro}>{children}</ClientLayout>;
 }
