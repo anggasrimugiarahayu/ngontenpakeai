@@ -34,7 +34,8 @@ const MOCK_DONUT_DATA = [
   { name: 'Tools', value: 2 },
 ];
 
-export default function DashboardClient({ data, user }: { data: any, user: any }) {
+export default function DashboardClient({ user }: { user: any }) {
+  const { data } = useSWR("dashboard", getDashboardDataAction);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatus, setOrderStatus] = useState('all');

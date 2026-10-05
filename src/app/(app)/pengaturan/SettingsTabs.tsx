@@ -1,6 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import useSWR from "swr";
+import { getPengaturanDataAction } from "@/app/actions/pengaturan";
 import ProfileForm from "./ProfileForm";
 import { PlanUsageSection, ApiKeySection } from "./SettingsClientData";
 import { AdminSettingsContent } from "./AdminSettingsContent";
