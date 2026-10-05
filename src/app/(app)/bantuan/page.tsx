@@ -1,17 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Mail, Send, Loader2, CheckCircle, X } from "lucide-react";
-import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 
 export default function BantuanPage() {
-  const { theme } = useTheme();
   const { data: session, status } = useSession();
-  
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => setMounted(true), []);
-  const isDark = mounted ? theme === "dark" : true;
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -77,26 +71,22 @@ export default function BantuanPage() {
         </div>
       )}
 
-      <h1 className={`text-3xl md:text-5xl font-black font-heading mb-2 tracking-tight transition-colors duration-300 ${isDark ? "text-white" : "text-gray-900"}`}>
+      <h1 className="text-3xl md:text-5xl font-black font-heading mb-2 tracking-tight transition-colors duration-300 text-gray-900 dark:text-white">
         Bantuan & Support
       </h1>
-      <p className={`text-sm md:text-base mb-8 max-w-lg mx-auto transition-colors duration-300 ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+      <p className="text-sm md:text-base mb-8 max-w-lg mx-auto transition-colors duration-300 text-gray-600 dark:text-gray-400">
         Punya pertanyaan, butuh bantuan teknis, atau ada kendala? Kirimkan pesan melalui form di bawah dan kami akan membalas ke email Anda secepatnya.
       </p>
 
       {/* Card Form */}
-      <div className={`w-full max-w-lg rounded-2xl border-2 p-6 md:p-8 transition-all duration-300 text-left relative overflow-hidden ${
-        isDark 
-          ? "bg-[#18181b] border-white/5 hover:border-rn-orange/30 shadow-black/50" 
-          : "bg-white border-gray-200 hover:border-rn-orange/30 shadow-gray-200"
-      }`}>
+      <div className="w-full max-w-lg rounded-2xl border-2 p-6 md:p-8 transition-all duration-300 text-left relative overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/5 hover:border-rn-orange/30 shadow-gray-200 dark:shadow-black/50">
         <div className="flex items-center justify-center mb-4">
           <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
             <Mail className="w-5 h-5 text-orange-500" />
           </div>
         </div>
         
-        <h2 className={`text-lg md:text-xl font-bold text-center mb-6 ${isDark ? "text-white" : "text-gray-900"}`}>
+        <h2 className="text-lg md:text-xl font-bold text-center mb-6 text-gray-900 dark:text-white">
           Kirim Email
         </h2>
 
@@ -109,28 +99,24 @@ export default function BantuanPage() {
             {!session && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className={`block text-xs font-bold mb-1.5 ${isDark ? "text-gray-400" : "text-gray-700"}`}>Nama</label>
+                  <label className="block text-xs font-bold mb-1.5 text-gray-700 dark:text-gray-400">Nama</label>
                   <input
                     type="text"
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all ${
-                      isDark ? "bg-[#27272a] border-white/10 text-white placeholder:text-gray-500" : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
-                    }`}
+                    className="w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none bg-gray-50 dark:bg-[#27272a] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     placeholder="Nama Anda"
                   />
                 </div>
                 <div>
-                  <label className={`block text-xs font-bold mb-1.5 ${isDark ? "text-gray-400" : "text-gray-700"}`}>Email Balasan</label>
+                  <label className="block text-xs font-bold mb-1.5 text-gray-700 dark:text-gray-400">Email Balasan</label>
                   <input
                     type="email"
                     required
                     value={formData.replyTo}
                     onChange={(e) => setFormData({ ...formData, replyTo: e.target.value })}
-                    className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all ${
-                      isDark ? "bg-[#27272a] border-white/10 text-white placeholder:text-gray-500" : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
-                    }`}
+                    className="w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none bg-gray-50 dark:bg-[#27272a] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     placeholder="nama@email.com"
                   />
                 </div>
@@ -138,29 +124,25 @@ export default function BantuanPage() {
             )}
 
             <div>
-              <label className={`block text-xs font-bold mb-1.5 ${isDark ? "text-gray-400" : "text-gray-700"}`}>Subjek</label>
+              <label className="block text-xs font-bold mb-1.5 text-gray-700 dark:text-gray-400">Subjek</label>
               <input
                 type="text"
                 required
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all ${
-                  isDark ? "bg-[#27272a] border-white/10 text-white placeholder:text-gray-500" : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
-                }`}
+                className="w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none bg-gray-50 dark:bg-[#27272a] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 placeholder="Misal: Kendala login akun"
               />
             </div>
 
             <div>
-              <label className={`block text-xs font-bold mb-1.5 ${isDark ? "text-gray-400" : "text-gray-700"}`}>Pesan</label>
+              <label className="block text-xs font-bold mb-1.5 text-gray-700 dark:text-gray-400">Pesan</label>
               <textarea
                 required
                 rows={4}
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className={`w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none ${
-                  isDark ? "bg-[#27272a] border-white/10 text-white placeholder:text-gray-500" : "bg-gray-50 border-gray-200 text-gray-900 placeholder:text-gray-400"
-                }`}
+                className="w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none bg-gray-50 dark:bg-[#27272a] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 placeholder="Ceritakan detail pertanyaan atau kendala yang dialami..."
               />
             </div>
