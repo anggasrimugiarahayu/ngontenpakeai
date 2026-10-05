@@ -48,13 +48,11 @@ export default function DashboardClient({ user }: { user: any }) {
   const [waMessage, setWaMessage] = useState('');
   const [waOrder, setWaOrder] = useState<any>(null);
 
-  if (!data) return <div className="p-8 text-center animate-pulse">Loading dashboard...</div>;
-
   React.useEffect(() => {
-    if (data.fullOrders && data.fullOrders.length > 0 && typeof window !== 'undefined' && window.innerWidth >= 1024) {
+    if (data?.fullOrders && data.fullOrders.length > 0 && typeof window !== 'undefined' && window.innerWidth >= 1024) {
       setSelectedOrder(data.fullOrders[0]);
     }
-  }, [data.fullOrders]);
+  }, [data?.fullOrders]);
 
   const handleOrderSelect = (order: any) => {
     setSelectedOrder(order);
@@ -82,11 +80,13 @@ export default function DashboardClient({ user }: { user: any }) {
   const { chartData, dynamicTotalViews, dynamicTotalClicks, salesChartData } = React.useMemo(() => {
     return { 
        chartData: [], 
-       dynamicTotalViews: data.totalViews || 0, 
-       dynamicTotalClicks: data.totalClicks || 0, 
+       dynamicTotalViews: data?.totalViews || 0, 
+       dynamicTotalClicks: data?.totalClicks || 0, 
        salesChartData: [] 
     };
-  }, [date, data.totalViews, data.totalClicks]);
+  }, [date, data?.totalViews, data?.totalClicks]);
+
+  if (!data) return <div className="p-8 text-center animate-pulse">Loading dashboard...</div>;
 
   const formatIDR = (num: number) => {
     return new Intl.NumberFormat('id-ID', {
