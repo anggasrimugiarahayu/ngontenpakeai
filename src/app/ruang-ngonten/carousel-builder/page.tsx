@@ -1,5 +1,18 @@
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 import CarouselBuilderClient from "./CarouselBuilderClient";
 
-export default function CarouselBuilderPage() {
-  return <CarouselBuilderClient blueprintData={null} />;
+export const metadata = {
+  title: "",
+  description: "",
+};
+
+export default async function CarouselBuilderPage() {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    redirect("/");
+  }
+
+  return <CarouselBuilderClient />;
 }

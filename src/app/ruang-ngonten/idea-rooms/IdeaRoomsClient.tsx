@@ -1,12 +1,18 @@
 "use client";
 
 import { useSessionState } from "@/hooks/useSessionState";
+import useSWR from "swr";
+import { getBlueprintAction } from "@/app/actions/blueprint";
 import React, { useState } from "react";
 import GlobalChatLayout from "@/components/chat/GlobalChatLayout";
 import { useAIChat } from "@/hooks/useAIChat";
 import { Copy, Check, Filter, Video, Lightbulb, MessageSquare, Search, UserCircle, CheckCircle2, Calendar, Bot, ChevronDown, Plus } from "lucide-react";
 
-export default function IdeaRoomsClient({ blueprintId, blueprintData }: { blueprintId: string, blueprintData: any }) {
+export default function IdeaRoomsClient() {
+  const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
+  const blueprintId = blueprint?.id;
+  const blueprintData = blueprint?.aiResult;
+
   const { fetchAI, isLoading, abort } = useAIChat();
   const [promptText, setPromptText] = useState("");
   const [chatHistory, setChatHistory] = useSessionState<any[]>("chat_idea_rooms", []);

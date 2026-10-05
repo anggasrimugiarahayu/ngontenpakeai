@@ -1,5 +1,7 @@
 "use client";
 
+import useSWR from "swr";
+import { getBlueprintAction } from "@/app/actions/blueprint";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
@@ -19,7 +21,11 @@ interface BioSuggestions {
   bios: any[] | null;
 }
 
-export default function BioBuilderClient({ initialData, blueprintId }: { initialData: any, blueprintId: string }) {
+export default function BioBuilderClient() {
+  const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
+  const blueprintId = blueprint?.id;
+  const blueprintData = blueprint?.aiResult;
+
   const { data: session } = useSession();
   const router = useRouter();
 

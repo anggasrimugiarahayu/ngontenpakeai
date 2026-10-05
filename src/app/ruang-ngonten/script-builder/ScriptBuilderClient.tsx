@@ -3,6 +3,8 @@
 import GlobalChatLayout, { ChatMessage } from "@/components/chat/GlobalChatLayout";
 import { useAIChat } from "@/hooks/useAIChat";
 import { useSessionState } from "@/hooks/useSessionState";
+import useSWR from "swr";
+import { getBlueprintAction } from "@/app/actions/blueprint";
 import React, { useState, useEffect, useRef } from "react";
 import { Calendar, Check, Copy, MessageSquare, Save, Square, X, CheckCircle2, ChevronLeft, ChevronRight, FileText, Plus, ChevronDown } from "lucide-react";
 
@@ -30,7 +32,11 @@ const AI_MODELS = [
   { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' }
 ];
 
-export default function ScriptBuilderClient({ blueprintData }: { blueprintData: any }) {
+export default function ScriptBuilderClient() {
+  const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
+  const blueprintId = blueprint?.id;
+  const blueprintData = blueprint?.aiResult;
+
   const { fetchAI, isLoading, abort } = useAIChat();
   const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_script_builder", []);
   const [scriptPromptText, setScriptPromptText] = useState("");

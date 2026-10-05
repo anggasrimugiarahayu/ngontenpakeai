@@ -1,5 +1,4 @@
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import BioBuilderClient from "./BioBuilderClient";
 
@@ -15,23 +14,5 @@ export default async function BioBuilderPage() {
     redirect("/");
   }
 
-  // Find Master Blueprint
-  const blueprint = await prisma.masterBlueprint.findFirst({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  });
-
-  if (!blueprint) {
-    redirect("/ruang-ngonten?error=no_blueprint");
-  }
-
-  // Find existing Bio Builder
-  const bioBuilder = await prisma.bioBuilder.findFirst({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" }
-  });
-
-  const serializedBio = bioBuilder ? JSON.parse(JSON.stringify(bioBuilder)) : null;
-
-  return <BioBuilderClient initialData={serializedBio} blueprintId={blueprint.id} />;
+  return <BioBuilderClient />;
 }

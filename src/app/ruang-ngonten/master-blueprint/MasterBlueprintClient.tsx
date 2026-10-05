@@ -1,16 +1,20 @@
 "use client";
 
 import { useSession } from "next-auth/react";
+import useSWR from "swr";
+import { getBlueprintAction } from "@/app/actions/blueprint";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Loader2, ArrowLeft, CheckCircle2, Compass, FileJson, Download, FileText, Upload, RefreshCw, Save, AlertCircle, Target, Award, MessageSquare, Flag, Eye, Heart, Zap, TrendingUp, Users, LayoutDashboard, Map, Video, DollarSign, User, Lock, Star, Activity, X, Crosshair, Shield, List, BookOpen, Megaphone, UserCircle, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import HeroCanvasCell from "@/components/master-blueprint/HeroCanvasCell";
 import CanvasCell from "@/components/master-blueprint/CanvasCell";
 
 
-export default function MasterBlueprintClient({ initialData, nicheReferences }: { initialData?: any, nicheReferences?: any[] }) {
+export default function MasterBlueprintClient({ nicheReferences }: { nicheReferences?: any[] }) {
+  const { data: initialData } = useSWR("blueprint", getBlueprintAction);
+
   const { data: session, status } = useSession();
   const { theme, systemTheme } = useTheme();
   const currentTheme = theme === "system" ? systemTheme : theme;
@@ -20,7 +24,15 @@ export default function MasterBlueprintClient({ initialData, nicheReferences }: 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [canvasData, setCanvasData] = useState<any>(initialData?.aiResult || null);
+
   const [blueprintId, setBlueprintId] = useState<string | null>(initialData?.id || null);
+
+  useEffect(() => {
+    if (initialData) {
+      setCanvasData(initialData.aiResult);
+      setBlueprintId(initialData.id);
+    }
+  }, [initialData]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);

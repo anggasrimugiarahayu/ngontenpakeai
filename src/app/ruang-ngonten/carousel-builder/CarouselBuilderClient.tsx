@@ -4,6 +4,8 @@ import { useAIChat } from "@/hooks/useAIChat";
 
 import GlobalChatLayout, { ChatMessage } from "@/components/chat/GlobalChatLayout";
 import { useSessionState } from "@/hooks/useSessionState";
+import useSWR from "swr";
+import { getBlueprintAction } from "@/app/actions/blueprint";
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -48,7 +50,11 @@ const AI_MODELS = [
   { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', value: 'gemini-2.5-pro' }
 ];
 
-export default function CarouselBuilderClient({ blueprintData }: { blueprintData: any }) {
+export default function CarouselBuilderClient() {
+  const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
+  const blueprintId = blueprint?.id;
+  const blueprintData = blueprint?.aiResult;
+
   const [carouselPromptText, setCarouselPromptText] = useState("");
   const [interimText, setInterimText] = useState("");
   const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_carousel_builder", []);

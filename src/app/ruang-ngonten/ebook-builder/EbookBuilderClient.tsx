@@ -1,6 +1,8 @@
 "use client";
 
 import { useSessionState } from "@/hooks/useSessionState";
+import useSWR from "swr";
+import { getBlueprintAction } from "@/app/actions/blueprint";
 import React, { useState, useRef, useEffect } from 'react';
 import { 
   Lightbulb, Target, CheckCircle2, Copy, AlertCircle, BookOpen, Send

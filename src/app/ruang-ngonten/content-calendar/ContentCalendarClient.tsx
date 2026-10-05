@@ -1,10 +1,16 @@
 "use client";
 
+import useSWR from "swr";
+import { getBlueprintAction } from "@/app/actions/blueprint";
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, ChevronLeft, ChevronRight, X, Save, Trash2, Check, FileText } from 'lucide-react';
 
-export default function ContentCalendarClient({ initialData }: { initialData: any }) {
+export default function ContentCalendarClient() {
+  const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
+  const blueprintId = blueprint?.id;
+  const blueprintData = blueprint?.aiResult;
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const [calendarData, setCalendarData] = useState<Record<string, any>>(initialData || {});

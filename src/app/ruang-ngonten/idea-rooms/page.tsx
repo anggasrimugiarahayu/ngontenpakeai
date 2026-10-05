@@ -1,5 +1,4 @@
 import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import IdeaRoomsClient from "./IdeaRoomsClient";
 
@@ -15,17 +14,5 @@ export default async function IdeaRoomsPage() {
     redirect("/");
   }
 
-  // Find Master Blueprint
-  const blueprint = await prisma.masterBlueprint.findFirst({
-    where: { userId: session.user.id },
-    orderBy: { createdAt: "desc" },
-  });
-
-  if (!blueprint) {
-    redirect("/ruang-ngonten?error=no_blueprint");
-  }
-
-  // In NextJS we can fetch previous idea rooms data from DB if needed, 
-  // but for now we pass the blueprint.
-  return <IdeaRoomsClient blueprintId={blueprint.id} blueprintData={blueprint.aiResult} />;
+  return <IdeaRoomsClient />;
 }

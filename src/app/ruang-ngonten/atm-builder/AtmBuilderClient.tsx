@@ -3,6 +3,8 @@
 import GlobalChatLayout, { ChatMessage } from "@/components/chat/GlobalChatLayout";
 import { useAIChat } from "@/hooks/useAIChat";
 import { useSessionState } from "@/hooks/useSessionState";
+import useSWR from "swr";
+import { getBlueprintAction } from "@/app/actions/blueprint";
 import React, { useState, useRef, useEffect } from "react";
 import { CopyPlus, LayoutTemplate, Mic2, Zap, Target, Send, Square, CheckCircle2, MessageSquare, Search, UserCircle, Calendar, Bot, Lightbulb, Video, Filter, ChevronDown, Copy, Check, Save, Plus, Mic, X, FileText, ChevronLeft, ChevronRight, Camera } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
@@ -18,7 +20,11 @@ const AI_MODELS = [
   { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' }
 ];
 
-export default function AtmBuilderClient({ blueprintData }: { blueprintData: any }) {
+export default function AtmBuilderClient() {
+  const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
+  const blueprintId = blueprint?.id;
+  const blueprintData = blueprint?.aiResult;
+
   const { fetchAI, isLoading, setIsLoading, abort } = useAIChat();
   const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_atm_builder", []);
   const [atmInputText, setAtmInputText] = useState("");

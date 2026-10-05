@@ -1,11 +1,18 @@
-import { Metadata } from 'next';
-import EbookBuilderClient from './EbookBuilderClient';
+import { auth } from "@/auth";
+import { redirect } from "next/navigation";
+import EbookBuilderClient from "./EbookBuilderClient";
 
-export const metadata: Metadata = {
-  title: 'Ebook Prompt Builder | Ruang Ngonten',
-  description: 'Riset ide brilian, rakit kerangka, dan cetak master prompt Ebook',
+export const metadata = {
+  title: "",
+  description: "",
 };
 
-export default function EbookBuilderPage() {
+export default async function EbookBuilderPage() {
+  const session = await auth();
+  
+  if (!session?.user?.id) {
+    redirect("/");
+  }
+
   return <EbookBuilderClient />;
 }
