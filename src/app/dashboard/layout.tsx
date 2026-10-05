@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { getCachedFeatures, getCachedHasBlueprint } from "@/lib/cache";
 import ClientLayout from "@/app/ruang-ngonten/ClientLayout";
 import { redirect } from "next/navigation";
 
@@ -26,11 +27,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
   }
   
   let dbFeatures: any[] = [];
-  try {
-    dbFeatures = await prisma.feature.findMany();
-  } catch (e) {
-    console.log("Supabase cold start error for features");
-  }
+  dbFeatures = await getCachedFeatures();
   const isPro = session?.user?.role === "PRO" || session?.user?.role === "ADMIN" || isAdmin;
   
   return <ClientLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro}>{children}</ClientLayout>;

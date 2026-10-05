@@ -4,12 +4,14 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { GoogleGenAI } from "@google/genai";
 import prisma from "@/lib/prisma";
+import { revalidateTag } from "next/cache";
 
 export async function POST(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      revalidateTag("blueprint");
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const formData = await req.json();

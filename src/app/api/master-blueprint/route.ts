@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { revalidateTag } from "next/cache";
 
 export async function PUT(req: Request) {
   try {
@@ -22,6 +23,7 @@ export async function PUT(req: Request) {
       }
     });
 
+    revalidateTag("blueprint");
     return NextResponse.json({ success: true, id: updated.id });
   } catch (error: any) {
     console.error("Error saving blueprint:", error);
@@ -54,6 +56,7 @@ export async function POST(req: Request) {
       }
     });
 
+    revalidateTag("blueprint");
     return NextResponse.json({ success: true, id: created.id });
   } catch (error: any) {
     console.error("Error creating blueprint:", error);
@@ -84,6 +87,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Blueprint not found or unauthorized" }, { status: 404 });
     }
 
+    revalidateTag("blueprint");
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Error deleting blueprint:", error);

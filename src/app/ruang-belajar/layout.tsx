@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { getCachedFeatures, getCachedHasBlueprint } from "@/lib/cache";
 import ClientLayout from "@/app/ruang-ngonten/ClientLayout";
 
 export default async function RuangBelajarLayout({ children }: { children: React.ReactNode }) {
@@ -7,14 +8,10 @@ export default async function RuangBelajarLayout({ children }: { children: React
   let hasBlueprint = false;
   
   if (session?.user?.id) {
-    const blueprint = await prisma.masterBlueprint.findFirst({
-      where: { userId: session.user.id },
-      select: { id: true }
-    });
-    hasBlueprint = !!blueprint;
+    hasBlueprint = await getCachedHasBlueprint(session.user.id);
   }
   
-  const dbFeatures = await prisma.feature.findMany();
+  const dbFeatures = await getCachedFeatures();
   const isPro = session?.user?.role === "PRO" || session?.user?.role === "ADMIN" || session?.user?.email === "anggasrimugiarahayu@gmail.com";
   return <ClientLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro}>{children}</ClientLayout>;
 }
