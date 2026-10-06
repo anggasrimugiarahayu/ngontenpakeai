@@ -6,7 +6,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { getDashboardDataAction } from '@/app/actions/dashboard';
 import { 
   User, CheckCircle2, Link as LinkIcon, 
-  TrendingUp, Layers, Users, ShoppingBag, Settings, Calendar as CalendarIcon, Eye, Send, ArrowUp, Search, Image as ImageIcon, Download, Printer, ArrowLeft, ArrowRight, X
+  TrendingUp, Layers, Users, ShoppingBag, Settings, Calendar as CalendarIcon, Eye, Send, ArrowUp, ArrowDown, Search, Image as ImageIcon, Download, Printer, ArrowLeft, ArrowRight, X
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -80,12 +80,12 @@ export default function DashboardClient({ user }: { user: any }) {
 
   const { chartData, dynamicTotalViews, dynamicTotalClicks, salesChartData } = React.useMemo(() => {
     return { 
-       chartData: [], 
+       chartData: data?.viewsChartData || [], 
        dynamicTotalViews: data?.totalViews || 0, 
        dynamicTotalClicks: data?.totalClicks || 0, 
-       salesChartData: [] 
+       salesChartData: data?.salesChartData || [] 
     };
-  }, [date, data?.totalViews, data?.totalClicks]);
+  }, [date, data]);
 
   if (!data) return <LoadingSpinner message="Memuat Dashboard..." />;
 
@@ -874,7 +874,14 @@ export default function DashboardClient({ user }: { user: any }) {
                   <div className="w-2 h-2 rounded-full bg-orange-500"></div> 
                   Total Views & Clicks
                </div>
-               <h3 className="text-3xl font-black text-gray-900 dark:text-white">{formatIDR(dynamicTotalViews + dynamicTotalClicks)}</h3>
+               <div className="flex items-baseline gap-2">
+                 <h3 className="text-3xl font-black text-gray-900 dark:text-white">{formatIDR(dynamicTotalViews + dynamicTotalClicks)}</h3>
+                 {data.viewsGrowth >= 0 ? (
+                   <span className="text-xs font-bold text-emerald-500 flex items-center"><ArrowUp size={12}/> {data.viewsGrowth}%</span>
+                 ) : (
+                   <span className="text-xs font-bold text-red-500 flex items-center"><ArrowDown size={12}/> {Math.abs(data.viewsGrowth)}%</span>
+                 )}
+               </div>
             </div>
             <div className="bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col justify-center">
                <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
@@ -891,7 +898,11 @@ export default function DashboardClient({ user }: { user: any }) {
                </div>
                <div className="flex items-baseline gap-2">
                  <h3 className="text-3xl font-black text-gray-900 dark:text-white">{formatIDR(data.lifetimeSalesIDR)}</h3>
-                 <span className="text-xs font-bold text-emerald-500 flex items-center"><ArrowUp size={12}/> 84.19%</span>
+                 {data.salesGrowth >= 0 ? (
+                   <span className="text-xs font-bold text-emerald-500 flex items-center"><ArrowUp size={12}/> {data.salesGrowth}%</span>
+                 ) : (
+                   <span className="text-xs font-bold text-red-500 flex items-center"><ArrowDown size={12}/> {Math.abs(data.salesGrowth)}%</span>
+                 )}
                </div>
             </div>
           </div>
@@ -910,7 +921,11 @@ export default function DashboardClient({ user }: { user: any }) {
                     <div className="flex items-baseline gap-2">
                        <h2 className="text-2xl font-black text-gray-900 dark:text-white">{formatIDR(data.lifetimeSalesIDR)}</h2>
                        <div className="flex flex-col text-[10px] font-bold text-emerald-500 leading-tight">
-                         <span className="flex items-center"><ArrowUp size={10}/> 84.19%</span>
+                         {data.salesGrowth >= 0 ? (
+                         <span className="flex items-center text-emerald-500"><ArrowUp size={10}/> {data.salesGrowth}%</span>
+                       ) : (
+                         <span className="flex items-center text-red-500"><ArrowDown size={10}/> {Math.abs(data.salesGrowth)}%</span>
+                       )}
                          <span className="text-gray-400 font-medium">vs previous period</span>
                        </div>
                     </div>
