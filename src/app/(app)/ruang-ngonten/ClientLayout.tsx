@@ -126,7 +126,7 @@ export default function ClientLayout({
 
           {/* Tools Icons */}
           <div className="flex flex-col py-2 px-2 space-y-1 overflow-y-auto custom-scrollbar max-h-[calc(100vh-140px)]">
-            {(isSettingsArea ? SETTINGS_NAV : isDashboard ? GLOBAL_NAV : mappedTools).map((tool) => {
+            {itemsToRender.map((tool) => {
               const Icon = tool.icon;
               let isActive = false;
                 if (!isToolsMode) {
@@ -225,7 +225,7 @@ export default function ClientLayout({
             <div className="flex flex-col py-4 px-3 overflow-y-auto space-y-1">
 
 
-              {(isSettingsArea ? SETTINGS_NAV : isDashboard ? GLOBAL_NAV : mappedTools).map((tool) => {
+              {itemsToRender.map((tool) => {
                 const Icon = tool.icon;
                 let isActive = false;
                 if (!isToolsMode) {
