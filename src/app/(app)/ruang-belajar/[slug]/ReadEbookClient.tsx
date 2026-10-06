@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import useSWR, { preload } from "swr";
 import { getEbookDetailAction } from "@/app/actions/ruangBelajar";
 import { getCheckoutDetailsAction } from "@/app/actions/checkout";
+import { trackProductViewAction, trackProductClickAction } from "@/app/actions/analytics";
 import { useRouter } from "next/navigation";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
@@ -22,6 +23,12 @@ export default function ReadEbookClient({ slug }: { slug: string }) {
   const router = useRouter();
   const { data, isLoading, mutate } = useSWR(["ebookDetail", slug], () => getEbookDetailAction(slug));
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (data && !data.notFound && data.ebook?.id) {
+      trackProductViewAction(data.ebook.id);
+    }
+  }, [data?.ebook?.id]);
 
   if (isLoading || !data) {
     return <LoadingSpinner message="Memuat E-Book..." />;
@@ -203,6 +210,7 @@ export default function ReadEbookClient({ slug }: { slug: string }) {
                                  href={`/checkout?type=EBOOK&productId=${ebook.id}`} 
                                  onMouseEnter={() => preload(["checkout", "EBOOK", ebook.id], () => getCheckoutDetailsAction("EBOOK", ebook.id))}
                                  onTouchStart={() => preload(["checkout", "EBOOK", ebook.id], () => getCheckoutDetailsAction("EBOOK", ebook.id))}
+                                 onClick={() => trackProductClickAction(ebook.id)}
                                  className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg">
                                    Beli Satuan (Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'})
                                </Link>
