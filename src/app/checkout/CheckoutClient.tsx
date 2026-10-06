@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Script from "next/script";
 import { createCheckoutToken, verifyPayment, cancelPayment } from "@/app/actions/payment";
+import { validatePromoCodeAction } from "@/app/actions/checkout";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, ArrowLeft, ChevronRight, X, Lock, CreditCard, AlertCircle } from "lucide-react";
 import Link from "next/link";
@@ -47,6 +48,11 @@ export default function CheckoutClient({
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [showAddonModal, setShowAddonModal] = useState(false);
+  const [showVoucherModal, setShowVoucherModal] = useState(false);
+  const [promoCodeInput, setPromoCodeInput] = useState("");
+  const [promoError, setPromoError] = useState("");
+  const [isVerifyingPromo, setIsVerifyingPromo] = useState(false);
+  const [appliedVoucher, setAppliedVoucher] = useState<{code: string, type: string, value: number, amount: number} | null>(null);
   const [isCancelLoading, setIsCancelLoading] = useState(false);
 
   const handleCancelPayment = async () => {
@@ -78,12 +84,46 @@ export default function CheckoutClient({
     return new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 }).format(num);
   };
 
-  const { grossAmount, adminFee, totalAddonsPrice } = useMemo(() => {
+  const { grossAmount, adminFee, totalAddonsPrice, discountAmount } = useMemo(() => {
     const addonsTotal = availableAddons.filter(a => selectedAddons.includes(a.id)).reduce((acc, curr) => acc + (curr.price || 0), 0);
-    const finalBase = baseAmount + addonsTotal;
+    let finalBase = baseAmount + addonsTotal;
+    
+    let discount = 0;
+    if (appliedVoucher) {
+      if (appliedVoucher.type === "PERCENTAGE") {
+        discount = Math.floor(finalBase * (appliedVoucher.value / 100));
+      } else {
+        discount = appliedVoucher.value;
+      }
+      if (discount > finalBase) discount = finalBase;
+      appliedVoucher.amount = discount; // mutates state ref safely for rendering
+      finalBase -= discount;
+    }
+
     const calc = calculatePaymentFees(finalBase, selectedMethod);
-    return { ...calc, totalAddonsPrice: addonsTotal };
-  }, [baseAmount, selectedMethod, selectedAddons, availableAddons]);
+    return { ...calc, totalAddonsPrice: addonsTotal, discountAmount: discount };
+  }, [baseAmount, selectedMethod, selectedAddons, availableAddons, appliedVoucher]);
+
+  const handleApplyPromo = async () => {
+    if (!promoCodeInput.trim() || !productId) return;
+    setIsVerifyingPromo(true);
+    setPromoError("");
+    try {
+      const res = await validatePromoCodeAction(promoCodeInput.trim(), productId);
+      if (res.success) {
+        setAppliedVoucher({ code: promoCodeInput.trim().toUpperCase(), type: res.discountType, value: res.discountValue, amount: 0 });
+        setShowVoucherModal(false);
+        setPromoCodeInput("");
+      } else {
+        setPromoError(res.message);
+      }
+    } catch(e) {
+      setPromoError("Terjadi kesalahan.");
+    } finally {
+      setIsVerifyingPromo(false);
+    }
+  };
+
 
   useEffect(() => {
     if (paymentState !== "pending" || !expiryTime) return;
@@ -148,7 +188,7 @@ export default function CheckoutClient({
     setLoading(true); 
     setErrorMessage("");
     try {
-      const res = await createCheckoutToken({ type, productId, paymentMethodKey: selectedMethod, customerName, customerEmail, customerPhone, addonIds: selectedAddons });
+      const res = await createCheckoutToken({ type, productId, paymentMethodKey: selectedMethod, customerName, customerEmail, customerPhone, addonIds: selectedAddons, voucherCode: appliedVoucher?.code, discountAmount });
       if (res?.token && res?.orderId) {
         setCurrentToken(res.token); setCurrentOrderId(res.orderId); openSnap(res.token, res.orderId);
       }
@@ -195,9 +235,13 @@ export default function CheckoutClient({
     <div className="w-full relative h-full flex flex-col justify-center">
       <Script src={isProduction ? "https://app.midtrans.com/snap/snap.js" : "https://app.sandbox.midtrans.com/snap/snap.js"} data-client-key={clientKey} strategy="afterInteractive" />
       
-      <button onClick={() => router.back()} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white mb-3 transition-colors w-fit">
-        <ArrowLeft className="w-4 h-4" /> Kembali
-      </button>
+      <div className="flex items-center justify-between mb-6">
+        <button onClick={() => router.back()} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
+          <ArrowLeft className="w-4 h-4" /> Kembali
+        </button>
+        <h1 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white absolute left-1/2 -translate-x-1/2">Checkout</h1>
+        <div className="w-20"></div>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4 lg:gap-6 items-stretch">
         
@@ -424,6 +468,38 @@ export default function CheckoutClient({
                   Semua produk sudah ada di keranjang Anda.
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      
+      {showVoucherModal && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-white/10">
+            <div className="p-4 border-b border-gray-100 dark:border-white/10 flex items-center justify-between shrink-0">
+              <h3 className="font-bold text-gray-900 dark:text-white">Masukkan Kode Promo</h3>
+              <button onClick={() => { setShowVoucherModal(false); setPromoError(""); setPromoCodeInput(""); }} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-gray-500"><X className="w-5 h-5" /></button>
+            </div>
+            
+            <div className="p-5 space-y-4">
+              <input 
+                type="text" 
+                placeholder="Contoh: DISKON50" 
+                value={promoCodeInput} 
+                onChange={(e) => setPromoCodeInput(e.target.value)}
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-xl text-base font-bold uppercase focus:ring-2 focus:ring-rn-accent/50 focus:border-rn-accent outline-none dark:text-white transition-all text-center"
+              />
+              {promoError && (
+                <p className="text-red-500 text-xs font-medium text-center">{promoError}</p>
+              )}
+              <button 
+                onClick={handleApplyPromo}
+                disabled={isVerifyingPromo || !promoCodeInput.trim()}
+                className="w-full bg-rn-accent text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              >
+                {isVerifyingPromo ? <Loader2 className="w-5 h-5 animate-spin" /> : "Gunakan Kode"}
+              </button>
             </div>
           </div>
         </div>

@@ -14,7 +14,9 @@ export async function createCheckoutToken(data: {
   customerName: string,
   customerEmail: string,
   customerPhone: string,
-  addonIds?: string[]
+  addonIds?: string[],
+  voucherCode?: string,
+  discountAmount?: number
 }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -28,6 +30,16 @@ export async function createCheckoutToken(data: {
     await prisma.user.update({
       where: { id: userId },
       data: { phone: data.customerPhone }
+    });
+  }
+
+  if (data.discountAmount && data.discountAmount > 0) {
+    baseAmount -= data.discountAmount;
+    itemDetails.push({
+      id: "DISCOUNT",
+      price: -data.discountAmount,
+      quantity: 1,
+      name: (`Promo: ${data.voucherCode || 'Discount'}`).substring(0, 50)
     });
   }
 
@@ -95,6 +107,8 @@ export async function createCheckoutToken(data: {
       orderType: data.type,
       digitalProductId: data.productId,
       addonIds: data.addonIds || [],
+      voucherCode: data.voucherCode,
+      discountAmount: data.discountAmount || 0,
       amount: grossAmount,
       status: "PENDING",
       paymentMethod: data.paymentMethodKey

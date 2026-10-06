@@ -98,3 +98,27 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     availableAddons
   };
 }
+
+
+export async function validatePromoCodeAction(code: string, productId: string) {
+  const session = await auth();
+  if (!session?.user?.id) return { success: false, message: "Unauthorized" };
+
+  const voucher = await prisma.voucher.findFirst({
+    where: {
+      code: code.toUpperCase(),
+      digitalProductId: productId,
+      isActive: true
+    }
+  });
+
+  if (!voucher) {
+    return { success: false, message: "Kode promo tidak valid atau sudah kadaluarsa." };
+  }
+
+  return {
+    success: true,
+    discountType: voucher.discountType,
+    discountValue: voucher.discountValue
+  };
+}

@@ -206,6 +206,7 @@ model DigitalCategory {
 
 model DigitalProduct {
   id          String          @id @default(cuid())
+  vouchers         Voucher[]
   categoryId  String          @map("category_id")
   title       String
   price       Int             @default(0)
@@ -270,6 +271,8 @@ model Order {
   paymentUrl       String?
   midtransId       String?        @unique
   addonIds         String[]       @default([])
+  voucherCode      String?        @map("voucher_code")
+  discountAmount   Int            @default(0) @map("discount_amount")
   createdAt        DateTime       @default(now()) @map("created_at")
   updatedAt        DateTime       @updatedAt @map("updated_at")
 
@@ -303,4 +306,20 @@ model UserOwnedProduct {
 
   @@unique([userId, digitalProductId])
   @@map("user_owned_products")
+}
+
+
+model Voucher {
+  id               String         @id @default(cuid())
+  code             String
+  discountType     String         @default("PERCENTAGE")
+  discountValue    Int            
+  isActive         Boolean        @default(true)
+  digitalProductId String         @map("digital_product_id")
+  createdAt        DateTime       @default(now()) @map("created_at")
+
+  product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
+
+  @@unique([code, digitalProductId])
+  @@map("vouchers")
 }
