@@ -63,30 +63,34 @@ export default function ClientLayout({
     return () => window.removeEventListener('open-tools-drawer', handleOpen);
   }, []);
 
-  const isHome = pathname === '/' || pathname === '';
-  const isDashboard = pathname === '/ruang-ngonten' || pathname === '/ruang-ngonten/' || pathname.startsWith('/ruang-belajar') || pathname.startsWith('/ruang-growing');
-  const pathSegments = pathname.split('/').filter(Boolean);
-  const isSettingsArea = pathname === '/dashboard' || pathname.startsWith('/dashboard') || pathname.startsWith('/pengaturan') || pathname.startsWith('/bantuan') || pathname.startsWith('/feedback');
-  const backHref = isSettingsArea ? '/' : (pathSegments.length > 1 ? '/' + pathSegments[0] : '/');
-
-
-  const GLOBAL_NAV = [
-    { label: "Ruang Belajar", href: "/ruang-belajar", icon: BookOpen },
-    { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate },
-    { label: "Ruang Growing", href: "/ruang-growing", icon: RefreshCw },
-  ];
-
-  const SETTINGS_NAV = [
-  { label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' },
-  { label: 'Pengaturan', icon: Settings, href: '/pengaturan' },
-  { label: 'Bantuan', icon: HelpCircle, href: '/bantuan' },
-  { label: 'Feedback', icon: MessageSquare, href: '/feedback' },
-];
-
   
+  const isToolsMode = pathname.startsWith('/ruang-ngonten/') && pathname !== '/ruang-ngonten' && pathname !== '/ruang-ngonten/';
 
+  let GLOBAL_NAV_ITEMS = [];
 
-  
+  if (!isLoggedIn) {
+    GLOBAL_NAV_ITEMS = [
+      { label: "Ruang Belajar", href: "/login?redirect=/ruang-belajar", icon: BookOpen },
+      { label: "Ruang Ngonten", href: "/login?redirect=/ruang-ngonten", icon: LayoutTemplate },
+      { label: "Ruang Growing", href: "/login?redirect=/ruang-growing", icon: RefreshCw },
+      { label: "Pricing", href: "/?pricing=true", icon: CreditCard },
+    ];
+  } else {
+    GLOBAL_NAV_ITEMS = [
+      { label: "Ruang Belajar", href: "/ruang-belajar", icon: BookOpen },
+      { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate },
+      { label: "Ruang Growing", href: "/ruang-growing", icon: RefreshCw },
+    ];
+    if (isAdmin) {
+      GLOBAL_NAV_ITEMS.push({ label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' });
+    }
+    GLOBAL_NAV_ITEMS.push(
+      { label: 'Pengaturan', icon: Settings, href: '/pengaturan' },
+      { label: 'Bantuan', icon: HelpCircle, href: '/bantuan' },
+      { label: 'Feedback', icon: MessageSquare, href: '/feedback' }
+    );
+  }
+
   const mappedTools = TOOLS.map(tool => {
     const dbMatch = dbFeatures.find(db => db.name === tool.label);
     return {
@@ -96,10 +100,14 @@ export default function ClientLayout({
     };
   }).filter(tool => tool.isActive);
 
+  const itemsToRender = isToolsMode ? mappedTools : GLOBAL_NAV_ITEMS;
+  const backHref = isToolsMode ? '/ruang-ngonten' : '/';
+
   return (
     <div className="flex flex-1 w-full relative">
       {/* 
         FLOATING SIDEBAR (DESKTOP)
+        Only visible if NOT on the main dashboard page
       */}
       <aside className={`hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-[60] bg-white/90 dark:bg-[#121214]/90 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-2xl rounded-2xl flex-col transition-all duration-300 ease-in-out ${
             isExpanded ? 'w-[260px]' : 'w-[64px]'
@@ -118,7 +126,7 @@ export default function ClientLayout({
 
           {/* Tools Icons */}
           <div className="flex flex-col py-2 px-2 space-y-1 overflow-y-auto custom-scrollbar max-h-[calc(100vh-140px)]">
-            {itemsToRender.map((tool) => {
+            {(isSettingsArea ? SETTINGS_NAV : isDashboard ? GLOBAL_NAV : mappedTools).map((tool) => {
               const Icon = tool.icon;
               let isActive = false;
                 if (!isToolsMode) {
@@ -169,7 +177,6 @@ export default function ClientLayout({
           </div>
 
           {isToolsMode && (
-          <> {/* BACK TO DASHBOARD BUTTON (BOTTOM) */}
           <div className="p-2 border-t border-gray-100 dark:border-white/5 mt-auto">
             <Link prefetch={true}
               href={backHref}
@@ -183,7 +190,7 @@ export default function ClientLayout({
                 <span className="text-sm font-medium whitespace-nowrap truncate">Back</span>
               )}
             </Link>
-          </div></>
+          </div>
           )}
         </aside>
 
@@ -218,7 +225,7 @@ export default function ClientLayout({
             <div className="flex flex-col py-4 px-3 overflow-y-auto space-y-1">
 
 
-              {itemsToRender.map((tool) => {
+              {(isSettingsArea ? SETTINGS_NAV : isDashboard ? GLOBAL_NAV : mappedTools).map((tool) => {
                 const Icon = tool.icon;
                 let isActive = false;
                 if (!isToolsMode) {
@@ -263,7 +270,6 @@ export default function ClientLayout({
             </div>
 
             {isToolsMode && (
-            <> {/* BACK TO DASHBOARD (BOTTOM) */}
             <div className="p-4 border-t border-gray-100 dark:border-white/5 mt-auto">
               <Link prefetch={true}
                 href={backHref}
@@ -272,7 +278,7 @@ export default function ClientLayout({
                 <LayoutGrid size={18} />
                 <span className="text-sm">Back</span>
               </Link>
-          </div></>
+          </div>
           )}
         </aside>
         </>
