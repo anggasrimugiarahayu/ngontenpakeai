@@ -171,7 +171,7 @@ export default function ReadEbookClient({ slug }: { slug: string }) {
                            ? "Silakan klaim e-book ini secara gratis (Rp 0) untuk memasukkannya ke dalam Brankas Perpustakaan Pribadi Anda seumur hidup."
                            : isPremiumEbook 
                              ? "E-book ini sangat eksklusif. Beli sekarang dan dapatkan akses penuh untuk membaca dan mendownload selamanya." 
-                             : "Beli eceran untuk hak milik seumur hidup, ATAU Anda bisa klaim secara GRATIS jika Anda berlangganan paket PRO!"}
+                             : "Beli satuan untuk hak milik seumur hidup, ATAU Anda bisa klaim secara GRATIS semua ebook PRO jika Anda berlangganan paket PRO!"}
                        </p>
                      </div>
                      
@@ -262,7 +262,7 @@ export default function ReadEbookClient({ slug }: { slug: string }) {
                      <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2"><span>:</span> {ebook.author || "Admin"}</span>
                    </div>
                    <div className="grid grid-cols-3 gap-2">
-                     <span className="text-gray-500 font-medium col-span-1">Jumlah Halaman</span>
+                     <span className="text-gray-500 font-medium col-span-1">Halaman</span>
                      <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2"><span>:</span> {ebook.pageCount ? `${ebook.pageCount} Halaman` : '-'}</span>
                    </div>
                    
