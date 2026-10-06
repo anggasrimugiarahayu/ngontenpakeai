@@ -67,7 +67,7 @@ export async function createCategory(data: any) {
 }
 
 export async function getProducts() {
-  return await prisma.digitalProduct.findMany({ include: { category: true }, orderBy: { createdAt: 'desc' } });
+  return await prisma.digitalProduct.findMany({ include: { category: true, vouchers: true }, orderBy: { createdAt: 'desc' } });
 }
 export async function createProduct(data: any) {
   if (data.slug) {
@@ -116,4 +116,12 @@ export async function updateProduct(id: string, data: any) {
     }
   });
   revalidatePath("/pengaturan");
+}
+
+
+export async function createVoucher(data: { code: string, discountType: string, discountValue: number, digitalProductId: string }) {
+  await prisma.voucher.create({ data });
+}
+export async function deleteVoucher(id: string) {
+  await prisma.voucher.delete({ where: { id } });
 }
