@@ -612,6 +612,8 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 coverUrl3: uploadedUrls["coverUrl3Input"] || formData.get("coverUrl3"),
                 fileUrl: formData.get("fileUrl"),
                 accessLevel: formData.get("accessLevel") as string,
+                language: formData.get("language") as string,
+                formatType: formData.get("formatType") as string,
                 isProOnly: formData.get("accessLevel") === "PRO" || formData.get("accessLevel") === "PREMIUM",
                 price: formData.get("price") ? parseInt(formData.get("price") as string) : 0,
                 isDownloadable: formData.get("isDownloadable") === "on",
@@ -680,6 +682,18 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               </div>
 
               
+              
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bahasa</label>
+                  <input name="language" defaultValue="Indonesia" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Format</label>
+                  <input name="formatType" defaultValue="PDF / Digital" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                </div>
+              </div>
+
               <div className="mt-4">
                 <label className="block text-xs font-bold text-gray-500 mb-1">LEVEL AKSES E-BOOK</label>
                 <select name="accessLevel" value={addAccessLevel} onChange={(e) => setAddAccessLevel(e.target.value)} className="w-full p-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-[#18181b] focus:outline-none focus:ring-2 focus:ring-rn-accent text-sm">
@@ -879,6 +893,18 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               </div>
 
               
+              
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bahasa</label>
+                  <input name="language" defaultValue={editingProduct.language || 'Indonesia'} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                </div>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Format</label>
+                  <input name="formatType" defaultValue={editingProduct.formatType || 'PDF / Digital'} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                </div>
+              </div>
+
               <div className="mt-4">
                 <label className="block text-xs font-bold text-gray-500 mb-1">LEVEL AKSES E-BOOK</label>
                 <select name="accessLevel" value={editingProduct.accessLevel || "FREE"} onChange={(e) => setEditingProduct({...editingProduct, accessLevel: e.target.value})} className="w-full p-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-[#18181b] focus:outline-none focus:ring-2 focus:ring-rn-accent text-sm">
@@ -903,14 +929,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 </div>
               </label>
 
-                            <div className="mt-4 pt-4 border-t border-gray-100 dark:border-white/5">
-                <div className="flex items-center justify-between mb-2">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">PENGATURAN VOUCHER</label>
-                  <button type="button" onClick={() => setManagingVouchers(editingProduct)} className="text-xs font-bold text-rn-accent bg-rn-accent/10 hover:bg-rn-accent/20 px-3 py-1.5 rounded-lg transition-colors">
-                    Kelola Voucher ({editingProduct.vouchers?.length || 0})
-                  </button>
-                </div>
-              </div>
+
               
               <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-white/5">
                 <button type="button" onClick={() => setEditingProduct(null)} className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors">Batal</button>

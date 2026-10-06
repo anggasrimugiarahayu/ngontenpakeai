@@ -362,7 +362,7 @@ export default function CheckoutClient({
             <button 
               onClick={() => setShowVoucherModal(true)}
               disabled={isPending}
-              className="w-full flex items-center justify-center gap-2 py-2 mb-4 rounded-xl border border-dashed border-gray-300 dark:border-white/20 text-gray-600 dark:text-gray-400 text-sm font-bold hover:border-rn-accent hover:text-rn-accent transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-3 mb-4 rounded-xl border border-dashed border-rn-accent/50 text-rn-accent text-sm font-bold hover:bg-rn-accent/5 dark:hover:bg-rn-accent/10 transition-colors disabled:opacity-50"
             >
               + Add Voucher
             </button>

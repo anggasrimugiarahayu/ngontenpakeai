@@ -216,6 +216,8 @@ model DigitalProduct {
   coverUrl2   String?
   coverUrl3   String?
   fileUrl     String?
+  language    String?         @default("Indonesia")
+  formatType  String?         @default("PDF / Digital")
   isProOnly   Boolean         @default(false)
   accessLevel String          @default("FREE")
   isDownloadable Boolean      @default(false)
