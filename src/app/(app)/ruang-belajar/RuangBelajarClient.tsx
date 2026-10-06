@@ -117,7 +117,7 @@ export default function RuangBelajarClient() {
                         </div>
                       </div>
 
-                      <div className="mt-auto pt-2 flex items-center justify-between">
+                      <div className="mt-auto pt-2 flex items-end justify-between">
                         {isOwned ? (
                           <span className="text-[17px] font-black text-green-600 dark:text-green-500">Dimiliki</span>
                         ) : isFree ? (
