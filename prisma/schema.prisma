@@ -269,6 +269,7 @@ model Order {
   status           String         @default("PENDING") // PENDING, SUCCESS, FAILED
   paymentUrl       String?
   midtransId       String?        @unique
+  addonIds         String[]       @default([])
   createdAt        DateTime       @default(now()) @map("created_at")
   updatedAt        DateTime       @updatedAt @map("updated_at")
 

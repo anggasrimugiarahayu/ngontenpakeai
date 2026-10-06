@@ -13,7 +13,8 @@ export async function createCheckoutToken(data: {
   paymentMethodKey: PaymentMethodKey,
   customerName: string,
   customerEmail: string,
-  customerPhone: string
+  customerPhone: string,
+  addonIds?: string[]
 }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
@@ -55,7 +56,32 @@ export async function createCheckoutToken(data: {
     orderName = "Paket Lengkap";
   }
 
+  
+  let itemDetails: any[] = [{
+    id: data.productId || data.type,
+    price: baseAmount,
+    quantity: 1,
+    name: orderName.substring(0, 50)
+  }];
+
+  if (data.addonIds && data.addonIds.length > 0) {
+    const addons = await prisma.digitalProduct.findMany({
+      where: { id: { in: data.addonIds } }
+    });
+    
+    addons.forEach(addon => {
+      baseAmount += (addon.price || 0);
+      itemDetails.push({
+        id: addon.id,
+        price: addon.price || 0,
+        quantity: 1,
+        name: `Add-on: ${addon.title}`.substring(0, 50)
+      });
+    });
+  }
+
   if (!data.paymentMethodKey || !PAYMENT_METHODS[data.paymentMethodKey]) {
+
     throw new Error("Metode pembayaran tidak valid");
   }
 
@@ -66,10 +92,12 @@ export async function createCheckoutToken(data: {
   const order = await prisma.order.create({
     data: {
       userId,
-      digitalProductId: data.type === "EBOOK" ? data.productId : null,
       orderType: data.type,
+      digitalProductId: data.productId,
+      addonIds: data.addonIds || [],
       amount: grossAmount,
       status: "PENDING",
+      paymentMethod: data.paymentMethodKey
     }
   });
 

@@ -10,7 +10,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
   if (!type) return { badRequest: true };
 
   // Run independent queries concurrently
-  const [user, product, pendingDbOrder] = await Promise.all([
+  const [user, product, pendingDbOrder, availableAddons] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id }
     }).catch(() => null),
@@ -27,7 +27,12 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
         status: "PENDING"
       },
       orderBy: { createdAt: 'desc' }
-    }).catch(() => null)
+    }).catch(() => null),
+    
+    prisma.digitalProduct.findMany({
+      where: { isActive: true, id: { not: productId || undefined } },
+      select: { id: true, title: true, coverUrl: true, price: true }
+    }).catch(() => [])
   ]);
 
   if (!user) return { notAuthorized: true };
@@ -89,6 +94,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     initialEmail: user.email || "",
     initialPhone: user.phone || "",
     productImage,
-    existingPendingOrder
+    existingPendingOrder,
+    availableAddons
   };
 }
