@@ -55,6 +55,7 @@ export default function CheckoutWrapperClient() {
           initialPhone={data.initialPhone}
           productImage={data.productImage}
           existingPendingOrder={data.existingPendingOrder}
+          availableAddons={data.availableAddons}
         />
       </div>
     </div>
