@@ -348,6 +348,26 @@ export default function CheckoutClient({
             <span className="font-bold text-gray-900 dark:text-gray-100">TOTAL</span><span className="text-lg font-black text-gray-900 dark:text-white">Rp {formatRupiah(grossAmount)}</span>
           </div>
 
+          {appliedVoucher ? (
+            <div className="flex justify-between text-rn-accent text-sm items-center mb-4 p-3 bg-rn-accent/10 rounded-xl border border-rn-accent/20">
+              <div className="flex items-center gap-2 font-bold">
+                <span className="uppercase">{appliedVoucher.code}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="font-black">- Rp {formatRupiah(appliedVoucher.amount)}</span>
+                <button onClick={() => setAppliedVoucher(null)} className="p-1 hover:bg-rn-accent/20 rounded-full transition-colors"><X className="w-4 h-4" /></button>
+              </div>
+            </div>
+          ) : (
+            <button 
+              onClick={() => setShowVoucherModal(true)}
+              disabled={isPending}
+              className="w-full flex items-center justify-center gap-2 py-2 mb-4 rounded-xl border border-dashed border-gray-300 dark:border-white/20 text-gray-600 dark:text-gray-400 text-sm font-bold hover:border-rn-accent hover:text-rn-accent transition-colors disabled:opacity-50"
+            >
+              + Add Voucher
+            </button>
+          )}
+
           <div className="border border-rn-accent/50 dark:border-rn-accent/40 rounded-xl overflow-hidden mb-4 relative flex-none">
             <button onClick={() => !isPending && setShowPaymentModal(true)} disabled={isPending} className={`w-full p-3 flex items-center justify-between bg-white transition-colors ${isPending ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50'}`}>
               <div className="flex items-center gap-3">

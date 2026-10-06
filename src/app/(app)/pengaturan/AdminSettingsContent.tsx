@@ -555,7 +555,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Link Google Drive PDF (Opsional)</label>
                 <input name="fileUrl" type="url" placeholder="https://drive.google.com/file/d/..." className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
-                <p className="text-[10px] text-gray-400 mt-1">Ganti "view" menjadi "preview" otomatis oleh sistem.</p>
+                <p className="text-[10px] text-gray-400 mt-1">Ganti &quot;view&quot; menjadi &quot;preview&quot; otomatis oleh sistem.</p>
               </div>
 
               
