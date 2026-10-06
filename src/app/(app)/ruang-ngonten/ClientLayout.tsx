@@ -18,7 +18,7 @@ const handleHoverPrefetch = (href: string) => {
   }
 };
 
-import { Compass, User, Lightbulb, FileText, LayoutTemplate, RefreshCw, BookOpen, Calendar, Menu, X, ChevronRight, ChevronLeft, ArrowLeft, Lock, LayoutGrid, Settings, HelpCircle, MessageSquare, LayoutDashboard } from 'lucide-react';
+import { CreditCard, Compass, User, Lightbulb, FileText, LayoutTemplate, RefreshCw, BookOpen, Calendar, Menu, X, ChevronRight, ChevronLeft, ArrowLeft, Lock, LayoutGrid, Settings, HelpCircle, MessageSquare, LayoutDashboard } from 'lucide-react';
 
 const TOOLS = [
   { href: '/ruang-ngonten/master-blueprint', label: 'Master Blueprint', icon: Compass },
@@ -36,11 +36,15 @@ export default function ClientLayout({
   hasBlueprint,
   dbFeatures = [],
   isPro = false,
+  isAdmin = false,
+  isLoggedIn = false,
 }: {
   children: React.ReactNode;
   hasBlueprint: boolean;
   dbFeatures?: any[];
   isPro?: boolean;
+  isAdmin?: boolean;
+  isLoggedIn?: boolean;
 }) {
 
   const pathname = usePathname();
@@ -59,6 +63,7 @@ export default function ClientLayout({
     return () => window.removeEventListener('open-tools-drawer', handleOpen);
   }, []);
 
+  const isHome = pathname === '/' || pathname === '';
   const isDashboard = pathname === '/ruang-ngonten' || pathname === '/ruang-ngonten/' || pathname.startsWith('/ruang-belajar') || pathname.startsWith('/ruang-growing');
   const pathSegments = pathname.split('/').filter(Boolean);
   const isSettingsArea = pathname === '/dashboard' || pathname.startsWith('/dashboard') || pathname.startsWith('/pengaturan') || pathname.startsWith('/bantuan') || pathname.startsWith('/feedback');
@@ -95,7 +100,6 @@ export default function ClientLayout({
     <div className="flex flex-1 w-full relative">
       {/* 
         FLOATING SIDEBAR (DESKTOP)
-        Only visible if NOT on the main dashboard page
       */}
       <aside className={`hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-[60] bg-white/90 dark:bg-[#121214]/90 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-2xl rounded-2xl flex-col transition-all duration-300 ease-in-out ${
             isExpanded ? 'w-[260px]' : 'w-[64px]'
@@ -114,15 +118,15 @@ export default function ClientLayout({
 
           {/* Tools Icons */}
           <div className="flex flex-col py-2 px-2 space-y-1 overflow-y-auto custom-scrollbar max-h-[calc(100vh-140px)]">
-            {(isSettingsArea ? SETTINGS_NAV : isDashboard ? GLOBAL_NAV : mappedTools).map((tool) => {
+            {itemsToRender.map((tool) => {
               const Icon = tool.icon;
               let isActive = false;
-              if (isDashboard) {
-                isActive = pathname === tool.href || (tool.href !== '/' && pathname.startsWith(tool.href));
-              } else {
-                isActive = pathname.startsWith(tool.href);
-              }
-              const isLocked = !isDashboard && !isSettingsArea && ((!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || ((tool as any).isProOnly && !isPro));
+                if (!isToolsMode) {
+                  isActive = pathname === tool.href || (tool.href !== '/' && tool.href !== '/?pricing=true' && !tool.href.startsWith('/login') && pathname.startsWith(tool.href));
+                } else {
+                  isActive = pathname === tool.href;
+                }
+              const isLocked = isToolsMode && ((!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || ((tool as any).isProOnly && !isPro));
               
               if (isLocked) {
                 return (
@@ -164,7 +168,8 @@ export default function ClientLayout({
             })}
           </div>
 
-          {/* BACK TO DASHBOARD BUTTON (BOTTOM) */}
+          {isToolsMode && (
+          <> {/* BACK TO DASHBOARD BUTTON (BOTTOM) */}
           <div className="p-2 border-t border-gray-100 dark:border-white/5 mt-auto">
             <Link prefetch={true}
               href={backHref}
@@ -178,7 +183,8 @@ export default function ClientLayout({
                 <span className="text-sm font-medium whitespace-nowrap truncate">Back</span>
               )}
             </Link>
-          </div>
+          </div></>
+          )}
         </aside>
 
       {/* 
@@ -201,7 +207,7 @@ export default function ClientLayout({
             }`}
           >
             <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/5">
-              <span className="font-bold text-gray-900 dark:text-white">{isDashboard ? 'Navigasi' : 'Menu Tools'}</span>
+              <span className="font-bold text-gray-900 dark:text-white">{isToolsMode ? 'Menu Tools' : 'Navigasi'}</span>
               <button 
                 onClick={() => setIsOpen(false)}
                 className="p-2 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300"
@@ -212,15 +218,15 @@ export default function ClientLayout({
             <div className="flex flex-col py-4 px-3 overflow-y-auto space-y-1">
 
 
-              {(isSettingsArea ? SETTINGS_NAV : isDashboard ? GLOBAL_NAV : mappedTools).map((tool) => {
+              {itemsToRender.map((tool) => {
                 const Icon = tool.icon;
                 let isActive = false;
-                if (isDashboard) {
-                  isActive = pathname === tool.href || (tool.href !== '/' && pathname.startsWith(tool.href));
+                if (!isToolsMode) {
+                  isActive = pathname === tool.href || (tool.href !== '/' && tool.href !== '/?pricing=true' && !tool.href.startsWith('/login') && pathname.startsWith(tool.href));
                 } else {
-                  isActive = pathname.startsWith(tool.href);
+                  isActive = pathname === tool.href;
                 }
-                const isLocked = !isDashboard && !isSettingsArea && ((!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || ((tool as any).isProOnly && !isPro));
+                const isLocked = isToolsMode && ((!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || ((tool as any).isProOnly && !isPro));
                 
                 if (isLocked) {
                   return (
@@ -256,7 +262,8 @@ export default function ClientLayout({
               })}
             </div>
 
-            {/* BACK TO DASHBOARD (BOTTOM) */}
+            {isToolsMode && (
+            <> {/* BACK TO DASHBOARD (BOTTOM) */}
             <div className="p-4 border-t border-gray-100 dark:border-white/5 mt-auto">
               <Link prefetch={true}
                 href={backHref}
@@ -265,7 +272,8 @@ export default function ClientLayout({
                 <LayoutGrid size={18} />
                 <span className="text-sm">Back</span>
               </Link>
-          </div>
+          </div></>
+          )}
         </aside>
         </>
 

@@ -12,7 +12,9 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
   
   const dbFeatures = await getCachedFeatures();
-  const isPro = session?.user?.role === "PRO" || session?.user?.role === "ADMIN" || session?.user?.email === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com" || session?.user?.role === "ADMIN";
+  const isPro = session?.user?.role === "PRO" || isAdmin;
+  const isLoggedIn = !!session?.user;
   
-  return <ClientLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro}>{children}</ClientLayout>;
+  return <ClientLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isAdmin={isAdmin} isLoggedIn={isLoggedIn}>{children}</ClientLayout>;
 }

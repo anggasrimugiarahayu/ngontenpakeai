@@ -76,7 +76,7 @@ export function Navbar({ followerCount = "144K", memberCount = "0" }: NavbarProp
   }, []);
 
   const isDark = mounted ? theme === "dark" : true;
-  const isWorkspace = pathname?.startsWith("/dashboard") || pathname?.startsWith("/ruang-ngonten") || pathname?.startsWith("/ruang-belajar") || pathname?.startsWith("/ruang-growing") || pathname?.startsWith("/pengaturan") || pathname?.startsWith("/bantuan") || pathname?.startsWith("/feedback");
+  const isWorkspace = pathname === "/" || pathname?.startsWith("/dashboard") || pathname?.startsWith("/ruang-ngonten") || pathname?.startsWith("/ruang-belajar") || pathname?.startsWith("/ruang-growing") || pathname?.startsWith("/pengaturan") || pathname?.startsWith("/bantuan") || pathname?.startsWith("/feedback");
   
   // For now, mock the subscription status
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
