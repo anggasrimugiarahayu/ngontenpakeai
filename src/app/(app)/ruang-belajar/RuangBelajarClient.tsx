@@ -117,7 +117,7 @@ export default function RuangBelajarClient() {
                         </div>
                       </div>
 
-                      <div className="mt-auto pt-2.5 flex items-center justify-between border-t border-gray-100 dark:border-white/5">
+                      <div className="mt-auto pt-2 flex items-center justify-between">
                         {isOwned ? (
                           <span className="text-[17px] font-black text-green-600 dark:text-green-500">Dimiliki</span>
                         ) : isFree ? (
@@ -125,7 +125,7 @@ export default function RuangBelajarClient() {
                         ) : (
                           <div className="flex flex-col">
                             {ebook.originalPrice && ebook.originalPrice > ebook.price ? (
-                              <span className="text-[11px] sm:text-[12px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none mb-1">
+                              <span className="text-xs sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none mb-1">
                                 Rp {ebook.originalPrice.toLocaleString('id-ID')}
                               </span>
                             ) : null}
@@ -133,7 +133,7 @@ export default function RuangBelajarClient() {
                               Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
                             </span>
                             {isProEbook && (
-                               <span className="text-[9px] sm:text-[10px] text-rn-accent font-bold mt-1.5">(Atau Klaim Rp 0 dgn PRO)</span>
+                               <span className="text-[9px] sm:text-[10px] text-rn-accent font-bold mt-1.5 whitespace-nowrap">(Rp 0 khusus PRO)</span>
                             )}
                           </div>
                         )}
