@@ -218,6 +218,7 @@ model DigitalProduct {
   fileUrl     String?
   language    String?         @default("Indonesia")
   formatType  String?         @default("PDF / Digital")
+  author      String?         @default("Admin")
   isProOnly   Boolean         @default(false)
   accessLevel String          @default("FREE")
   isDownloadable Boolean      @default(false)

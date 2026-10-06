@@ -258,6 +258,11 @@ export default function ReadEbookClient({ slug }: { slug: string }) {
                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Informasi Buku</h3>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm">
                    <div className="grid grid-cols-3 gap-2">
+                     <span className="text-gray-500 font-medium col-span-1">Penulis</span>
+                     <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2"><span>:</span> {ebook.author || "Admin"}</span>
+                   </div>
+                   
+                   <div className="grid grid-cols-3 gap-2">
                      <span className="text-gray-500 font-medium col-span-1">Bahasa</span>
                      <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2"><span>:</span> {ebook.language || "Indonesia"}</span>
                    </div>

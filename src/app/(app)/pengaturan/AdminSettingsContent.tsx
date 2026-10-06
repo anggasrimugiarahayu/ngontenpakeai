@@ -611,9 +611,16 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 coverUrl2: uploadedUrls["coverUrl2Input"] || formData.get("coverUrl2"),
                 coverUrl3: uploadedUrls["coverUrl3Input"] || formData.get("coverUrl3"),
                 fileUrl: formData.get("fileUrl"),
+                language: formData.get("language") as string,
+                formatType: formData.get("formatType") as string,
+                author: formData.get("author") as string,
                 accessLevel: formData.get("accessLevel") as string,
                 language: formData.get("language") as string,
                 formatType: formData.get("formatType") as string,
+                author: formData.get("author") as string,
+                language: formData.get("language") as string,
+                formatType: formData.get("formatType") as string,
+                author: formData.get("author") as string,
                 isProOnly: formData.get("accessLevel") === "PRO" || formData.get("accessLevel") === "PREMIUM",
                 price: formData.get("price") ? parseInt(formData.get("price") as string) : 0,
                 isDownloadable: formData.get("isDownloadable") === "on",
@@ -683,7 +690,11 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
 
               
               
-              <div className="grid grid-cols-2 gap-4 mt-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Penulis</label>
+                  <input name="author" defaultValue="Admin" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bahasa</label>
                   <input name="language" defaultValue="Indonesia" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
@@ -827,6 +838,9 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 coverUrl2: uploadedUrls["editCoverUrl2Input"] || formData.get("coverUrl2"),
                 coverUrl3: uploadedUrls["editCoverUrl3Input"] || formData.get("coverUrl3"),
                 fileUrl: formData.get("fileUrl"),
+                language: formData.get("language") as string,
+                formatType: formData.get("formatType") as string,
+                author: formData.get("author") as string,
                 accessLevel: formData.get("accessLevel") as string,
                 isProOnly: formData.get("accessLevel") === "PRO" || formData.get("accessLevel") === "PREMIUM",
                 price: formData.get("price") ? parseInt(formData.get("price") as string) : 0,
@@ -894,7 +908,11 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
 
               
               
-              <div className="grid grid-cols-2 gap-4 mt-2">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-2">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Penulis</label>
+                  <input name="author" defaultValue={editingProduct.author || 'Admin'} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Bahasa</label>
                   <input name="language" defaultValue={editingProduct.language || 'Indonesia'} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
