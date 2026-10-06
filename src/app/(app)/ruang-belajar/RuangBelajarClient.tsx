@@ -86,7 +86,7 @@ export default function RuangBelajarClient() {
                           <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                           <span>{averageRating === "0.0" ? "0" : averageRating}</span>
                           <span className="text-gray-400 font-normal ml-0.5">
-                            ({reviewCount > 0 ? `${reviewCount} ulasan` : "Belum ada ulasan"})
+                            ({reviewCount} ulasan)
                           </span>
                           <span className="text-gray-300 dark:text-gray-600 mx-1">•</span>
                           <span className="text-gray-500 font-medium">
