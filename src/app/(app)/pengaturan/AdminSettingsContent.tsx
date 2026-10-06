@@ -638,12 +638,11 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 </div>
               </div>
 
-              <div className="mt-4 space-y-1.5">
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Jumlah Halaman</label>
                   <input name="pageCount" type="number" placeholder="Contoh: 120" defaultValue={0} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+                </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kategori</label>
                   <select name="categoryId" required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all appearance-none">
@@ -658,19 +657,19 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                   <div className="grid grid-cols-3 gap-2">
                     <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative">
                       <span id="label-coverUrlInput" className="text-[10px] font-bold text-gray-400 block mb-1">1. COVER UTAMA</span>
-                      <img id="preview-coverUrlInput" src={undefined} className="hidden w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300" />
+                      <img id="preview-coverUrlInput" src={uploadedUrls["coverUrlInput"] || undefined} className={`${uploadedUrls["coverUrlInput"] ? "" : "hidden"} w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300`} />
                       <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrlInput")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
                       <input type="hidden" name="coverUrl" id="coverUrlInput" />
                     </div>
                     <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative">
                       <span id="label-coverUrl2Input" className="text-[10px] font-bold text-gray-400 block mb-1">2. PREVIEW 1</span>
-                      <img id="preview-coverUrl2Input" src={undefined} className="hidden w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300" />
+                      <img id="preview-coverUrl2Input" src={uploadedUrls["coverUrl2Input"] || undefined} className={`${uploadedUrls["coverUrl2Input"] ? "" : "hidden"} w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300`} />
                       <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrl2Input")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
                       <input type="hidden" name="coverUrl2" id="coverUrl2Input" />
                     </div>
                     <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative">
                       <span id="label-coverUrl3Input" className="text-[10px] font-bold text-gray-400 block mb-1">3. PREVIEW 2</span>
-                      <img id="preview-coverUrl3Input" src={undefined} className="hidden w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300" />
+                      <img id="preview-coverUrl3Input" src={uploadedUrls["coverUrl3Input"] || undefined} className={`${uploadedUrls["coverUrl3Input"] ? "" : "hidden"} w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300`} />
                       <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrl3Input")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
                       <input type="hidden" name="coverUrl3" id="coverUrl3Input" />
                     </div>
@@ -871,12 +870,11 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 </div>
               </div>
 
-              <div className="mt-4 space-y-1.5">
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Jumlah Halaman</label>
                   <input name="pageCount" type="number" placeholder="Contoh: 120" defaultValue={editingProduct.pageCount || 0} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
+                </div>
                 <div className="space-y-1.5">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kategori</label>
                   <select name="categoryId" defaultValue={editingProduct.categoryId} required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all appearance-none">
@@ -890,19 +888,19 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                   <div className="grid grid-cols-3 gap-2">
                     <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative">
                       <span id="label-editCoverUrlInput" className="text-[10px] font-bold text-gray-400 block mb-1">1. COVER UTAMA</span>
-                      <img id="preview-editCoverUrlInput" src={editingProduct.coverUrl || undefined} className={`w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300 ${editingProduct.coverUrl ? '' : 'hidden'}`} />
+                      <img id="preview-editCoverUrlInput" src={uploadedUrls["editCoverUrlInput"] || editingProduct.coverUrl || undefined} className={`w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300 ${uploadedUrls["editCoverUrlInput"] || editingProduct.coverUrl ? "" : "hidden"}`} />
                       <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrlInput")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
                       <input type="hidden" name="coverUrl" id="editCoverUrlInput" defaultValue={editingProduct.coverUrl || ''} />
                     </div>
                     <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative">
                       <span id="label-editCoverUrl2Input" className="text-[10px] font-bold text-gray-400 block mb-1">2. PREVIEW 1</span>
-                      <img id="preview-editCoverUrl2Input" src={editingProduct.coverUrl2 || undefined} className={`w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300 ${editingProduct.coverUrl2 ? '' : 'hidden'}`} />
+                      <img id="preview-editCoverUrl2Input" src={uploadedUrls["editCoverUrl2Input"] || editingProduct.coverUrl2 || undefined} className={`w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300 ${uploadedUrls["editCoverUrl2Input"] || editingProduct.coverUrl2 ? "" : "hidden"}`} />
                       <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrl2Input")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
                       <input type="hidden" name="coverUrl2" id="editCoverUrl2Input" defaultValue={editingProduct.coverUrl2 || ''} />
                     </div>
                     <div className="space-y-1 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative">
                       <span id="label-editCoverUrl3Input" className="text-[10px] font-bold text-gray-400 block mb-1">3. PREVIEW 2</span>
-                      <img id="preview-editCoverUrl3Input" src={editingProduct.coverUrl3 || undefined} className={`w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300 ${editingProduct.coverUrl3 ? '' : 'hidden'}`} />
+                      <img id="preview-editCoverUrl3Input" src={uploadedUrls["editCoverUrl3Input"] || editingProduct.coverUrl3 || undefined} className={`w-8 h-10 object-cover absolute top-2 right-2 rounded shadow opacity-50 transition-all duration-300 ${uploadedUrls["editCoverUrl3Input"] || editingProduct.coverUrl3 ? "" : "hidden"}`} />
                       <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrl3Input")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
                       <input type="hidden" name="coverUrl3" id="editCoverUrl3Input" defaultValue={editingProduct.coverUrl3 || ''} />
                     </div>
