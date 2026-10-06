@@ -256,7 +256,7 @@ export default function CheckoutClient({
                     disabled={isPending}
                     className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-rn-accent/50 text-rn-accent text-sm font-bold hover:bg-rn-accent/5 dark:hover:bg-rn-accent/10 transition-colors disabled:opacity-50"
                   >
-                    + Tambah Add-on
+                    + Add on
                   </button>
                 </div>
               </div>
