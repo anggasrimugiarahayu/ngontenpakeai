@@ -62,7 +62,7 @@ export default function WhatsAppModal({
           <textarea 
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="w-full h-48 p-4 bg-gray-50 dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-gray-900 dark:text-white resize-none"
+            className="w-full h-48 p-4 bg-gray-50 dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white resize-none"
             placeholder="Ketik pesan Anda di sini..."
           />
           <p className="text-xs text-gray-500 mt-3">
@@ -72,7 +72,7 @@ export default function WhatsAppModal({
         <div className="p-6 border-t border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-[#1a1a1c]">
           <button 
             onClick={handleSend}
-            className="w-full py-3 bg-emerald-500 hover:bg-emerald-600 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
+            className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"
           >
             <Send className="w-5 h-5" />
             Kirim via WhatsApp

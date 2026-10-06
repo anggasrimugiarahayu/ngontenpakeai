@@ -50,10 +50,10 @@ export default function PrintModal({ isOpen, onClose, order }: { isOpen: boolean
           </div>
 
           <div className="mt-8 flex gap-3">
-            <button onClick={handlePrint} className="flex-1 py-3 border-2 border-emerald-500 text-emerald-500 font-bold rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-500/10 transition-colors text-sm">
+            <button onClick={handlePrint} className="flex-1 py-3 border-2 border-orange-500 text-orange-500 font-bold rounded-lg hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors text-sm">
               Export as PDF
             </button>
-            <button onClick={handlePrint} className="flex-1 py-3 bg-emerald-500 text-white font-bold rounded-lg hover:bg-emerald-600 transition-colors text-sm shadow-md shadow-emerald-500/20">
+            <button onClick={handlePrint} className="flex-1 py-3 bg-orange-500 text-white font-bold rounded-lg hover:bg-orange-600 transition-colors text-sm shadow-md shadow-orange-500/20">
               Print Now
             </button>
           </div>
@@ -80,7 +80,7 @@ function Toggle({ label, checked, onChange }: { label: string, checked: boolean,
     <div className="flex justify-between items-center gap-4 cursor-pointer" onClick={() => onChange(!checked)}>
       <span className="text-sm font-bold text-gray-700 dark:text-gray-200 select-none">{label}</span>
       <button 
-        className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-1 shrink-0 ${checked ? 'bg-emerald-500' : 'bg-gray-200 dark:bg-gray-700'}`}
+        className={`w-11 h-6 rounded-full transition-colors relative flex items-center px-1 shrink-0 ${checked ? 'bg-orange-500' : 'bg-gray-200 dark:bg-gray-700'}`}
       >
         <div className={`w-4 h-4 bg-white rounded-full transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
       </button>

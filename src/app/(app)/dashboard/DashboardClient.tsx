@@ -205,7 +205,7 @@ export default function DashboardClient({ user }: { user: any }) {
             <h3 className="text-lg font-bold text-gray-900 dark:text-white hidden print:block">Invoice</h3>
             <button 
               onClick={() => setIsPrintModalOpen(true)}
-              className="print:hidden flex items-center gap-2 px-4 py-1.5 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-lg font-bold transition-colors text-xs tracking-wide">
+              className="print:hidden flex items-center gap-2 px-4 py-1.5 border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white rounded-lg font-bold transition-colors text-xs tracking-wide">
               <Printer className="w-4 h-4" />
               PRINT
             </button>
@@ -305,7 +305,7 @@ export default function DashboardClient({ user }: { user: any }) {
               <div className="space-y-1.5 text-sm text-gray-800 dark:text-gray-300">
                 <p>{order.user?.name || 'Unknown User'}</p>
                 <p>{order.user?.email || '-'}</p>
-                <a href={`https://wa.me/${(order.user?.phone || '085156339329').replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noopener noreferrer" className="inline-block text-emerald-500 font-medium hover:underline mt-1">{order.user?.phone || '085156339329'}</a>
+                <a href={`https://wa.me/${(order.user?.phone || '085156339329').replace(/\D/g, '').replace(/^0/, '62')}`} target="_blank" rel="noopener noreferrer" className="inline-block text-orange-500 font-medium hover:underline mt-1">{order.user?.phone || '085156339329'}</a>
               </div>
             </div>
 
@@ -316,8 +316,8 @@ export default function DashboardClient({ user }: { user: any }) {
               <div className="relative pl-6 space-y-6 before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700">
                 
                 <div className="relative flex justify-between items-center text-sm">
-                  <div className="absolute left-[-29px] w-3 h-3 bg-emerald-500 rounded-full border-2 border-white dark:border-[#1a1a1c] z-10"></div>
-                  <span className="font-medium text-emerald-500">Opened</span>
+                  <div className="absolute left-[-29px] w-3 h-3 bg-orange-500 rounded-full border-2 border-white dark:border-[#1a1a1c] z-10"></div>
+                  <span className="font-medium text-orange-500">Opened</span>
                   <span className="text-gray-400 text-xs">{format(new Date(orderDate.getTime() + 4 * 60000), 'dd MMM - HH:mm')}</span>
                 </div>
                 
@@ -353,7 +353,7 @@ export default function DashboardClient({ user }: { user: any }) {
                   setWaOrder(order);
                   setIsWaModalOpen(true);
                 }}
-                className="w-full py-3 mb-6 border-2 border-emerald-500 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl font-bold transition-colors">
+                className="w-full py-3 mb-6 border-2 border-orange-500 text-orange-500 hover:bg-orange-500 hover:text-white rounded-xl font-bold transition-colors">
                 Send Follow Up Text via WhatsApp
               </button>
               
@@ -467,7 +467,7 @@ export default function DashboardClient({ user }: { user: any }) {
                               <p className="text-[10px] text-gray-500 font-medium mb-0.5">Total Transaction</p>
                               <p className="font-black text-gray-900 dark:text-white text-sm">{formatIDR(order.amount)}</p>
                             </div>
-                            <button className="px-5 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors">
+                            <button className="px-5 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors">
                               Detail
                             </button>
                           </div>
@@ -991,7 +991,7 @@ export default function DashboardClient({ user }: { user: any }) {
                  <input 
                    type="text" 
                    placeholder="Search..." 
-                   className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/50"
+                   className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50"
                  />
                </div>
             </div>
@@ -1037,7 +1037,7 @@ export default function DashboardClient({ user }: { user: any }) {
                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{product.conversion}%</span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                         <button className="px-4 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-emerald-500/20">
+                         <button className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-orange-500/20">
                            View
                          </button>
                       </td>
