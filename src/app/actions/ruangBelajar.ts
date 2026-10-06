@@ -18,7 +18,7 @@ export async function getRuangBelajarDataAction() {
     prisma.digitalProduct.findMany({
       where: { isActive: true },
       take: 100, // Safe limit for production
-      include: { category: true, reviews: { select: { rating: true } } },
+      include: { category: true, reviews: { select: { rating: true } }, _count: { select: { owners: true } } },
       orderBy: { createdAt: 'desc' }
     }).catch(() => [])
   ]);

@@ -49,6 +49,7 @@ export default function RuangBelajarClient() {
               if (isOwned) isLocked = false;
 
               const reviewCount = ebook.reviews?.length || 0;
+              const buyerCount = ebook._count?.owners || 0;
               const averageRating = reviewCount > 0 
                 ? (ebook.reviews.reduce((acc: number, rev: any) => acc + rev.rating, 0) / reviewCount).toFixed(1)
                 : "0.0";
@@ -58,10 +59,10 @@ export default function RuangBelajarClient() {
                   href={`/ruang-belajar/${ebook.slug}`} 
                   onMouseEnter={() => preload(["ebookDetail", ebook.slug], () => getEbookDetailAction(ebook.slug))}
                   onTouchStart={() => preload(["ebookDetail", ebook.slug], () => getEbookDetailAction(ebook.slug))} key={ebook.id} className="group flex">
-                  <div className="flex flex-col sm:flex-row w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-2xl overflow-hidden relative p-4 gap-4">
+                  <div className="flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-[16px] sm:rounded-[20px] overflow-hidden relative p-3 sm:p-4 gap-3 sm:gap-4">
                     
-                    <div className="w-full sm:w-[120px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-xl shadow-sm">
-                      <div className="aspect-[3/4] relative">
+                    <div className="w-[100px] sm:w-[120px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
+                      <div className="aspect-[3/4] relative flex items-center justify-center">
                         {ebook.coverUrl ? (
                           <>
                             <img src={ebook.coverUrl} alt={ebook.title} className="absolute inset-0 w-full h-full object-cover z-0" />
@@ -86,6 +87,10 @@ export default function RuangBelajarClient() {
                           <span>{averageRating === "0.0" ? "0" : averageRating}</span>
                           <span className="text-gray-400 font-normal ml-0.5">
                             ({reviewCount > 0 ? `${reviewCount} ulasan` : "Belum ada ulasan"})
+                          </span>
+                          <span className="text-gray-300 dark:text-gray-600 mx-1">•</span>
+                          <span className="text-gray-500 font-medium">
+                            {buyerCount} pembeli
                           </span>
                         </div>
 
@@ -120,7 +125,7 @@ export default function RuangBelajarClient() {
                         ) : (
                           <div className="flex flex-col">
                             {ebook.originalPrice && ebook.originalPrice > ebook.price ? (
-                              <span className="text-[10px] text-gray-400 dark:text-gray-500 line-through leading-none mb-0.5">
+                              <span className="text-[11px] sm:text-[12px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none mb-1">
                                 Rp {ebook.originalPrice.toLocaleString('id-ID')}
                               </span>
                             ) : null}
@@ -128,7 +133,7 @@ export default function RuangBelajarClient() {
                               Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
                             </span>
                             {isProEbook && (
-                               <span className="text-[8px] text-rn-accent font-bold mt-1 uppercase tracking-wider">Atau Klaim Rp 0 dgn PRO</span>
+                               <span className="text-[9px] sm:text-[10px] text-rn-accent font-bold mt-1.5">(Atau Klaim Rp 0 dgn PRO)</span>
                             )}
                           </div>
                         )}
