@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { mutate } from "swr";
 import { Plus, Trash2, Edit, BookOpen, Tag, X, Star, Ticket } from "lucide-react";
 import { 
   createAiModel, 
@@ -621,6 +622,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 pageCount: formData.get("pageCount") ? parseInt(formData.get("pageCount") as string) : 0,
                 originalPrice: formData.get("originalPrice") ? parseInt(formData.get("originalPrice") as string) : 0
               });
+              mutate("pengaturan");
               setLoading(false);
               setShowAddProduct(false);
               setUploadedUrls({});
@@ -854,6 +856,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 pageCount: formData.get("pageCount") ? parseInt(formData.get("pageCount") as string) : 0,
                 originalPrice: formData.get("originalPrice") ? parseInt(formData.get("originalPrice") as string) : 0
               });
+              mutate("pengaturan");
               setLoading(false);
               setEditingProduct(null);
               setUploadedUrls({});
