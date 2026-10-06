@@ -9,23 +9,25 @@ export async function getRuangBelajarDataAction() {
   let ownedProductIds: string[] = [];
   let isAdmin = false;
 
-  if (session?.user?.id) {
-    const userObj = await prisma.user.findUnique({ where: { id: session.user.id } });
-    isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
-    isPro = userObj?.role === "PRO" || isAdmin;
-    
-    const userProducts = await prisma.userOwnedProduct.findMany({
+  const [userObj, userProducts, products] = await Promise.all([
+    session?.user?.id ? prisma.user.findUnique({ where: { id: session.user.id } }).catch(() => null) : Promise.resolve(null),
+    session?.user?.id ? prisma.userOwnedProduct.findMany({
       where: { userId: session.user.id },
       select: { digitalProductId: true }
-    });
+    }).catch(() => []) : Promise.resolve([]),
+    prisma.digitalProduct.findMany({
+      where: { isActive: true },
+      take: 100, // Safe limit for production
+      include: { category: true, reviews: { select: { rating: true } } },
+      orderBy: { createdAt: 'desc' }
+    }).catch(() => [])
+  ]);
+
+  if (session?.user?.id && userObj) {
+    isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    isPro = userObj.role === "PRO" || isAdmin;
     ownedProductIds = userProducts.map(up => up.digitalProductId);
   }
-
-  const products = await prisma.digitalProduct.findMany({
-    where: { isActive: true },
-    include: { category: true, reviews: { select: { rating: true } } },
-    orderBy: { createdAt: 'desc' }
-  });
 
   return {
     isPro,
@@ -37,33 +39,35 @@ export async function getRuangBelajarDataAction() {
 
 export async function getEbookDetailAction(slug: string) {
   const session = await auth();
-  if (!session?.user) return { notFound: true, reason: 'unauthorized' };
-
+  if (!session?.user?.id) return { notFound: true, reason: 'unauthorized' };
   const userId = session.user.id;
-  const userObj = await prisma.user.findUnique({ where: { id: userId } });
-  const isAdmin = session?.user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
-  const isPro = userObj?.role === "PRO" || isAdmin;
 
-  const ebook = await prisma.digitalProduct.findFirst({
-    where: { slug: slug, isActive: true },
-    include: { 
-      category: true,
-      favorites: { where: { userId } },
-      reviews: { 
-        include: { user: { select: { name: true, image: true } } },
-        orderBy: { createdAt: 'desc' }
+  const [userObj, ebook, userProducts] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId } }).catch(() => null),
+    prisma.digitalProduct.findFirst({
+      where: { slug: slug, isActive: true },
+      include: { 
+        category: true,
+        favorites: { where: { userId } },
+        reviews: { 
+          take: 20, // Limit reviews so server doesn't crash on popular ebooks
+          include: { user: { select: { name: true, image: true } } },
+          orderBy: { createdAt: 'desc' }
+        }
       }
-    }
-  });
+    }).catch(() => null),
+    prisma.userOwnedProduct.findMany({
+      where: { userId: userId },
+      select: { digitalProductId: true }
+    }).catch(() => [])
+  ]);
 
   if (!ebook) {
     return { notFound: true, reason: 'not-found' };
   }
 
-  const userProducts = await prisma.userOwnedProduct.findMany({
-    where: { userId: session.user.id },
-    select: { digitalProductId: true }
-  });
+  const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const isPro = userObj?.role === "PRO" || isAdmin;
   const ownedProductIds = userProducts.map(up => up.digitalProductId);
 
   return {
