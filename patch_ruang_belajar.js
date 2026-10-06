@@ -1,87 +1,23 @@
 const fs = require('fs');
-const path = './src/app/actions/ruangBelajar.ts';
+const path = './src/app/(app)/ruang-belajar/RuangBelajarClient.tsx';
+let content = fs.readFileSync(path, 'utf8');
 
-const newContent = `"use server";
-import { auth } from "@/auth";
-import prisma from "@/lib/prisma";
+const target = `<div className="flex flex-col">
+                            <span className="text-[17px] font-black text-gray-900 dark:text-white leading-none">
+                              Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
+                            </span>`;
 
-export async function getRuangBelajarDataAction() {
-  const session = await auth();
-  
-  let isPro = false;
-  let ownedProductIds: string[] = [];
-  let isAdmin = false;
+const replacement = `<div className="flex flex-col">
+                            {ebook.originalPrice && ebook.originalPrice > ebook.price ? (
+                              <span className="text-[10px] text-gray-400 dark:text-gray-500 line-through leading-none mb-0.5">
+                                Rp {ebook.originalPrice.toLocaleString('id-ID')}
+                              </span>
+                            ) : null}
+                            <span className="text-[17px] font-black text-gray-900 dark:text-white leading-none">
+                              Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
+                            </span>`;
 
-  const [userObj, userProducts, products] = await Promise.all([
-    session?.user?.id ? prisma.user.findUnique({ where: { id: session.user.id } }).catch(() => null) : Promise.resolve(null),
-    session?.user?.id ? prisma.userOwnedProduct.findMany({
-      where: { userId: session.user.id },
-      select: { digitalProductId: true }
-    }).catch(() => []) : Promise.resolve([]),
-    prisma.digitalProduct.findMany({
-      where: { isActive: true },
-      take: 100, // Safe limit for production
-      include: { category: true, reviews: { select: { rating: true } } },
-      orderBy: { createdAt: 'desc' }
-    }).catch(() => [])
-  ]);
+content = content.replace(target, replacement);
 
-  if (session?.user?.id && userObj) {
-    isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
-    isPro = userObj.role === "PRO" || isAdmin;
-    ownedProductIds = userProducts.map(up => up.digitalProductId);
-  }
-
-  return {
-    isPro,
-    isAdmin,
-    ownedProductIds,
-    products: JSON.parse(JSON.stringify(products))
-  };
-}
-
-export async function getEbookDetailAction(slug: string) {
-  const session = await auth();
-  if (!session?.user?.id) return { notFound: true, reason: 'unauthorized' };
-  const userId = session.user.id;
-
-  const [userObj, ebook, userProducts] = await Promise.all([
-    prisma.user.findUnique({ where: { id: userId } }).catch(() => null),
-    prisma.digitalProduct.findFirst({
-      where: { slug: slug, isActive: true },
-      include: { 
-        category: true,
-        favorites: { where: { userId } },
-        reviews: { 
-          take: 20, // Limit reviews so server doesn't crash on popular ebooks
-          include: { user: { select: { name: true, image: true } } },
-          orderBy: { createdAt: 'desc' }
-        }
-      }
-    }).catch(() => null),
-    prisma.userOwnedProduct.findMany({
-      where: { userId: userId },
-      select: { digitalProductId: true }
-    }).catch(() => [])
-  ]);
-
-  if (!ebook) {
-    return { notFound: true, reason: 'not-found' };
-  }
-
-  const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
-  const isPro = userObj?.role === "PRO" || isAdmin;
-  const ownedProductIds = userProducts.map(up => up.digitalProductId);
-
-  return {
-    ebook: JSON.parse(JSON.stringify(ebook)),
-    isPro,
-    isAdmin,
-    ownedProductIds,
-    userId
-  };
-}
-`;
-
-fs.writeFileSync(path, newContent);
-console.log("Patched ruangBelajar.ts for optimization!");
+fs.writeFileSync(path, content);
+console.log("RuangBelajarClient patched with Harga Coret");

@@ -602,28 +602,24 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
             </div>
             <form action={async (formData) => {
               setLoading(true);
-              await createProduct({
-                title: formData.get("title"),
-                slug: formData.get("slug"),
-                categoryId: formData.get("categoryId"),
-                description: formData.get("description"),
-                coverUrl: uploadedUrls["coverUrlInput"] || formData.get("coverUrl"),
-                coverUrl2: uploadedUrls["coverUrl2Input"] || formData.get("coverUrl2"),
-                coverUrl3: uploadedUrls["coverUrl3Input"] || formData.get("coverUrl3"),
-                fileUrl: formData.get("fileUrl"),
-                language: formData.get("language") as string,
-                formatType: formData.get("formatType") as string,
-                author: formData.get("author") as string,
+                            await createProduct({
+                title: formData.get("title") as string,
+                slug: formData.get("slug") as string,
+                categoryId: formData.get("categoryId") as string,
+                description: formData.get("description") as string,
+                coverUrl: uploadedUrls["coverUrlInput"] || formData.get("coverUrl") as string,
+                coverUrl2: uploadedUrls["coverUrl2Input"] || formData.get("coverUrl2") as string,
+                coverUrl3: uploadedUrls["coverUrl3Input"] || formData.get("coverUrl3") as string,
+                fileUrl: formData.get("fileUrl") as string,
                 accessLevel: formData.get("accessLevel") as string,
-                language: formData.get("language") as string,
-                formatType: formData.get("formatType") as string,
-                author: formData.get("author") as string,
-                language: formData.get("language") as string,
-                formatType: formData.get("formatType") as string,
-                author: formData.get("author") as string,
                 isProOnly: formData.get("accessLevel") === "PRO" || formData.get("accessLevel") === "PREMIUM",
                 price: formData.get("price") ? parseInt(formData.get("price") as string) : 0,
                 isDownloadable: formData.get("isDownloadable") === "on",
+                language: formData.get("language") as string,
+                formatType: formData.get("formatType") as string,
+                author: formData.get("author") as string,
+                pageCount: formData.get("pageCount") ? parseInt(formData.get("pageCount") as string) : 0,
+                originalPrice: formData.get("originalPrice") ? parseInt(formData.get("originalPrice") as string) : 0
               });
               setLoading(false);
               setShowAddProduct(false);
@@ -640,6 +636,11 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Slug URL</label>
                   <input name="slug" placeholder="template-carousel" required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
                 </div>
+              </div>
+
+              <div className="mt-4 space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Jumlah Halaman</label>
+                  <input name="pageCount" type="number" placeholder="Contoh: 120" defaultValue={0} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -715,9 +716,15 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               </div>
               
               {(addAccessLevel === "PREMIUM" || addAccessLevel === "PRO") && (
-                <div className="mt-4">
-                  <label className="block text-xs font-bold text-gray-500 mb-1">HARGA E-BOOK (Rp)</label>
-                  <input name="price" type="number" min="0" placeholder="Contoh: 49000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" required />
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">HARGA JUAL (Rp)</label>
+                    <input name="price" type="number" min="0" placeholder="Contoh: 49000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" required />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">HARGA CORET (Rp)</label>
+                    <input name="originalPrice" type="number" min="0" placeholder="Contoh: 99000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                  </div>
                 </div>
               )}
 
@@ -829,22 +836,24 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
             </div>
             <form action={async (formData) => {
               setLoading(true);
-              await updateProduct(editingProduct.id, {
-                title: formData.get("title"),
-                slug: formData.get("slug"),
-                categoryId: formData.get("categoryId"),
-                description: formData.get("description"),
-                coverUrl: uploadedUrls["editCoverUrlInput"] || formData.get("coverUrl"),
-                coverUrl2: uploadedUrls["editCoverUrl2Input"] || formData.get("coverUrl2"),
-                coverUrl3: uploadedUrls["editCoverUrl3Input"] || formData.get("coverUrl3"),
-                fileUrl: formData.get("fileUrl"),
-                language: formData.get("language") as string,
-                formatType: formData.get("formatType") as string,
-                author: formData.get("author") as string,
+                            await updateProduct(editingProduct.id, {
+                title: formData.get("title") as string,
+                slug: formData.get("slug") as string,
+                categoryId: formData.get("categoryId") as string,
+                description: formData.get("description") as string,
+                coverUrl: uploadedUrls["editCoverUrlInput"] || formData.get("coverUrl") as string,
+                coverUrl2: uploadedUrls["editCoverUrl2Input"] || formData.get("coverUrl2") as string,
+                coverUrl3: uploadedUrls["editCoverUrl3Input"] || formData.get("coverUrl3") as string,
+                fileUrl: formData.get("fileUrl") as string,
                 accessLevel: formData.get("accessLevel") as string,
                 isProOnly: formData.get("accessLevel") === "PRO" || formData.get("accessLevel") === "PREMIUM",
                 price: formData.get("price") ? parseInt(formData.get("price") as string) : 0,
                 isDownloadable: formData.get("isDownloadable") === "on",
+                language: formData.get("language") as string,
+                formatType: formData.get("formatType") as string,
+                author: formData.get("author") as string,
+                pageCount: formData.get("pageCount") ? parseInt(formData.get("pageCount") as string) : 0,
+                originalPrice: formData.get("originalPrice") ? parseInt(formData.get("originalPrice") as string) : 0
               });
               setLoading(false);
               setEditingProduct(null);
@@ -860,6 +869,11 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Slug URL</label>
                   <input name="slug" defaultValue={editingProduct.slug} required className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
                 </div>
+              </div>
+
+              <div className="mt-4 space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Jumlah Halaman</label>
+                  <input name="pageCount" type="number" placeholder="Contoh: 120" defaultValue={editingProduct.pageCount || 0} className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -933,9 +947,15 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               </div>
               
               {(editingProduct.accessLevel === "PREMIUM" || editingProduct.accessLevel === "PRO") && (
-                <div className="mt-4">
-                  <label className="block text-xs font-bold text-gray-500 mb-1">HARGA E-BOOK (Rp)</label>
-                  <input name="price" type="number" min="0" defaultValue={editingProduct.price || 0} placeholder="Contoh: 49000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" required />
+                <div className="grid grid-cols-2 gap-4 mt-4">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">HARGA JUAL (Rp)</label>
+                    <input name="price" type="number" min="0" defaultValue={editingProduct.price || 0} placeholder="Contoh: 49000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" required />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-500 mb-1">HARGA CORET (Rp)</label>
+                    <input name="originalPrice" type="number" min="0" defaultValue={editingProduct.originalPrice || ""} placeholder="Contoh: 99000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                  </div>
                 </div>
               )}
 

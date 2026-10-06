@@ -210,6 +210,8 @@ model DigitalProduct {
   categoryId  String          @map("category_id")
   title       String
   price       Int             @default(0)
+  originalPrice Int?          @default(0)
+  pageCount   Int?            @default(0)
   description String?
   slug        String          @unique
   coverUrl    String?
