@@ -78,26 +78,32 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
   const isProduction = process.env.NODE_ENV === "production" && process.env.MIDTRANS_IS_PRODUCTION === "true";
   const clientKey = isProduction ? process.env.MIDTRANS_CLIENT_KEY : process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "SB-Mid-client-rIaAV5Qv-Ue28a9u";
 
+  // OPTIMIZATION: Run Midtrans API check and bundled addons fetch concurrently (Promise.all)
   let existingPendingOrder = null;
-  if (pendingDbOrder && pendingDbOrder.midtransId) {
-    const verifyRes = await verifyPayment(pendingDbOrder.id);
-    if (verifyRes.success && verifyRes.status === "PENDING" && verifyRes.expiryTime) {
-      existingPendingOrder = {
-        token: pendingDbOrder.midtransId,
-        orderId: pendingDbOrder.id,
-        expiryTime: verifyRes.expiryTime,
-        paymentMethodKey: pendingDbOrder.paymentMethod || "QRIS"
-      };
-    }
-  }
+  
+  const midtransPromise = (pendingDbOrder && pendingDbOrder.midtransId) 
+    ? verifyPayment(pendingDbOrder.id)
+    : Promise.resolve(null);
 
-  // Fetch bundled addons (included)
-  let includedAddons: any[] = [];
-  if (type.startsWith("PRO_") && bundledIds && bundledIds.length > 0) {
-    includedAddons = await prisma.digitalProduct.findMany({
-      where: { id: { in: bundledIds } },
-      select: { id: true, title: true, coverUrl: true, price: true }
-    }).catch(() => []);
+  const includedAddonsPromise = (type.startsWith("PRO_") && bundledIds && bundledIds.length > 0)
+    ? prisma.digitalProduct.findMany({
+        where: { id: { in: bundledIds } },
+        select: { id: true, title: true, coverUrl: true, price: true }
+      }).catch(() => [])
+    : Promise.resolve([]);
+
+  const [verifyRes, includedAddons] = await Promise.all([
+    midtransPromise,
+    includedAddonsPromise
+  ]);
+
+  if (verifyRes && verifyRes.success && verifyRes.status === "PENDING" && verifyRes.expiryTime && pendingDbOrder) {
+    existingPendingOrder = {
+      token: pendingDbOrder.midtransId,
+      orderId: pendingDbOrder.id,
+      expiryTime: verifyRes.expiryTime,
+      paymentMethodKey: pendingDbOrder.paymentMethod || "QRIS"
+    };
   }
 
   return {

@@ -9,6 +9,8 @@ import { trackProductViewAction, trackProductClickAction } from "@/app/actions/a
 import { useRouter } from "next/navigation";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
+import { preload } from "swr";
+import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
 import { ArrowLeft, Lock, Crown, Star, BookOpen, Tag } from "lucide-react";
 import { claimFreeEbook } from "../actions";
 import { createCheckoutToken } from "@/app/actions/payment";
@@ -73,7 +75,7 @@ export default function ReadEbookClient({ slug }: { slug: string }) {
         {/* Header Toolbar */}
         <div className="flex-shrink-0 h-16 border-b border-gray-200 dark:border-white/10 bg-transparent px-4 md:px-8 flex items-center justify-between z-10">
           <div className="flex items-center gap-3 md:gap-4">
-            <Link href="/ruang-belajar" className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white shrink-0">
+            <Link prefetch={true} onMouseEnter={() => preload("ruangBelajar", getRuangBelajarDataAction)} onTouchStart={() => preload("ruangBelajar", getRuangBelajarDataAction)} href="/ruang-belajar" className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white shrink-0">
               <ArrowLeft size={20} />
             </Link>
             <div className="min-w-0">
@@ -110,7 +112,7 @@ export default function ReadEbookClient({ slug }: { slug: string }) {
     <div className="min-h-[calc(100vh-80px)]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
          {/* Navigation */}
-         <Link href="/ruang-belajar" className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors mb-8">
+         <Link prefetch={true} onMouseEnter={() => preload("ruangBelajar", getRuangBelajarDataAction)} onTouchStart={() => preload("ruangBelajar", getRuangBelajarDataAction)} href="/ruang-belajar" className="inline-flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors mb-8">
            <ArrowLeft size={16} />
            Kembali ke Katalog
          </Link>

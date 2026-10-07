@@ -7,6 +7,8 @@ import { validatePromoCodeAction } from "@/app/actions/checkout";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, ArrowLeft, ChevronRight, X, Lock, CreditCard, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { preload } from "swr";
+import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
 import { PAYMENT_METHODS, calculatePaymentFees, PaymentMethodKey } from "@/lib/payment-calc";
 
 interface CheckoutClientProps {
@@ -217,7 +219,7 @@ export default function CheckoutClient({
         </div>
         <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">Pembayaran Berhasil!</h2>
         <p className="text-gray-600 dark:text-gray-400 mb-8">Terima kasih, pembayaran Anda telah kami terima.</p>
-        <Link href="/ruang-belajar" className="block w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90">Lanjut ke Ruang Belajar</Link>
+        <Link prefetch={true} onMouseEnter={() => preload("ruangBelajar", getRuangBelajarDataAction)} onTouchStart={() => preload("ruangBelajar", getRuangBelajarDataAction)} href="/ruang-belajar" className="block w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90">Lanjut ke Ruang Belajar</Link>
       </div>
     );
   }
