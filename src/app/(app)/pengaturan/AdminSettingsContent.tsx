@@ -523,7 +523,77 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               </button>
             </div>
             
-            <div className="overflow-y-auto flex-1 mb-4 space-y-3 custom-scrollbar pr-2 min-h-[150px]">
+            <div className="shrink-0 bg-white dark:bg-[#121214] mt-2 mb-2">
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Buat Voucher Baru</h4>
+              <div className="space-y-3">
+
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Kode Promo</label>
+                  <input type="text" placeholder="Kode Promo (ex: PROMO50)"  
+                  value={newVoucher.code} onChange={e => setNewVoucher({...newVoucher, code: e.target.value.replace(/\s/g, '').toUpperCase()})} 
+                   className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm uppercase focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent" />
+                </div>
+                <div className="flex gap-2">
+                  <div className="w-5/12 space-y-1.5">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Tipe Diskon</label>
+                    <select  
+                    value={newVoucher.discountType} onChange={e => setNewVoucher({...newVoucher, discountType: e.target.value})}
+                     className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent" 
+                  >
+                    <option value="PERCENTAGE">Persen (%)</option>
+                    <option value="NOMINAL">Nominal (Rp)</option>
+                  </select>
+                  </div>
+                  <div className="flex-1 space-y-1.5">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Nilai Diskon</label>
+                    <input type="number" placeholder="Nilai Diskon"  
+                    value={newVoucher.discountValue || ""} onChange={e => setNewVoucher({...newVoucher, discountValue: Number(e.target.value)})}
+                     className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent" />
+                  </div>
+                </div>
+                
+                {/* Target E-Book Dropdown */}
+                <div className="space-y-1.5">
+                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">E-Book Tujuan</label>
+                  <select 
+                  value={(newVoucher as any).digitalProductId || ""}
+                  onChange={e => setNewVoucher({...newVoucher, digitalProductId: e.target.value} as any)}
+                   className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent" 
+                >
+                  <option value="" disabled>-- Pilih E-Book Tujuan --</option>
+                  {products?.map((p: any) => (
+                    <option key={p.id} value={p.id}>{p.title}</option>
+                  ))}
+                </select>
+                </div>
+
+                <button 
+                  onClick={async () => {
+                    if (!newVoucher.code || !newVoucher.discountValue || !(newVoucher as any).digitalProductId) return alert("Lengkapi data dan pilih E-Book!");
+                    setLoading(true);
+                    await createVoucher({ 
+                      code: newVoucher.code.toUpperCase(), 
+                      discountType: newVoucher.discountType,
+                      discountValue: newVoucher.discountValue,
+                      digitalProductId: (newVoucher as any).digitalProductId 
+                    });
+                    setNewVoucher({ code: "", discountType: "PERCENTAGE", discountValue: 0, digitalProductId: "" } as any);
+                    alert('Voucher dibuat! Harap refresh halaman.');
+                    setLoading(false);
+                  }}
+                  disabled={loading}
+                  className="w-full bg-rn-accent text-white font-bold py-2.5 rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity"
+                >
+                  Simpan Voucher Baru
+                </button>
+              
+              </div>
+            </div>
+
+            <div className="pt-4 mt-2 border-t border-gray-200 dark:border-white/10 flex flex-col flex-1 min-h-[150px]">
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">DAFTAR VOUCHER TERSIMPAN</h4>
+              <div className="overflow-y-auto space-y-3 custom-scrollbar pr-2 flex-1">
+
               {allVouchers.length > 0 ? allVouchers.map((v: any) => (
                 <div key={v.id} className="flex justify-between items-center p-3 rounded-xl border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-black/20">
                   <div className="flex-1 min-w-0 pr-3">
@@ -557,62 +627,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                   <p className="text-sm font-medium">Belum ada voucher aktif.</p>
                 </div>
               )}
-            </div>
-
-            <div className="pt-4 border-t border-gray-200 dark:border-white/10 shrink-0 bg-white dark:bg-[#121214]">
-              <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">Buat Voucher Baru</h4>
-              <div className="space-y-3">
-                <input 
-                  type="text" placeholder="Kode Promo (ex: PROMO50)" 
-                  value={newVoucher.code} onChange={e => setNewVoucher({...newVoucher, code: e.target.value.replace(/\s/g, '').toUpperCase()})} 
-                  className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm uppercase focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
-                />
-                <div className="flex gap-2">
-                  <select 
-                    value={newVoucher.discountType} onChange={e => setNewVoucher({...newVoucher, discountType: e.target.value})}
-                    className="w-1/3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
-                  >
-                    <option value="PERCENTAGE">Persen (%)</option>
-                    <option value="NOMINAL">Nominal (Rp)</option>
-                  </select>
-                  <input 
-                    type="number" placeholder="Nilai Diskon" 
-                    value={newVoucher.discountValue || ""} onChange={e => setNewVoucher({...newVoucher, discountValue: Number(e.target.value)})}
-                    className="flex-1 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
-                  />
-                </div>
-                
-                {/* Target E-Book Dropdown */}
-                <select
-                  value={(newVoucher as any).digitalProductId || ""}
-                  onChange={e => setNewVoucher({...newVoucher, digitalProductId: e.target.value} as any)}
-                  className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
-                >
-                  <option value="" disabled>-- Pilih E-Book Tujuan --</option>
-                  {products?.map((p: any) => (
-                    <option key={p.id} value={p.id}>{p.title}</option>
-                  ))}
-                </select>
-
-                <button 
-                  onClick={async () => {
-                    if (!newVoucher.code || !newVoucher.discountValue || !(newVoucher as any).digitalProductId) return alert("Lengkapi data dan pilih E-Book!");
-                    setLoading(true);
-                    await createVoucher({ 
-                      code: newVoucher.code.toUpperCase(), 
-                      discountType: newVoucher.discountType,
-                      discountValue: newVoucher.discountValue,
-                      digitalProductId: (newVoucher as any).digitalProductId 
-                    });
-                    setNewVoucher({ code: "", discountType: "PERCENTAGE", discountValue: 0, digitalProductId: "" } as any);
-                    alert('Voucher dibuat! Harap refresh halaman.');
-                    setLoading(false);
-                  }}
-                  disabled={loading}
-                  className="w-full bg-rn-accent text-white font-bold py-2.5 rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity"
-                >
-                  Simpan Voucher Baru
-                </button>
+            
               </div>
             </div>
           </div>
