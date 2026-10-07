@@ -262,18 +262,7 @@ export default function CheckoutClient({
     "Kartu Kredit & Cicilan": ["CREDIT_CARD", "AKULAKU", "KREDIVO"]
   } as Record<string, PaymentMethodKey[]>;
 
-  if (paymentState === "success") {
-    return (
-      <div className="bg-white dark:bg-[#18181b] p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-white/10 max-w-md w-full mx-auto text-center mt-10">
-        <div className="w-20 h-20 bg-rn-accent/20 text-rn-accent rounded-full flex items-center justify-center mx-auto mb-6">
-          <CheckCircle2 className="w-10 h-10" />
-        </div>
-        <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">Pembayaran Berhasil!</h2>
-        <p className="text-gray-600 dark:text-gray-400 mb-8">Terima kasih, pembayaran Anda telah kami terima.</p>
-        <Link prefetch={true} onMouseEnter={() => preload("ruangBelajar", getRuangBelajarDataAction)} onTouchStart={() => preload("ruangBelajar", getRuangBelajarDataAction)} href="/ruang-belajar" className="block w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90">Lanjut ke Ruang Belajar</Link>
-      </div>
-    );
-  }
+
 
   if (paymentState === "verifying") {
     return (
@@ -665,6 +654,18 @@ export default function CheckoutClient({
                 );
               })}
             </div>
+          </div>
+        </div>
+      )}
+      {paymentState === "success" && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-[#18181b] p-8 rounded-3xl shadow-2xl border border-gray-200 dark:border-white/10 max-w-md w-full mx-auto text-center animate-in zoom-in-95 duration-300">
+            <div className="w-20 h-20 bg-green-50 text-green-500 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+              <CheckCircle2 className="w-10 h-10" />
+            </div>
+            <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">Pembayaran Berhasil!</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">Terima kasih, pembayaran Anda telah kami terima.</p>
+            <Link prefetch={true} onMouseEnter={() => preload("ruangBelajar", getRuangBelajarDataAction)} onTouchStart={() => preload("ruangBelajar", getRuangBelajarDataAction)} href="/ruang-belajar" className="block w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90">Lanjut ke Ruang Belajar</Link>
           </div>
         </div>
       )}
