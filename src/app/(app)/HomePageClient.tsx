@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { preload } from "swr";
 import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
+import { getCheckoutDetailsAction } from "@/app/actions/checkout";
 import { redirect } from "next/navigation";
 import { LayoutDashboard, UserCircle, Lightbulb, Camera, Calendar, BookOpen,
   Wrench,
@@ -374,7 +375,13 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
                     </ul>
                   </div>
 
-                  <Link prefetch={true} href={`/checkout?type=${pkgItem.type}`} className={`w-full mt-6 block text-center font-bold py-3 rounded-xl transition-all ${hasHighlight ? 'bg-rn-accent text-black font-black hover:bg-white shadow-[0_0_20px_rgba(208,226,6,0.2)]' : 'bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white'}`}>
+                  <Link 
+                    prefetch={true} 
+                    href={`/checkout?type=${pkgItem.type}`} 
+                    onMouseEnter={() => { if (isLoggedIn) preload(["checkout", pkgItem.type, undefined], () => getCheckoutDetailsAction(pkgItem.type, undefined)) }}
+                    onTouchStart={() => { if (isLoggedIn) preload(["checkout", pkgItem.type, undefined], () => getCheckoutDetailsAction(pkgItem.type, undefined)) }}
+                    className={`w-full mt-6 block text-center font-bold py-3 rounded-xl transition-all ${hasHighlight ? 'bg-rn-accent text-black font-black hover:bg-white shadow-[0_0_20px_rgba(208,226,6,0.2)]' : 'bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white'}`}
+                  >
                     {pkgData.name.includes("Basic") ? "Pilih Paket Basic" : pkgData.name.includes("Tools") ? "Pilih Sistem Tools" : "Pilih Paket Lengkap"}
                   </Link>
                 </div>
