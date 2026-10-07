@@ -38,6 +38,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
   if (!user) return { notAuthorized: true };
 
   let baseAmount = 0;
+  let bundledIds: string[] = [];
   let itemName = "";
   let itemDescription = "";
   let productImage = "";
@@ -53,6 +54,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
   } else if (type === "PRO_BASIC" || type === "PRO_TOOLS" || type === "PRO_LENGKAP") {
     const setting = await prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
     const pricingConfig = setting?.value ? JSON.parse(setting.value) : null;
+
     
     if (pricingConfig && pricingConfig[type]) {
       baseAmount = pricingConfig[type].price;
