@@ -237,7 +237,8 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     </button>
                   </div>
                 </div>
-              ))}
+              );
+            })}
             </div>
           </div>        </div>
       )}
