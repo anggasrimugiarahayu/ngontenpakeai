@@ -48,20 +48,28 @@ export async function POST(req: NextRequest) {
         });
 
         // Grant the Item!
-        if (order.orderType === "EBOOK" && order.digitalProductId) {
-          await tx.userOwnedProduct.upsert({
-            where: {
-              userId_digitalProductId: {
+        if (order.orderType === "EBOOK") {
+          const productIdsToGrant = [];
+          if (order.digitalProductId) productIdsToGrant.push(order.digitalProductId);
+          if (order.addonIds && Array.isArray(order.addonIds)) {
+            productIdsToGrant.push(...order.addonIds);
+          }
+
+          for (const pid of productIdsToGrant) {
+            await tx.userOwnedProduct.upsert({
+              where: {
+                userId_digitalProductId: {
+                  userId: order.userId,
+                  digitalProductId: pid
+                }
+              },
+              update: {},
+              create: {
                 userId: order.userId,
-                digitalProductId: order.digitalProductId
+                digitalProductId: pid
               }
-            },
-            update: {},
-            create: {
-              userId: order.userId,
-              digitalProductId: order.digitalProductId
-            }
-          });
+            });
+          }
         } else if (order.orderType === "PRO_BASIC" || order.orderType === "PRO_TOOLS" || order.orderType === "PRO_LENGKAP") {
           // For now, any of these packages gives them the "PRO" role
           await tx.user.update({
