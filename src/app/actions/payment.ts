@@ -33,20 +33,10 @@ export async function createCheckoutToken(data: {
     });
   }
 
-  if (data.discountAmount && data.discountAmount > 0) {
-    baseAmount -= data.discountAmount;
-    itemDetails.push({
-      id: "DISCOUNT",
-      price: -data.discountAmount,
-      quantity: 1,
-      name: (`Promo: ${data.voucherCode || 'Discount'}`).substring(0, 50)
-    });
-  }
-
   let baseAmount = 0;
   let orderName = "";
   
-  if (data.type === "EBOOK") {
+    if (data.type === "EBOOK") {
     if (!data.productId) throw new Error("Product ID required for Ebook");
     const product = await prisma.digitalProduct.findUnique({ where: { id: data.productId } });
     if (!product) throw new Error("Product not found");
@@ -57,15 +47,16 @@ export async function createCheckoutToken(data: {
     
     baseAmount = product.price;
     orderName = `E-Book: ${product.title}`;
-  } else if (data.type === "PRO_BASIC") {
-    baseAmount = 99000;
-    orderName = "Paket Basic";
-  } else if (data.type === "PRO_TOOLS") {
-    baseAmount = 99000;
-    orderName = "Paket Sistem Tools";
-  } else if (data.type === "PRO_LENGKAP") {
-    baseAmount = 149000;
-    orderName = "Paket Lengkap";
+  } else if (data.type.startsWith("PRO_")) {
+    const setting = await prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
+    const pricingConfig = setting?.value ? JSON.parse(setting.value) : null;
+    
+    if (pricingConfig && pricingConfig[data.type]) {
+      baseAmount = pricingConfig[data.type].price;
+      orderName = pricingConfig[data.type].name;
+    } else {
+      throw new Error("Harga paket tidak ditemukan");
+    }
   }
 
   
@@ -89,6 +80,16 @@ export async function createCheckoutToken(data: {
         quantity: 1,
         name: `Add-on: ${addon.title}`.substring(0, 50)
       });
+    });
+  }
+
+  if (data.discountAmount && data.discountAmount > 0) {
+    baseAmount -= data.discountAmount;
+    itemDetails.push({
+      id: "DISCOUNT",
+      price: -data.discountAmount,
+      quantity: 1,
+      name: (`Promo: ${data.voucherCode || 'Discount'}`).substring(0, 50)
     });
   }
 
