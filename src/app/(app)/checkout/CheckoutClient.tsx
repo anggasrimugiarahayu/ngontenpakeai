@@ -337,7 +337,7 @@ export default function CheckoutClient({
               <span className="text-gray-600 dark:text-gray-400 font-medium">Subtotal</span><span className="text-gray-900 dark:text-white">Rp {formatRupiah(baseAmount)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600 dark:text-gray-400 font-medium">Discount</span><span className="text-rn-accent">- Rp 0</span>
+              <span className="text-gray-600 dark:text-gray-400 font-medium">Discount {appliedVoucher && `(${appliedVoucher.code})`}</span><span className="text-rn-accent">- Rp {formatRupiah(discountAmount)}</span>
             </div>
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600 dark:text-gray-400 font-medium">Convenience fee</span><span className="text-gray-900 dark:text-white">Rp {formatRupiah(adminFee)}</span>
