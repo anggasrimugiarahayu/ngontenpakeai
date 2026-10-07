@@ -160,9 +160,28 @@ export default function CheckoutClient({
     window.snap.pay(token, {
       onSuccess: async function () {
         setPaymentState("verifying");
-        const verifyRes = await verifyPayment(orderId);
-        if (verifyRes.success && verifyRes.status === "SUCCESS") setPaymentState("success");
-        else {
+        // Midtrans Core API sometimes has a slight delay updating the status to settlement
+        // after Snap UI triggers onSuccess. Let's add a small delay and a retry mechanism.
+        let verifyRes = await verifyPayment(orderId);
+        if (verifyRes.success && verifyRes.status === "SUCCESS") {
+           setPaymentState("success");
+           return;
+        }
+        
+        // Wait 3 seconds and retry once if it's still pending on backend
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        verifyRes = await verifyPayment(orderId);
+        
+        if (verifyRes.success && verifyRes.status === "SUCCESS") {
+           setPaymentState("success");
+        } else if (verifyRes.success && verifyRes.status === "PENDING") {
+           // It's still pending in our DB/Midtrans, but Snap said success.
+           // This means the webhook will eventually settle it.
+           // We can just set it to success UI or pending UI. Let's just trust Snap for the UI success state, 
+           // but the actual product unlock relies on the webhook/backend.
+           // Or safer: tell the user it is being processed.
+           setPaymentState("success"); 
+        } else {
           setPaymentState("error");
           setErrorMessage("Pembayaran berhasil di Midtrans, tetapi gagal diverifikasi sistem. Silakan hubungi admin.");
         }
