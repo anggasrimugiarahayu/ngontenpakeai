@@ -87,7 +87,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
     setLoading(false);
   };
 
-  const ModalForm = () => {
+  const renderModal = () => {
     if (!editingPackage) return null;
     const pkg = config[editingPackage];
     
@@ -270,7 +270,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      <ModalForm />
+      {renderModal()}
       
       {/* Header & Control Panel */}
       <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-4 sm:p-6 bg-white dark:bg-[#121214] flex flex-col xl:flex-row xl:items-center justify-between gap-5">
