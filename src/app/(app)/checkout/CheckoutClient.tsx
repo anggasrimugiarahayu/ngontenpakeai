@@ -23,6 +23,7 @@ interface CheckoutClientProps {
   productImage?: string;
   existingPendingOrder?: { token: string, orderId: string, expiryTime: string, paymentMethodKey: string } | null;
   availableAddons?: { id: string, title: string, coverUrl: string | null, price: number }[];
+  includedAddons?: { id: string, title: string, coverUrl: string | null, price: number }[];
 }
 
 export default function CheckoutClient({
@@ -39,7 +40,7 @@ export default function CheckoutClient({
   productImage,
   existingPendingOrder,
   availableAddons = []
-}: CheckoutClientProps) {
+, includedAddons = []}: CheckoutClientProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "success" | "pending" | "error">(existingPendingOrder ? "pending" : "idle");
@@ -272,6 +273,29 @@ export default function CheckoutClient({
               <div className="mt-5 pt-4 border-t border-gray-100 dark:border-white/10">
                 <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-3 uppercase">ADD-ON PRODUK LAIN</h3>
                 <div className="space-y-3">
+                  
+                  {includedAddons.length > 0 && (
+                    <div className="mb-2 space-y-2">
+                      <p className="text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-1 ml-1">Included (Gratis)</p>
+                      {includedAddons.map(addon => (
+                        <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-white/10 bg-green-50/50 dark:bg-green-900/10">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white dark:bg-[#18181b] rounded-lg p-0.5 border border-gray-100 dark:border-white/5 shrink-0 flex items-center justify-center overflow-hidden">
+                              {addon.coverUrl ? <img src={addon.coverUrl} className="w-full h-full object-contain" alt="" /> : <CreditCard className="w-4 h-4 text-gray-300" />}
+                            </div>
+                            <div>
+                              <p className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">{addon.title}</p>
+                              <p className="text-xs font-medium text-green-600 dark:text-green-500">Termasuk Paket (Rp 0)</p>
+                            </div>
+                          </div>
+                          <div className="shrink-0">
+                            <CheckCircle2 className="w-5 h-5 text-green-500" />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  {selectedAddons.length > 0 && <p className="text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-1 ml-1 mt-3">Tambahan Ekstra</p>}
                   {selectedAddons.map(addonId => {
                     const addon = availableAddons.find(a => a.id === addonId);
                     if (!addon) return null;

@@ -58,6 +58,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
       baseAmount = pricingConfig[type].price;
       itemName = pricingConfig[type].name;
       itemDescription = pricingConfig[type].desc;
+      bundledIds = pricingConfig[type].bundledProductIds || [];
     } else {
       // Fallback defaults
       if (type === "PRO_BASIC") {
@@ -88,6 +89,15 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     }
   }
 
+  // Fetch bundled addons (included)
+  let includedAddons: any[] = [];
+  if (type.startsWith("PRO_") && bundledIds && bundledIds.length > 0) {
+    includedAddons = await prisma.digitalProduct.findMany({
+      where: { id: { in: bundledIds } },
+      select: { id: true, title: true, coverUrl: true, price: true }
+    }).catch(() => []);
+  }
+
   return {
     type,
     productId,
@@ -101,7 +111,8 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     initialPhone: user.phone || "",
     productImage,
     existingPendingOrder,
-    availableAddons
+    availableAddons,
+    includedAddons
   };
 }
 

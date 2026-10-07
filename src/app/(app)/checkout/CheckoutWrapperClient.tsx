@@ -56,6 +56,7 @@ export default function CheckoutWrapperClient() {
           productImage={data.productImage}
           existingPendingOrder={data.existingPendingOrder}
           availableAddons={data.availableAddons}
+          includedAddons={data.includedAddons || []}
         />
       </div>
     </div>
