@@ -30,3 +30,10 @@ export async function getPengaturanDataAction() {
 
   return JSON.parse(JSON.stringify({ userData, adminData, isPro, isAdmin }));
 }
+
+export async function getPricingPackagesAction() {
+  const setting = await prisma.appSetting.findUnique({
+    where: { key: "PRICING_PACKAGES" }
+  });
+  return setting?.value ? JSON.parse(setting.value) : null;
+}

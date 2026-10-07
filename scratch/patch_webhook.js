@@ -2,48 +2,54 @@ const fs = require('fs');
 const path = './src/app/api/midtrans/webhook/route.ts';
 let content = fs.readFileSync(path, 'utf8');
 
-const oldLogic = `        // Grant the Item!
-        if (order.orderType === "EBOOK" && order.digitalProductId) {
-          await tx.userOwnedProduct.upsert({
-            where: {
-              userId_digitalProductId: {
-                userId: order.userId,
-                digitalProductId: order.digitalProductId
-              }
-            },
-            update: {},
-            create: {
-              userId: order.userId,
-              digitalProductId: order.digitalProductId
-            }
+const oldWebhookCode = `        } else if (order.orderType === "PRO_BASIC" || order.orderType === "PRO_TOOLS" || order.orderType === "PRO_LENGKAP") {
+          // For now, any of these packages gives them the "PRO" role
+          await tx.user.update({
+            where: { id: order.userId },
+            data: { role: "PRO" }
           });
-        }`;
+        }
+      });`;
 
-const newLogic = `        // Grant the Item!
-        if (order.orderType === "EBOOK") {
-          const productIdsToGrant = [];
-          if (order.digitalProductId) productIdsToGrant.push(order.digitalProductId);
-          if (order.addonIds && Array.isArray(order.addonIds)) {
-            productIdsToGrant.push(...order.addonIds);
+const newWebhookCode = `        } else if (order.orderType === "PRO_BASIC" || order.orderType === "PRO_TOOLS" || order.orderType === "PRO_LENGKAP") {
+          // 1. Upgrade to PRO role
+          let updateData: any = { role: "PRO" };
+          
+          // If they bought TOOLS or LENGKAP, give them 30 days of proToolsExpiredAt
+          if (order.orderType === "PRO_TOOLS" || order.orderType === "PRO_LENGKAP") {
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 30);
+            updateData.proToolsExpiredAt = expiryDate;
           }
 
-          for (const pid of productIdsToGrant) {
-            await tx.userOwnedProduct.upsert({
-              where: {
-                userId_digitalProductId: {
-                  userId: order.userId,
-                  digitalProductId: pid
-                }
-              },
-              update: {},
-              create: {
-                userId: order.userId,
-                digitalProductId: pid
+          await tx.user.update({
+            where: { id: order.userId },
+            data: updateData
+          });
+
+          // 2. Unlock bundled E-books from PRICING_PACKAGES config
+          const setting = await tx.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
+          const pricingConfig = setting?.value ? JSON.parse(setting.value) : null;
+          
+          if (pricingConfig && pricingConfig[order.orderType] && pricingConfig[order.orderType].bundledProductIds) {
+            const bundledIds = pricingConfig[order.orderType].bundledProductIds;
+            for (const pid of bundledIds) {
+              const existing = await tx.userOwnedProduct.findFirst({
+                where: { userId: order.userId, digitalProductId: pid }
+              });
+              if (!existing) {
+                await tx.userOwnedProduct.create({
+                  data: {
+                    userId: order.userId,
+                    digitalProductId: pid
+                  }
+                });
               }
-            });
+            }
           }
-        }`;
+        }
+      });`;
 
-content = content.replace(oldLogic, newLogic);
+content = content.replace(oldWebhookCode, newWebhookCode);
 fs.writeFileSync(path, content);
-console.log("Patched webhook successfully");
+console.log("Patched webhook.ts");
