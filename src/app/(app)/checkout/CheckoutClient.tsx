@@ -155,6 +155,30 @@ export default function CheckoutClient({
     return () => clearInterval(interval);
   }, [paymentState, expiryTime]);
 
+  // Polling mechanism to check payment status in the background
+  useEffect(() => {
+    if (paymentState !== "pending" || !currentOrderId) return;
+
+    const pollInterval = setInterval(async () => {
+      try {
+        const verifyRes = await verifyPayment(currentOrderId);
+        if (verifyRes.success && verifyRes.status === "SUCCESS") {
+          setPaymentState("success");
+          clearInterval(pollInterval);
+        } else if (verifyRes.success && verifyRes.status === "FAILED") {
+          setPaymentState("error");
+          setErrorMessage("Pesanan telah dibatalkan atau waktu telah habis.");
+          setTimeLeft("EXPIRED");
+          clearInterval(pollInterval);
+        }
+      } catch (error) {
+        // silently ignore network errors during polling
+      }
+    }, 5000); // Check every 5 seconds
+
+    return () => clearInterval(pollInterval);
+  }, [paymentState, currentOrderId]);
+
   const openSnap = (token: string, orderId: string) => {
     // @ts-ignore
     window.snap.pay(token, {
