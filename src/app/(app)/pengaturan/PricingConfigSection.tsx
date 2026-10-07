@@ -215,9 +215,13 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
             </div>
           </div>
           
-          <div className="sticky bottom-0 bg-gray-50 dark:bg-[#18181b] p-5 border-t border-gray-200 dark:border-white/10 flex justify-end">
-             <button onClick={() => setEditingPackage(null)} className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:bg-black dark:hover:bg-gray-200 transition-colors">
-               Selesai & Tutup
+          <div className="sticky bottom-0 bg-gray-50 dark:bg-[#18181b] p-5 border-t border-gray-200 dark:border-white/10 flex justify-end gap-3">
+             <button onClick={() => setEditingPackage(null)} className="px-5 py-2.5 rounded-xl font-bold text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+               Batal
+             </button>
+             <button onClick={async () => { await handleSaveAll(); setEditingPackage(null); }} disabled={loading} className="flex items-center gap-2 bg-rn-accent text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-rn-accent/20 hover:bg-orange-600 transition-colors disabled:opacity-50">
+               {loading ? <LoadingSpinnerSmall /> : <Save className="w-4 h-4" />}
+               Simpan Perubahan
              </button>
           </div>
         </div>
@@ -269,61 +273,32 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
       <ModalForm />
       
       {/* Header & Control Panel */}
-      <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
-          <div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Manajemen Pricing Paket</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
-              Atur harga, desain kartu, fitur yang ditampilkan, serta bundle akses otomatis (e-book / tools) untuk setiap paket langganan.
-            </p>
-          </div>
-          <button 
-            onClick={handleSaveAll}
-            disabled={loading}
-            className="shrink-0 flex items-center justify-center gap-2 bg-rn-accent hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all disabled:opacity-50 shadow-lg shadow-rn-accent/20"
-          >
-            {loading ? <LoadingSpinnerSmall /> : <Save className="w-4 h-4" />}
-            Simpan Perubahan
-          </button>
+      <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-4 sm:p-6 bg-white dark:bg-[#121214] flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Manajemen Pricing Paket</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Kelola pricing paket untuk setiap paket langanan member anda.
+          </p>
         </div>
-
-        {successMsg && (
-          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/30 rounded-xl flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5" />
-            <span className="font-bold text-sm">{successMsg}</span>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
-          <button onClick={() => setEditingPackage("PRO_BASIC")} className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl transition-all text-left group">
-            <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-700 dark:text-gray-300 group-hover:scale-110 transition-transform">
-              <BookOpen className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="font-bold text-gray-900 dark:text-white text-sm">Edit Paket Ebook</div>
-              <div className="text-xs text-gray-500">Ubah detail & bundling</div>
-            </div>
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <button onClick={() => setEditingPackage("PRO_BASIC")} className="flex items-center gap-2 px-4 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-sm transition-colors">
+            <BookOpen className="w-4 h-4" /> Paket Ebook
           </button>
-          <button onClick={() => setEditingPackage("PRO_TOOLS")} className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl transition-all text-left group">
-            <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-700 dark:text-gray-300 group-hover:scale-110 transition-transform">
-              <Wrench className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="font-bold text-gray-900 dark:text-white text-sm">Edit Paket Tools</div>
-              <div className="text-xs text-gray-500">Ubah detail & bundling</div>
-            </div>
+          <button onClick={() => setEditingPackage("PRO_TOOLS")} className="flex items-center gap-2 px-4 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-sm transition-colors">
+            <Wrench className="w-4 h-4" /> Paket Tools
           </button>
-          <button onClick={() => setEditingPackage("PRO_LENGKAP")} className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl transition-all text-left group border-b-[3px] border-b-rn-accent">
-            <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center text-rn-accent group-hover:scale-110 transition-transform">
-              <Gem className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="font-bold text-gray-900 dark:text-white text-sm">Edit Paket Lengkap</div>
-              <div className="text-xs text-gray-500">Ubah detail & bundling</div>
-            </div>
+          <button onClick={() => setEditingPackage("PRO_LENGKAP")} className="flex items-center gap-2 px-4 py-2 bg-rn-accent hover:bg-orange-600 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-rn-accent/20">
+            <Gem className="w-4 h-4" /> Paket Lengkap
           </button>
         </div>
       </div>
+
+      {successMsg && (
+        <div className="p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/30 rounded-xl flex items-center gap-3">
+          <CheckCircle2 className="w-5 h-5" />
+          <span className="font-bold text-sm">{successMsg}</span>
+        </div>
+      )}
 
       {/* Live Preview Section */}
       <div className="mt-10">
