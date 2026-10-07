@@ -21,6 +21,7 @@ export function SettingsTabs({ user }: { user: any }) {
     { id: "model", label: "Model AI" },
     { id: "fitur", label: "Ruang Ngonten" },
     { id: "belajar", label: "Ruang Belajar" },
+    { id: "pricing", label: "Pricing Paket" },
   ];
 
   const userTabs = [

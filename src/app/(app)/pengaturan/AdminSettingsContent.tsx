@@ -308,6 +308,11 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
         </div>
       )}
 
+      {/* Tab: Pricing Paket */}
+      {activeTab === "pricing" && (
+        <PricingConfigSection products={products} settings={settings} />
+      )}
+
       {/* Tab: Ruang Belajar */}
       {activeTab === "belajar" && (
         <div className="space-y-6 animate-in fade-in duration-300">
