@@ -237,8 +237,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     </button>
                   </div>
                 </div>
-              );
-            })}
+              ))}
             </div>
           </div>        </div>
       )}
@@ -400,7 +399,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     </div>
                   </div>
 
-                  <div className="mt-auto pt-2 flex flex-wrap items-end justify-between gap-y-3 gap-x-2">
+                  <div className="mt-auto pt-2 flex items-end justify-between gap-x-2">
                     <div className="flex flex-col">
                         {(prod.accessLevel === "PREMIUM" || prod.accessLevel === "PRO") && prod.originalPrice && prod.originalPrice > prod.price ? (
                           <span className="text-xs sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none mb-1">
@@ -418,9 +417,9 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 ml-auto">
                       <button 
                         onClick={() => setEditingProduct(prod)} 
-                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-[10px] sm:text-xs font-bold"
+                        className="flex items-center justify-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
                       >
-                        <Edit className="w-3.5 h-3.5" /> <span>Edit</span>
+                        <Edit className="w-3 h-3" /> <span>Edit</span>
                       </button>
                       <button 
                         onClick={async () => {
@@ -431,15 +430,16 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                             setLoading(false);
                           }
                         }} 
-                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg transition-colors text-[10px] sm:text-xs font-bold"
+                        className="flex items-center justify-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
                       >
-                        <Trash2 className="w-3.5 h-3.5" /> <span>Hapus</span>
+                        <Trash2 className="w-3 h-3" /> <span>Hapus</span>
                       </button>
                     </div>
                   </div>
                 </div>
               </div>
-            ))}
+            );
+            })}
             {products.length === 0 && (
               <div className="col-span-full py-12 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl bg-gray-50 dark:bg-white/5">
                 <BookOpen size={40} className="mb-3 opacity-20 text-gray-400" />
