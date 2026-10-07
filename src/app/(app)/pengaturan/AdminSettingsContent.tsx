@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { mutate } from "swr";
 import { Plus, Trash2, Edit, BookOpen, Tag, X, Star, Ticket } from "lucide-react";
+import { PricingConfigSection } from "./PricingConfigSection";
 import { 
   createAiModel, 
   setDefaultModel, 
