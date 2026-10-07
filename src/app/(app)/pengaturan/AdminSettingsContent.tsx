@@ -419,7 +419,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                         onClick={() => setEditingProduct(prod)} 
                         className="flex items-center justify-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
                       >
-                        <Edit className="w-3 h-3" /> <span>Edit</span>
+                        <Edit className="w-3 h-3" /> <span className="hidden sm:inline">Edit</span>
                       </button>
                       <button 
                         onClick={async () => {
@@ -432,7 +432,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                         }} 
                         className="flex items-center justify-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
                       >
-                        <Trash2 className="w-3 h-3" /> <span>Hapus</span>
+                        <Trash2 className="w-3 h-3" /> <span className="hidden sm:inline">Hapus</span>
                       </button>
                     </div>
                   </div>
@@ -688,7 +688,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-hidden">
       <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
         <span id="label-coverUrlInput" className="text-[10px] font-bold text-gray-400 block mb-1">1. COVER UTAMA</span>
-        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrlInput")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
+        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrlInput")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
         <input type="hidden" name="coverUrl" id="coverUrlInput" />
       </div>
       <img id="preview-coverUrlInput" src={uploadedUrls["coverUrlInput"] || undefined} className={`\${uploadedUrls["coverUrlInput"] ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover relative shrink-0 ml-auto z-0 rounded shadow opacity-50 transition-all duration-300`} />
@@ -696,7 +696,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-hidden">
       <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
         <span id="label-coverUrl2Input" className="text-[10px] font-bold text-gray-400 block mb-1">2. PREVIEW 1</span>
-        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrl2Input")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
+        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrl2Input")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
         <input type="hidden" name="coverUrl2" id="coverUrl2Input" />
       </div>
       <img id="preview-coverUrl2Input" src={uploadedUrls["coverUrl2Input"] || undefined} className={`\${uploadedUrls["coverUrl2Input"] ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover relative shrink-0 ml-auto z-0 rounded shadow opacity-50 transition-all duration-300`} />
@@ -704,7 +704,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-hidden">
       <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
         <span id="label-coverUrl3Input" className="text-[10px] font-bold text-gray-400 block mb-1">3. PREVIEW 2</span>
-        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrl3Input")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
+        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrl3Input")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
         <input type="hidden" name="coverUrl3" id="coverUrl3Input" />
       </div>
       <img id="preview-coverUrl3Input" src={uploadedUrls["coverUrl3Input"] || undefined} className={`\${uploadedUrls["coverUrl3Input"] ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover relative shrink-0 ml-auto z-0 rounded shadow opacity-50 transition-all duration-300`} />
@@ -758,7 +758,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">HARGA CORET (Rp)</label>
-                    <input name="originalPrice" type="number" min="0" placeholder="Contoh: 99000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                    <input name="originalPrice" type="number" min="0" placeholder="Contoh: 99000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all line-through" />
                   </div>
                 </div>
               )}
@@ -926,7 +926,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-hidden">
       <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
         <span id="label-editCoverUrlInput" className="text-[10px] font-bold text-gray-400 block mb-1">1. COVER UTAMA</span>
-        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrlInput")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
+        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrlInput")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
         <input type="hidden" name="coverUrl" id="editCoverUrlInput" defaultValue={editingProduct.coverUrl || ''} />
       </div>
       <img id="preview-editCoverUrlInput" src={uploadedUrls["editCoverUrlInput"] || editingProduct.coverUrl || undefined} className={`\${uploadedUrls["editCoverUrlInput"] || editingProduct.coverUrl ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover relative shrink-0 ml-auto z-0 rounded shadow opacity-50 transition-all duration-300`} />
@@ -934,7 +934,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-hidden">
       <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
         <span id="label-editCoverUrl2Input" className="text-[10px] font-bold text-gray-400 block mb-1">2. PREVIEW 1</span>
-        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrl2Input")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
+        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrl2Input")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
         <input type="hidden" name="coverUrl2" id="editCoverUrl2Input" defaultValue={editingProduct.coverUrl2 || ''} />
       </div>
       <img id="preview-editCoverUrl2Input" src={uploadedUrls["editCoverUrl2Input"] || editingProduct.coverUrl2 || undefined} className={`\${uploadedUrls["editCoverUrl2Input"] || editingProduct.coverUrl2 ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover relative shrink-0 ml-auto z-0 rounded shadow opacity-50 transition-all duration-300`} />
@@ -942,7 +942,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-hidden">
       <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
         <span id="label-editCoverUrl3Input" className="text-[10px] font-bold text-gray-400 block mb-1">3. PREVIEW 2</span>
-        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrl3Input")} className="block w-full text-[10px] text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
+        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrl3Input")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
         <input type="hidden" name="coverUrl3" id="editCoverUrl3Input" defaultValue={editingProduct.coverUrl3 || ''} />
       </div>
       <img id="preview-editCoverUrl3Input" src={uploadedUrls["editCoverUrl3Input"] || editingProduct.coverUrl3 || undefined} className={`\${uploadedUrls["editCoverUrl3Input"] || editingProduct.coverUrl3 ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover relative shrink-0 ml-auto z-0 rounded shadow opacity-50 transition-all duration-300`} />
@@ -995,7 +995,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-500 mb-1">HARGA CORET (Rp)</label>
-                    <input name="originalPrice" type="number" min="0" defaultValue={editingProduct.originalPrice || ""} placeholder="Contoh: 99000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all" />
+                    <input name="originalPrice" type="number" min="0" defaultValue={editingProduct.originalPrice || ""} placeholder="Contoh: 99000" className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all line-through" />
                   </div>
                 </div>
               )}
