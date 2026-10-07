@@ -230,34 +230,34 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
     const isSpecial = pkg.highlightText && pkg.highlightText.length > 0;
     
     return (
-      <div className={`bg-[#121214] border ${isSpecial ? 'border-orange-500' : 'border-gray-800'} rounded-3xl p-6 sm:p-8 relative flex flex-col h-full shadow-2xl`}>
+      <div className={`bg-white dark:bg-[#121214] border ${isSpecial ? 'border-orange-500' : 'border-gray-200 dark:border-white/10'} rounded-2xl p-5 relative flex flex-col h-full shadow-lg hover:shadow-xl transition-shadow`}>
         {isSpecial && (
-           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] sm:text-xs font-black uppercase px-4 py-1 rounded-full tracking-widest border-[4px] border-[#121214] whitespace-nowrap shadow-xl">
+           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[9px] font-black uppercase px-3 py-0.5 rounded-full tracking-widest border-[3px] border-white dark:border-[#121214] whitespace-nowrap shadow-sm">
              {pkg.highlightText}
            </div>
         )}
         
-        <h3 className="text-white font-bold text-xl sm:text-2xl mb-2 leading-tight">{pkg.name}</h3>
-        <p className="text-gray-400 text-sm mb-6 leading-relaxed line-clamp-2">{pkg.desc}</p>
+        <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-1.5 leading-tight">{pkg.name}</h3>
+        <p className="text-gray-500 dark:text-gray-400 text-[11px] mb-4 leading-relaxed line-clamp-2">{pkg.desc}</p>
         
-        <div className="text-white font-black text-4xl sm:text-5xl mb-2 tracking-tight">Rp {formatK(pkg.price)}</div>
-        <div className="text-gray-500 text-sm font-medium mb-2 line-through">Total Rp {pkg.originalPrice.toLocaleString('id-ID')}</div>
+        <div className="text-gray-900 dark:text-white font-black text-2xl mb-1 tracking-tight">Rp {formatK(pkg.price)}</div>
+        <div className="text-gray-400 text-[11px] font-medium mb-1.5 line-through">Total Rp {pkg.originalPrice.toLocaleString('id-ID')}</div>
         {pkg.discountLabel && (
-          <div className="bg-red-900/30 text-red-500 border border-red-500/20 text-[10px] font-black px-2 py-0.5 rounded w-max mb-8 tracking-wider">
+          <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-500 border border-red-200 dark:border-red-500/20 text-[9px] font-black px-1.5 py-0.5 rounded w-max mb-5 tracking-wider">
             {pkg.discountLabel}
           </div>
         )}
         
-        <ul className="space-y-4 mb-8 flex-1">
+        <ul className="space-y-2.5 mb-6 flex-1">
           {pkg.features.map((f: string, i: number) => (
-            <li key={i} className="flex items-start gap-3 text-sm text-gray-300 font-medium">
-               <Check className="w-5 h-5 text-orange-500 shrink-0 mt-0" />
+            <li key={i} className="flex items-start gap-2 text-[11px] text-gray-700 dark:text-gray-300 font-medium">
+               <Check className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
                <span className="leading-snug">{f}</span>
             </li>
           ))}
         </ul>
 
-        <button className={`w-full py-4 rounded-xl font-black text-sm transition-all duration-300 ${isSpecial ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-gray-800 text-white hover:bg-gray-700'}`}>
+        <button className={`w-full py-2.5 rounded-xl font-black text-xs transition-all duration-300 ${isSpecial ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20' : 'bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-900 dark:text-white'}`}>
           {pkg.name.includes("Basic") ? "Pilih Paket Basic" : pkg.name.includes("Tools") ? "Pilih Sistem Tools" : "Pilih Paket Lengkap"}
         </button>
       </div>
@@ -329,16 +329,13 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
       <div className="mt-10">
         <div className="flex items-center gap-2 mb-6 px-2">
           <div className="w-2 h-6 bg-rn-accent rounded-full"></div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Live Preview (Tampilan Halaman Depan)</h2>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Live Preview (Miniatur Halaman Depan)</h2>
         </div>
         
-        {/* Container meniru landing page */}
-        <div className="bg-[#0A0A0A] p-6 sm:p-10 rounded-3xl border border-gray-800 shadow-2xl">
-           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-              <PreviewCard pkgKey="PRO_BASIC" />
-              <PreviewCard pkgKey="PRO_TOOLS" />
-              <PreviewCard pkgKey="PRO_LENGKAP" />
-           </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 max-w-7xl mx-auto">
+            <PreviewCard pkgKey="PRO_BASIC" />
+            <PreviewCard pkgKey="PRO_TOOLS" />
+            <PreviewCard pkgKey="PRO_LENGKAP" />
         </div>
       </div>
 
