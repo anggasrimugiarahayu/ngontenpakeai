@@ -2,56 +2,84 @@
 
 import { useState } from "react";
 import { saveAppSetting } from "./admin-actions";
-import { Save, CheckCircle2 } from "lucide-react";
+import { Save, CheckCircle2, Edit, Package, Wrench, Gem, Check, X, Plus, BookOpen } from "lucide-react";
 
 export function PricingConfigSection({ products, settings }: { products: any[], settings: any[] }) {
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
+  
+  const [editingPackage, setEditingPackage] = useState<string | null>(null);
 
   const settingRaw = settings.find((s) => s.key === "PRICING_PACKAGES")?.value;
+  
   let initialConfig = {
-    PRO_BASIC: { name: "Paket E-Book", price: 99000, desc: "Akses E-Book Premium", bundledProductIds: [] },
-    PRO_TOOLS: { name: "Paket Ruang Ngonten", price: 149000, desc: "Akses Semua Tools 30 Hari", bundledProductIds: [] },
-    PRO_LENGKAP: { name: "Paket Lengkap", price: 199000, desc: "Akses Tools + E-Book Lengkap", bundledProductIds: [] },
+    PRO_BASIC: { 
+      name: "Paket Basic (Ebook)", 
+      desc: "Cocok buat yang mau fokus belajar teori faceless creator.",
+      price: 99000, 
+      originalPrice: 2419000,
+      discountLabel: "95% OFF",
+      highlightText: "",
+      features: [
+        "Ebook Ngonten Pakai AI (Personal Use)",
+        "Ebook 30 Day Creator Challenge (Personal Use)",
+        "Bimbingan Private 1-on-1 WhatsApp (6 Bulan)",
+        "6+ Bonus Strategi & Template Lainnya"
+      ],
+      bundledProductIds: [] 
+    },
+    PRO_TOOLS: { 
+      name: "Paket Sistem Tools", 
+      desc: "Cocok buat yang butuh bantuan AI untuk eksekusi ngonten.",
+      price: 99000, 
+      originalPrice: 666000,
+      discountLabel: "85% OFF",
+      highlightText: "",
+      features: [
+        "Akses 8 Sistem AI Ngonten Pakai AI",
+        "Ebook Ngonten Pakai AI (Included)",
+        "Bonus 4 Resource Ekstra (Footage, Hook, Tools)",
+        "Akses Selama 30 Hari"
+      ],
+      bundledProductIds: [] 
+    },
+    PRO_LENGKAP: { 
+      name: "Paket Lengkap (Ebook)", 
+      desc: "Bonus terbanyak, akses jualan (PLR) dan Lifetime support.",
+      price: 149000, 
+      originalPrice: 2419000,
+      discountLabel: "94% OFF",
+      highlightText: "PALING WORTH",
+      features: [
+        "Semua isi Paket Basic",
+        "Hak Jual Ulang (PLR) untuk berbagai materi",
+        "Bimbingan Private 1-on-1 (Lifetime)",
+        "Tools Text to Voice Over",
+        "Video Footage Siap Pakai"
+      ],
+      bundledProductIds: [] 
+    },
   };
 
   try {
     if (settingRaw) {
-      initialConfig = JSON.parse(settingRaw);
+      initialConfig = { ...initialConfig, ...JSON.parse(settingRaw) };
     }
   } catch (e) {}
 
   const [config, setConfig] = useState<any>(initialConfig);
 
-  const handleCheckbox = (paketKey: string, productId: string) => {
-    setConfig((prev: any) => {
-      const isChecked = prev[paketKey].bundledProductIds.includes(productId);
-      let newIds = [...prev[paketKey].bundledProductIds];
-      if (isChecked) {
-        newIds = newIds.filter((id: string) => id !== productId);
-      } else {
-        newIds.push(productId);
-      }
-      return {
-        ...prev,
-        [paketKey]: { ...prev[paketKey], bundledProductIds: newIds }
-      };
-    });
+  const formatK = (price: number) => {
+    if (price >= 1000) return (price / 1000) + 'k';
+    return price.toString();
   };
 
-  const handleTextChange = (paketKey: string, field: string, val: any) => {
-    setConfig((prev: any) => ({
-      ...prev,
-      [paketKey]: { ...prev[paketKey], [field]: val }
-    }));
-  };
-
-  const handleSave = async () => {
+  const handleSaveAll = async () => {
     setLoading(true);
     setSuccessMsg("");
     try {
       await saveAppSetting("PRICING_PACKAGES", JSON.stringify(config));
-      setSuccessMsg("Berhasil menyimpan konfigurasi pricing!");
+      setSuccessMsg("Konfigurasi pricing berhasil disimpan!");
       setTimeout(() => setSuccessMsg(""), 3000);
     } catch (e) {
       alert("Gagal menyimpan");
@@ -59,81 +87,260 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
     setLoading(false);
   };
 
-  const renderPaketConfig = (paketKey: string, title: string) => {
-    return (
-      <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214] mb-6">
-        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">{title}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div>
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Nama Paket</label>
-            <input 
-              type="text" 
-              value={config[paketKey].name} 
-              onChange={(e) => handleTextChange(paketKey, "name", e.target.value)}
-              className="w-full bg-gray-50 dark:bg-[#18181b] border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
-            />
-          </div>
-          <div>
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Harga (Rp)</label>
-            <input 
-              type="number" 
-              value={config[paketKey].price} 
-              onChange={(e) => handleTextChange(paketKey, "price", parseInt(e.target.value) || 0)}
-              className="w-full bg-gray-50 dark:bg-[#18181b] border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
-            />
-          </div>
-        </div>
+  const ModalForm = () => {
+    if (!editingPackage) return null;
+    const pkg = config[editingPackage];
+    
+    const updateField = (field: string, val: any) => {
+      setConfig((prev: any) => ({
+        ...prev,
+        [editingPackage]: { ...prev[editingPackage], [field]: val }
+      }));
+    };
 
-        <div className="mb-4">
-            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2">Pilih E-Book yang Otomatis Didapat (Bundling)</label>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {products.map((p) => (
-                <label key={p.id} className="flex items-start gap-2 p-3 border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={config[paketKey].bundledProductIds.includes(p.id)}
-                    onChange={() => handleCheckbox(paketKey, p.id)}
-                    className="mt-0.5 rounded text-rn-accent focus:ring-rn-accent border-gray-300 dark:border-gray-700 dark:bg-[#121214]"
-                  />
-                  <div className="flex flex-col">
-                    <span className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">{p.title}</span>
-                    <span className="text-[10px] text-gray-500">{p.accessLevel}</span>
-                  </div>
-                </label>
-              ))}
+    const updateFeature = (index: number, val: string) => {
+      const newFeatures = [...pkg.features];
+      newFeatures[index] = val;
+      updateField("features", newFeatures);
+    };
+
+    const removeFeature = (index: number) => {
+      const newFeatures = pkg.features.filter((_: any, i: number) => i !== index);
+      updateField("features", newFeatures);
+    };
+
+    const addFeature = () => {
+      updateField("features", [...pkg.features, ""]);
+    };
+
+    const toggleProduct = (pid: string) => {
+      let newIds = [...pkg.bundledProductIds];
+      if (newIds.includes(pid)) {
+        newIds = newIds.filter(id => id !== pid);
+      } else {
+        newIds.push(pid);
+      }
+      updateField("bundledProductIds", newIds);
+    };
+
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+        <div className="bg-white dark:bg-[#121214] w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 dark:border-white/10 shadow-2xl flex flex-col">
+          <div className="sticky top-0 bg-white dark:bg-[#121214] border-b border-gray-200 dark:border-white/10 p-5 flex items-center justify-between z-10">
+            <h2 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
+              <Edit className="w-5 h-5 text-rn-accent" />
+              Edit {pkg.name}
+            </h2>
+            <button onClick={() => setEditingPackage(null)} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors">
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+
+          <div className="p-6 space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Nama Paket</label>
+                <input type="text" value={pkg.name} onChange={e => updateField("name", e.target.value)} className="w-full bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Label Pita Atas (Opsional)</label>
+                <input type="text" value={pkg.highlightText} onChange={e => updateField("highlightText", e.target.value)} placeholder="Contoh: PALING WORTH" className="w-full bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
+              </div>
             </div>
+
+            <div>
+              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Deskripsi Pendek</label>
+              <input type="text" value={pkg.desc} onChange={e => updateField("desc", e.target.value)} className="w-full bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+              <div>
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Harga Jual (Rp)</label>
+                <input type="number" value={pkg.price} onChange={e => updateField("price", parseInt(e.target.value) || 0)} className="w-full bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Harga Coret (Rp)</label>
+                <input type="number" value={pkg.originalPrice} onChange={e => updateField("originalPrice", parseInt(e.target.value) || 0)} className="w-full bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Label Diskon</label>
+                <input type="text" value={pkg.discountLabel} onChange={e => updateField("discountLabel", e.target.value)} placeholder="Misal: 95% OFF" className="w-full bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
+              </div>
+            </div>
+
+            <hr className="border-gray-200 dark:border-white/10" />
+
+            <div>
+               <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-3">Daftar Fitur / Benefit (Checklist)</label>
+               <div className="space-y-2">
+                 {pkg.features.map((f: string, i: number) => (
+                    <div key={i} className="flex items-center gap-2">
+                       <Check className="w-4 h-4 text-orange-500 shrink-0" />
+                       <input type="text" value={f} onChange={e => updateFeature(i, e.target.value)} className="flex-1 bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-rn-accent" />
+                       <button onClick={() => removeFeature(i)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
+                         <X className="w-4 h-4" />
+                       </button>
+                    </div>
+                 ))}
+                 <button onClick={addFeature} className="flex items-center gap-1 text-sm font-bold text-orange-500 hover:text-orange-600 mt-2 px-2 py-1 rounded hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors">
+                   <Plus className="w-4 h-4" /> Tambah Fitur Baru
+                 </button>
+               </div>
+            </div>
+
+            <hr className="border-gray-200 dark:border-white/10" />
+
+            <div>
+              <label className="block text-sm font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                 <Package className="w-4 h-4 text-rn-accent" /> E-Book Bundling Otomatis (Database Unlock)
+              </label>
+              <p className="text-xs text-gray-500 mb-3">Centang e-book di bawah ini yang akan otomatis dimiliki oleh user setelah pembayaran berhasil.</p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
+                {products.map(p => (
+                  <label key={p.id} className="flex items-start gap-3 p-3 border border-gray-200 dark:border-white/10 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors">
+                    <input 
+                      type="checkbox" 
+                      checked={pkg.bundledProductIds.includes(p.id)}
+                      onChange={() => toggleProduct(p.id)}
+                      className="mt-0.5 rounded text-rn-accent focus:ring-rn-accent border-gray-300 dark:border-gray-700 bg-transparent w-4 h-4"
+                    />
+                    <div className="flex flex-col">
+                      <span className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1 leading-tight">{p.title}</span>
+                      <span className="text-[10px] text-gray-500 mt-0.5 font-medium">{p.accessLevel}</span>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <div className="sticky bottom-0 bg-gray-50 dark:bg-[#18181b] p-5 border-t border-gray-200 dark:border-white/10 flex justify-end">
+             <button onClick={() => setEditingPackage(null)} className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg hover:bg-black dark:hover:bg-gray-200 transition-colors">
+               Selesai & Tutup
+             </button>
+          </div>
         </div>
       </div>
     );
   };
 
-  return (
-    <div className="animate-in fade-in duration-300">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Pengaturan Pricing Paket</h2>
-          <p className="text-sm text-gray-500 mt-1">Atur harga dan E-book yang otomatis didapatkan saat pembelian paket.</p>
-        </div>
-        <button 
-          onClick={handleSave}
-          disabled={loading}
-          className="flex items-center gap-2 bg-rn-accent hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-bold transition-all disabled:opacity-50"
-        >
-          {loading ? <LoadingSpinnerSmall /> : <Save className="w-4 h-4" />}
-          Simpan Semua
+  const PreviewCard = ({ pkgKey }: { pkgKey: string }) => {
+    const pkg = config[pkgKey];
+    const isSpecial = pkg.highlightText && pkg.highlightText.length > 0;
+    
+    return (
+      <div className={`bg-[#121214] border ${isSpecial ? 'border-orange-500' : 'border-gray-800'} rounded-3xl p-6 sm:p-8 relative flex flex-col h-full shadow-2xl`}>
+        {isSpecial && (
+           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] sm:text-xs font-black uppercase px-4 py-1 rounded-full tracking-widest border-[4px] border-[#121214] whitespace-nowrap shadow-xl">
+             {pkg.highlightText}
+           </div>
+        )}
+        
+        <h3 className="text-white font-bold text-xl sm:text-2xl mb-2 leading-tight">{pkg.name}</h3>
+        <p className="text-gray-400 text-sm mb-6 leading-relaxed line-clamp-2">{pkg.desc}</p>
+        
+        <div className="text-white font-black text-4xl sm:text-5xl mb-2 tracking-tight">Rp {formatK(pkg.price)}</div>
+        <div className="text-gray-500 text-sm font-medium mb-2 line-through">Total Rp {pkg.originalPrice.toLocaleString('id-ID')}</div>
+        {pkg.discountLabel && (
+          <div className="bg-red-900/30 text-red-500 border border-red-500/20 text-[10px] font-black px-2 py-0.5 rounded w-max mb-8 tracking-wider">
+            {pkg.discountLabel}
+          </div>
+        )}
+        
+        <ul className="space-y-4 mb-8 flex-1">
+          {pkg.features.map((f: string, i: number) => (
+            <li key={i} className="flex items-start gap-3 text-sm text-gray-300 font-medium">
+               <Check className="w-5 h-5 text-orange-500 shrink-0 mt-0" />
+               <span className="leading-snug">{f}</span>
+            </li>
+          ))}
+        </ul>
+
+        <button className={`w-full py-4 rounded-xl font-black text-sm transition-all duration-300 ${isSpecial ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/20' : 'bg-gray-800 text-white hover:bg-gray-700'}`}>
+          {pkg.name.includes("Basic") ? "Pilih Paket Basic" : pkg.name.includes("Tools") ? "Pilih Sistem Tools" : "Pilih Paket Lengkap"}
         </button>
       </div>
+    );
+  };
 
-      {successMsg && (
-        <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800 rounded-xl flex items-center gap-3">
-          <CheckCircle2 className="w-5 h-5" />
-          <span className="font-bold text-sm">{successMsg}</span>
+  return (
+    <div className="space-y-6 animate-in fade-in duration-300">
+      <ModalForm />
+      
+      {/* Header & Control Panel */}
+      <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-8">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Manajemen Pricing Paket</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+              Atur harga, desain kartu, fitur yang ditampilkan, serta bundle akses otomatis (e-book / tools) untuk setiap paket langganan.
+            </p>
+          </div>
+          <button 
+            onClick={handleSaveAll}
+            disabled={loading}
+            className="shrink-0 flex items-center justify-center gap-2 bg-rn-accent hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm transition-all disabled:opacity-50 shadow-lg shadow-rn-accent/20"
+          >
+            {loading ? <LoadingSpinnerSmall /> : <Save className="w-4 h-4" />}
+            Simpan Perubahan
+          </button>
         </div>
-      )}
 
-      {renderPaketConfig("PRO_BASIC", "1. Konfigurasi Paket E-Book (Basic)")}
-      {renderPaketConfig("PRO_TOOLS", "2. Konfigurasi Paket Ruang Ngonten (Tools 30 Hari)")}
-      {renderPaketConfig("PRO_LENGKAP", "3. Konfigurasi Paket Lengkap (Tools 30 Hari + E-Book)")}
+        {successMsg && (
+          <div className="mb-6 p-4 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/30 rounded-xl flex items-center gap-3">
+            <CheckCircle2 className="w-5 h-5" />
+            <span className="font-bold text-sm">{successMsg}</span>
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
+          <button onClick={() => setEditingPackage("PRO_BASIC")} className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl transition-all text-left group">
+            <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-700 dark:text-gray-300 group-hover:scale-110 transition-transform">
+              <BookOpen className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="font-bold text-gray-900 dark:text-white text-sm">Edit Paket Ebook</div>
+              <div className="text-xs text-gray-500">Ubah detail & bundling</div>
+            </div>
+          </button>
+          <button onClick={() => setEditingPackage("PRO_TOOLS")} className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl transition-all text-left group">
+            <div className="w-10 h-10 rounded-lg bg-gray-200 dark:bg-gray-800 flex items-center justify-center text-gray-700 dark:text-gray-300 group-hover:scale-110 transition-transform">
+              <Wrench className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="font-bold text-gray-900 dark:text-white text-sm">Edit Paket Tools</div>
+              <div className="text-xs text-gray-500">Ubah detail & bundling</div>
+            </div>
+          </button>
+          <button onClick={() => setEditingPackage("PRO_LENGKAP")} className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 border border-gray-200 dark:border-white/10 rounded-xl transition-all text-left group border-b-[3px] border-b-rn-accent">
+            <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-500/20 flex items-center justify-center text-rn-accent group-hover:scale-110 transition-transform">
+              <Gem className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="font-bold text-gray-900 dark:text-white text-sm">Edit Paket Lengkap</div>
+              <div className="text-xs text-gray-500">Ubah detail & bundling</div>
+            </div>
+          </button>
+        </div>
+      </div>
+
+      {/* Live Preview Section */}
+      <div className="mt-10">
+        <div className="flex items-center gap-2 mb-6 px-2">
+          <div className="w-2 h-6 bg-rn-accent rounded-full"></div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Live Preview (Tampilan Halaman Depan)</h2>
+        </div>
+        
+        {/* Container meniru landing page */}
+        <div className="bg-[#0A0A0A] p-6 sm:p-10 rounded-3xl border border-gray-800 shadow-2xl">
+           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
+              <PreviewCard pkgKey="PRO_BASIC" />
+              <PreviewCard pkgKey="PRO_TOOLS" />
+              <PreviewCard pkgKey="PRO_LENGKAP" />
+           </div>
+        </div>
+      </div>
 
     </div>
   );
