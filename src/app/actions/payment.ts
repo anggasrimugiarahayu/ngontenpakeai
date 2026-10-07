@@ -112,7 +112,7 @@ export async function createCheckoutToken(data: {
       discountAmount: data.discountAmount || 0,
       amount: grossAmount,
       status: "PENDING",
-      
+      paymentMethod: data.paymentMethodKey
     }
   });
 

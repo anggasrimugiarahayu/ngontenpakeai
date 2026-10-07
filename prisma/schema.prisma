@@ -276,6 +276,7 @@ model Order {
   status           String         @default("PENDING") // PENDING, SUCCESS, FAILED
   paymentUrl       String?
   midtransId       String?        @unique
+  paymentMethod    String?        @map("payment_method")
   addonIds         String[]       @default([])
   voucherCode      String?        @map("voucher_code")
   discountAmount   Int            @default(0) @map("discount_amount")
