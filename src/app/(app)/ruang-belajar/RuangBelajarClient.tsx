@@ -117,7 +117,7 @@ export default function RuangBelajarClient() {
                         </div>
                       </div>
 
-                      <div className="mt-auto pt-2 flex items-end justify-between">
+                      <div className="mt-auto pt-2 flex items-end justify-between gap-x-2">
                         {isOwned ? (
                           <span className="text-[17px] font-black text-green-600 dark:text-green-500">Dimiliki</span>
                         ) : isFree ? (
@@ -125,11 +125,11 @@ export default function RuangBelajarClient() {
                         ) : (
                           <div className="flex flex-col">
                             {ebook.originalPrice && ebook.originalPrice > ebook.price ? (
-                              <span className="text-xs sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none mb-1">
+                              <span className="text-[11px] sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none mb-1 whitespace-nowrap">
                                 Rp {ebook.originalPrice.toLocaleString('id-ID')}
                               </span>
                             ) : null}
-                            <span className="text-[17px] font-black text-gray-900 dark:text-white leading-none">
+                            <span className="text-[15px] sm:text-[17px] font-black text-gray-900 dark:text-white leading-none whitespace-nowrap">
                               Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
                             </span>
                             {isProEbook && (
@@ -137,7 +137,7 @@ export default function RuangBelajarClient() {
                             )}
                           </div>
                         )}
-                        <button className="whitespace-nowrap shrink-0 bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg px-4 py-2 text-xs font-bold shadow-sm transition-colors">
+                        <button className="whitespace-nowrap shrink-0 bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-bold shadow-sm transition-colors">
                           Buka E-Book
                         </button>
                       </div>
