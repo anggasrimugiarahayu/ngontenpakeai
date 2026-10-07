@@ -174,7 +174,7 @@ export default function CheckoutClient({
       } catch (error) {
         // silently ignore network errors during polling
       }
-    }, 5000); // Check every 5 seconds
+    }, 7000); // Check every 7 seconds
 
     return () => clearInterval(pollInterval);
   }, [paymentState, currentOrderId]);
