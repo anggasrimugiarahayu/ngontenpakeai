@@ -340,75 +340,102 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
             </div>
           </div>      {/* Cards Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            {products.map((prod: any) => (
-              <div key={prod.id} className="group flex flex-row items-start bg-white dark:bg-[#121214] rounded-[16px] sm:rounded-[20px] border border-gray-200 dark:border-white/5 overflow-hidden shadow-sm hover:border-gray-300 dark:hover:border-white/10 transition-all duration-300 p-3 sm:p-3.5 gap-3 sm:gap-4">
+            {products.map((prod: any) => {
+              const reviewCount = prod.reviews?.length || 0;
+              const averageRating = reviewCount > 0 
+                ? (prod.reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviewCount).toFixed(1) 
+                : "0.0";
+              const buyerCount = prod._count?.owners || 0;
+              
+              return (
+              <div key={prod.id} className="flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-[16px] sm:rounded-[20px] overflow-hidden relative p-3 sm:p-4 gap-3 sm:gap-4">
                 
-                {/* Image Area - COMPACT & RESPONSIVE */}
-                <div className="w-[80px] sm:w-[95px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#18181b] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-[12px]">
+                <div className="w-[100px] sm:w-[120px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
                   <div className="aspect-[3/4] relative flex items-center justify-center">
                     {prod.coverUrl ? (
-                      <img src={prod.coverUrl} alt={prod.title} className="absolute inset-0 object-cover w-full h-full" />
+                      <>
+                        <img src={prod.coverUrl} alt={prod.title} className="absolute inset-0 w-full h-full object-cover z-0" />
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent z-10 pointer-events-none" />
+                      </>
                     ) : (
-                      <BookOpen size={24} className="text-gray-400 dark:text-gray-500 absolute" />
+                      <div className="absolute inset-0 flex items-center justify-center z-10">
+                        <BookOpen className="w-12 h-12 text-gray-300 dark:text-gray-600 opacity-50" />
+                      </div>
                     )}
                   </div>
                 </div>
                 
-                {/* Content Area - COMPACT & RESPONSIVE */}
-                <div className="flex flex-col flex-1 w-full min-w-0 py-0.5 h-full">
-                   <h3 className="text-sm sm:text-base font-bold text-gray-900 dark:text-white mb-1 leading-tight truncate" title={prod.title}>
-                     {prod.title}
-                   </h3>
-                   
-                   <div className="flex items-center gap-1 mb-1.5 sm:mb-2">
-                     <Star className="text-yellow-500 w-3 h-3 sm:w-3.5 sm:h-3.5" fill="currentColor" />
-                     <span className="text-gray-600 dark:text-gray-400 text-[10px] sm:text-xs font-medium">5.0 <span className="text-gray-400 dark:text-gray-500 font-normal hidden sm:inline">(Banyak ulasan)</span></span>
-                   </div>
-
-                   {prod.description && (
-                     <p className="text-[10px] sm:text-[11px] leading-relaxed text-gray-500 dark:text-gray-400 line-clamp-2 mb-2 sm:mb-2.5">
-                       {prod.description}
-                     </p>
-                   )}
-                   
-                   <div className="flex flex-wrap gap-1.5 mb-2 sm:mb-3 mt-auto">
-                      {prod.accessLevel !== 'FREE' && (
-                        <span className={`text-[8px] sm:text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider border whitespace-nowrap ${prod.accessLevel === 'PREMIUM' ? 'text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-900/30 border-red-200 dark:border-red-800/30' : 'text-orange-700 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30 border-orange-200 dark:border-orange-800/30'}`}>
-                          {prod.accessLevel}
-                        </span>
-                      )}
-                      <span className="text-[8px] sm:text-[9px] font-bold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-[#222225] px-1.5 py-0.5 rounded uppercase tracking-wider border border-gray-200 dark:border-white/5 whitespace-nowrap truncate max-w-[80px] sm:max-w-[100px]">
-                        {prod.category?.name?.toUpperCase() || 'PRODUK DIGITAL'}
+                <div className="flex flex-col flex-1 py-1 h-full min-h-[133px] sm:min-h-[160px]">
+                  <div className="flex-1">
+                    <h3 className="text-[17px] font-bold leading-tight tracking-tight text-gray-900 dark:text-white group-hover:text-rn-accent transition-colors line-clamp-2" title={prod.title}>
+                      {prod.title}
+                    </h3>
+                    
+                    <div className="flex items-center gap-1 text-xs font-medium text-gray-500 mt-1.5 mb-2">
+                      <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
+                      <span>{averageRating === "0.0" ? "0" : averageRating}</span>
+                      <span className="text-gray-400 font-normal ml-0.5">
+                        ({reviewCount === 0 ? "0 ulasan" : `${reviewCount} ulasan`})
                       </span>
-                   </div>
+                      <span className="text-gray-300 dark:text-gray-600 mx-1">•</span>
+                      <span className="text-gray-500 font-medium">
+                        {buyerCount} pembeli
+                      </span>
+                    </div>
 
-                   <div className="border-t border-gray-100 dark:border-white/5 pt-2 sm:pt-3 flex items-center justify-between gap-1.5">
-                     <span className="text-orange-600 dark:text-orange-400 font-bold text-[10px] sm:text-xs whitespace-nowrap truncate">
-                       {(prod.accessLevel === "PREMIUM" || prod.accessLevel === "PRO") ? `Rp ${(prod.price || 0).toLocaleString("id-ID")}` : "Rp 0"}
-                     </span>
-                     
-                     {/* Action Buttons - COMPACT & RESPONSIVE */}
-                     <div className="flex items-center gap-1 sm:gap-1.5 shrink-0">
-                        <button 
-                          onClick={() => setEditingProduct(prod)} 
-                          className="flex items-center justify-center gap-1 px-2 py-1.5 sm:px-2.5 sm:py-1.5 bg-gray-50 hover:bg-gray-100 dark:bg-transparent dark:hover:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
-                        >
-                          <Edit className="w-3 h-3" /> <span className="hidden min-[400px]:inline">Edit</span>
-                        </button>
-                        <button 
-                          onClick={async () => {
-                            if (confirm('Yakin ingin menghapus E-book ini?')) {
-                              setLoading(true);
-                              await deleteProduct(prod.id);
-                              setLoading(false);
-                            }
-                          }}
-                          className="flex items-center justify-center gap-1 px-2 py-1.5 sm:px-2.5 sm:py-1.5 bg-red-50 hover:bg-red-100 dark:bg-transparent dark:hover:bg-red-500/10 border border-red-100 dark:border-white/10 hover:border-red-200 dark:hover:border-red-500/30 text-red-600 dark:text-gray-300 dark:hover:text-red-400 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
-                        >
-                          <Trash2 className="w-3 h-3" /> <span className="hidden min-[400px]:inline">Hapus</span>
-                        </button>
-                     </div>
-                   </div>
+                    {prod.description && (
+                       <p className="text-[11px] leading-relaxed text-gray-500 dark:text-gray-400 line-clamp-1 mb-3">
+                         {prod.description}
+                       </p>
+                    )}
+                    
+                    <div className="flex flex-wrap gap-1.5 mb-4 mt-auto">
+                      <div className={`font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider ${prod.accessLevel === 'FREE' ? 'bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300' : 'bg-rn-accent/10 text-rn-accent dark:bg-rn-accent/20 dark:text-rn-accent'}`}>
+                        {prod.accessLevel === 'FREE' ? "Gratis" : (prod.accessLevel === 'PREMIUM' ? "Premium" : "PRO")}
+                      </div>
+                      <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                        {prod.category?.name || 'PRODUK DIGITAL'}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="mt-auto pt-2 flex flex-wrap items-end justify-between gap-y-3 gap-x-2">
+                    <div className="flex flex-col">
+                        {(prod.accessLevel === "PREMIUM" || prod.accessLevel === "PRO") && prod.originalPrice && prod.originalPrice > prod.price ? (
+                          <span className="text-xs sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none mb-1">
+                            Rp {prod.originalPrice.toLocaleString('id-ID')}
+                          </span>
+                        ) : null}
+                        <span className="text-[17px] font-black text-gray-900 dark:text-white leading-none">
+                          {(prod.accessLevel === "PREMIUM" || prod.accessLevel === "PRO") ? `Rp ${(prod.price || 0).toLocaleString("id-ID")}` : "Rp 0"}
+                        </span>
+                        {prod.accessLevel === "PRO" && (
+                           <span className="text-[9px] sm:text-[10px] text-rn-accent font-bold mt-1.5 whitespace-nowrap">(Rp 0 khusus PRO)</span>
+                        )}
+                    </div>
+                    
+                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 ml-auto">
+                      <button 
+                        onClick={() => setEditingProduct(prod)} 
+                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-[10px] sm:text-xs font-bold"
+                      >
+                        <Edit className="w-3.5 h-3.5" /> <span>Edit</span>
+                      </button>
+                      <button 
+                        onClick={async () => {
+                          if (confirm('Yakin ingin menghapus E-book ini?')) {
+                            setLoading(true);
+                            await deleteProduct(prod.id);
+                            mutate("pengaturan");
+                            setLoading(false);
+                          }
+                        }} 
+                        className="flex items-center justify-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg transition-colors text-[10px] sm:text-xs font-bold"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" /> <span>Hapus</span>
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}

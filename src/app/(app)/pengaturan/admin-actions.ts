@@ -67,7 +67,15 @@ export async function createCategory(data: any) {
 }
 
 export async function getProducts() {
-  return await prisma.digitalProduct.findMany({ include: { category: true, vouchers: true }, orderBy: { createdAt: 'desc' } });
+  return await prisma.digitalProduct.findMany({ 
+    include: { 
+      category: true, 
+      vouchers: true, 
+      reviews: { select: { rating: true } }, 
+      _count: { select: { owners: true } } 
+    }, 
+    orderBy: { createdAt: 'desc' } 
+  });
 }
 export async function createProduct(data: any) {
   if (data.slug) {
