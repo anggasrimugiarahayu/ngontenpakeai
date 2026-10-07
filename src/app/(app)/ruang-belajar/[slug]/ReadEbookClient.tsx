@@ -9,7 +9,6 @@ import { trackProductViewAction, trackProductClickAction } from "@/app/actions/a
 import { useRouter } from "next/navigation";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { preload } from "swr";
 import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
 import { ArrowLeft, Lock, Crown, Star, BookOpen, Tag } from "lucide-react";
 import { claimFreeEbook } from "../actions";
