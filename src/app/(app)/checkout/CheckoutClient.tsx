@@ -457,22 +457,37 @@ export default function CheckoutClient({
             )}
           </div>
 
-          <div className="flex flex-col gap-2 mt-auto">
-            <button onClick={paymentState === "error" ? () => { setCurrentToken(""); setCurrentOrderId(""); handlePay(); } : paymentState === "pending" ? () => openSnap(currentToken, currentOrderId) : handlePay} disabled={loading || isCancelLoading}
-              className={`w-full text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-md ${'bg-rn-accent hover:bg-rn-accent/90'}`}>
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
-              {paymentState === "pending" ? "Lanjutkan Pembayaran" : loading ? "Processing..." : `Buy Now - IDR ${formatRupiah(grossAmount)}`}
-            </button>
-            
-            {paymentState === "pending" && (
-              <button 
-                onClick={handleCancelPayment} 
-                disabled={isCancelLoading || loading}
-                className="w-full text-red-500 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 font-bold py-3 rounded-xl transition-all flex items-center justify-center gap-2"
-              >
-                {isCancelLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
-                Batalkan Pembayaran
-              </button>
+          <div className="mt-auto w-full">
+            {paymentState === "pending" ? (
+              <div className="flex gap-2">
+                <button 
+                  onClick={handleCancelPayment} 
+                  disabled={isCancelLoading || loading}
+                  className="flex-1 text-red-500 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2"
+                >
+                  {isCancelLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <X className="w-4 h-4" />}
+                  <span className="text-sm sm:text-base">Cancel Order</span>
+                </button>
+                <button 
+                  onClick={() => openSnap(currentToken, currentOrderId)} 
+                  disabled={loading || isCancelLoading}
+                  className="flex-1 text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-md bg-rn-accent hover:bg-rn-accent/90"
+                >
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                  <span className="text-sm sm:text-base">Continue Payment</span>
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                <button 
+                  onClick={paymentState === "error" ? () => { setCurrentToken(""); setCurrentOrderId(""); handlePay(); } : handlePay} 
+                  disabled={loading || isCancelLoading}
+                  className="w-full text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-md bg-rn-accent hover:bg-rn-accent/90"
+                >
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                  {loading ? "Processing..." : `Buy Now - IDR ${formatRupiah(grossAmount)}`}
+                </button>
+              </div>
             )}
           </div>
         </div>
