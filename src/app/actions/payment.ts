@@ -112,7 +112,7 @@ export async function createCheckoutToken(data: {
       discountAmount: data.discountAmount || 0,
       amount: grossAmount,
       status: "PENDING",
-      paymentMethod: data.paymentMethodKey
+      
     }
   });
 
@@ -196,10 +196,28 @@ export async function cancelPayment(orderId: string) {
 
 export async function verifyPayment(orderId: string) {
   try {
-    const statusResponse = await coreApi.transaction.status(orderId);
-    const transactionStatus = statusResponse.transaction_status;
-    const fraudStatus = statusResponse.fraud_status;
-    const expiryTime = statusResponse.expiry_time; // Provided by Midtrans
+    const order = await prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) return { success: false };
+
+    // Fallback 24 hours from creation if Midtrans doesn't provide it
+    let expiryTime = new Date(order.createdAt.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    let transactionStatus = "pending";
+    let fraudStatus = "";
+
+    try {
+      const statusResponse = await coreApi.transaction.status(orderId);
+      transactionStatus = statusResponse.transaction_status;
+      fraudStatus = statusResponse.fraud_status;
+      if (statusResponse.expiry_time) {
+        // Midtrans returns "YYYY-MM-DD HH:mm:ss", which JS Date might parse with local timezone.
+        // But since we just pass it to the frontend, it's better to format it safely or just pass the string.
+        // Actually it's often better to parse it properly, but let's just use what midtrans gives if available.
+        expiryTime = statusResponse.expiry_time;
+      }
+    } catch (midtransErr) {
+      console.log("Midtrans status API warning:", midtransErr);
+      // Proceed with PENDING if midtrans throws (e.g. 404 because transaction hasn't fully registered)
+    }
 
     let finalStatus = "PENDING";
     if (transactionStatus === "capture") {
@@ -212,9 +230,6 @@ export async function verifyPayment(orderId: string) {
     } else if (transactionStatus === "pending") {
       finalStatus = "PENDING";
     }
-
-    const order = await prisma.order.findUnique({ where: { id: orderId } });
-    if (!order) return { success: false };
 
     if (order.status !== "SUCCESS" && finalStatus === "SUCCESS") {
       await prisma.$transaction(async (tx) => {

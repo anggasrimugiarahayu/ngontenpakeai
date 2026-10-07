@@ -133,7 +133,9 @@ export default function CheckoutClient({
   useEffect(() => {
     if (paymentState !== "pending" || !expiryTime) return;
     const interval = setInterval(() => {
-      const distance = new Date(expiryTime).getTime() - new Date().getTime();
+      // Fix Midtrans date format "YYYY-MM-DD HH:mm:ss" for Safari
+      const safeExpiryTime = expiryTime.includes(' ') ? expiryTime.replace(' ', 'T') : expiryTime;
+      const distance = new Date(safeExpiryTime).getTime() - new Date().getTime();
       if (distance < 0) {
         clearInterval(interval);
         setTimeLeft("EXPIRED");
