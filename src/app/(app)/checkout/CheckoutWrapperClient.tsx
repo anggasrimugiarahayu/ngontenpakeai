@@ -30,7 +30,7 @@ export default function CheckoutWrapperClient() {
   }
 
   if (data.notAuthorized) {
-    router.replace("/auth/login?callbackUrl=/checkout");
+    router.replace(`/login?redirect=/checkout?type=${type}${productId ? `&productId=${productId}` : ''}`);
     return null;
   }
 

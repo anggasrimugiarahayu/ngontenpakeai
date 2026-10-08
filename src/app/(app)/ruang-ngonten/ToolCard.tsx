@@ -20,7 +20,7 @@ export default function ToolCard({ feature, hasBlueprint, isPro = false, isLogge
   const handleClick = (e: React.MouseEvent) => {
     if (!isLoggedIn) {
       e.preventDefault();
-      router.push("/login");
+      router.push(`/login?redirect=${feature.href}`);
       return;
     }
     if (!canAccess) {

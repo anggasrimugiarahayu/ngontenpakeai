@@ -160,7 +160,7 @@ export default function ClientLayout({
                   <div 
                     key={tool.href}
                     onClick={() => { 
-                      if (!isLoggedIn) router.push('/login');
+                      if (!isLoggedIn) router.push(`/login?redirect=${tool.href}`);
                       else if (isProLocked) router.push('/?pricing=true'); 
                     }}
                     title={!isExpanded ? `${tool.label} (Terkunci)` : undefined}
@@ -296,7 +296,7 @@ export default function ClientLayout({
                       onClick={() => { 
                         if (!isLoggedIn) {
                            setIsOpen(false);
-                           router.push('/login');
+                           router.push(`/login?redirect=${tool.href}`);
                         } else if (isProLocked) {
                            setIsOpen(false);
                            router.push('/?pricing=true');

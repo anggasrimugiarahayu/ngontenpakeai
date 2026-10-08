@@ -15,7 +15,8 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
 
   // Intercept item-level clicks if not logged in
   if (params?.slug && params.slug.length > 0 && !isLoggedIn) {
-    redirect("/login");
+    const slugPath = params.slug.join('/');
+    redirect(`/login?redirect=/ruang-ngonten/${slugPath}`);
   }
 
   let hasBlueprint = false;
