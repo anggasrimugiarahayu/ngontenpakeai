@@ -144,6 +144,9 @@ export function SettingsTabs({ user, dbUser, orders = [] }: { user: any, dbUser?
               <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
                 <div className="mb-4">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Upgrade Plan</h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-2xl">
+                    Masih kurang puas dengan fitur saat ini? Upgrade ke paket PRO PLUS sekarang dan nikmati sensasi bikin ratusan konten viral setiap hari tanpa batas waktu!
+                  </p>
                 </div>
                 <div className="flex items-center gap-4">
                   <span className="bg-orange-500/10 text-orange-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
