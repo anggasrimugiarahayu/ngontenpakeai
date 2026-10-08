@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { preload } from "swr";
 import { getDashboardDataAction } from "@/app/actions/dashboard";
 import { getPengaturanDataAction } from "@/app/actions/pengaturan";
@@ -48,6 +48,7 @@ export default function ClientLayout({
 }) {
 
   const pathname = usePathname();
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false); // Mobile drawer
   const [isExpanded, setIsExpanded] = useState(false); // Desktop floating dock
 
@@ -134,14 +135,17 @@ export default function ClientLayout({
                 } else {
                   isActive = pathname === tool.href;
                 }
-              const isLocked = isToolsMode && ((!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || ((tool as any).isProOnly && !isPro));
+              const isProLocked = isToolsMode && (tool as any).isProOnly && !isPro;
+              const isBlueprintLocked = isToolsMode && !hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint';
+              const isLocked = isProLocked || isBlueprintLocked;
               
               if (isLocked) {
                 return (
                   <div 
                     key={tool.href}
+                    onClick={() => { if (isProLocked) router.push('/?pricing=true'); }}
                     title={!isExpanded ? `${tool.label} (Terkunci)` : undefined}
-                    className={`flex items-center rounded-xl transition-all duration-200 text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-60 ${isExpanded ? 'px-3 py-3 gap-3' : 'justify-center w-10 h-10 mx-auto'}`}
+                    className={`flex items-center rounded-xl transition-all duration-200 text-gray-400 dark:text-gray-600 opacity-60 ${isProLocked ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5' : 'cursor-not-allowed'} ${isExpanded ? 'px-3 py-3 gap-3' : 'justify-center w-10 h-10 mx-auto'}`}
                   >
                     <Icon size={isExpanded ? 18 : 20} className="shrink-0" />
                     {isExpanded && (
@@ -233,13 +237,21 @@ export default function ClientLayout({
                 } else {
                   isActive = pathname === tool.href;
                 }
-                const isLocked = isToolsMode && ((!hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint') || ((tool as any).isProOnly && !isPro));
+                const isProLocked = isToolsMode && (tool as any).isProOnly && !isPro;
+                const isBlueprintLocked = isToolsMode && !hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint';
+                const isLocked = isProLocked || isBlueprintLocked;
                 
                 if (isLocked) {
                   return (
                     <div 
                       key={tool.href}
-                      className="flex items-center justify-between px-3 py-3 rounded-xl font-medium text-gray-400 dark:text-gray-600 cursor-not-allowed opacity-60"
+                      onClick={() => { 
+                        if (isProLocked) {
+                           setIsOpen(false);
+                           router.push('/?pricing=true');
+                        }
+                      }}
+                      className={`flex items-center justify-between px-3 py-3 rounded-xl font-medium text-gray-400 dark:text-gray-600 opacity-60 ${isProLocked ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5' : 'cursor-not-allowed'}`}
                     >
                       <div className="flex items-center gap-3">
                         <Icon size={18} />

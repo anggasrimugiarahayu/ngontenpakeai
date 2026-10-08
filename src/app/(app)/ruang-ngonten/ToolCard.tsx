@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+
 import { AlertCircle } from "lucide-react";
 
 export default function ToolCard({ feature, hasBlueprint, isPro = false }: { feature: any; hasBlueprint: boolean; isPro?: boolean; }) {
@@ -13,11 +15,21 @@ export default function ToolCard({ feature, hasBlueprint, isPro = false }: { fea
   const isActive = feature.isActive;
   const canAccess = (isMasterBlueprint || hasBlueprint) && isActive && (!isProOnly || isPro);
 
+  const router = useRouter();
+
   const handleClick = (e: React.MouseEvent) => {
     if (!canAccess) {
       e.preventDefault();
-      setShowError(true);
-      setTimeout(() => setShowError(false), 3000);
+      
+      if (!isActive) {
+        setShowError(true);
+        setTimeout(() => setShowError(false), 3000);
+      } else if (isProOnly && !isPro) {
+        router.push("/?pricing=true");
+      } else if (!hasBlueprint && !isMasterBlueprint) {
+        setShowError(true);
+        setTimeout(() => setShowError(false), 3000);
+      }
     }
   };
 
