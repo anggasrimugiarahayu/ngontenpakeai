@@ -154,7 +154,7 @@ export function SettingsTabs({ user, dbUser, orders = [] }: { user: any, dbUser?
                   </span>
                   <a
                     href="/?pricing=true"
-                    className="px-4 py-1.5 rounded-lg border border-gray-300 dark:border-white/10 text-sm font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors text-gray-900 dark:text-white"
+                    className="px-5 py-2 rounded-xl text-sm font-bold bg-rn-accent hover:bg-orange-600 text-white transition-all hover:shadow-lg hover:shadow-orange-500/20"
                   >
                     Lihat semua plan
                   </a>
