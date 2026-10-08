@@ -13,8 +13,8 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
   const settingRaw = settings.find((s) => s.key === "PRICING_PACKAGES")?.value;
   
   let initialConfig = {
-    PRO_BASIC: { 
-      name: "Paket Basic (Ebook)", 
+    PRO_BOOK: { 
+      name: "Paket PRO BOOK", 
       desc: "Cocok buat yang mau fokus belajar teori faceless creator.",
       price: 99000, 
       originalPrice: 2419000,
@@ -43,7 +43,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
       ],
       bundledProductIds: [] 
     },
-    PRO_LENGKAP: { 
+    PRO_PLUS: { 
       name: "Paket Lengkap (Ebook)", 
       desc: "Bonus terbanyak, akses jualan (PLR) dan Lifetime support.",
       price: 149000, 
@@ -281,13 +281,13 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
           </p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 shrink-0 w-full xl:w-auto">
-          <button onClick={() => setEditingPackage("PRO_BASIC")} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-sm transition-colors whitespace-nowrap">
+          <button onClick={() => setEditingPackage("PRO_BOOK")} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-sm transition-colors whitespace-nowrap">
             <BookOpen className="w-4 h-4" /> Paket Ebook
           </button>
           <button onClick={() => setEditingPackage("PRO_TOOLS")} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-sm transition-colors whitespace-nowrap">
             <Wrench className="w-4 h-4" /> Paket Tools
           </button>
-          <button onClick={() => setEditingPackage("PRO_LENGKAP")} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-rn-accent hover:bg-orange-600 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-rn-accent/20 whitespace-nowrap">
+          <button onClick={() => setEditingPackage("PRO_PLUS")} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-rn-accent hover:bg-orange-600 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-rn-accent/20 whitespace-nowrap">
             <Gem className="w-4 h-4" /> Paket Lengkap
           </button>
         </div>
@@ -308,9 +308,9 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 max-w-7xl mx-auto">
-            <PreviewCard pkgKey="PRO_BASIC" />
+            <PreviewCard pkgKey="PRO_BOOK" />
             <PreviewCard pkgKey="PRO_TOOLS" />
-            <PreviewCard pkgKey="PRO_LENGKAP" />
+            <PreviewCard pkgKey="PRO_PLUS" />
         </div>
       </div>
 

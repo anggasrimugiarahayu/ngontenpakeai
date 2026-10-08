@@ -26,12 +26,37 @@ export default async function RootLayout({
 }) {
   let memberCount = 0;
   let userRole = "USER";
+  let badgeName = "FREE";
   try {
     memberCount = await prisma.user.count();
     const session = await auth();
     if (session?.user?.id) {
-      const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
-      if (dbUser) userRole = dbUser.role || "USER";
+      const dbUser = await prisma.user.findUnique({ 
+        where: { id: session.user.id }, 
+        select: { role: true, proToolsExpiredAt: true, email: true } 
+      });
+      if (dbUser) {
+        userRole = dbUser.role || "USER";
+        
+        // Calculate badge dynamically
+        const hasTools = dbUser.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();
+        const isAdmin = dbUser.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
+        
+        // Check if they ever bought PRO_BOOK or PRO_PLUS
+        const bookOrders = await prisma.order.findFirst({
+          where: {
+            userId: session.user.id,
+            status: "SUCCESS",
+            orderType: { in: ["PRO_BOOK", "PRO_PLUS"] }
+          }
+        });
+        const hasBook = !!bookOrders || isAdmin;
+        
+        if (isAdmin) badgeName = "ADMIN";
+        else if (hasBook && hasTools) badgeName = "PRO PLUS";
+        else if (hasTools) badgeName = "PRO TOOLS";
+        else if (hasBook) badgeName = "PRO BOOK";
+      }
     }
   } catch (error) {
     console.log("Error fetching data (Supabase cold start)");
@@ -52,7 +77,7 @@ export default async function RootLayout({
           >
             <div className="w-full min-h-screen flex flex-col relative">
               <Suspense>
-                <Navbar memberCount={memberCount.toString()} userRole={userRole} />
+                <Navbar memberCount={memberCount.toString()} userRole={userRole} badgeName={badgeName} />
               </Suspense>
               <main className="flex-1 flex flex-col pt-16 md:pt-20 pb-2">
                 {children}

@@ -70,12 +70,12 @@ export async function POST(req: NextRequest) {
               }
             });
           }
-        } else if (order.orderType === "PRO_BASIC" || order.orderType === "PRO_TOOLS" || order.orderType === "PRO_LENGKAP") {
+        } else if (order.orderType === "PRO_BOOK" || order.orderType === "PRO_TOOLS" || order.orderType === "PRO_PLUS") {
           // 1. Upgrade to PRO role
           let updateData: any = { role: "PRO" };
           
           // If they bought TOOLS or LENGKAP, give them 30 days of proToolsExpiredAt
-          if (order.orderType === "PRO_TOOLS" || order.orderType === "PRO_LENGKAP") {
+          if (order.orderType === "PRO_TOOLS" || order.orderType === "PRO_PLUS") {
             const expiryDate = new Date();
             expiryDate.setDate(expiryDate.getDate() + 30);
             updateData.proToolsExpiredAt = expiryDate;

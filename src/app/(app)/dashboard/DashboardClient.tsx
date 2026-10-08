@@ -45,9 +45,9 @@ export default function DashboardClient({ user }: { user: any }) {
   const getOrderImage = (order: any) => {
     if (order.product?.coverUrl) return order.product.coverUrl;
     switch (order.orderType) {
-      case "PRO_BASIC": return "/img_paket/paket_ebook.png";
+      case "PRO_BOOK": return "/img_paket/paket_ebook.png";
       case "PRO_TOOLS": return "/img_paket/paket_tools.png";
-      case "PRO_LENGKAP": return "/img_paket/paket_lengkap.png";
+      case "PRO_PLUS": return "/img_paket/paket_lengkap.png";
       case "TOOLS": return "/img_paket/paket_tools.png";
       default: return "/img_paket/paket_ebook.png";
     }
@@ -56,9 +56,9 @@ export default function DashboardClient({ user }: { user: any }) {
   const getOrderTitle = (order: any) => {
     if (order.product?.title) return order.product.title;
     switch (order.orderType) {
-      case "PRO_BASIC": return "Paket Basic (Ebook)";
+      case "PRO_BOOK": return "Paket PRO BOOK";
       case "PRO_TOOLS": return "Paket Pro (Tools & Ebook)";
-      case "PRO_LENGKAP": return "Paket Lengkap (Semuanya)";
+      case "PRO_PLUS": return "Paket PRO PLUS";
       case "TOOLS": return "Akses Tools";
       default: return "Unknown Product";
     }

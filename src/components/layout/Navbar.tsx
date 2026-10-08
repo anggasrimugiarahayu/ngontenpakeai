@@ -23,9 +23,10 @@ interface NavbarProps {
   followerCount?: string;
   memberCount?: string;
   userRole?: string;
+  badgeName?: string;
 }
 
-export function Navbar({ followerCount = "144K", memberCount = "0", userRole = "USER" }: NavbarProps) {
+export function Navbar({ followerCount = "144K", memberCount = "0", userRole = "USER", badgeName = "FREE" }: NavbarProps) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { data: session, status } = useSession();
@@ -80,7 +81,7 @@ export function Navbar({ followerCount = "144K", memberCount = "0", userRole = "
   const isWorkspace = pathname === "/" || pathname?.startsWith("/dashboard") || pathname?.startsWith("/ruang-ngonten") || pathname?.startsWith("/ruang-belajar") || pathname?.startsWith("/ruang-growing") || pathname?.startsWith("/pengaturan") || pathname?.startsWith("/bantuan") || pathname?.startsWith("/feedback") || pathname?.startsWith("/checkout");
   
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
-  const isPro = isAdmin || userRole === "PRO";
+  const isPro = badgeName !== "FREE";
 
   return (
     <nav className="fixed w-full top-0 z-50 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors duration-300 backdrop-blur-md bg-gray-50/80 dark:bg-[#0f0f11]/80">

@@ -12,7 +12,7 @@ import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
 import { PAYMENT_METHODS, calculatePaymentFees, PaymentMethodKey } from "@/lib/payment-calc";
 
 interface CheckoutClientProps {
-  type: "EBOOK" | "PRO_BASIC" | "PRO_TOOLS" | "PRO_LENGKAP";
+  type: "EBOOK" | "PRO_BOOK" | "PRO_TOOLS" | "PRO_PLUS";
   productId?: string;
   itemName: string;
   itemDescription: string;

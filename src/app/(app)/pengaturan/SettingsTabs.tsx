@@ -8,7 +8,10 @@ import ProfileForm from "./ProfileForm";
 import { PlanUsageSection, ApiKeySection } from "./SettingsClientData";
 import { AdminSettingsContent } from "./AdminSettingsContent";
 
-export function SettingsTabs({ user }: { user: any }) {
+import { format } from "date-fns";
+import { id } from "date-fns/locale";
+
+export function SettingsTabs({ user, dbUser, orders = [] }: { user: any, dbUser?: any, orders?: any[] }) {
   const { data } = useSWR("pengaturan", getPengaturanDataAction);
   const [activeTab, setActiveTab] = useState("profil");
 

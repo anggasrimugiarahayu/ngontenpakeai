@@ -163,9 +163,9 @@ export async function getDashboardDataAction() {
   const getProductImage = (p: any, productDef: any) => {
     if (productDef?.coverUrl) return productDef.coverUrl;
     switch(p.orderType) {
-      case "PRO_BASIC": return "/img_paket/paket_ebook.png";
+      case "PRO_BOOK": return "/img_paket/paket_ebook.png";
       case "PRO_TOOLS": return "/img_paket/paket_tools.png";
-      case "PRO_LENGKAP": return "/img_paket/paket_lengkap.png";
+      case "PRO_PLUS": return "/img_paket/paket_lengkap.png";
       case "TOOLS": return "/img_paket/paket_tools.png";
       default: return "/img_paket/paket_ebook.png";
     }
@@ -174,9 +174,9 @@ export async function getDashboardDataAction() {
   const getProductTitle = (p: any, productDef: any) => {
     if (productDef?.title) return productDef.title;
     switch(p.orderType) {
-      case "PRO_BASIC": return "Paket Basic (Ebook)";
+      case "PRO_BOOK": return "Paket PRO BOOK";
       case "PRO_TOOLS": return "Paket Pro (Tools & Ebook)";
-      case "PRO_LENGKAP": return "Paket Lengkap (Semuanya)";
+      case "PRO_PLUS": return "Paket PRO PLUS";
       case "TOOLS": return "Tools";
       default: return "Unknown Product";
     }

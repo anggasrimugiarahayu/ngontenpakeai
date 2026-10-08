@@ -294,13 +294,13 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full text-left">
             {[
-              { key: "PRO_BASIC", type: "PRO_BASIC" },
+              { key: "PRO_BOOK", type: "PRO_BOOK" },
               { key: "PRO_TOOLS", type: "PRO_TOOLS" },
-              { key: "PRO_LENGKAP", type: "PRO_LENGKAP" }
+              { key: "PRO_PLUS", type: "PRO_PLUS" }
             ].map(pkgItem => {
               const defaultPkg = {
-                PRO_BASIC: {
-                  name: "Paket Basic (Ebook)",
+                PRO_BOOK: {
+                  name: "Paket PRO BOOK",
                   desc: "Cocok buat yang mau fokus belajar teori faceless creator.",
                   price: 99000,
                   originalPrice: 2419000,
@@ -317,7 +317,7 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
                   highlightText: "",
                   features: ["Akses 8 Sistem AI Ngonten Pakai AI", "Ebook Ngonten Pakai AI (Included)", "Bonus 4 Resource Ekstra (Footage, Hook, Tools)", "Sekali Bayar, Akses Selamanya"]
                 },
-                PRO_LENGKAP: {
+                PRO_PLUS: {
                   name: "Paket Lengkap (Ebook)",
                   desc: "Bonus terbanyak, akses jualan (PLR) dan Lifetime support.",
                   price: 149000,
@@ -329,7 +329,7 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
               };
               
               const pkgData = (pricingConfig && pricingConfig[pkgItem.key]) || defaultPkg[pkgItem.key as keyof typeof defaultPkg];
-              const isLengkap = pkgItem.key === "PRO_LENGKAP";
+              const isLengkap = pkgItem.key === "PRO_PLUS";
               const hasHighlight = pkgData.highlightText && pkgData.highlightText.trim() !== "";
               
               const formatK = (p: number) => p >= 1000 ? (p / 1000) + 'k' : p.toString();
