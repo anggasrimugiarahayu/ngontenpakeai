@@ -47,7 +47,6 @@ export default function CheckoutClient({
   const [loading, setLoading] = useState(false);
   const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "success" | "pending" | "error">(existingPendingOrder ? "pending" : "idle");
   const [errorMessage, setErrorMessage] = useState("");
-  const [showMidtransModal, setShowMidtransModal] = useState(false);
   const [isIncludedModalOpen, setIsIncludedModalOpen] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey>((existingPendingOrder?.paymentMethodKey as PaymentMethodKey) || "QRIS");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -190,64 +189,62 @@ export default function CheckoutClient({
     return () => clearInterval(pollInterval);
   }, [paymentState, currentOrderId]);
 
-  const handleCloseMidtransModal = () => {
-    setShowMidtransModal(false);
-    setPaymentState("idle");
-    setIsCancelLoading(false);
-  };
-
   const openSnap = (token: string, orderId: string) => {
-    setShowMidtransModal(true);
-  };
-
-  useEffect(() => {
-    if (showMidtransModal && currentToken && currentOrderId) {
-      // Ensure DOM is fully painted before injecting iframe
-      const timer = setTimeout(() => {
-        const container = document.getElementById('snap-container');
-        if (container) {
-          // @ts-ignore
-          window.snap.embed(currentToken, {
-            embedId: 'snap-container',
-            onSuccess: async function () {
-              setShowMidtransModal(false);
-              setPaymentState("verifying");
-              let verifyRes = await verifyPayment(currentOrderId);
-              if (verifyRes.success && verifyRes.status === "SUCCESS") {
-                 setPaymentState("success");
-                 return;
-              }
-              
-              await new Promise(resolve => setTimeout(resolve, 3000));
-              verifyRes = await verifyPayment(currentOrderId);
-              
-              if (verifyRes.success && verifyRes.status === "SUCCESS") {
-                 setPaymentState("success");
-              } else if (verifyRes.success && verifyRes.status === "PENDING") {
-                 setPaymentState("success"); 
-              } else {
-                setPaymentState("error");
-                setErrorMessage("Pembayaran berhasil di Midtrans, tetapi gagal diverifikasi sistem. Silakan hubungi admin.");
-              }
-            },
-            onPending: async function () {
-              setShowMidtransModal(false);
-              setPaymentState("pending");
-              const verifyRes = await verifyPayment(currentOrderId);
-              if (verifyRes.success && verifyRes.status === "PENDING") {
-                setExpiryTime(verifyRes.expiryTime || "");
-              }
-            },
-            onError: function () {
-              setShowMidtransModal(false);
-              setPaymentState("error");
-            }
-          });
+    // @ts-ignore
+    window.snap.pay(token, {
+      onSuccess: async function () {
+        setPaymentState("verifying");
+        // Midtrans Core API sometimes has a slight delay updating the status to settlement
+        // after Snap UI triggers onSuccess. Let's add a small delay and a retry mechanism.
+        let verifyRes = await verifyPayment(orderId);
+        if (verifyRes.success && verifyRes.status === "SUCCESS") {
+           setPaymentState("success");
+           return;
         }
-      }, 50);
-      return () => clearTimeout(timer);
-    }
-  }, [showMidtransModal, currentToken, currentOrderId]);
+        
+        // Wait 3 seconds and retry once if it's still pending on backend
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        verifyRes = await verifyPayment(orderId);
+        
+        if (verifyRes.success && verifyRes.status === "SUCCESS") {
+           setPaymentState("success");
+        } else if (verifyRes.success && verifyRes.status === "PENDING") {
+           // It's still pending in our DB/Midtrans, but Snap said success.
+           // This means the webhook will eventually settle it.
+           // We can just set it to success UI or pending UI. Let's just trust Snap for the UI success state, 
+           // but the actual product unlock relies on the webhook/backend.
+           // Or safer: tell the user it is being processed.
+           setPaymentState("success"); 
+        } else {
+          setPaymentState("error");
+          setErrorMessage("Pembayaran berhasil di Midtrans, tetapi gagal diverifikasi sistem. Silakan hubungi admin.");
+        }
+      },
+      onPending: async function () {
+        setPaymentState("pending");
+        const verifyRes = await verifyPayment(orderId);
+        if (verifyRes.success && verifyRes.status === "PENDING") {
+          setExpiryTime(verifyRes.expiryTime || "");
+        }
+      },
+      onError: function () {
+        setPaymentState("error");
+        setErrorMessage("Pembayaran gagal ditagihkan.");
+        setLoading(false);
+      },
+      onClose: async function () {
+        setPaymentState("pending");
+        const verifyRes = await verifyPayment(orderId);
+        if (verifyRes.success && verifyRes.status === "SUCCESS") setPaymentState("success");
+        else if (verifyRes.success && verifyRes.status === "PENDING") {
+           setExpiryTime(verifyRes.expiryTime || "");
+        } else {
+           setLoading(false);
+           setPaymentState("idle");
+        }
+      }
+    });
+  };
 
   const handlePay = async () => {
     if (!customerName || !customerEmail || !customerPhone) return setErrorMessage("Mohon lengkapi Email, Nama, dan Phone Number Anda.");
@@ -709,22 +706,7 @@ export default function CheckoutClient({
           </div>
         </div>
       )}
-
-      {/* MIDTRANS SNAP EMBED MODAL */}
-      {showMidtransModal && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="relative w-full max-w-[450px] bg-white dark:bg-[#18181b] rounded-3xl overflow-hidden shadow-2xl flex flex-col border border-gray-200 dark:border-white/10">
-            <button 
-              type="button"
-              onClick={handleCloseMidtransModal} 
-              className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 shadow-md transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-            <div id="snap-container" className="w-full h-[600px] overflow-hidden"></div>
-          </div>
-        </div>
-      )}
     </div>
-  );
+
+        );
 }
