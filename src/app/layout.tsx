@@ -1,3 +1,4 @@
+import { auth } from "@/auth";
 import type { Metadata } from "next";
 import Script from "next/script";
 import "./globals.css";
@@ -24,10 +25,16 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   let memberCount = 0;
+  let userRole = "USER";
   try {
     memberCount = await prisma.user.count();
+    const session = await auth();
+    if (session?.user?.id) {
+      const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
+      if (dbUser) userRole = dbUser.role || "USER";
+    }
   } catch (error) {
-    console.log("Error fetching member count (Supabase cold start)");
+    console.log("Error fetching data (Supabase cold start)");
   }
 
   return (
@@ -45,7 +52,7 @@ export default async function RootLayout({
           >
             <div className="w-full min-h-screen flex flex-col relative">
               <Suspense>
-                <Navbar memberCount={memberCount.toString()} />
+                <Navbar memberCount={memberCount.toString()} userRole={userRole} />
               </Suspense>
               <main className="flex-1 flex flex-col pt-16 md:pt-20 pb-2">
                 {children}

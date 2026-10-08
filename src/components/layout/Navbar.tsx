@@ -22,9 +22,10 @@ import { usePathname, useSearchParams } from "next/navigation";
 interface NavbarProps {
   followerCount?: string;
   memberCount?: string;
+  userRole?: string;
 }
 
-export function Navbar({ followerCount = "144K", memberCount = "0" }: NavbarProps) {
+export function Navbar({ followerCount = "144K", memberCount = "0", userRole = "USER" }: NavbarProps) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { data: session, status } = useSession();
@@ -78,9 +79,8 @@ export function Navbar({ followerCount = "144K", memberCount = "0" }: NavbarProp
   const isDark = mounted ? theme === "dark" : true;
   const isWorkspace = pathname === "/" || pathname?.startsWith("/dashboard") || pathname?.startsWith("/ruang-ngonten") || pathname?.startsWith("/ruang-belajar") || pathname?.startsWith("/ruang-growing") || pathname?.startsWith("/pengaturan") || pathname?.startsWith("/bantuan") || pathname?.startsWith("/feedback") || pathname?.startsWith("/checkout");
   
-  // For now, mock the subscription status
-  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
-  const isPro = isAdmin || false; // Later add actual Pro check for normal users 
+  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
+  const isPro = isAdmin || userRole === "PRO";
 
   return (
     <nav className="fixed w-full top-0 z-50 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors duration-300 backdrop-blur-md bg-gray-50/80 dark:bg-[#0f0f11]/80">

@@ -1,3 +1,4 @@
+import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { getCachedFeatures, getCachedHasBlueprint } from "@/lib/cache";
 import ClientLayout from "./ruang-ngonten/ClientLayout";
@@ -12,8 +13,15 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   }
   
   const dbFeatures = await getCachedFeatures();
-  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com" || session?.user?.role === "ADMIN";
-  const isPro = session?.user?.role === "PRO" || isAdmin;
+  
+  let userRole = "USER";
+  if (session?.user?.id) {
+    const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
+    if (dbUser) userRole = dbUser.role || "USER";
+  }
+  
+  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
+  const isPro = userRole === "PRO" || isAdmin;
   const isLoggedIn = !!session?.user;
   
   return <ClientLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isAdmin={isAdmin} isLoggedIn={isLoggedIn}>{children}</ClientLayout>;
