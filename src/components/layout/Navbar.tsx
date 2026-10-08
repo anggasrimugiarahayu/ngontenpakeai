@@ -78,7 +78,7 @@ export function Navbar({ followerCount = "144K", memberCount = "0", userRole = "
   }, []);
 
   const isDark = mounted ? theme === "dark" : true;
-  const isWorkspace = pathname === "/" || pathname?.startsWith("/dashboard") || pathname?.startsWith("/ruang-ngonten") || pathname?.startsWith("/ruang-belajar") || pathname?.startsWith("/ruang-growing") || pathname?.startsWith("/pengaturan") || pathname?.startsWith("/bantuan") || pathname?.startsWith("/feedback") || pathname?.startsWith("/checkout");
+  const isWorkspace = pathname === "/" || pathname?.startsWith("/dashboard") || pathname?.startsWith("/ruang-ngonten") || pathname?.startsWith("/ruang-belajar") || pathname?.startsWith("/ruang-growing") || pathname?.startsWith("/pengaturan") || pathname?.startsWith("/bantuan") || pathname?.startsWith("/feedback") || pathname?.startsWith("/checkout") || pathname?.startsWith("/login") || pathname?.startsWith("/signup");
   
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
   const isPro = badgeName !== "FREE";
@@ -94,6 +94,7 @@ export function Navbar({ followerCount = "144K", memberCount = "0", userRole = "
             <Menu size={22} />
           </button>
         )}
+
         <Link
           href="/"
           className="flex items-center gap-1.5 sm:gap-2.5 group"
