@@ -123,7 +123,7 @@ export async function getDashboardDataAction() {
   const productIds = topProducts.map(p => p.digitalProductId).filter(Boolean) as string[];
   const products = await prisma.digitalProduct.findMany({
     where: { id: { in: productIds } },
-    select: { id: true, title: true, coverUrl: true }
+    select: { id: true, title: true, coverUrl: true, slug: true }
   }).catch(() => []);
 
   // -- CALCULATIONS --
@@ -159,6 +159,18 @@ export async function getDashboardDataAction() {
     viewsChartData.push({ date: dateStr, views: viewsChartMap[dateStr]?.views || 0, clicks: viewsChartMap[dateStr]?.clicks || 0 });
   }
 
+
+  const getProductImage = (p: any, productDef: any) => {
+    if (productDef?.coverUrl) return productDef.coverUrl;
+    switch(p.orderType) {
+      case "PRO_BASIC": return "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=400&fit=crop"; // Ebooks
+      case "PRO_TOOLS": return "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=400&fit=crop"; // Tools
+      case "PRO_LENGKAP": return "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=400&fit=crop"; // Premium Package
+      case "TOOLS": return "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=400&fit=crop";
+      default: return "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=400&fit=crop"; // Book generic
+    }
+  };
+
   const getProductTitle = (p: any, productDef: any) => {
     if (productDef?.title) return productDef.title;
     switch(p.orderType) {
@@ -185,7 +197,9 @@ export async function getDashboardDataAction() {
       sold: sold,
       amount: p._sum.amount || 0,
       conversion: parseFloat(conversion.toFixed(1)), 
-      image: productDef?.coverUrl || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=100&h=100&fit=crop'
+      image: getProductImage(p, productDef),
+      slug: productDef?.slug || null,
+      orderType: p.orderType
     };
   });
 

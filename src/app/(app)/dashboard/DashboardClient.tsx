@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import useSWR from 'swr';
+import NextLink from 'next/link';
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { getDashboardDataAction } from '@/app/actions/dashboard';
 import { 
@@ -40,6 +41,18 @@ const MOCK_DONUT_DATA = [
 
 
 export default function DashboardClient({ user }: { user: any }) {
+  
+  const getOrderImage = (order: any) => {
+    if (order.product?.coverUrl) return order.product.coverUrl;
+    switch (order.orderType) {
+      case "PRO_BASIC": return "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=400&fit=crop";
+      case "PRO_TOOLS": return "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=400&fit=crop";
+      case "PRO_LENGKAP": return "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=400&fit=crop";
+      case "TOOLS": return "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=400&fit=crop";
+      default: return "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=400&fit=crop";
+    }
+  };
+
   const getOrderTitle = (order: any) => {
     if (order.product?.title) return order.product.title;
     switch (order.orderType) {
@@ -249,8 +262,8 @@ export default function DashboardClient({ user }: { user: any }) {
               
               <div className="flex gap-4 items-start mb-5">
                 <div className="w-16 h-20 bg-gray-50 dark:bg-[#121214] rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-white/10 p-1 flex items-center justify-center">
-                  {order.product?.coverUrl ? (
-                    <img src={order.product.coverUrl} className="max-w-full max-h-full object-contain drop-shadow-sm" alt="Product" />
+                  {getOrderImage(order) ? (
+                    <img src={getOrderImage(order)} className="max-w-full max-h-full object-contain drop-shadow-sm" alt="Product" />
                   ) : (
                     <span className="text-[10px] text-gray-400">No Img</span>
                   )}
@@ -459,11 +472,11 @@ export default function DashboardClient({ user }: { user: any }) {
                           
                           <div className="flex gap-4">
                             <div className="w-14 h-20 bg-gray-50 dark:bg-[#121214] rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-white/10 p-1 flex items-center justify-center">
-                              {order.product?.coverUrl ? (
-                                <img src={order.product.coverUrl} className="max-w-full max-h-full object-contain drop-shadow-sm" alt="Product" />
-                              ) : (
-                                <span className="text-[10px] text-gray-400">No Img</span>
-                              )}
+                              {getOrderImage(order) ? (
+                    <img src={getOrderImage(order)} className="max-w-full max-h-full object-contain drop-shadow-sm" alt="Product" />
+                  ) : (
+                    <span className="text-[10px] text-gray-400">No Img</span>
+                  )}
                             </div>
                             <div className="flex-1 flex flex-col justify-start">
                               <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight mb-1">{getOrderTitle(order)}</h3>
@@ -1050,9 +1063,9 @@ export default function DashboardClient({ user }: { user: any }) {
                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{product.conversion}%</span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                         <button className="px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-orange-500/20">
+                         <NextLink href={product.orderType && product.orderType.startsWith("PRO_") ? "/?pricing=true" : `/ruang-belajar/${product.slug}`} className="inline-block px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-orange-500/20">
                            View
-                         </button>
+                         </NextLink>
                       </td>
                     </tr>
                   ))}
