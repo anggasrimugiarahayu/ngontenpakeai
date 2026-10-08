@@ -678,38 +678,31 @@ export default function CheckoutClient({
 
 {/* INCLUDED ADDONS MODAL */}
       {isIncludedModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#1a1a1c] border border-gray-100 dark:border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl flex flex-col max-h-[85vh]">
-            <div className="flex justify-between items-center mb-4 shrink-0">
-              <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-500" />
-                Produk Included (Gratis)
-              </h3>
-              <button type="button" onClick={(e) => { e.preventDefault(); setIsIncludedModalOpen(false); }} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-500">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-white/10">
+            <div className="p-4 border-b border-gray-100 dark:border-white/10 flex items-center justify-between shrink-0">
+              <h3 className="font-bold text-gray-900 dark:text-white">Produk Included (Gratis)</h3>
+              <button type="button" onClick={(e) => { e.preventDefault(); setIsIncludedModalOpen(false); }} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-gray-500">
                 <X className="w-5 h-5" />
               </button>
             </div>
             
-            <div className="overflow-y-auto pr-2 space-y-3 flex-1 mb-4">
+            <div className="p-5 overflow-y-auto space-y-3">
               {includedAddons.map(addon => (
-                <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-white/5">
+                <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/10">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 bg-white dark:bg-[#18181b] rounded-lg p-0.5 border border-gray-100 dark:border-white/5 shrink-0 flex items-center justify-center overflow-hidden">
                       {addon.coverUrl ? <img src={addon.coverUrl} className="w-full h-full object-contain" alt="" /> : <CreditCard className="w-5 h-5 text-gray-300" />}
                     </div>
                     <div>
-                      <p className="text-xs font-bold text-gray-900 dark:text-white line-clamp-2 leading-snug">{addon.title}</p>
-                      <span className="text-[10px] font-semibold text-green-500">Termasuk Paket (Rp 0)</span>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">{addon.title}</p>
+                      <p className="text-xs font-medium text-green-500">Termasuk Paket (Rp 0)</p>
                     </div>
                   </div>
                   <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
                 </div>
               ))}
             </div>
-
-            <button type="button" onClick={(e) => { e.preventDefault(); setIsIncludedModalOpen(false); }} className="w-full py-3 rounded-xl font-bold text-sm bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors shrink-0">
-              Tutup
-            </button>
           </div>
         </div>
       )}
