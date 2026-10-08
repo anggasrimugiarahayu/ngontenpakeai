@@ -259,23 +259,6 @@ export default function ClientLayout({
                 const isProLocked = isToolsMode && (tool as any).isProOnly && !isPro;
                 const isBlueprintLocked = isToolsMode && !hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint';
                 const isLocked = isProLocked || isBlueprintLocked;
-                
-                if ((tool as any).disabled) {
-                return (
-                  <div 
-                    key={tool.href}
-                    title={!isExpanded ? `${tool.label} (Segera Hadir)` : undefined}
-                    className={`flex items-center rounded-xl transition-all duration-200 text-gray-400 dark:text-gray-600 opacity-60 cursor-not-allowed ${isExpanded ? 'px-3 py-3 gap-3' : 'justify-center w-10 h-10 mx-auto'}`}
-                  >
-                    <Icon size={isExpanded ? 18 : 20} className="shrink-0" />
-                    {isExpanded && (
-                      <>
-                        <span className="text-sm font-medium whitespace-nowrap truncate">{tool.label}</span>
-                      </>
-                    )}
-                  </div>
-                );
-              }
               if ((tool as any).disabled) {
                   return (
                     <div 
@@ -352,7 +335,7 @@ export default function ClientLayout({
         
 
 
-        <div className="flex-1 w-full relative">
+        <div className="flex-1 w-full flex flex-col relative">
           {children}
         </div>
       </div>
