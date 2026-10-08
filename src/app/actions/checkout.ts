@@ -56,12 +56,19 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     const pricingConfig = setting?.value ? JSON.parse(setting.value) : null;
 
     
+
     if (pricingConfig && pricingConfig[type]) {
       baseAmount = pricingConfig[type].price;
       itemName = pricingConfig[type].name;
       itemDescription = pricingConfig[type].desc;
       bundledIds = pricingConfig[type].bundledProductIds || [];
+      switch(type) {
+        case "PRO_BASIC": productImage = "/img_paket/paket_ebook.png"; break;
+        case "PRO_TOOLS": productImage = "/img_paket/paket_tools.png"; break;
+        case "PRO_LENGKAP": productImage = "/img_paket/paket_lengkap.png"; break;
+      }
     } else {
+
       // Fallback defaults
       if (type === "PRO_BASIC") {
         baseAmount = 99000; itemName = "Paket Basic (Ebook)"; itemDescription = "Cocok buat yang mau fokus belajar teori faceless creator.";

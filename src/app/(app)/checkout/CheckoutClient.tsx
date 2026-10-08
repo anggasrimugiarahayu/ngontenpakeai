@@ -47,6 +47,7 @@ export default function CheckoutClient({
   const [loading, setLoading] = useState(false);
   const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "success" | "pending" | "error">(existingPendingOrder ? "pending" : "idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isIncludedModalOpen, setIsIncludedModalOpen] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey>((existingPendingOrder?.paymentMethodKey as PaymentMethodKey) || "QRIS");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
@@ -317,24 +318,17 @@ export default function CheckoutClient({
                 <div className="space-y-3">
                   
                   {includedAddons.length > 0 && (
-                    <div className="mb-2 space-y-2">
-                      <p className="text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-1 ml-1">Included (Gratis)</p>
-                      {includedAddons.map(addon => (
-                        <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-white/10 bg-green-50/50 dark:bg-green-900/10">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white dark:bg-[#18181b] rounded-lg p-0.5 border border-gray-100 dark:border-white/5 shrink-0 flex items-center justify-center overflow-hidden">
-                              {addon.coverUrl ? <img src={addon.coverUrl} className="w-full h-full object-contain" alt="" /> : <CreditCard className="w-4 h-4 text-gray-300" />}
-                            </div>
-                            <div>
-                              <p className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1">{addon.title}</p>
-                              <p className="text-xs font-medium text-green-600 dark:text-green-500">Termasuk Paket (Rp 0)</p>
-                            </div>
-                          </div>
-                          <div className="shrink-0">
-                            <CheckCircle2 className="w-5 h-5 text-green-500" />
-                          </div>
+                    <div className="mb-2">
+                      <button 
+                        onClick={() => setIsIncludedModalOpen(true)}
+                        className="w-full flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-white/10 bg-green-50/50 dark:bg-green-900/10 hover:bg-green-100/50 dark:hover:bg-green-900/20 transition-colors"
+                      >
+                        <div className="flex items-center gap-2">
+                          <CheckCircle2 className="w-4 h-4 text-green-500" />
+                          <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Lihat {includedAddons.length} Produk Included (Gratis)</span>
                         </div>
-                      ))}
+                        <span className="text-xs text-green-600 dark:text-green-400 font-semibold cursor-pointer">Buka</span>
+                      </button>
                     </div>
                   )}
                   {selectedAddons.length > 0 && <p className="text-[10px] uppercase font-bold tracking-widest text-gray-500 mb-1 ml-1 mt-3">Tambahan Ekstra</p>}
