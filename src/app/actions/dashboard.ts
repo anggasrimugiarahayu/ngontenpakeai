@@ -175,7 +175,7 @@ export async function getDashboardDataAction() {
     if (productDef?.title) return productDef.title;
     switch(p.orderType) {
       case "PRO_BOOK": return "Paket PRO BOOK";
-      case "PRO_TOOLS": return "Paket Pro (Tools & Ebook)";
+      case "PRO_TOOLS": return "Paket PRO TOOLS";
       case "PRO_PLUS": return "Paket PRO PLUS";
       case "TOOLS": return "Tools";
       default: return "Unknown Product";
