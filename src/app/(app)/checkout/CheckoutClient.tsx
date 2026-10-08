@@ -664,5 +664,6 @@ export default function CheckoutClient({
         </div>
       )}
     </div>
-  );
+
+        );
 }
