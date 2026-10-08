@@ -190,62 +190,64 @@ export default function CheckoutClient({
     return () => clearInterval(pollInterval);
   }, [paymentState, currentOrderId]);
 
-  const openSnap = (token: string, orderId: string) => {
-    // @ts-ignore
-    window.snap.pay(token, {
-      onSuccess: async function () {
-        setPaymentState("verifying");
-        // Midtrans Core API sometimes has a slight delay updating the status to settlement
-        // after Snap UI triggers onSuccess. Let's add a small delay and a retry mechanism.
-        let verifyRes = await verifyPayment(orderId);
-        if (verifyRes.success && verifyRes.status === "SUCCESS") {
-           setPaymentState("success");
-           return;
-        }
-        
-        // Wait 3 seconds and retry once if it's still pending on backend
-        await new Promise(resolve => setTimeout(resolve, 3000));
-        verifyRes = await verifyPayment(orderId);
-        
-        if (verifyRes.success && verifyRes.status === "SUCCESS") {
-           setPaymentState("success");
-        } else if (verifyRes.success && verifyRes.status === "PENDING") {
-           // It's still pending in our DB/Midtrans, but Snap said success.
-           // This means the webhook will eventually settle it.
-           // We can just set it to success UI or pending UI. Let's just trust Snap for the UI success state, 
-           // but the actual product unlock relies on the webhook/backend.
-           // Or safer: tell the user it is being processed.
-           setPaymentState("success"); 
-        } else {
-          setPaymentState("error");
-          setErrorMessage("Pembayaran berhasil di Midtrans, tetapi gagal diverifikasi sistem. Silakan hubungi admin.");
-        }
-      },
-      onPending: async function () {
-        setPaymentState("pending");
-        const verifyRes = await verifyPayment(orderId);
-        if (verifyRes.success && verifyRes.status === "PENDING") {
-          setExpiryTime(verifyRes.expiryTime || "");
-        }
-      },
-      onError: function () {
-        setPaymentState("error");
-        setErrorMessage("Pembayaran gagal ditagihkan.");
-        setLoading(false);
-      },
-      onClose: async function () {
-        setPaymentState("pending");
-        const verifyRes = await verifyPayment(orderId);
-        if (verifyRes.success && verifyRes.status === "SUCCESS") setPaymentState("success");
-        else if (verifyRes.success && verifyRes.status === "PENDING") {
-           setExpiryTime(verifyRes.expiryTime || "");
-        } else {
-           setLoading(false);
-           setPaymentState("idle");
-        }
-      }
-    });
+  const handleCloseMidtransModal = () => {
+    setShowMidtransModal(false);
+    setPaymentState("idle");
+    setIsCancelLoading(false);
   };
+
+  const openSnap = (token: string, orderId: string) => {
+    setShowMidtransModal(true);
+  };
+
+  useEffect(() => {
+    if (showMidtransModal && currentToken && currentOrderId) {
+      // Ensure DOM is fully painted before injecting iframe
+      const timer = setTimeout(() => {
+        const container = document.getElementById('snap-container');
+        if (container) {
+          // @ts-ignore
+          window.snap.embed(currentToken, {
+            embedId: 'snap-container',
+            onSuccess: async function () {
+              setShowMidtransModal(false);
+              setPaymentState("verifying");
+              let verifyRes = await verifyPayment(currentOrderId);
+              if (verifyRes.success && verifyRes.status === "SUCCESS") {
+                 setPaymentState("success");
+                 return;
+              }
+              
+              await new Promise(resolve => setTimeout(resolve, 3000));
+              verifyRes = await verifyPayment(currentOrderId);
+              
+              if (verifyRes.success && verifyRes.status === "SUCCESS") {
+                 setPaymentState("success");
+              } else if (verifyRes.success && verifyRes.status === "PENDING") {
+                 setPaymentState("success"); 
+              } else {
+                setPaymentState("error");
+                setErrorMessage("Pembayaran berhasil di Midtrans, tetapi gagal diverifikasi sistem. Silakan hubungi admin.");
+              }
+            },
+            onPending: async function () {
+              setShowMidtransModal(false);
+              setPaymentState("pending");
+              const verifyRes = await verifyPayment(currentOrderId);
+              if (verifyRes.success && verifyRes.status === "PENDING") {
+                setExpiryTime(verifyRes.expiryTime || "");
+              }
+            },
+            onError: function () {
+              setShowMidtransModal(false);
+              setPaymentState("error");
+            }
+          });
+        }
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [showMidtransModal, currentToken, currentOrderId]);
 
   const handlePay = async () => {
     if (!customerName || !customerEmail || !customerPhone) return setErrorMessage("Mohon lengkapi Email, Nama, dan Phone Number Anda.");
