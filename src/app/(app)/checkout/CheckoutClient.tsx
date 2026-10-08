@@ -47,6 +47,7 @@ export default function CheckoutClient({
   const [loading, setLoading] = useState(false);
   const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "success" | "pending" | "error">(existingPendingOrder ? "pending" : "idle");
   const [errorMessage, setErrorMessage] = useState("");
+  const [showMidtransModal, setShowMidtransModal] = useState(false);
   const [isIncludedModalOpen, setIsIncludedModalOpen] = useState(false);
   const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey>((existingPendingOrder?.paymentMethodKey as PaymentMethodKey) || "QRIS");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -706,7 +707,22 @@ export default function CheckoutClient({
           </div>
         </div>
       )}
-    </div>
 
-        );
+      {/* MIDTRANS SNAP EMBED MODAL */}
+      {showMidtransModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-[450px] bg-white dark:bg-[#18181b] rounded-3xl overflow-hidden shadow-2xl flex flex-col border border-gray-200 dark:border-white/10">
+            <button 
+              type="button"
+              onClick={handleCloseMidtransModal} 
+              className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-white dark:bg-gray-800 rounded-full text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 shadow-md transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <div id="snap-container" className="w-full h-[600px] overflow-hidden"></div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
