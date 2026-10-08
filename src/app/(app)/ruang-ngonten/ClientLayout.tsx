@@ -71,9 +71,9 @@ export default function ClientLayout({
 
   if (!isLoggedIn) {
     GLOBAL_NAV_ITEMS = [
-      { label: "Ruang Belajar", href: "/login?redirect=/ruang-belajar", icon: BookOpen },
-      { label: "Ruang Ngonten", href: "/login?redirect=/ruang-ngonten", icon: LayoutTemplate },
-      { label: "Ruang Growing", href: "/login?redirect=/ruang-growing", icon: RefreshCw },
+      { label: "Ruang Belajar", href: "/ruang-belajar", icon: BookOpen },
+      { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate },
+      { label: "Ruang Growing", href: "#", icon: RefreshCw, disabled: true },
       { label: "Pricing", href: "/?pricing=true", icon: CreditCard },
     ];
   } else {
@@ -139,11 +139,30 @@ export default function ClientLayout({
               const isBlueprintLocked = isToolsMode && !hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint';
               const isLocked = isProLocked || isBlueprintLocked;
               
+              if ((tool as any).disabled) {
+                return (
+                  <div 
+                    key={tool.href}
+                    title={!isExpanded ? `${tool.label} (Segera Hadir)` : undefined}
+                    className={`flex items-center rounded-xl transition-all duration-200 text-gray-400 dark:text-gray-600 opacity-60 cursor-not-allowed ${isExpanded ? 'px-3 py-3 gap-3' : 'justify-center w-10 h-10 mx-auto'}`}
+                  >
+                    <Icon size={isExpanded ? 18 : 20} className="shrink-0" />
+                    {isExpanded && (
+                      <>
+                        <span className="text-sm font-medium whitespace-nowrap truncate">{tool.label}</span>
+                      </>
+                    )}
+                  </div>
+                );
+              }
               if (isLocked) {
                 return (
                   <div 
                     key={tool.href}
-                    onClick={() => { if (isProLocked) router.push('/?pricing=true'); }}
+                    onClick={() => { 
+                      if (!isLoggedIn) router.push('/login');
+                      else if (isProLocked) router.push('/?pricing=true'); 
+                    }}
                     title={!isExpanded ? `${tool.label} (Terkunci)` : undefined}
                     className={`flex items-center rounded-xl transition-all duration-200 text-gray-400 dark:text-gray-600 opacity-60 ${isProLocked ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5' : 'cursor-not-allowed'} ${isExpanded ? 'px-3 py-3 gap-3' : 'justify-center w-10 h-10 mx-auto'}`}
                   >
@@ -241,12 +260,44 @@ export default function ClientLayout({
                 const isBlueprintLocked = isToolsMode && !hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint';
                 const isLocked = isProLocked || isBlueprintLocked;
                 
-                if (isLocked) {
+                if ((tool as any).disabled) {
+                return (
+                  <div 
+                    key={tool.href}
+                    title={!isExpanded ? `${tool.label} (Segera Hadir)` : undefined}
+                    className={`flex items-center rounded-xl transition-all duration-200 text-gray-400 dark:text-gray-600 opacity-60 cursor-not-allowed ${isExpanded ? 'px-3 py-3 gap-3' : 'justify-center w-10 h-10 mx-auto'}`}
+                  >
+                    <Icon size={isExpanded ? 18 : 20} className="shrink-0" />
+                    {isExpanded && (
+                      <>
+                        <span className="text-sm font-medium whitespace-nowrap truncate">{tool.label}</span>
+                      </>
+                    )}
+                  </div>
+                );
+              }
+              if ((tool as any).disabled) {
+                  return (
+                    <div 
+                      key={tool.href}
+                      className={`flex items-center justify-between px-3 py-3 rounded-xl font-medium text-gray-400 dark:text-gray-600 opacity-60 cursor-not-allowed`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon size={18} />
+                        <span className="text-sm">{tool.label}</span>
+                      </div>
+                    </div>
+                  );
+                }
+              if (isLocked) {
                   return (
                     <div 
                       key={tool.href}
                       onClick={() => { 
-                        if (isProLocked) {
+                        if (!isLoggedIn) {
+                           setIsOpen(false);
+                           router.push('/login');
+                        } else if (isProLocked) {
                            setIsOpen(false);
                            router.push('/?pricing=true');
                         }
