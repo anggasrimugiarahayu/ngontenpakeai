@@ -15,13 +15,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const dbFeatures = await getCachedFeatures();
   
   let userRole = "USER";
+  let hasTools = false;
   if (session?.user?.id) {
-    const dbUser = await prisma.user.findUnique({ where: { id: session.user.id }, select: { role: true } });
-    if (dbUser) userRole = dbUser.role || "USER";
+    const dbUser = await prisma.user.findUnique({ 
+      where: { id: session.user.id }, 
+      select: { role: true, proToolsExpiredAt: true } 
+    });
+    if (dbUser) {
+      userRole = dbUser.role || "USER";
+      hasTools = dbUser.proToolsExpiredAt ? new Date(dbUser.proToolsExpiredAt) > new Date() : false;
+    }
   }
   
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
-  const isPro = userRole === "PRO" || isAdmin;
+  const isPro = hasTools || isAdmin;
   const isLoggedIn = !!session?.user;
   
   return <ClientLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isAdmin={isAdmin} isLoggedIn={isLoggedIn}>{children}</ClientLayout>;
