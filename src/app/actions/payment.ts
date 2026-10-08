@@ -219,6 +219,7 @@ export async function verifyPayment(orderId: string) {
       // Proceed with PENDING if midtrans throws (e.g. 404 because transaction hasn't fully registered)
     }
 
+    console.log("verifyPayment called for:", orderId, "Status from Midtrans:", transactionStatus);
     let finalStatus = "PENDING";
     if (transactionStatus === "capture") {
       if (fraudStatus === "challenge") finalStatus = "PENDING";
@@ -233,16 +234,71 @@ export async function verifyPayment(orderId: string) {
 
     if (order.status !== "SUCCESS" && finalStatus === "SUCCESS") {
       await prisma.$transaction(async (tx) => {
-        await tx.order.update({ where: { id: orderId }, data: { status: "SUCCESS" } });
+        // Update Order
+        await tx.order.update({
+          where: { id: orderId },
+          data: { status: "SUCCESS" }
+        });
 
-        if (order.orderType === "EBOOK" && order.digitalProductId) {
-          await tx.userOwnedProduct.upsert({
-            where: { userId_digitalProductId: { userId: order.userId, digitalProductId: order.digitalProductId } },
-            update: {},
-            create: { userId: order.userId, digitalProductId: order.digitalProductId }
-          });
+        // Grant the Item!
+        if (order.orderType === "EBOOK") {
+          const productIdsToGrant = [];
+          if (order.digitalProductId) productIdsToGrant.push(order.digitalProductId);
+          if (order.addonIds && Array.isArray(order.addonIds)) {
+            productIdsToGrant.push(...(order.addonIds as string[]));
+          }
+
+          for (const pid of productIdsToGrant) {
+            await tx.userOwnedProduct.upsert({
+              where: {
+                userId_digitalProductId: {
+                  userId: order.userId,
+                  digitalProductId: pid
+                }
+              },
+              update: {},
+              create: {
+                userId: order.userId,
+                digitalProductId: pid
+              }
+            });
+          }
         } else if (order.orderType === "PRO_BASIC" || order.orderType === "PRO_TOOLS" || order.orderType === "PRO_LENGKAP") {
-          await tx.user.update({ where: { id: order.userId }, data: { role: "PRO" } });
+          // 1. Upgrade to PRO role
+          let updateData: any = { role: "PRO" };
+          
+          // If they bought TOOLS or LENGKAP, give them 30 days of proToolsExpiredAt
+          if (order.orderType === "PRO_TOOLS" || order.orderType === "PRO_LENGKAP") {
+            const expiryDate = new Date();
+            expiryDate.setDate(expiryDate.getDate() + 30);
+            updateData.proToolsExpiredAt = expiryDate;
+          }
+
+          await tx.user.update({
+            where: { id: order.userId },
+            data: updateData
+          });
+
+          // 2. Unlock bundled E-books from PRICING_PACKAGES config
+          const setting = await tx.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
+          const pricingConfig = setting?.value ? JSON.parse(setting.value as string) : null;
+          
+          if (pricingConfig && pricingConfig[order.orderType] && pricingConfig[order.orderType].bundledProductIds) {
+            const bundledIds = pricingConfig[order.orderType].bundledProductIds;
+            for (const pid of bundledIds) {
+              const existing = await tx.userOwnedProduct.findFirst({
+                where: { userId: order.userId, digitalProductId: pid }
+              });
+              if (!existing) {
+                await tx.userOwnedProduct.create({
+                  data: {
+                    userId: order.userId,
+                    digitalProductId: pid
+                  }
+                });
+              }
+            }
+          }
         }
       });
       revalidatePath("/ruang-belajar");
