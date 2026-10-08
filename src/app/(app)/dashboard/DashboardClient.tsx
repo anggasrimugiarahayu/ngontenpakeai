@@ -45,11 +45,11 @@ export default function DashboardClient({ user }: { user: any }) {
   const getOrderImage = (order: any) => {
     if (order.product?.coverUrl) return order.product.coverUrl;
     switch (order.orderType) {
-      case "PRO_BASIC": return "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=400&fit=crop";
-      case "PRO_TOOLS": return "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=400&fit=crop";
-      case "PRO_LENGKAP": return "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=400&fit=crop";
-      case "TOOLS": return "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=400&fit=crop";
-      default: return "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=400&fit=crop";
+      case "PRO_BASIC": return "/img_paket/paket_ebook.png";
+      case "PRO_TOOLS": return "/img_paket/paket_tools.png";
+      case "PRO_LENGKAP": return "/img_paket/paket_lengkap.png";
+      case "TOOLS": return "/img_paket/paket_tools.png";
+      default: return "/img_paket/paket_ebook.png";
     }
   };
 
@@ -72,6 +72,8 @@ export default function DashboardClient({ user }: { user: any }) {
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isWaModalOpen, setIsWaModalOpen] = useState(false);
+  const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
+  const [selectedPackage, setSelectedPackage] = useState<any>(null);
   const [waMessage, setWaMessage] = useState('');
   const [waOrder, setWaOrder] = useState<any>(null);
 
@@ -1063,9 +1065,15 @@ export default function DashboardClient({ user }: { user: any }) {
                          <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">{product.conversion}%</span>
                       </td>
                       <td className="px-6 py-4 text-center">
-                         <NextLink href={product.orderType && product.orderType.startsWith("PRO_") ? "/?pricing=true" : `/ruang-belajar/${product.slug}`} className="inline-block px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-orange-500/20">
-                           View
-                         </NextLink>
+                         {product.orderType && product.orderType.startsWith("PRO_") ? (
+                          <button onClick={() => { setSelectedPackage(product); setIsPackageModalOpen(true); }} className="inline-block px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-orange-500/20">
+                            View
+                          </button>
+                         ) : (
+                          <NextLink href={`/ruang-belajar/${product.slug}`} className="inline-block px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-orange-500/20">
+                            View
+                          </NextLink>
+                         )}
                       </td>
                     </tr>
                   ))}
@@ -1084,6 +1092,57 @@ export default function DashboardClient({ user }: { user: any }) {
         onClose={() => setIsPrintModalOpen(false)} 
         order={selectedOrder} 
       />
+
+      
+      {isPackageModalOpen && selectedPackage && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#1a1a1c] border border-gray-100 dark:border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+            <div className="flex justify-between items-start mb-6">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">Detail Paket Penjualan</h3>
+              <button onClick={() => setIsPackageModalOpen(false)} className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-500">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            
+            <div className="flex gap-4 items-center mb-6">
+               <div className="w-20 h-20 bg-gray-50 dark:bg-[#121214] rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-white/10 flex items-center justify-center p-1">
+                 <img src={selectedPackage.image} alt={selectedPackage.title} className="max-w-full max-h-full object-contain drop-shadow-sm" />
+               </div>
+               <div>
+                 <p className="text-[10px] font-bold text-orange-500 uppercase tracking-wider mb-1">Bundle Package</p>
+                 <h4 className="font-bold text-gray-900 dark:text-white text-base leading-tight mb-1">{selectedPackage.title}</h4>
+                 <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <span className="font-bold text-gray-700 dark:text-gray-300">{selectedPackage.sold}</span> terjual
+                 </div>
+               </div>
+            </div>
+
+            <div className="space-y-3 bg-gray-50 dark:bg-white/5 p-4 rounded-xl mb-6 border border-gray-100 dark:border-white/5">
+               <div className="flex justify-between items-center text-sm">
+                 <span className="text-gray-500">Total Views</span>
+                 <span className="font-bold text-gray-900 dark:text-white">{selectedPackage.views}x</span>
+               </div>
+               <div className="flex justify-between items-center text-sm">
+                 <span className="text-gray-500">Total Pendapatan</span>
+                 <span className="font-bold text-green-600">Rp {(selectedPackage.amount || 0).toLocaleString('id-ID')}</span>
+               </div>
+               <div className="flex justify-between items-center text-sm">
+                 <span className="text-gray-500">Conversion Rate</span>
+                 <span className="font-bold text-gray-900 dark:text-white">{selectedPackage.conversion}%</span>
+               </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button onClick={() => setIsPackageModalOpen(false)} className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors">
+                Tutup
+              </button>
+              <NextLink href="/?pricing=true" className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-orange-500 hover:bg-orange-600 text-white text-center transition-colors shadow-lg shadow-orange-500/20">
+                Lihat Halaman Promo
+              </NextLink>
+            </div>
+          </div>
+        </div>
+      )}
 
       <WhatsAppModal 
         isOpen={isWaModalOpen}

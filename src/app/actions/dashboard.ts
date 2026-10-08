@@ -163,11 +163,11 @@ export async function getDashboardDataAction() {
   const getProductImage = (p: any, productDef: any) => {
     if (productDef?.coverUrl) return productDef.coverUrl;
     switch(p.orderType) {
-      case "PRO_BASIC": return "https://images.unsplash.com/photo-1544947950-fa07a98d237f?w=400&h=400&fit=crop"; // Ebooks
-      case "PRO_TOOLS": return "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=400&fit=crop"; // Tools
-      case "PRO_LENGKAP": return "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=400&h=400&fit=crop"; // Premium Package
-      case "TOOLS": return "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=400&h=400&fit=crop";
-      default: return "https://images.unsplash.com/photo-1589998059171-988d887df646?w=400&h=400&fit=crop"; // Book generic
+      case "PRO_BASIC": return "/img_paket/paket_ebook.png";
+      case "PRO_TOOLS": return "/img_paket/paket_tools.png";
+      case "PRO_LENGKAP": return "/img_paket/paket_lengkap.png";
+      case "TOOLS": return "/img_paket/paket_tools.png";
+      default: return "/img_paket/paket_ebook.png";
     }
   };
 
