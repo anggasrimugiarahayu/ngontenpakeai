@@ -238,13 +238,11 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
             {/* E-LEARNING CARD */}
             {/* E-LEARNING CARD */}
             <div
-              className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 cursor-not-allowed z-0 overflow-hidden bg-white border-gray-200 shadow-gray-200 hover:border-purple-400 dark:bg-[#18181b] dark:border-white/5 dark:shadow-black/50 dark:hover:border-purple-500/50 opacity-70`}
+              className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 cursor-not-allowed z-0 overflow-hidden bg-white border-gray-200 shadow-gray-200 hover:border-purple-400 dark:bg-[#18181b] dark:border-white/5 dark:shadow-black/50 dark:hover:border-purple-500/50`}
             >
-              <div className="absolute top-0 right-0 p-4 z-10 flex items-center justify-end w-full">
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-orange-500 bg-orange-500/10 px-2 py-1 rounded-full border border-orange-500/20 backdrop-blur-sm">Coming Soon</span>
-                </div>
-              </div>
+              <span className="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-[#d97706] shadow-sm z-10" style={{ backgroundColor: "#f97316" }}>
+                Coming Soon
+              </span>
 
               <div className="relative w-full overflow-hidden aspect-[16/9] rounded-lg">
                 <div
