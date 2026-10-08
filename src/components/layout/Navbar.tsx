@@ -153,7 +153,7 @@ export function Navbar({ followerCount = "144K", memberCount = "0", userRole = "
                 ? "bg-orange-500/10 text-orange-500" 
                 : "bg-gray-200 dark:bg-[#27272a] text-gray-700 dark:text-gray-300"
             }`}>
-              {isPro ? "PRO" : "Free"}
+              {badgeName}
             </div>
 
             {/* Upgrade Button (hides if Pro or if already on pricing view) */}

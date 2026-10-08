@@ -17,6 +17,11 @@ export function SettingsTabs({ user, dbUser, orders = [] }: { user: any, dbUser?
 
   if (!data) return <LoadingSpinner message="Memuat Pengaturan..." />;
   const { userData, adminData, isPro, isAdmin } = data;
+  
+  const hasBook = orders.some((o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS");
+  const hasTools = dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();
+  const isFullyPro = isAdmin || (hasBook && hasTools);
+
 
   const adminTabs = [
     { id: "profil", label: "Profil" },
@@ -70,24 +75,72 @@ export function SettingsTabs({ user, dbUser, orders = [] }: { user: any, dbUser?
             <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Riwayat Langganan</h2>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Semua langganan kamu yang aktif, sudah berakhir, dan yang belum mulai.</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Semua riwayat pembelian paket dan status masa aktifnya.</p>
               </div>
-              <div className="flex justify-between items-center">
-                <div>
-                  <div className="font-bold text-gray-900 dark:text-white">{isPro ? "Pro" : "Free"}</div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {isPro ? "3 Sep 2026 – 3 Okt 2026" : "Selamanya"}
+              
+              <div className="space-y-4">
+                {orders.length === 0 ? (
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="font-bold text-gray-900 dark:text-white">Free</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">Selamanya</div>
+                    </div>
                   </div>
-                </div>
-                {isPro && (
-                  <span className="bg-green-500/10 text-green-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase">
-                    Aktif
-                  </span>
+                ) : (
+                  orders.map((order: any) => {
+                    let title = "Paket";
+                    let dateInfo = "";
+                    let isActive = false;
+                    const createdAt = new Date(order.createdAt);
+                    const createdStr = format(createdAt, "d MMM yyyy", { locale: id });
+                    
+                    if (order.orderType === "PRO_BOOK") {
+                      title = "PRO BOOK";
+                      dateInfo = `${createdStr} – Selamanya`;
+                      isActive = true;
+                    } else if (order.orderType === "PRO_TOOLS") {
+                      title = "PRO TOOLS";
+                      const expiredAt = new Date(createdAt);
+                      expiredAt.setDate(expiredAt.getDate() + 30);
+                      const expiredStr = format(expiredAt, "d MMM yyyy", { locale: id });
+                      dateInfo = `${createdStr} – ${expiredStr}`;
+                      isActive = new Date() < expiredAt;
+                    } else if (order.orderType === "PRO_PLUS") {
+                      title = "PRO PLUS";
+                      const expiredAt = new Date(createdAt);
+                      expiredAt.setDate(expiredAt.getDate() + 30);
+                      const expiredStr = format(expiredAt, "d MMM yyyy", { locale: id });
+                      dateInfo = `${createdStr} – ${expiredStr} (Tools), Ebook Selamanya`;
+                      isActive = true; 
+                    }
+
+                    return (
+                      <div key={order.id} className="flex justify-between items-center pb-4 border-b border-gray-100 dark:border-white/5 last:border-0 last:pb-0">
+                        <div>
+                          <div className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                            {title}
+                          </div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                            {dateInfo}
+                          </div>
+                        </div>
+                        {isActive ? (
+                          <span className="bg-green-500/10 text-green-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase shrink-0">
+                            Aktif
+                          </span>
+                        ) : (
+                          <span className="bg-red-500/10 text-red-500 text-[10px] font-bold px-3 py-1 rounded-full uppercase shrink-0">
+                            Berakhir
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })
                 )}
               </div>
             </div>
 
-            {!isPro && (
+            {!isFullyPro && (
               <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
                 <div className="mb-4">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Upgrade Plan</h2>
