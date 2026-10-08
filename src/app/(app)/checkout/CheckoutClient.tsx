@@ -111,9 +111,18 @@ export default function CheckoutClient({
   }, [baseAmount, selectedMethod, selectedAddons, availableAddons, appliedVoucher]);
 
   const handleApplyPromo = async () => {
-    if (!promoCodeInput.trim() || !productId) return;
+    if (!promoCodeInput.trim()) return;
     setIsVerifyingPromo(true);
     setPromoError("");
+
+    if (!productId) {
+      setTimeout(() => {
+        setIsVerifyingPromo(false);
+        setPromoError("Kode promo tidak ditemukan atau tidak berlaku untuk Paket.");
+      }, 600);
+      return;
+    }
+
     try {
       const res = await validatePromoCodeAction(promoCodeInput.trim(), productId);
       if (res.success) {
