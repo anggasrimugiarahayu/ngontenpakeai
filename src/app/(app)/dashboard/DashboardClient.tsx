@@ -245,7 +245,7 @@ export default function DashboardClient({ user }: { user: any }) {
                 <div className="flex-1 space-y-2 pt-1">
                   <div className="flex gap-2 items-start">
                     <span className="font-bold text-gray-900 dark:text-white mt-0.5">1x</span>
-                    <p className="font-bold text-gray-900 dark:text-white leading-snug">{order.product?.title || 'Unknown Product'}</p>
+                    <p className="font-bold text-gray-900 dark:text-white leading-snug">{getOrderTitle(order)}</p>
                   </div>
                   <div className="pl-6">
                     <span className="inline-block text-[10px] font-bold px-2.5 py-0.5 border border-gray-200 dark:border-white/20 rounded-full text-gray-500 dark:text-gray-400">
@@ -453,7 +453,7 @@ export default function DashboardClient({ user }: { user: any }) {
                               )}
                             </div>
                             <div className="flex-1 flex flex-col justify-start">
-                              <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight mb-1">{order.product?.title || 'Unknown Product'}</h3>
+                              <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight mb-1">{getOrderTitle(order)}</h3>
                               <div>
                                 <span className="inline-block text-[10px] font-semibold px-2 py-0.5 border border-gray-200 dark:border-white/20 rounded-full text-gray-500 dark:text-gray-400">
                                   digital

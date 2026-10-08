@@ -13,7 +13,7 @@ export async function getDashboardDataAction() {
     prisma.user.count().catch(() => 0),
     prisma.digitalProduct.count().catch(() => 0),
     prisma.user.groupBy({ by: ['role'], _count: { id: true } }).catch(() => []),
-    prisma.productAnalytics.groupBy({ by: ['digitalProductId'], _sum: { views: true, clicks: true } }).catch(() => [])
+    prisma.productAnalytics.groupBy({ by: ['digitalProductId', 'orderType'], _sum: { views: true, clicks: true } }).catch(() => [])
   ]);
 
   let totalUsersFree = 0;
@@ -69,7 +69,7 @@ export async function getDashboardDataAction() {
     }).catch(() => ({ _sum: { amount: 0 }, _count: { id: 0 } })),
     
     prisma.order.groupBy({
-      by: ['digitalProductId'],
+      by: ['digitalProductId', 'orderType'],
       _sum: { amount: true },
       _count: { id: true },
       where: { status: 'SUCCESS' },
@@ -159,6 +159,17 @@ export async function getDashboardDataAction() {
     viewsChartData.push({ date: dateStr, views: viewsChartMap[dateStr]?.views || 0, clicks: viewsChartMap[dateStr]?.clicks || 0 });
   }
 
+  const getProductTitle = (p: any, productDef: any) => {
+    if (productDef?.title) return productDef.title;
+    switch(p.orderType) {
+      case "PRO_BASIC": return "Paket Basic (Ebook)";
+      case "PRO_TOOLS": return "Paket Pro (Tools & Ebook)";
+      case "PRO_LENGKAP": return "Paket Lengkap (Semuanya)";
+      case "TOOLS": return "Tools";
+      default: return "Unknown Product";
+    }
+  };
+
   const realProductSales = topProducts.map(p => {
     const productDef = products.find(prod => prod.id === p.digitalProductId);
     const analytics = productAnalyticsMap[p.digitalProductId] || { views: 0, clicks: 0 };
@@ -167,9 +178,10 @@ export async function getDashboardDataAction() {
     const conversion = views > 0 ? ((sold / views) * 100) : 0;
 
     return {
-      id: p.digitalProductId,
-      title: productDef?.title || "Unknown Product",
+      id: p.digitalProductId || p.orderType,
+      title: getProductTitle(p, productDef),
       views: views,
+
       sold: sold,
       amount: p._sum.amount || 0,
       conversion: parseFloat(conversion.toFixed(1)), 
