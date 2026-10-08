@@ -8,14 +8,20 @@ export const metadata = {
   title: "Ruang Ngonten Workspace - ruangcreativemuslim",
 };
 
-export default async function RuangNgontenCatchAllPage() {
+export default async function RuangNgontenCatchAllPage(props: { params: Promise<{ slug?: string[] }> }) {
+  const params = await props.params;
   const session = await auth();
+  const isLoggedIn = !!session?.user;
 
-  if (!session?.user) {
+  // Intercept item-level clicks if not logged in
+  if (params?.slug && params.slug.length > 0 && !isLoggedIn) {
     redirect("/login");
   }
 
-  const hasBlueprint = await getCachedHasBlueprint(session.user.id);
+  let hasBlueprint = false;
+  if (session?.user?.id) {
+    hasBlueprint = await getCachedHasBlueprint(session.user.id);
+  }
   const dbFeatures = await getCachedFeatures();
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
   let isPro = isAdmin;
@@ -29,5 +35,5 @@ export default async function RuangNgontenCatchAllPage() {
     isPro = hasTools || dbUser?.role === "ADMIN";
   }
 
-  return <WorkspaceApp hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} />;
+  return <WorkspaceApp hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isLoggedIn={isLoggedIn} />;
 }

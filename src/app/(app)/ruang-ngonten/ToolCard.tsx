@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { AlertCircle } from "lucide-react";
 
-export default function ToolCard({ feature, hasBlueprint, isPro = false }: { feature: any; hasBlueprint: boolean; isPro?: boolean; }) {
+export default function ToolCard({ feature, hasBlueprint, isPro = false, isLoggedIn = true }: { feature: any; hasBlueprint: boolean; isPro?: boolean; isLoggedIn?: boolean; }) {
   const [showError, setShowError] = useState(false);
   
   const Icon = feature.icon;
@@ -18,6 +18,11 @@ export default function ToolCard({ feature, hasBlueprint, isPro = false }: { fea
   const router = useRouter();
 
   const handleClick = (e: React.MouseEvent) => {
+    if (!isLoggedIn) {
+      e.preventDefault();
+      router.push("/login");
+      return;
+    }
     if (!canAccess) {
       e.preventDefault();
       

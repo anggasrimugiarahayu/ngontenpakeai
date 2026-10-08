@@ -72,7 +72,7 @@ const features = [
   }
 ];
 
-export default function ToolGrid({ hasBlueprint, dbFeatures = [], isPro = false }: { hasBlueprint: boolean, dbFeatures?: any[], isPro?: boolean }) {
+export default function ToolGrid({ hasBlueprint, dbFeatures = [], isPro = false, isLoggedIn = true }: { hasBlueprint: boolean, dbFeatures?: any[], isPro?: boolean, isLoggedIn?: boolean }) {
   
   // Map hardcoded features with DB features
   const mappedFeatures = features.map(f => {

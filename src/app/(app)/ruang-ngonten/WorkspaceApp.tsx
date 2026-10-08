@@ -15,9 +15,10 @@ interface Props {
   hasBlueprint: boolean;
   dbFeatures: any[];
   isPro: boolean;
+  isLoggedIn?: boolean;
 }
 
-export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro }: Props) {
+export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLoggedIn }: Props) {
   const pathname = usePathname();
   
   const isDashboard = pathname === "/ruang-ngonten";
@@ -44,7 +45,7 @@ export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro }: Props)
               </p>
             </div>
           </div>
-          <ToolGrid hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} />
+          <ToolGrid hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isLoggedIn={isLoggedIn} />
         </div>
       </div>
       
