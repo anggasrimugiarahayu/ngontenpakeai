@@ -13,7 +13,7 @@ export async function getDashboardDataAction() {
     prisma.user.count().catch(() => 0),
     prisma.digitalProduct.count().catch(() => 0),
     prisma.user.groupBy({ by: ['role'], _count: { id: true } }).catch(() => []),
-    prisma.productAnalytics.groupBy({ by: ['digitalProductId', 'orderType'], _sum: { views: true, clicks: true } }).catch(() => [])
+    prisma.productAnalytics.groupBy({ by: ['digitalProductId'], _sum: { views: true, clicks: true } }).catch(() => [])
   ]);
 
   let totalUsersFree = 0;
@@ -120,7 +120,7 @@ export async function getDashboardDataAction() {
   const lifetimeSalesIDR = successfulOrders._sum?.amount || 0;
   const lifetimeOrders = successfulOrders._count?.id || 0;
 
-  const productIds = topProducts.map(p => p.digitalProductId);
+  const productIds = topProducts.map(p => p.digitalProductId).filter(Boolean) as string[];
   const products = await prisma.digitalProduct.findMany({
     where: { id: { in: productIds } },
     select: { id: true, title: true, coverUrl: true }
@@ -172,8 +172,8 @@ export async function getDashboardDataAction() {
 
   const realProductSales = topProducts.map(p => {
     const productDef = products.find(prod => prod.id === p.digitalProductId);
-    const analytics = productAnalyticsMap[p.digitalProductId] || { views: 0, clicks: 0 };
-    const views = analytics.views;
+    const analytics = p.digitalProductId ? productAnalyticsMap[p.digitalProductId] : null; const finalAnalytics = analytics || { views: 0, clicks: 0 };
+    const views = finalAnalytics.views;
     const sold = p._count.id;
     const conversion = views > 0 ? ((sold / views) * 100) : 0;
 

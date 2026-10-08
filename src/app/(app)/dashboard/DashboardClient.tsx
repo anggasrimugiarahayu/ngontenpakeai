@@ -37,7 +37,20 @@ const MOCK_DONUT_DATA = [
   { name: 'Tools', value: 2 },
 ];
 
+
+
 export default function DashboardClient({ user }: { user: any }) {
+  const getOrderTitle = (order: any) => {
+    if (order.product?.title) return order.product.title;
+    switch (order.orderType) {
+      case "PRO_BASIC": return "Paket Basic (Ebook)";
+      case "PRO_TOOLS": return "Paket Pro (Tools & Ebook)";
+      case "PRO_LENGKAP": return "Paket Lengkap (Semuanya)";
+      case "TOOLS": return "Akses Tools";
+      default: return "Unknown Product";
+    }
+  };
+
   const { data } = useSWR("dashboard", getDashboardDataAction);
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderSearch, setOrderSearch] = useState('');
