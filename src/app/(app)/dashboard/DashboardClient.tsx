@@ -772,6 +772,17 @@ export default function DashboardClient({ user }: { user: any }) {
         >
           Orders
         </button>
+        <button
+          onClick={() => setActiveTab('insights')}
+          className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors rounded-lg border flex items-center gap-2 ${
+            activeTab === 'insights'
+              ? "border-orange-500 text-orange-500"
+              : "border-transparent text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          Insights
+        </button>
       </div>
 
       {activeTab === 'main' && (
