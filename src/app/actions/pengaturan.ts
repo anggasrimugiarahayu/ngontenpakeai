@@ -8,13 +8,30 @@ export async function getPengaturanDataAction() {
   if (!session?.user?.id) return null;
 
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
-  const isPro = isAdmin || false;
-
-  const [features, usages] = await Promise.all([
+  
+  const [features, usages, dbUser, userOrders] = await Promise.all([
     prisma.feature.findMany({ where: { isActive: true }, orderBy: { createdAt: 'asc' } }),
-    prisma.usage.findMany({ where: { userId: session.user.id } })
+    prisma.usage.findMany({ where: { userId: session.user.id } }),
+    prisma.user.findUnique({ where: { id: session.user.id }, select: { proToolsExpiredAt: true, role: true } }),
+    prisma.order.findMany({ 
+      where: { userId: session.user.id, status: "SUCCESS" },
+      include: { product: true }
+    })
   ]);
-  const userData = { features, usages };
+
+  const hasTools = dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();
+  const isPro = isAdmin || hasTools || false;
+  
+  const ownedEbooks = userOrders
+    .filter((o: any) => o.product && o.orderType !== 'PRO_TOOLS')
+    .map((o: any) => o.product.title);
+
+  const userData = { 
+    features, 
+    usages, 
+    proExpiredAt: dbUser?.proToolsExpiredAt || null,
+    ownedEbooks
+  };
 
   let adminData: any = null;
   if (isAdmin) {
