@@ -671,7 +671,7 @@ export default function CheckoutClient({
             </div>
             <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">Pembayaran Berhasil!</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-8">Terima kasih, pembayaran Anda telah kami terima.</p>
-            <button onClick={() => window.location.href = (type === "PRO_TOOLS" || type === "PRO_PLUS") ? "/ruang-ngonten" : "/ruang-belajar"} className="block w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90">Lanjut ke {(type === "PRO_TOOLS" || type === "PRO_PLUS") ? "Ruang Ngonten" : "Ruang Belajar"}</button>
+            <button onClick={() => router.push((type === "PRO_TOOLS" || type === "PRO_PLUS") ? "/ruang-ngonten" : "/ruang-belajar")} className="block w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90">Lanjut ke {(type === "PRO_TOOLS" || type === "PRO_PLUS") ? "Ruang Ngonten" : "Ruang Belajar"}</button>
           </div>
         </div>
       )}

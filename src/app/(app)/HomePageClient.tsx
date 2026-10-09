@@ -381,12 +381,6 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
                   <Link 
                     prefetch={true} 
                     href={isLoggedIn ? `/checkout?type=${pkgItem.type}` : `/login?redirect=/checkout?type=${pkgItem.type}`}
-                    onClick={(e) => {
-                      if (!isLoggedIn) {
-                        e.preventDefault();
-                        window.location.href = `/login?redirect=/checkout?type=${pkgItem.type}`;
-                      }
-                    }} 
                     onMouseEnter={() => { if (isLoggedIn) preload(["checkout", pkgItem.type, undefined], () => getCheckoutDetailsAction(pkgItem.type, undefined)) }}
                     onTouchStart={() => { if (isLoggedIn) preload(["checkout", pkgItem.type, undefined], () => getCheckoutDetailsAction(pkgItem.type, undefined)) }}
                     className={`w-full mt-6 block text-center font-bold py-3 rounded-xl transition-all ${hasHighlight ? 'bg-rn-accent text-black font-black hover:bg-white shadow-[0_0_20px_rgba(208,226,6,0.2)]' : 'bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white'}`}
