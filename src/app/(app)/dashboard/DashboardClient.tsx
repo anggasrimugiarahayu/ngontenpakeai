@@ -11,7 +11,7 @@ import {
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell
+  PieChart, Pie, Cell, Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis
 } from 'recharts';
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format, subDays, eachDayOfInterval } from 'date-fns';
@@ -597,25 +597,34 @@ export default function DashboardClient({ user }: { user: any }) {
   
 
   const renderInsightsTab = () => {
+
     if (!insightsData) return <div className="p-8 text-center text-gray-500">Memuat data insights...</div>;
     if (insightsData.total === 0) return <div className="p-8 text-center text-gray-500 border border-gray-100 dark:border-white/5 rounded-2xl bg-white dark:bg-[#121214]">Belum ada data onboarding dari user.</div>;
 
-    const COLORS = ['#f97316', '#3b82f6', '#10b981', '#8b5cf6', '#ec4899'];
-    const GRADIENTS = [
-      'from-orange-500 to-amber-400',
-      'from-blue-500 to-cyan-400',
-      'from-emerald-500 to-teal-400',
-      'from-violet-500 to-purple-400'
-    ];
-
-    const formatDataForChart = (obj: Record<string, number>) => {
-      return Object.entries(obj || {}).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
+    const formatToRadar = (obj: Record<string, number>) => {
+      return Object.entries(obj || {}).map(([name, count]) => ({
+        subject: name.length > 15 ? name.substring(0, 15) + '...' : name,
+        fullName: name,
+        value: Math.round((count / insightsData.total) * 100),
+        count: count
+      }));
     };
 
-    const nicheData = formatDataForChart(insightsData.niche);
-    const struggleData = formatDataForChart(insightsData.struggle);
-    const platformData = formatDataForChart(insightsData.platform);
-    const goalData = formatDataForChart(insightsData.goal);
+    // Gabungkan semua data menjadi 1 array memutar
+    const radarData = [
+      ...formatToRadar(insightsData.niche),
+      ...formatToRadar(insightsData.struggle),
+      ...formatToRadar(insightsData.platform),
+      ...formatToRadar(insightsData.goal)
+    ];
+
+    // Untuk legend custom
+    const categories = [
+      { name: 'Niche / Topik', count: Object.keys(insightsData.niche || {}).length, color: '#f97316' },
+      { name: 'Hambatan Utama', count: Object.keys(insightsData.struggle || {}).length, color: '#3b82f6' },
+      { name: 'Platform', count: Object.keys(insightsData.platform || {}).length, color: '#10b981' },
+      { name: 'Target (Goal)', count: Object.keys(insightsData.goal || {}).length, color: '#8b5cf6' }
+    ];
 
     return (
       <div className="space-y-6 animate-in fade-in duration-300 mt-2">
@@ -626,134 +635,53 @@ export default function DashboardClient({ user }: { user: any }) {
            </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Niche Donut Chart */}
-          <div className="bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-              <span className="w-1 h-5 bg-orange-500 rounded-full"></span>
-              Distribusi Niche / Topik
-            </h3>
-            <div className="h-60 relative">
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie 
-                    data={nicheData} 
-                    dataKey="value" 
-                    nameKey="name" 
-                    cx="50%" 
-                    cy="50%" 
-                    outerRadius={85} 
-                    innerRadius={60} 
-                    paddingAngle={4}
-                    stroke="none"
-                  >
-                    {nicheData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-                  </Pie>
-                  <Tooltip 
-                    cursor={false}
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)', backgroundColor: 'var(--fallback-b1,oklch(var(--b1)/1))', color: 'var(--fallback-bc,oklch(var(--bc)/1))', fontSize: '12px', fontWeight: 'bold' }} 
-                  />
-                </PieChart>
-              </ResponsiveContainer>
-              {/* Center Text overlay */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                <span className="text-2xl font-black text-gray-800 dark:text-gray-200 leading-none">{nicheData.length > 0 ? nicheData[0].value : 0}</span>
-                <span className="text-[10px] text-gray-400 uppercase tracking-wider mt-1">Top Niche</span>
-              </div>
-            </div>
-            <div className="flex flex-wrap gap-2 justify-center mt-4">
-              {nicheData.map((entry, index) => (
-                <div key={index} className="flex items-center gap-1.5 text-[11px] text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-white/5 px-2.5 py-1 rounded-md border border-gray-100 dark:border-white/5 transition-colors hover:bg-gray-100 dark:hover:bg-white/10">
-                  <div className="w-2 h-2 rounded-full shadow-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
-                  <span className="font-medium">{entry.name} <span className="text-gray-400">({entry.value})</span></span>
+        <div className="bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-xl">
+          <div className="text-center max-w-2xl mx-auto mb-8">
+             <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-2">Peta Karakteristik User (Radar)</h3>
+             <p className="text-sm text-gray-500 dark:text-gray-400">
+               Grafik ini menggabungkan semua preferensi user ke dalam satu jaring laba-laba. Semakin ujung titiknya, semakin dominan preferensi tersebut di kalangan user.
+             </p>
+          </div>
+
+          <div className="w-full h-[500px] md:h-[600px] relative">
+            <ResponsiveContainer width="100%" height="100%">
+              <RadarChart cx="50%" cy="50%" outerRadius="70%" data={radarData}>
+                <PolarGrid stroke="#e5e7eb" strokeOpacity={0.5} />
+                <PolarAngleAxis 
+                  dataKey="subject" 
+                  tick={{ fill: '#6b7280', fontSize: 11, fontWeight: 600 }} 
+                />
+                <PolarRadiusAxis 
+                  angle={30} 
+                  domain={[0, 100]} 
+                  tick={{ fill: '#9ca3af', fontSize: 10 }}
+                  tickCount={6}
+                />
+                <Tooltip 
+                  formatter={(value: number, name: string, props: any) => [`${value}% (${props.payload.count} User)`, 'Dominasi']}
+                  labelFormatter={(label: string, payload: any[]) => payload.length > 0 ? payload[0].payload.fullName : label}
+                  contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', backgroundColor: 'var(--fallback-b1,oklch(var(--b1)/1))', color: 'var(--fallback-bc,oklch(var(--bc)/1))', fontSize: '12px', fontWeight: 'bold' }}
+                />
+                <Radar 
+                  name="Persentase Audiens" 
+                  dataKey="value" 
+                  stroke="#f97316" 
+                  strokeWidth={3}
+                  fill="#f97316" 
+                  fillOpacity={0.35} 
+                />
+              </RadarChart>
+            </ResponsiveContainer>
+          </div>
+          
+          {/* Custom Legend to explain the dimensions */}
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+             {categories.map((cat, idx) => (
+                <div key={idx} className="flex items-center gap-2 bg-gray-50 dark:bg-white/5 px-3 py-1.5 rounded-full border border-gray-100 dark:border-white/5">
+                   <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: cat.color }}></div>
+                   <span className="text-xs font-bold text-gray-700 dark:text-gray-300">{cat.name}</span>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Struggle Bar Chart */}
-          <div className="bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-              <span className="w-1 h-5 bg-blue-500 rounded-full"></span>
-              Ranking Hambatan Utama
-            </h3>
-            <div className="h-64 mt-2">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={struggleData} layout="vertical" margin={{ top: 0, right: 20, left: 0, bottom: 0 }}>
-                  <XAxis type="number" hide />
-                  <YAxis dataKey="name" type="category" width={130} tick={{ fontSize: 11, fill: '#6b7280', fontWeight: 500 }} axisLine={false} tickLine={false} />
-                  <Tooltip 
-                    cursor={{ fill: 'rgba(0,0,0,0.03)' }} 
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)', backgroundColor: 'var(--fallback-b1,oklch(var(--b1)/1))', color: 'var(--fallback-bc,oklch(var(--bc)/1))', fontSize: '12px', fontWeight: 'bold' }} 
-                  />
-                  <Bar dataKey="value" fill="#f97316" radius={[0, 6, 6, 0]} barSize={28}>
-                    {struggleData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-
-          {/* Platform Distribution */}
-          <div className="bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-              <span className="w-1 h-5 bg-emerald-500 rounded-full"></span>
-              Platform Favorit
-            </h3>
-            <div className="space-y-5">
-              {platformData.map((entry, index) => {
-                const percentage = Math.round((entry.value / insightsData.total) * 100) || 0;
-                return (
-                  <div key={index} className="group">
-                    <div className="flex justify-between items-end mb-1.5">
-                      <span className="text-xs font-bold text-gray-700 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{entry.name}</span>
-                      <div className="text-right">
-                        <span className="text-xs font-black text-gray-900 dark:text-white">{percentage}%</span>
-                        <span className="text-[10px] text-gray-400 ml-1">({entry.value})</span>
-                      </div>
-                    </div>
-                    <div className="w-full bg-gray-100 dark:bg-white/5 rounded-full h-1.5 overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full transition-all duration-1000 bg-gradient-to-r ${GRADIENTS[index % GRADIENTS.length]}`} 
-                        style={{ width: `${percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Goal Distribution */}
-          <div className="bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 rounded-2xl p-6 shadow-sm">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
-              <span className="w-1 h-5 bg-violet-500 rounded-full"></span>
-              Target (Goals) Utama
-            </h3>
-            <div className="space-y-5">
-              {goalData.map((entry, index) => {
-                const percentage = Math.round((entry.value / insightsData.total) * 100) || 0;
-                return (
-                  <div key={index} className="group">
-                    <div className="flex justify-between items-end mb-1.5">
-                      <span className="text-xs font-bold text-gray-700 dark:text-gray-300 line-clamp-1 pr-2 group-hover:text-gray-900 dark:group-hover:text-white transition-colors">{entry.name}</span>
-                      <div className="text-right shrink-0">
-                        <span className="text-xs font-black text-gray-900 dark:text-white">{percentage}%</span>
-                        <span className="text-[10px] text-gray-400 ml-1">({entry.value})</span>
-                      </div>
-                    </div>
-                    <div className="w-full bg-gray-100 dark:bg-white/5 rounded-full h-1.5 overflow-hidden">
-                      <div 
-                        className={`h-full rounded-full transition-all duration-1000 bg-gradient-to-r ${GRADIENTS[(index+2) % GRADIENTS.length]}`} 
-                        style={{ width: `${percentage}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+             ))}
           </div>
         </div>
       </div>
