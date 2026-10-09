@@ -657,7 +657,7 @@ export default function DashboardClient({ user }: { user: any }) {
               {renderWaffle(topNiche.percentage, "bg-[#4a5d23]", "bg-[#e5eadb]")}
               <div className="text-4xl font-black text-[#4a5d23] mb-2">{topNiche.percentage}%</div>
               <p className="text-sm text-gray-600 dark:text-gray-400 leading-snug">
-                audiens Anda tertarik pada topik <br/><strong className="text-gray-900 dark:text-white">{topNiche.name}</strong>
+                Audiens Anda tertarik pada topik <br/><strong className="text-gray-900 dark:text-white">({topNiche.name})</strong>
               </p>
             </div>
 
@@ -666,7 +666,7 @@ export default function DashboardClient({ user }: { user: any }) {
               {renderWaffle(topStruggle.percentage, "bg-[#cc0000]", "bg-[#f5ccff]")}
               <div className="text-4xl font-black text-[#cc0000] mb-2">{topStruggle.percentage}%</div>
               <p className="text-sm text-gray-600 dark:text-gray-400 leading-snug">
-                mengaku paling sering mengalami hambatan <br/><strong className="text-gray-900 dark:text-white">{topStruggle.name}</strong>
+                Mengaku paling sering mengalami hambatan <br/><strong className="text-gray-900 dark:text-white">({topStruggle.name})</strong>
               </p>
             </div>
 
@@ -675,7 +675,7 @@ export default function DashboardClient({ user }: { user: any }) {
               {renderWaffle(topPlatform.percentage, "bg-[#3399ff]", "bg-[#dbeafe]")}
               <div className="text-4xl font-black text-[#3399ff] mb-2">{topPlatform.percentage}%</div>
               <p className="text-sm text-gray-600 dark:text-gray-400 leading-snug">
-                memilih fokus membangun aset di <br/><strong className="text-gray-900 dark:text-white">{topPlatform.name}</strong>
+                Memilih fokus membangun aset di <br/><strong className="text-gray-900 dark:text-white">({topPlatform.name})</strong>
               </p>
             </div>
 
@@ -684,7 +684,7 @@ export default function DashboardClient({ user }: { user: any }) {
               {renderWaffle(topGoal.percentage, "bg-[#f59e0b]", "bg-[#fef3c7]")}
               <div className="text-4xl font-black text-[#f59e0b] mb-2">{topGoal.percentage}%</div>
               <p className="text-sm text-gray-600 dark:text-gray-400 leading-snug">
-                memiliki target utama untuk bisa <br/><strong className="text-gray-900 dark:text-white">{topGoal.name}</strong>
+                Memiliki target utama untuk bisa <br/><strong className="text-gray-900 dark:text-white">({topGoal.name})</strong>
               </p>
             </div>
 
