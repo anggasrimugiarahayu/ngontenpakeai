@@ -19,9 +19,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   if (session?.user?.id) {
     const dbUser = await prisma.user.findUnique({ 
       where: { id: session.user.id }, 
-      select: { role: true, proToolsExpiredAt: true } 
+      select: { role: true, proToolsExpiredAt: true, onboardingCompleted: true } 
     });
     if (dbUser) {
+      if (!dbUser.onboardingCompleted) {
+        redirect("/onboarding");
+      }
       userRole = dbUser.role || "USER";
       hasTools = dbUser.proToolsExpiredAt ? new Date(dbUser.proToolsExpiredAt) > new Date() : false;
     }

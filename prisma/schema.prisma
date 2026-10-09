@@ -47,6 +47,8 @@ model User {
   proToolsExpiredAt DateTime?         @map("pro_tools_expired_at")
   image            String?
   googleApiKey     String?           @map("google_api_key")
+  onboardingCompleted Boolean           @default(false) @map("onboarding_completed")
+  preferences         Json?
   accounts         Account[]
   bioBuilders      BioBuilder[]
   contentCalendars ContentCalendar[]
