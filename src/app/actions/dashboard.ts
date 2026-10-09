@@ -255,3 +255,38 @@ export async function getDashboardOrdersAction(page = 1, limit = 20, search = ''
 
   return { orders: JSON.parse(JSON.stringify(orders)), total };
 }
+
+export async function getAudienceInsightsAction() {
+  const session = await auth();
+  if (!session?.user?.id || session?.user?.email !== "anggasrimugiarahayu@gmail.com") return null;
+
+  try {
+    const users = await prisma.user.findMany({
+      where: { onboardingCompleted: true },
+      select: { preferences: true }
+    });
+
+    const aggregate = {
+      niche: {} as Record<string, number>,
+      struggle: {} as Record<string, number>,
+      platform: {} as Record<string, number>,
+      goal: {} as Record<string, number>,
+      total: users.length
+    };
+
+    users.forEach(u => {
+      if (u.preferences && typeof u.preferences === 'object') {
+        const p = u.preferences as any;
+        if (p.niche) aggregate.niche[p.niche] = (aggregate.niche[p.niche] || 0) + 1;
+        if (p.struggle) aggregate.struggle[p.struggle] = (aggregate.struggle[p.struggle] || 0) + 1;
+        if (p.platform) aggregate.platform[p.platform] = (aggregate.platform[p.platform] || 0) + 1;
+        if (p.goal) aggregate.goal[p.goal] = (aggregate.goal[p.goal] || 0) + 1;
+      }
+    });
+
+    return aggregate;
+  } catch (error) {
+    console.error("Error fetching audience insights:", error);
+    return null;
+  }
+}
