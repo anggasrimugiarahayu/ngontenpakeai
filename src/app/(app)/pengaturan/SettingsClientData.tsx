@@ -58,7 +58,7 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
       </div>
 
       <div className="mb-6">
-        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">📊 Kuota AI Tools</h3>
+        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Kuota AI Tools</h3>
         <div className="space-y-3">
           {features.map((feature: any) => (
             <div key={feature.id} className="flex justify-between items-center text-sm border-b border-gray-100 dark:border-white/5 pb-2 last:border-0 last:pb-0">
@@ -79,7 +79,7 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
 
       {ownedEbooks.length > 0 && (
         <div className="pt-4 border-t border-gray-200 dark:border-white/5">
-          <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-3">📚 Akses Permanen (Ebook)</h3>
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Akses Permanen (Ebook)</h3>
           <ul className="space-y-2">
             {ownedEbooks.map((title: string, index: number) => (
               <li key={index} className="text-sm text-gray-700 dark:text-gray-300 flex items-center gap-2">
