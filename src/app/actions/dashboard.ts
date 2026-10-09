@@ -78,7 +78,7 @@ export async function getDashboardDataAction() {
     }).catch(() => []),
 
     prisma.order.findMany({
-      take: 1000,
+      take: 50,
       include: {
         user: { select: { name: true, email: true, phone: true } },
         product: { select: { title: true, coverUrl: true, isProOnly: true } }
@@ -221,4 +221,37 @@ export async function getDashboardDataAction() {
     salesChartData,
     viewsChartData
   };
+}
+
+export async function getDashboardOrdersAction(page = 1, limit = 20, search = '', status = 'all') {
+  const session = await auth();
+  if (!session?.user?.id || session?.user?.email !== "anggasrimugiarahayu@gmail.com") return { orders: [], total: 0 };
+
+  const where: any = {};
+  if (status !== 'all') {
+    where.status = status;
+  }
+  if (search) {
+    where.OR = [
+      { user: { name: { contains: search, mode: 'insensitive' } } },
+      { user: { email: { contains: search, mode: 'insensitive' } } },
+      { id: { contains: search, mode: 'insensitive' } }
+    ];
+  }
+
+  const [orders, total] = await Promise.all([
+    prisma.order.findMany({
+      where,
+      take: limit,
+      skip: (page - 1) * limit,
+      include: {
+        user: { select: { name: true, email: true, phone: true } },
+        product: { select: { title: true, coverUrl: true, isProOnly: true } }
+      },
+      orderBy: { createdAt: 'desc' }
+    }).catch(() => []),
+    prisma.order.count({ where }).catch(() => 0)
+  ]);
+
+  return { orders: JSON.parse(JSON.stringify(orders)), total };
 }

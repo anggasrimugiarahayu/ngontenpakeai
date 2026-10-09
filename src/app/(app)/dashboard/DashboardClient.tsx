@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import useSWR from 'swr';
 import NextLink from 'next/link';
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { getDashboardDataAction } from '@/app/actions/dashboard';
+import { getDashboardDataAction, getDashboardOrdersAction } from '@/app/actions/dashboard';
 import { 
   User, CheckCircle2, Link as LinkIcon, 
   TrendingUp, Layers, Users, ShoppingBag, Settings, Calendar as CalendarIcon, Eye, Send, ArrowUp, ArrowDown, Search, Image as ImageIcon, Download, Printer, ArrowLeft, ArrowRight, X
@@ -69,6 +69,32 @@ export default function DashboardClient({ user }: { user: any }) {
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatus, setOrderStatus] = useState('all');
   const [orderPage, setOrderPage] = useState(1);
+  const [serverOrders, setServerOrders] = useState(data?.fullOrders || []);
+  const [totalServerOrders, setTotalServerOrders] = useState(data?.fullOrders?.length || 0);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const itemsPerPage = 5;
+
+  React.useEffect(() => {
+    let isMounted = true;
+    const fetchOrders = async () => {
+      setIsLoadingOrders(true);
+      try {
+        const res = await getDashboardOrdersAction(orderPage, itemsPerPage, orderSearch, orderStatus);
+        if (isMounted) {
+          setServerOrders(res.orders);
+          setTotalServerOrders(res.total);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+      if (isMounted) setIsLoadingOrders(false);
+    };
+    
+    const timeoutId = setTimeout(() => {
+      fetchOrders();
+    }, 500);
+    return () => { isMounted = false; clearTimeout(timeoutId); }
+  }, [orderPage, orderStatus, orderSearch]);
   const [isMobileModalOpen, setIsMobileModalOpen] = useState(false);
   const [isPrintModalOpen, setIsPrintModalOpen] = useState(false);
   const [isWaModalOpen, setIsWaModalOpen] = useState(false);
@@ -131,9 +157,12 @@ export default function DashboardClient({ user }: { user: any }) {
 
 
   const renderOrdersTab = () => {
-    const ordersList = data.fullOrders || [];
-    
-    const handleExportExcel = () => {
+    const handleExportExcel = async () => {
+      setIsLoadingOrders(true);
+      const res = await getDashboardOrdersAction(1, 10000, orderSearch, orderStatus);
+      const exportData = res.orders;
+      setIsLoadingOrders(false);
+
       const headers = [
         'Judul Barang', 'Varian', 'Harga', 'qty', 'sub total', 'Voucher', 'shipping fee',
         'Total Addon', 'Notif fee', 'Affiliate fee', 'Affiliator email', 'Public Affiliate fee',
@@ -142,7 +171,7 @@ export default function DashboardClient({ user }: { user: any }) {
         'Shipping Address', 'Shipping Method', 'Appointment info', 'Ref', 'PayPal Ref'
       ];
 
-      const rows = filteredOrders.map((o: any) => {
+      const rows = exportData.map((o: any) => {
         const rowData = [
           o.product?.title || '',
           '',
@@ -195,24 +224,9 @@ export default function DashboardClient({ user }: { user: any }) {
       URL.revokeObjectURL(url);
     };
 
-    const filteredOrders = ordersList.filter((o: any) => {
-      let matches = true;
-      if (orderStatus !== 'all' && o.status !== orderStatus) matches = false;
-      const searchStr = orderSearch.toLowerCase();
-      if (searchStr) {
-        const customerName = (o.user?.name || '').toLowerCase();
-        const customerEmail = (o.user?.email || '').toLowerCase();
-        if (!customerName.includes(searchStr) && !customerEmail.includes(searchStr)) {
-          matches = false;
-        }
-      }
-      return matches;
-    });
-
-    // Pagination logic
-    const itemsPerPage = 5;
-    const totalPages = Math.ceil(filteredOrders.length / itemsPerPage);
-    const paginatedOrders = filteredOrders.slice((orderPage - 1) * itemsPerPage, orderPage * itemsPerPage);
+    const totalPages = Math.ceil(totalServerOrders / itemsPerPage);
+    const paginatedOrders = serverOrders;
+    const filteredOrders = { length: totalServerOrders }; // For UI references
 
     const OrderDetailsContent = ({ order }: { order: any }) => {
       if (!order) return (
