@@ -19,8 +19,6 @@ export default auth((req) => {
 // Tentukan halaman mana saja yang ingin di-protect (dicegat)
 export const config = {
   matcher: [
-    "/ruang-belajar/:path*",
-    "/ruang-ngonten/:path*",
     "/ruang-growing",
     "/ruang-growing/:path*",
     "/master-blueprint",
