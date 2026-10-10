@@ -1,6 +1,6 @@
 "use client";
 
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { getBlueprintAction } from "@/app/actions/blueprint";
 import { getContentCalendarAction } from "@/app/actions/toolsData";
 import React, { useState, useEffect } from 'react';
@@ -15,13 +15,13 @@ export default function ContentCalendarClient() {
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [calendarData, setCalendarData] = useState<Record<string, any>>(initialData || {});
+  const [calendarData, setCalendarData] = useState<Record<string, any>>(initialData?.data || {});
   const [currentCalDate, setCurrentCalDate] = useState(new Date());
   
   
   useEffect(() => {
     if (initialData) {
-      setCalendarData(initialData);
+      setCalendarData(initialData.data || {});
     }
   }, [initialData]);
 
@@ -64,6 +64,7 @@ export default function ContentCalendarClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ calendarData: newData })
       });
+      mutate("contentCalendar");
     } catch (e) {
       console.error("Failed to save calendar data", e);
     }

@@ -3,8 +3,9 @@
 import GlobalChatLayout, { ChatMessage } from "@/components/chat/GlobalChatLayout";
 import { useAIChat } from "@/hooks/useAIChat";
 import { useSessionState } from "@/hooks/useSessionState";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { getBlueprintAction } from "@/app/actions/blueprint";
+import { getContentCalendarAction } from "@/app/actions/toolsData";
 import React, { useState, useEffect, useRef } from "react";
 import { Calendar, Check, Copy, MessageSquare, Save, Square, X, CheckCircle2, ChevronLeft, ChevronRight, FileText, Plus, ChevronDown } from "lucide-react";
 
@@ -34,6 +35,7 @@ const AI_MODELS = [
 
 export default function ScriptBuilderClient() {
   const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
+  const { data: dbCalendar } = useSWR("contentCalendar", getContentCalendarAction);
   const blueprintId = blueprint?.id;
   const blueprintData = blueprint?.aiResult;
 
@@ -68,11 +70,15 @@ export default function ScriptBuilderClient() {
   const [activeScriptData, setActiveScriptData] = useState<any>(null);
 
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem('calendarData');
-      if (saved) setCalendarData(JSON.parse(saved));
-    } catch(e) {}
-  }, []);
+    if (dbCalendar) {
+      setCalendarData(dbCalendar.data || {});
+    } else {
+      try {
+        const saved = localStorage.getItem('calendarData');
+        if (saved) setCalendarData(JSON.parse(saved));
+      } catch(e) {}
+    }
+  }, [dbCalendar]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -118,6 +124,7 @@ export default function ScriptBuilderClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ calendarData: newCalendarData })
       });
+      mutate("contentCalendar");
       setSavedAgendaSuccess(true);
       setTimeout(() => {
         setIsAgendaFormOpen(false);

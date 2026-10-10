@@ -4,8 +4,9 @@ import toast from "react-hot-toast";
 import GlobalChatLayout, { ChatMessage } from "@/components/chat/GlobalChatLayout";
 import { useAIChat } from "@/hooks/useAIChat";
 import { useSessionState } from "@/hooks/useSessionState";
-import useSWR from "swr";
+import useSWR, { mutate } from "swr";
 import { getBlueprintAction } from "@/app/actions/blueprint";
+import { getContentCalendarAction } from "@/app/actions/toolsData";
 import React, { useState, useRef, useEffect } from "react";
 import { CopyPlus, LayoutTemplate, Mic2, Zap, Target, Send, Square, CheckCircle2, MessageSquare, Search, UserCircle, Calendar, Bot, Lightbulb, Video, Filter, ChevronDown, Copy, Check, Save, Plus, Mic, X, FileText, ChevronLeft, ChevronRight, Camera } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
@@ -23,6 +24,7 @@ const AI_MODELS = [
 
 export default function AtmBuilderClient() {
   const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
+  const { data: dbCalendar } = useSWR("contentCalendar", getContentCalendarAction);
   const blueprintId = blueprint?.id;
   const blueprintData = blueprint?.aiResult;
 
@@ -50,6 +52,13 @@ export default function AtmBuilderClient() {
   const [selectedCalDate, setSelectedCalDate] = useState<string | null>(null);
   const [calendarData, setCalendarData] = useState<Record<string, any>>({});
   const [activeScriptData, setActiveScriptData] = useState<any>(null);
+
+  useEffect(() => {
+    if (dbCalendar) {
+      setCalendarData(dbCalendar.data || {});
+    }
+  }, [dbCalendar]);
+
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -81,6 +90,7 @@ export default function AtmBuilderClient() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ calendarData: newCalendarData })
       });
+      mutate("contentCalendar");
       setSavedAgendaSuccess(true);
       setTimeout(() => {
         setIsAgendaFormOpen(false);
