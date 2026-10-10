@@ -146,6 +146,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
     if (!newModel.name || !newModel.modelId) return;
     setLoading(true);
     await createAiModel(newModel);
+    mutate("pengaturan");
     setNewModel({ name: "", modelId: "", provider: "google" });
     setLoading(false);
   };
@@ -308,7 +309,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     <div className="flex items-center gap-2 mr-2 sm:mr-4">
                       <span className="text-xs font-bold text-gray-500 dark:text-gray-400">Aktif</span>
                       <button 
-                        onClick={() => toggleModel(model.id, !model.isActive)}
+                        onClick={async () => { await toggleModel(model.id, !model.isActive); mutate("pengaturan"); }}
                         className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${model.isActive ? 'bg-rn-accent' : 'bg-gray-200 dark:bg-white/10'}`}
                         role="switch"
                         aria-checked={model.isActive}
@@ -323,7 +324,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
 
                     {!model.isDefault && model.isActive && (
                       <button 
-                        onClick={() => setDefaultModel(model.id)}
+                        onClick={async () => { await setDefaultModel(model.id); mutate("pengaturan"); }}
                         className="px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors"
                       >
                         Set Default
@@ -332,7 +333,8 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     <button 
                       onClick={async () => {
                         if (await confirmSwal("Hapus model ini?")) {
-                          deleteModel(model.id);
+                          await deleteModel(model.id);
+                          mutate("pengaturan");
                         }
                       }}
                       className="px-3 py-1.5 text-xs font-medium rounded-lg border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
