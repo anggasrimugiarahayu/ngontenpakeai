@@ -50,7 +50,7 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
     if (result.success) {
       toast.success("API Key berhasil disimpan!");
       setKeyValue("");
-      e.currentTarget.reset();
+      
     } else {
       toast.error(result.error || "Terjadi kesalahan");
     }
