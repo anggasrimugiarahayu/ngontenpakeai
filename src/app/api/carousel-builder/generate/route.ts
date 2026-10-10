@@ -108,6 +108,10 @@ Untuk menjaga syariat, setiap field "GEN AI PROMPT" (yang ditulis dalam bahasa I
 1. HIJAB/CADAR WANITA: JIKA karakter berupa Wanita Dewasa (Adult Female), WAJIB tambahkan deskripsi pakaian syar'i tertutup longgar dan wajib bercadar/niqab ("wearing loose modest clothing with long syar'i hijab and niqab/face veil"). JIKA karakter berupa Anak Perempuan (Little Girl), cukup memakai hijab syar'i ("wearing loose modest clothing with syar'i hijab"). Aturan ini HARGA MATI.
 2. FACELESS (TANPA WAJAH): Karakter bebas menghadap ke arah mana saja (depan, samping, atau belakang) agar lebih dinamis. Namun, SETIAP menggambar karakter makhluk yang bernyawa (manusia dewasa, anak kecil, bayi, hewan, maskot, boneka, dll), WAJIB MUTLAK digambarkan TANPA FITUR WAJAH SAMA SEKALI demi mematuhi syariat Islam. Aturan gambar boneka seperti hewan atau makhluk lainnya itu harus faceless. Dilarang keras menggambar mata, hidung, atau mulut. Tambahkan instruksi paksa dalam bahasa Inggris pada prompt visual di SETIAP SLIDE: "(EXTREMELY STRICT RULE: completely faceless, absolutely NO EYES, NO NOSE, NO MOUTH, NO LIPS on any human, child, baby, doll, animal, or any living creature characters. The face MUST be completely blank and smooth. Character can face any direction dynamically. Negative prompt: eyes, nose, mouth, lips, facial features, face, smile, expression)"
 
+[ATURAN TEKS PADA OBJEK (TEXT AVOIDANCE) - HARGA MATI]
+Di dalam field "GEN AI PROMPT", Anda WAJIB menyematkan instruksi bahasa Inggris ini di SETIAP SLIDE untuk mencegah munculnya tulisan/huruf acak (halusinasi teks) pada benda di dalam gambar:
+"Do not add any text to the objects in the image other than what is explicitly instructed by the prompt."
+
 [ATURAN POV & PERSPEKTIF OBYEK - HARGA MATI]
 Untuk menjaga komposisi adegan agar logis dan tidak aneh:
 1. LAYAR GADGET & FOTO: Jika karakter sedang menatap HP, Tablet, Laptop, atau Foto, layar atau obyek tersebut WAJIB menghadap ke arah karakter (membelakangi penonton), KECUALI konteks adegan secara eksplisit meminta layar ditunjukkan ke arah penonton.
@@ -151,7 +155,7 @@ Untuk menjaga komposisi adegan agar logis dan tidak aneh:
 [SPECS]
 * SLIDE: 1 dari [Jumlah Slide] (HOOK)
 * VISUAL GUIDE: [Deskripsi visual adegan slide 1 dalam bahasa Indonesia]
-* GEN AI PROMPT: [Prompt visual komprehensif BAHASA INGGRIS. Masukkan SELURUH Base Anchor Visual (Konsep Style Art, Deskripsi Gaya Typography, Karakter) secara LENGKAP PANJANG di sini. Harus ada "Make the aspect ratio 3:4"]
+* GEN AI PROMPT: [Prompt visual komprehensif BAHASA INGGRIS. Masukkan SELURUH Base Anchor Visual secara LENGKAP. Harus ada "Make the aspect ratio 3:4". WAJIB TAMBAHKAN KALIMAT: "Do not add any text to the objects in the image other than what is explicitly instructed by the prompt."]
 
 [NASKAH]
 * HEADER: [Teks Headline yang Punchy]
@@ -164,7 +168,7 @@ Untuk menjaga komposisi adegan agar logis dan tidak aneh:
 [SPECS]
 * SLIDE: [Nomor] dari [Jumlah Slide]
 * VISUAL GUIDE: [Deskripsi visual - HARUS konsisten dengan slide 1]
-* GEN AI PROMPT: [Prompt komprehensif INGGRIS. WAJIB COPY-PASTE Base Anchor Visual secara 100% IDENTIK dari slide 1 + Ubah Aksi/Pose khusus slide ini. Harus ada "Make the aspect ratio 3:4"]
+* GEN AI PROMPT: [Prompt komprehensif INGGRIS. WAJIB COPY-PASTE Base Anchor Visual secara 100% IDENTIK dari slide 1 + Ubah Aksi/Pose khusus slide ini. Harus ada "Make the aspect ratio 3:4". WAJIB TAMBAHKAN KALIMAT: "Do not add any text to the objects in the image other than what is explicitly instructed by the prompt."]
 
 [NASKAH]
 * HEADER: [Headline]
