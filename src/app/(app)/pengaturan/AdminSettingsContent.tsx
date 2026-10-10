@@ -8,7 +8,8 @@ import { PricingConfigSection } from "./PricingConfigSection";
 import { 
 
   createAiModel, 
-  setDefaultModel, 
+  setDefaultModel,
+  setFallbackModel, 
   toggleModel, 
   deleteModel,
   saveAppSetting,
@@ -298,6 +299,10 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                       {model.isDefault && (
                         <span className="bg-orange-500/10 text-orange-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Default</span>
                       )}
+                      {model.isFallback && (
+                        <span className="bg-blue-500/10 text-blue-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Cadangan</span>
+                      )}
+
                       {!model.isActive && (
                         <span className="bg-red-500/10 text-red-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Nonaktif</span>
                       )}
@@ -330,6 +335,16 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                         Set Default
                       </button>
                     )}
+
+                    {!model.isFallback && model.isActive && (
+                      <button 
+                        onClick={async () => { await setFallbackModel(model.id); mutate("pengaturan"); }}
+                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors"
+                      >
+                        Set Alternatif
+                      </button>
+                    )}
+
                     <button 
                       onClick={async () => {
                         if (await confirmSwal("Hapus model ini?")) {

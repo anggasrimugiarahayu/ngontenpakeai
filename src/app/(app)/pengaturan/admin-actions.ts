@@ -16,6 +16,13 @@ export async function setDefaultModel(id: string) {
   await prisma.aiModel.update({ where: { id }, data: { isDefault: true } });
   revalidatePath("/pengaturan");
 }
+
+export async function setFallbackModel(id: string) {
+  await prisma.aiModel.updateMany({ data: { isFallback: false } });
+  await prisma.aiModel.update({ where: { id }, data: { isFallback: true } });
+  revalidatePath("/pengaturan");
+}
+
 export async function toggleModel(id: string, isActive: boolean) {
   await prisma.aiModel.update({ where: { id }, data: { isActive } });
   revalidatePath("/pengaturan");

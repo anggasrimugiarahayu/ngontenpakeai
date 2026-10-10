@@ -153,6 +153,7 @@ model AiModel {
   provider  String   @default("google")
   isActive  Boolean  @default(true)
   isDefault Boolean  @default(false)
+  isFallback Boolean  @default(false)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 

@@ -1,4 +1,4 @@
-import { getDefaultAiModel } from "@/lib/get-ai-model";
+import { getDefaultAiModel, getFallbackAiModel } from "@/lib/get-ai-model";
 import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
@@ -128,7 +128,7 @@ Platform Dipilih: ${formData.platform ? (Array.isArray(formData.platform) ? form
 `;
 
     const response = await ai.models.generateContent({
-      model: await getDefaultAiModel("gemini-2.5-flash"),
+      model: await getDefaultAiModel, getFallbackAiModel("gemini-2.5-flash"),
       contents: userPrompt,
       config: {
         systemInstruction,
