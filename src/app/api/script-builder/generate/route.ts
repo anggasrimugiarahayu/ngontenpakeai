@@ -1,3 +1,5 @@
+import { promises as fs } from 'fs';
+import path from 'path';
 import { getDefaultAiModel } from "@/lib/get-ai-model";
 import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from 'next/server';
@@ -6,13 +8,14 @@ import { GoogleGenAI } from '@google/genai';
 import prisma from '@/lib/prisma';
 
 async function fetchKnowledgeBase() {
+  const kbDir = path.join(process.cwd(), 'public', 'knowledge_database');
   const [hooksRes, ctaRes] = await Promise.all([
-    fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1785890379/hooks_yidiwm.txt', { next: { revalidate: 86400 } }),
-    fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1785833821/cta_ctv_h5kvdf.txt', { next: { revalidate: 86400 } })
+    fs.readFile(path.join(kbDir, 'hooks.txt'), 'utf-8'),
+    fs.readFile(path.join(kbDir, 'cta_ctv.txt'), 'utf-8')
   ]);
   return {
-    hooks: await hooksRes.text(),
-    cta: await ctaRes.text()
+    hooks: hooksRes,
+    cta: ctaRes
   };
 }
 

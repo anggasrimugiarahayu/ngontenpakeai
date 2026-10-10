@@ -1,3 +1,5 @@
+import { promises as fs } from 'fs';
+import path from 'path';
 import { getDefaultAiModel } from "@/lib/get-ai-model";
 import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from "next/server";
@@ -7,19 +9,20 @@ import { GoogleGenAI } from "@google/genai";
 
 // Cache knowledge base files
 async function fetchKnowledgeBase() {
+  const kbDir = path.join(process.cwd(), 'public', 'knowledge_database');
   const [hooksRes, ctaRes, styleRes, briefRes, ideasRes] = await Promise.all([
-    fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1785890379/hooks_yidiwm.txt', { next: { revalidate: 86400 } }),
-    fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1785833821/cta_ctv_h5kvdf.txt', { next: { revalidate: 86400 } }),
-    fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1786012414/writing_style_p4kjqk.txt', { next: { revalidate: 86400 } }),
-    fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1785890400/content_brief_relv9m.txt', { next: { revalidate: 86400 } }),
-    fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1785891433/ide_konten_d48itf.txt', { next: { revalidate: 86400 } }),
+    fs.readFile(path.join(kbDir, 'hooks.txt'), 'utf-8'),
+    fs.readFile(path.join(kbDir, 'cta_ctv.txt'), 'utf-8'),
+    fs.readFile(path.join(kbDir, 'writing_style.txt'), 'utf-8'),
+    fs.readFile(path.join(kbDir, 'content_brief.txt'), 'utf-8'),
+    fs.readFile(path.join(kbDir, 'ide_konten.txt'), 'utf-8'),
   ]);
   return {
-    hooks: await hooksRes.text(),
-    cta: await ctaRes.text(),
-    style: await styleRes.text(),
-    brief: await briefRes.text(),
-    ideas: await ideasRes.text(),
+    hooks: hooksRes,
+    cta: ctaRes,
+    style: styleRes,
+    brief: briefRes,
+    ideas: ideasRes,
   };
 }
 

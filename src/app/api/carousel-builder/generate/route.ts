@@ -1,3 +1,5 @@
+import { promises as fs } from 'fs';
+import path from 'path';
 import { getDefaultAiModel } from "@/lib/get-ai-model";
 import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from 'next/server';
@@ -10,13 +12,14 @@ import prisma from '@/lib/prisma';
 
 
 async function fetchKnowledgeBase() {
+  const kbDir = path.join(process.cwd(), 'public', 'knowledge_database');
   const [carouselKbRes, ideasRes] = await Promise.all([
-    fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1740708092/CAROUSEL_KNOWLEDGE_BASE_q7d5on.txt', { next: { revalidate: 86400 } }),
-    fetch('https://res.cloudinary.com/dlevfqbc/raw/upload/v1740316681/CONTENT_IDEA_DATABASE_uv9hcf.txt', { next: { revalidate: 86400 } })
+    fs.readFile(path.join(kbDir, 'carausel_knowledgebase.txt'), 'utf-8'),
+    fs.readFile(path.join(kbDir, 'ide_konten.txt'), 'utf-8')
   ]);
   return {
-    carouselKb: await carouselKbRes.text(),
-    ideas: await ideasRes.text()
+    carouselKb: carouselKbRes,
+    ideas: ideasRes
   };
 }
 
