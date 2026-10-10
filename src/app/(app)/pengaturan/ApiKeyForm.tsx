@@ -120,6 +120,7 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
           <input
             type="password"
             name="apiKey"
+            autoComplete="new-password"
             placeholder="AIzaSy..."
             value={keyValue}
             onChange={(e) => setKeyValue(e.target.value)}

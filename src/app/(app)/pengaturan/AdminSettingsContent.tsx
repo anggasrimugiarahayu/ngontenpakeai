@@ -113,7 +113,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
   ) || [];
   const [newModel, setNewModel] = useState({ name: "", modelId: "", provider: "google" });
   const initialApiKey = settings.find((s:any) => s.key === "DEFAULT_GEMINI_API_KEY")?.value || "";
-  const [apiKey, setApiKey] = useState(initialApiKey);
+  const [apiKey, setApiKey] = useState("");
   const [savedKey, setSavedKey] = useState(initialApiKey);
 
   const handleSaveApiKey = async () => {
@@ -121,6 +121,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
     setLoading(true);
     await saveAppSetting("DEFAULT_GEMINI_API_KEY", apiKey);
     setSavedKey(apiKey);
+    setApiKey("");
     toast.success("API Key berhasil disimpan!");
     setLoading(false);
   };
@@ -204,6 +205,8 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 value={apiKey}
                 onChange={e => setApiKey(e.target.value)}
                 placeholder="AIzaSy..."
+                autoComplete="new-password"
+                name="adminApiKey"
                 className="flex-1 w-full px-4 py-2.5 md:py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
               />
               <button
