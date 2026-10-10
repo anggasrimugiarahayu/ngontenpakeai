@@ -6,6 +6,7 @@ import { mutate } from "swr";
 import { Plus, Trash2, Edit, BookOpen, Tag, X, Star, Ticket, Key, ExternalLink } from "lucide-react";
 import { PricingConfigSection } from "./PricingConfigSection";
 import { 
+
   createAiModel, 
   setDefaultModel, 
   toggleModel, 
@@ -22,6 +23,23 @@ import {
   createVoucher,
   deleteVoucher
 } from "./admin-actions";
+import Swal from 'sweetalert2';
+const confirmSwal = async (text: string) => {
+  const isDark = document.documentElement.classList.contains('dark');
+  const result = await Swal.fire({
+    title: text,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Ya, Lanjutkan',
+    cancelButtonText: 'Batal',
+    background: isDark ? '#18181b' : '#ffffff',
+    color: isDark ? '#ffffff' : '#000000',
+  });
+  return result.isConfirmed;
+};
+
 
 export function AdminSettingsContent({ activeTab, adminData }: { activeTab: string, adminData: any }) {
   const { models, settings, features, categories, products } = adminData;
@@ -104,7 +122,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
   };
 
   const handleDeleteApiKey = async () => {
-    if (!confirm("Yakin ingin menghapus API Key Global?")) return;
+    if (!await confirmSwal("Yakin ingin menghapus API Key Global?")) return;
     setLoading(true);
     await deleteAppSetting("DEFAULT_GEMINI_API_KEY");
     setApiKey("");
@@ -305,8 +323,8 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                       </button>
                     )}
                     <button 
-                      onClick={() => {
-                        if (confirm("Hapus model ini?")) {
+                      onClick={async () => {
+                        if (await confirmSwal("Hapus model ini?")) {
                           deleteModel(model.id);
                         }
                       }}
@@ -507,7 +525,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                       </button>
                       <button 
                         onClick={async () => {
-                          if (confirm('Yakin ingin menghapus E-book ini?')) {
+                          if (await confirmSwal('Yakin ingin menghapus E-book ini?')) {
                             setLoading(true);
                             await deleteProduct(prod.id);
                             mutate("pengaturan");
@@ -574,7 +592,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                   <div key={c.id} className="flex items-center gap-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 pl-3 pr-1 py-1.5 rounded-lg text-sm group">
                     <span className="font-medium text-gray-700 dark:text-gray-300">{c.name}</span>
                     <button onClick={async () => {
-                      if (confirm('Yakin hapus kategori ini?')) {
+                      if (await confirmSwal('Yakin hapus kategori ini?')) {
                         setLoading(true);
                         await deleteCategory(c.id);
                         setLoading(false);
@@ -693,7 +711,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                   </div>
                   <button 
                     onClick={async () => { 
-                      if(!confirm('Hapus voucher ini?')) return;
+                      if(!await confirmSwal('Hapus voucher ini?')) return;
                       setLoading(true); 
                       await deleteVoucher(v.id); 
                       toast.success('Voucher dihapus, harap refresh halaman.'); 

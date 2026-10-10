@@ -4,6 +4,24 @@ import { useState } from "react";
 import { updateApiKey, deleteApiKey } from "./actions";
 import { Key, Trash2, ExternalLink } from "lucide-react";
 
+import Swal from 'sweetalert2';
+const confirmSwal = async (text: string) => {
+  const isDark = document.documentElement.classList.contains('dark');
+  const result = await Swal.fire({
+    title: text,
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonColor: '#ef4444',
+    cancelButtonColor: '#6b7280',
+    confirmButtonText: 'Ya, Lanjutkan',
+    cancelButtonText: 'Batal',
+    background: isDark ? '#18181b' : '#ffffff',
+    color: isDark ? '#ffffff' : '#000000',
+  });
+  return result.isConfirmed;
+};
+
+
 interface ApiKeyFormProps {
   apiKey?: string | null;
 }
@@ -34,7 +52,7 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
   };
 
   const handleDelete = async () => {
-    if (!confirm("Apakah kamu yakin ingin menghapus API Key ini? Fitur AI akan kembali menggunakan limit dari sistem Ngonten Pakai AI.")) {
+    if (!await confirmSwal("Apakah kamu yakin ingin menghapus API Key ini? Fitur AI akan kembali menggunakan limit dari sistem Ngonten Pakai AI.")) {
       return;
     }
 
