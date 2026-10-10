@@ -38,6 +38,17 @@ export async function saveAppSetting(key: string, value: string) {
   revalidatePath("/pengaturan");
 }
 
+export async function deleteAppSetting(key: string) {
+  try {
+    await prisma.appSetting.delete({
+      where: { key }
+    });
+  } catch (e) {
+    // Ignore error if not found
+  }
+  revalidatePath("/pengaturan");
+}
+
 // 3. Features (Ruang Ngonten)
 export async function getFeatures() {
   return await prisma.feature.findMany({ orderBy: { name: 'asc' } });
