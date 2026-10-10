@@ -17,9 +17,10 @@ interface Props {
   isPro: boolean;
   isLoggedIn?: boolean;
   nicheReferences?: any[];
+  userImage?: string | null;
 }
 
-export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLoggedIn, nicheReferences }: Props) {
+export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLoggedIn, nicheReferences, userImage }: Props) {
   const pathname = usePathname();
   
   const isDashboard = pathname === "/ruang-ngonten";

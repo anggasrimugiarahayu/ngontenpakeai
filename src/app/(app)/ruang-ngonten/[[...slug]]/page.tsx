@@ -37,5 +37,5 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
     isPro = hasTools || dbUser?.role === "ADMIN";
   }
 
-  return <WorkspaceApp hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isLoggedIn={isLoggedIn} nicheReferences={nicheReferences} />;
+  return <WorkspaceApp hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isLoggedIn={isLoggedIn} nicheReferences={nicheReferences} userImage={session?.user?.image} />;
 }

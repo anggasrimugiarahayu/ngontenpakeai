@@ -29,6 +29,7 @@ export default function BioBuilderClient() {
   const blueprintData = blueprint?.aiResult;
 
   const { data: session } = useSession();
+  const userImage = session?.user?.image;
   const router = useRouter();
 
   const [id, setId] = useState<string | null>(initialData?.id || null);
@@ -37,7 +38,7 @@ export default function BioBuilderClient() {
     name: initialData?.profileName || "",
     bioText: initialData?.bioText || ""
   });
-  const [avatarUrl, setAvatarUrl] = useState<string>(initialData?.avatarUrl || "https://placehold.co/150x150/e2e8f0/475569?text=Photo");
+  const [avatarUrl, setAvatarUrl] = useState<string>(initialData?.avatarUrl || userImage || "https://placehold.co/150x150/e2e8f0/475569?text=Photo");
   const [suggestions, setSuggestions] = useState<BioSuggestions>({
     usernames: initialData?.suggestions?.usernames || null,
     names: initialData?.suggestions?.names || null,
@@ -59,7 +60,7 @@ export default function BioBuilderClient() {
         name: initialData.profileName || "",
         bioText: initialData.bioText || ""
       });
-      setAvatarUrl(initialData.avatarUrl || "https://placehold.co/150x150/e2e8f0/475569?text=Photo");
+      setAvatarUrl(initialData.avatarUrl || userImage || "https://placehold.co/150x150/e2e8f0/475569?text=Photo");
       setSuggestions({
         usernames: initialData.suggestions?.usernames || null,
         names: initialData.suggestions?.names || null,
@@ -218,9 +219,40 @@ export default function BioBuilderClient() {
       const reader = new FileReader();
       reader.onload = (ev) => {
         if (ev.target?.result) {
-          const resStr = ev.target.result as string;
-          setAvatarUrl(resStr);
-          autoSave(id, selectedBio, suggestions, resStr);
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement("canvas");
+            const ctx = canvas.getContext("2d");
+            
+            // Set max dimensions
+            const MAX_WIDTH = 250;
+            const MAX_HEIGHT = 250;
+            let width = img.width;
+            let height = img.height;
+
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height = Math.round((height *= MAX_WIDTH / width));
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width = Math.round((width *= MAX_HEIGHT / height));
+                height = MAX_HEIGHT;
+              }
+            }
+            
+            canvas.width = width;
+            canvas.height = height;
+            
+            ctx?.drawImage(img, 0, 0, width, height);
+            
+            // Compress heavily
+            const resStr = canvas.toDataURL("image/jpeg", 0.6);
+            setAvatarUrl(resStr);
+            autoSave(id, selectedBio, suggestions, resStr);
+          };
+          img.src = ev.target.result as string;
         }
       };
       reader.readAsDataURL(file);
