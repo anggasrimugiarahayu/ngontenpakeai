@@ -143,59 +143,85 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
       {/* Tab: API Key Global */}
       {activeTab === "api" && (
         <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
-          <div className="mb-4">
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Pengaturan API Key Global</h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Atur Default API Key yang akan digunakan oleh sistem jika pengguna tidak memasukkan API Key mereka sendiri.</p>
+          <div className="mb-6">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+              <Key className="w-5 h-5" /> Pengaturan API Key Global
+            </h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Atur Default API Key yang akan digunakan oleh sistem jika pengguna tidak memasukkan API Key mereka sendiri.
+            </p>
           </div>
-          
+
+          <div className="mb-8 p-4 bg-orange-500/5 border border-orange-500/20 rounded-xl">
+            <h3 className="text-sm font-bold text-orange-700 dark:text-orange-500 mb-2">Cara mendapatkan Google API Key:</h3>
+            <ol className="list-decimal list-inside text-sm text-gray-700 dark:text-gray-300 space-y-1.5 mb-4">
+              <li>Buka <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" className="text-orange-600 dark:text-orange-400 font-medium hover:underline">Google AI Studio</a> dan login dengan akun Google.</li>
+              <li>Klik tombol <strong>Create API key</strong> (Buat API key).</li>
+              <li>Salin (Copy) key yang diberikan, biasanya berawalan <code className="bg-orange-500/10 px-1 py-0.5 rounded text-orange-700 dark:text-orange-400">AIzaSy...</code></li>
+              <li>Tempelkan (Paste) di kolom bawah ini dan klik <strong>Simpan</strong>.</li>
+            </ol>
+            <a 
+              href="https://aistudio.google.com/app/apikey" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors"
+            >
+              <ExternalLink className="w-4 h-4" />
+              Dapatkan API Key Gratis
+            </a>
+          </div>
+
+          <div className="space-y-4 mb-8">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+              Simpan / Perbarui API Key
+            </label>
+            <div className="flex flex-col md:flex-row gap-3 md:gap-4">
+              <input
+                type="text"
+                value={apiKey}
+                onChange={e => setApiKey(e.target.value)}
+                placeholder="AIzaSy..."
+                className="flex-1 w-full px-4 py-2.5 md:py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
+              />
+              <button
+                onClick={handleSaveApiKey}
+                disabled={loading || !apiKey.trim()}
+                className="w-full md:w-auto px-6 py-2.5 md:py-2 rounded-lg bg-orange-700/80 hover:bg-orange-600 text-white font-medium transition-colors disabled:opacity-50"
+              >
+                {loading ? "Menyimpan..." : "Simpan"}
+              </button>
+            </div>
+          </div>
+
           <div className="space-y-4">
-            {savedKey && (
-              <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-white/5 pb-2">
+              Key Aktif
+            </h3>
+            
+            {savedKey ? (
+              <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-green-100 dark:bg-green-800 flex items-center justify-center text-green-600 dark:text-green-300 shrink-0">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                  <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
+                    <Key className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-sm font-semibold text-green-800 dark:text-green-300">API Key Terpasang & Aktif</h3>
-                    <p className="text-xs text-green-600 dark:text-green-400 font-mono mt-0.5">{getMaskedKey(savedKey)}</p>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">Google API Key Global</p>
+                    <p className="text-xs font-mono text-gray-500 dark:text-gray-400">{getMaskedKey(savedKey)}</p>
                   </div>
                 </div>
-                <button 
+                <button
+                  type="button"
                   onClick={handleDeleteApiKey}
                   disabled={loading}
-                  className="px-4 py-2 bg-white dark:bg-gray-800 border border-red-200 dark:border-red-900/50 text-red-600 dark:text-red-400 rounded-md text-xs font-semibold hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors disabled:opacity-50 whitespace-nowrap shadow-sm"
+                  className="p-2 text-gray-400 hover:text-red-500 transition-colors disabled:opacity-50"
+                  title="Hapus API Key"
                 >
-                  Hapus API Key
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
+            ) : (
+              <p className="text-sm text-gray-500 dark:text-gray-400">Belum ada API key global yang aktif. Sistem mungkin sedang menggunakan kuota .env jika ada.</p>
             )}
-            
-            <div className="mt-4">
-              <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
-                {savedKey ? "Ganti API Key Global" : "Masukkan API Key Global Baru"}
-              </label>
-              <div className="flex flex-col sm:flex-row gap-3">
-                <input 
-                  type="text" 
-                  value={apiKey}
-                  onChange={e => setApiKey(e.target.value)}
-                  placeholder="Mulai dengan AIzaSy..." 
-                  className="w-full flex-1 bg-gray-50 dark:bg-transparent border border-gray-200 dark:border-white/10 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none font-mono"
-                />
-                <button 
-                  onClick={handleSaveApiKey} 
-                  disabled={loading || !apiKey.trim()}
-                  className="bg-orange-500 hover:bg-orange-600 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition-colors disabled:opacity-50 whitespace-nowrap shadow-sm"
-                >
-                  {savedKey ? "Timpa (Overwrite)" : "Simpan API Key"}
-                </button>
-              </div>
-              {savedKey && (
-                <p className="text-xs text-gray-500 mt-2">
-                  Memasukkan dan menyimpan kunci baru akan otomatis menghapus (menimpa) kunci yang lama.
-                </p>
-              )}
-            </div>
           </div>
         </div>
       )}
