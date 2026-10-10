@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { updateApiKey, deleteApiKey } from "./actions";
 import { Key, Trash2, ExternalLink } from "lucide-react";
@@ -34,6 +34,13 @@ interface ApiKeyFormProps {
 export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [keyValue, setKeyValue] = useState("");
+  const [currentKey, setCurrentKey] = useState<string | null>(apiKey || null);
+
+  useEffect(() => {
+    if (apiKey !== undefined) {
+      setCurrentKey(apiKey || null);
+    }
+  }, [apiKey]);
 
   const maskKey = (key: string) => {
     if (key.length <= 10) return "**********";
@@ -49,6 +56,7 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
 
     if (result.success) {
       toast.success("API Key berhasil disimpan!");
+      setCurrentKey(keyValue);
       setKeyValue("");
       
     } else {
@@ -67,6 +75,7 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
     const result = await deleteApiKey();
     if (result.success) {
       toast.success("API Key berhasil dihapus!");
+      setCurrentKey(null);
     } else {
       toast.error(result.error || "Terjadi kesalahan");
     }
@@ -133,7 +142,7 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
           Key Aktif
         </h3>
         
-        {apiKey ? (
+        {currentKey ? (
           <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
@@ -141,7 +150,7 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
               </div>
               <div>
                 <p className="text-sm font-medium text-gray-900 dark:text-white">Google API Key</p>
-                <p className="text-xs font-mono text-gray-500 dark:text-gray-400">{maskKey(apiKey)}</p>
+                <p className="text-xs font-mono text-gray-500 dark:text-gray-400">{maskKey(currentKey)}</p>
               </div>
             </div>
             <button

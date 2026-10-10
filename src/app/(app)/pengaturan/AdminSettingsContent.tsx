@@ -200,7 +200,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
             </label>
             <div className="flex flex-col md:flex-row gap-3 md:gap-4">
               <input
-                type="text"
+                type="password"
                 value={apiKey}
                 onChange={e => setApiKey(e.target.value)}
                 placeholder="AIzaSy..."
