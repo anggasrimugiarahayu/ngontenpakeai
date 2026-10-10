@@ -1,4 +1,5 @@
 import { getApiKey } from "@/lib/get-api-key";
+import { getDefaultAiModel } from "@/lib/get-ai-model";
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 
@@ -8,10 +9,11 @@ export async function POST(req: NextRequest) {
       prompt,
       history = [],
       blueprint = {},
-      model = "gemini-2.5-flash",
+      model,
       apiKey
     } = await req.json();
 
+    const selectedModel = model || await getDefaultAiModel("gemini-2.5-flash");
     const currentKey = apiKey || process.env.GEMINI_API_KEY;
     if (!currentKey) {
       return NextResponse.json({ 
@@ -149,7 +151,7 @@ Anda beroperasi dalam 3 Mode:
     contents.push({ role: 'user', parts: [{ text: prompt }] });
 
     const response = await ai.models.generateContent({
-      model: model,
+      model: selectedModel,
       contents: contents,
       config: {
         systemInstruction: systemPrompt,
