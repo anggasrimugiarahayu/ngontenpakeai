@@ -1,4 +1,5 @@
 "use client";
+import toast from "react-hot-toast";
 import { useState } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { MessageSquare, Mic, Loader2, ArrowLeft } from "lucide-react";
@@ -48,7 +49,7 @@ export default function FeedbackPage() {
       }, 3000);
     } catch (error) {
       console.error(error);
-      alert("Gagal mengirim feedback, coba lagi.");
+      toast.error("Gagal mengirim feedback, coba lagi.");
     } finally {
       setIsSubmitting(false);
     }

@@ -1,3 +1,4 @@
+import toast from "react-hot-toast";
 import React, { useEffect } from 'react';
 import { X, Send } from 'lucide-react';
 
@@ -38,7 +39,7 @@ export default function WhatsAppModal({
   const handleSend = () => {
     const phone = sanitizePhone(order.user?.phone || order.customerPhone);
     if (!phone) {
-      alert("Nomor telepon pembeli tidak ditemukan!");
+      toast.error("Nomor telepon pembeli tidak ditemukan!");
       return;
     }
     const waUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;

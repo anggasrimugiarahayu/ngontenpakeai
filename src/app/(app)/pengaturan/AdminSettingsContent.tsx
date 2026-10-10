@@ -1,5 +1,6 @@
 "use client";
 
+import toast from "react-hot-toast";
 import { useState } from "react";
 import { mutate } from "swr";
 import { Plus, Trash2, Edit, BookOpen, Tag, X, Star, Ticket, Key, ExternalLink } from "lucide-react";
@@ -32,7 +33,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
     if (!file) return;
 
     if (file.size > 2 * 1024 * 1024) {
-      alert("Ukuran file maksimal 2MB");
+      toast.error("Ukuran file maksimal 2MB");
       return;
     }
     
@@ -64,12 +65,12 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
           labelEl.classList.add("text-green-500");
         }
       } else {
-        alert("Gagal upload gambar.");
+        toast.error("Gagal upload gambar.");
         if (labelEl) labelEl.innerText = "GAGAL X";
       }
     } catch (err) {
       console.error(err);
-      alert("Error upload gambar.");
+      toast.error("Error upload gambar.");
       if (labelEl) labelEl.innerText = "GAGAL X";
     } finally {
       setLoading(false);
@@ -98,7 +99,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
     setLoading(true);
     await saveAppSetting("DEFAULT_GEMINI_API_KEY", apiKey);
     setSavedKey(apiKey);
-    alert("API Key berhasil disimpan!");
+    toast.success("API Key berhasil disimpan!");
     setLoading(false);
   };
 
@@ -108,7 +109,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
     await deleteAppSetting("DEFAULT_GEMINI_API_KEY");
     setApiKey("");
     setSavedKey("");
-    alert("API Key berhasil dihapus!");
+    toast.success("API Key berhasil dihapus!");
     setLoading(false);
   };
 
@@ -652,7 +653,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
 
                 <button 
                   onClick={async () => {
-                    if (!newVoucher.code || !newVoucher.discountValue || !(newVoucher as any).digitalProductId) return alert("Lengkapi data dan pilih E-Book!");
+                    if (!newVoucher.code || !newVoucher.discountValue || !(newVoucher as any).digitalProductId) return toast.error("Lengkapi data dan pilih E-Book!");
                     setLoading(true);
                     await createVoucher({ 
                       code: newVoucher.code.toUpperCase(), 
@@ -661,7 +662,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                       digitalProductId: (newVoucher as any).digitalProductId 
                     });
                     setNewVoucher({ code: "", discountType: "PERCENTAGE", discountValue: 0, digitalProductId: "" } as any);
-                    alert('Voucher dibuat! Harap refresh halaman.');
+                    toast.success('Voucher dibuat! Harap refresh halaman.');
                     setLoading(false);
                   }}
                   disabled={loading}
@@ -695,7 +696,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                       if(!confirm('Hapus voucher ini?')) return;
                       setLoading(true); 
                       await deleteVoucher(v.id); 
-                      alert('Voucher dihapus, harap refresh halaman.'); 
+                      toast.success('Voucher dihapus, harap refresh halaman.'); 
                       setLoading(false); 
                     }}
                     disabled={loading}
@@ -902,7 +903,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                     onClick={async () => { 
                       setLoading(true); 
                       await deleteVoucher(v.id); 
-                      alert('Voucher dihapus, harap refresh halaman.'); 
+                      toast.success('Voucher dihapus, harap refresh halaman.'); 
                       setLoading(false); 
                     }}
                     disabled={loading}
@@ -940,11 +941,11 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 </div>
                 <button 
                   onClick={async () => {
-                    if (!newVoucher.code || !newVoucher.discountValue) return alert("Lengkapi data!");
+                    if (!newVoucher.code || !newVoucher.discountValue) return toast.error("Lengkapi data!");
                     setLoading(true);
                     await createVoucher({ ...newVoucher, code: newVoucher.code.toUpperCase(), digitalProductId: managingVouchers.id });
                     setNewVoucher({ code: "", discountType: "PERCENTAGE", discountValue: 0 });
-                    alert('Voucher dibuat! Harap refresh halaman.');
+                    toast.success('Voucher dibuat! Harap refresh halaman.');
                     setLoading(false);
                   }}
                   disabled={loading}

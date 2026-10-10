@@ -1,5 +1,6 @@
 "use client";
 
+import toast from "react-hot-toast";
 import GlobalChatLayout, { ChatMessage } from "@/components/chat/GlobalChatLayout";
 import { useAIChat } from "@/hooks/useAIChat";
 import { useSessionState } from "@/hooks/useSessionState";
@@ -102,7 +103,7 @@ export default function AtmBuilderClient() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 50 * 1024 * 1024) {
-        alert("Ukuran file terlalu besar! Maksimal 50 MB.");
+        toast.error("Ukuran file terlalu besar! Maksimal 50 MB.");
         return;
       }
       const reader = new FileReader();

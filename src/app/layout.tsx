@@ -7,6 +7,7 @@ import AuthProvider from "@/components/layout/AuthProvider";
 import { Suspense } from "react";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { Toaster } from "react-hot-toast";
 
 import prisma from "@/lib/prisma";
 
@@ -85,6 +86,7 @@ export default async function RootLayout({
               <Footer />
             </div>
 
+          <Toaster position="bottom-right" toastOptions={{ style: { background: "#333", color: "#fff" } }} />
           </ThemeProvider>
 
         </AuthProvider>

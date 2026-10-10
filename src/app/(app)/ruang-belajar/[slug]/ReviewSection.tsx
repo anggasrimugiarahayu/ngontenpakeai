@@ -1,5 +1,6 @@
 "use client";
 
+import toast from "react-hot-toast";
 import { useState } from "react";
 import { Star } from "lucide-react";
 import { addReview } from "../actions";
@@ -23,15 +24,15 @@ export default function ReviewSection({
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
-    if (rating === 0) return alert("Pilih rating bintang terlebih dahulu");
+    if (rating === 0) return toast.error("Pilih rating bintang terlebih dahulu");
     
     setIsSubmitting(true);
     try {
       await addReview(productId, rating, comment);
       setShowForm(false);
-      alert("Ulasan berhasil disimpan!");
+      toast.success("Ulasan berhasil disimpan!");
     } catch (e) {
-      alert("Gagal menyimpan ulasan.");
+      toast.error("Gagal menyimpan ulasan.");
     } finally {
       setIsSubmitting(false);
     }

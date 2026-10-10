@@ -1,5 +1,6 @@
 "use client";
 
+import toast from "react-hot-toast";
 import { useState } from "react";
 import { saveAppSetting } from "./admin-actions";
 import { Save, CheckCircle2, Edit, Package, Wrench, Gem, Check, X, Plus, BookOpen } from "lucide-react";
@@ -82,7 +83,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
       setSuccessMsg("Konfigurasi pricing berhasil disimpan!");
       setTimeout(() => setSuccessMsg(""), 3000);
     } catch (e) {
-      alert("Gagal menyimpan");
+      toast.error("Gagal menyimpan");
     }
     setLoading(false);
   };

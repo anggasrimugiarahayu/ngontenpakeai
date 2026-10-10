@@ -1,5 +1,6 @@
 "use client";
 
+import toast from "react-hot-toast";
 import { useState } from "react";
 import { Heart, Share2, Star, X, Download } from "lucide-react";
 import { toggleFavorite, addReview } from "../actions";
@@ -75,15 +76,15 @@ export default function EbookActions({
 
   const handleSubmitReview = async (e: any) => {
     e.preventDefault();
-    if (rating === 0) return alert("Pilih rating bintang terlebih dahulu");
+    if (rating === 0) return toast.error("Pilih rating bintang terlebih dahulu");
     
     setIsSubmittingReview(true);
     try {
       await addReview(productId, rating, comment);
       setShowModal(false);
-      alert("Ulasan berhasil disimpan! Terima kasih.");
+      toast.success("Ulasan berhasil disimpan! Terima kasih.");
     } catch (e) {
-      alert("Gagal menyimpan ulasan.");
+      toast.error("Gagal menyimpan ulasan.");
     } finally {
       setIsSubmittingReview(false);
     }
