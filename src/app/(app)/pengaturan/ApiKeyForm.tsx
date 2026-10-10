@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import toast from "react-hot-toast";
 import { updateApiKey, deleteApiKey } from "./actions";
 import { Key, Trash2, ExternalLink } from "lucide-react";
 
@@ -32,7 +33,7 @@ interface ApiKeyFormProps {
 
 export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
+  const [keyValue, setKeyValue] = useState("");
 
   const maskKey = (key: string) => {
     if (key.length <= 10) return "**********";
@@ -42,15 +43,16 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
   const handleSave = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsLoading(true);
-    setMessage(null);
 
     const formData = new FormData(e.currentTarget);
     const result = await updateApiKey(formData);
 
     if (result.success) {
-      setMessage({ type: "success", text: "API Key berhasil disimpan!" });
+      toast.success("API Key berhasil disimpan!");
+      setKeyValue("");
+      e.currentTarget.reset();
     } else {
-      setMessage({ type: "error", text: result.error || "Terjadi kesalahan" });
+      toast.error(result.error || "Terjadi kesalahan");
     }
     setIsLoading(false);
   };
@@ -61,13 +63,12 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
     }
 
     setIsLoading(true);
-    setMessage(null);
 
     const result = await deleteApiKey();
     if (result.success) {
-      setMessage({ type: "success", text: "API Key berhasil dihapus!" });
+      toast.success("API Key berhasil dihapus!");
     } else {
-      setMessage({ type: "error", text: result.error || "Terjadi kesalahan" });
+      toast.error(result.error || "Terjadi kesalahan");
     }
     setIsLoading(false);
   };
@@ -111,12 +112,14 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
             type="password"
             name="apiKey"
             placeholder="AIzaSy..."
+            value={keyValue}
+            onChange={(e) => setKeyValue(e.target.value)}
             required
             className="flex-1 w-full px-4 py-2.5 md:py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
           />
           <button
             type="submit"
-            disabled={isLoading}
+            disabled={isLoading || !keyValue.trim()}
             className="w-full md:w-auto px-6 py-2.5 md:py-2 rounded-lg bg-orange-700/80 hover:bg-orange-600 text-white font-medium transition-colors disabled:opacity-50"
           >
             {isLoading ? "Menyimpan..." : "Simpan"}
@@ -124,12 +127,7 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
         </div>
       </form>
 
-      {message && (
-        <div className={`mb-6 p-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-          {message.text}
-        </div>
-      )}
-
+      
       <div className="space-y-4">
         <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-white/5 pb-2">
           Key Aktif
