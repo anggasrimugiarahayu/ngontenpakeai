@@ -127,14 +127,32 @@ Platform Dipilih: ${formData.platform ? (Array.isArray(formData.platform) ? form
 [INSTRUKSI]: Evaluasi data di atas. Hasilkan Master Blueprint yang presisi, mendalam, membongkar celah pasar, dan memberikan narasi ICP (Persona) yang terasa hidup.
 `;
 
-    const response = await ai.models.generateContent({
-      model: await getDefaultAiModel, getFallbackAiModel("gemini-2.5-flash"),
-      contents: userPrompt,
-      config: {
-        systemInstruction,
-        responseMimeType: 'application/json',
+    let response;
+    try {
+      response = await ai.models.generateContent({
+        model: await getDefaultAiModel("gemini-2.5-flash"),
+        contents: userPrompt,
+        config: {
+          systemInstruction,
+          responseMimeType: 'application/json',
+        }
+      });
+    } catch (error: any) {
+      const errStr = String(error?.message || "");
+      if (error?.status === 503 || error?.status >= 500 || errStr.toLowerCase().includes('high demand') || errStr.toLowerCase().includes('overloaded') || errStr.toLowerCase().includes('internal')) {
+        console.warn("[Fallback] Master Blueprint server overloaded. Retrying with fallback model...");
+        response = await ai.models.generateContent({
+          model: await getFallbackAiModel(),
+          contents: userPrompt,
+          config: {
+            systemInstruction,
+            responseMimeType: 'application/json',
+          }
+        });
+      } else {
+        throw error;
       }
-    });
+    }
 
     const aiText = response.text;
     if (!aiText) throw new Error("Kosong dari AI");
