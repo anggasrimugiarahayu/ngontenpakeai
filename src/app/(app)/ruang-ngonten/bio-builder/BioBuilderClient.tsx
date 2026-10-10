@@ -60,7 +60,7 @@ export default function BioBuilderClient() {
         name: initialData.profileName || "",
         bioText: initialData.bioText || ""
       });
-      setAvatarUrl(initialData.avatarUrl || userImage || "https://placehold.co/150x150/e2e8f0/475569?text=Photo");
+      setAvatarUrl((initialData.avatarUrl && !initialData.avatarUrl.includes("placehold.co")) ? initialData.avatarUrl : (userImage || "https://placehold.co/150x150/e2e8f0/475569?text=Photo"));
       setSuggestions({
         usernames: initialData.suggestions?.usernames || null,
         names: initialData.suggestions?.names || null,
@@ -71,6 +71,14 @@ export default function BioBuilderClient() {
       else setStep(1);
     }
   }, [initialData]);
+
+
+  // Sync session userImage to avatarUrl when session loads (if still placeholder)
+  useEffect(() => {
+    if (userImage && avatarUrl.includes('placehold.co')) {
+      setAvatarUrl(userImage);
+    }
+  }, [userImage, avatarUrl]);
 
   const [loadingStep, setLoadingStep] = useState<"username" | "name" | "bio" | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
