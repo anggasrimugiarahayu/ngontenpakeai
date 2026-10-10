@@ -24,6 +24,7 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
     hasBlueprint = await getCachedHasBlueprint(session.user.id);
   }
   const dbFeatures = await getCachedFeatures();
+  const nicheReferences = await prisma.nicheReference.findMany({ select: { id: true, nama: true, data: true } });
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
   let isPro = isAdmin;
   
@@ -36,5 +37,5 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
     isPro = hasTools || dbUser?.role === "ADMIN";
   }
 
-  return <WorkspaceApp hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isLoggedIn={isLoggedIn} />;
+  return <WorkspaceApp hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isLoggedIn={isLoggedIn} nicheReferences={nicheReferences} />;
 }

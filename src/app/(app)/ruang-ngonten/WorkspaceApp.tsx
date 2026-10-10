@@ -16,9 +16,10 @@ interface Props {
   dbFeatures: any[];
   isPro: boolean;
   isLoggedIn?: boolean;
+  nicheReferences?: any[];
 }
 
-export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLoggedIn }: Props) {
+export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLoggedIn, nicheReferences }: Props) {
   const pathname = usePathname();
   
   const isDashboard = pathname === "/ruang-ngonten";
@@ -68,7 +69,7 @@ export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLogged
         <IdeaRoomsClient />
       </div>
       <div style={{ display: isMasterBlueprint ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
-        <MasterBlueprintClient />
+        <MasterBlueprintClient nicheReferences={nicheReferences} />
       </div>
       <div style={{ display: isScriptBuilder ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
         <ScriptBuilderClient />
