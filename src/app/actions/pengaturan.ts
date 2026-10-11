@@ -48,9 +48,24 @@ export async function getPengaturanDataAction() {
   return JSON.parse(JSON.stringify({ userData, adminData, isPro, isAdmin }));
 }
 
+import { unstable_cache } from "next/cache";
+
+export const getCachedPricingPackages = unstable_cache(
+  async () => {
+    try {
+      const setting = await prisma.appSetting.findUnique({
+        where: { key: "PRICING_PACKAGES" }
+      });
+      return setting?.value ? JSON.parse(setting.value) : null;
+    } catch (e) {
+      console.error("Failed to fetch pricing packages:", e);
+      return null;
+    }
+  },
+  ['pricing-packages'],
+  { revalidate: 86400, tags: ['pricing-packages'] }
+);
+
 export async function getPricingPackagesAction() {
-  const setting = await prisma.appSetting.findUnique({
-    where: { key: "PRICING_PACKAGES" }
-  });
-  return setting?.value ? JSON.parse(setting.value) : null;
+  return getCachedPricingPackages();
 }

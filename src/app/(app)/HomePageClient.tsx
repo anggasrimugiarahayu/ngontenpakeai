@@ -43,19 +43,40 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
     setShowPricing(showPricingParam);
   }, [showPricingParam]);
 
+  useEffect(() => {
+    const handlePopState = () => {
+      const isPricing = new URLSearchParams(window.location.search).get("pricing") === "true";
+      setShowPricing(isPricing);
+      window.dispatchEvent(new CustomEvent("pricing-change", { detail: isPricing }));
+    };
+    const handlePricingEvent = (e: any) => {
+      if (typeof e.detail === "boolean") {
+        setShowPricing(e.detail);
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    window.addEventListener("pricing-change", handlePricingEvent);
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      window.removeEventListener("pricing-change", handlePricingEvent);
+    };
+  }, []);
+
   const handleOpenPricing = () => {
     setShowPricing(true);
-    router.push("/?pricing=true");
+    window.history.pushState(null, "", "/?pricing=true");
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("pricing-change", { detail: true }));
+      window.dispatchEvent(new Event("app-shallow-navigate"));
     }
   };
 
   const handleClosePricing = () => {
     setShowPricing(false);
-    router.push("/");
+    window.history.pushState(null, "", "/");
     if (typeof window !== "undefined") {
       window.dispatchEvent(new CustomEvent("pricing-change", { detail: false }));
+      window.dispatchEvent(new Event("app-shallow-navigate"));
     }
   };
 

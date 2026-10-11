@@ -1,7 +1,7 @@
 "use server";
 
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 // 1. Models AI
 export async function getAiModels() {
@@ -42,6 +42,13 @@ export async function saveAppSetting(key: string, value: string) {
     update: { value },
     create: { key, value }
   });
+  if (key === "PRICING_PACKAGES") {
+    try {
+      revalidateTag("pricing-packages", "default");
+    } catch (e) {
+      console.error("Error revalidating pricing-packages:", e);
+    }
+  }
   revalidatePath("/pengaturan");
 }
 
@@ -50,6 +57,9 @@ export async function deleteAppSetting(key: string) {
     await prisma.appSetting.delete({
       where: { key }
     });
+    if (key === "PRICING_PACKAGES") {
+      revalidateTag("pricing-packages", "default");
+    }
   } catch (e) {
     // Ignore error if not found
   }

@@ -97,6 +97,15 @@ export function Navbar({ followerCount = "144K", memberCount = "0", userRole = "
 
         <Link
           href="/"
+          prefetch={true}
+          onClick={(e) => {
+            if (pathname === "/" || pathname === "") {
+              e.preventDefault();
+              window.history.pushState(null, '', '/');
+              window.dispatchEvent(new CustomEvent('pricing-change', { detail: false }));
+              window.dispatchEvent(new Event('app-shallow-navigate'));
+            }
+          }}
           className="flex items-center gap-1.5 sm:gap-2.5 group"
         >
 
@@ -161,6 +170,15 @@ export function Navbar({ followerCount = "144K", memberCount = "0", userRole = "
             {!isPro && !isPricing && (
               <Link
                 href="/?pricing=true"
+                prefetch={true}
+                onClick={(e) => {
+                  if (pathname === "/" || pathname === "") {
+                    e.preventDefault();
+                    window.history.pushState(null, '', '/?pricing=true');
+                    window.dispatchEvent(new CustomEvent('pricing-change', { detail: true }));
+                    window.dispatchEvent(new Event('app-shallow-navigate'));
+                  }
+                }}
                 className="px-2.5 py-1 sm:px-5 sm:py-2 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-sm shrink-0 transition-all bg-orange-500 text-white hover:bg-orange-600 shadow-sm"
               >
                 Upgrade

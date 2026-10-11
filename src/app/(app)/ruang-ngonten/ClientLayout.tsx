@@ -97,6 +97,13 @@ export default function ClientLayout({
       window.history.pushState(null, '', href);
       window.dispatchEvent(new Event('app-shallow-navigate'));
       setIsOpen(false);
+    } else if ((href === '/' || href === '/?pricing=true') && (activePath === '/' || activePath === '' || activePath.startsWith('/?'))) {
+      e.preventDefault();
+      const isPricing = href === '/?pricing=true';
+      window.history.pushState(null, '', href);
+      window.dispatchEvent(new CustomEvent('pricing-change', { detail: isPricing }));
+      window.dispatchEvent(new Event('app-shallow-navigate'));
+      setIsOpen(false);
     }
   };
 
@@ -196,7 +203,15 @@ export default function ClientLayout({
                     key={tool.href}
                     onClick={() => { 
                       if (!isLoggedIn) router.push(`/login?redirect=${tool.href}`);
-                      else if (isProLocked) router.push('/?pricing=true'); 
+                      else if (isProLocked) {
+                        if (activePath === '/' || activePath === '') {
+                          window.history.pushState(null, '', '/?pricing=true');
+                          window.dispatchEvent(new CustomEvent('pricing-change', { detail: true }));
+                          window.dispatchEvent(new Event('app-shallow-navigate'));
+                        } else {
+                          router.push('/?pricing=true');
+                        }
+                      }
                     }}
                     title={!isExpanded ? `${tool.label} (Terkunci)` : undefined}
                     className={`flex items-center rounded-xl transition-all duration-200 text-gray-400 dark:text-gray-600 opacity-60 ${isProLocked ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5' : 'cursor-not-allowed'} ${isExpanded ? 'px-3 py-3 gap-3' : 'justify-center w-10 h-10 mx-auto'}`}
@@ -319,7 +334,13 @@ export default function ClientLayout({
                            router.push(`/login?redirect=${tool.href}`);
                         } else if (isProLocked) {
                            setIsOpen(false);
-                           router.push('/?pricing=true');
+                           if (activePath === '/' || activePath === '') {
+                             window.history.pushState(null, '', '/?pricing=true');
+                             window.dispatchEvent(new CustomEvent('pricing-change', { detail: true }));
+                             window.dispatchEvent(new Event('app-shallow-navigate'));
+                           } else {
+                             router.push('/?pricing=true');
+                           }
                         }
                       }}
                       className={`flex items-center justify-between px-3 py-3 rounded-xl font-medium text-gray-400 dark:text-gray-600 opacity-60 ${isProLocked ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5' : 'cursor-not-allowed'}`}

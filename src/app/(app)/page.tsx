@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Platform belajar ngonten faceless dan sistem tools AI terlengkap.",
 };
 
+export const revalidate = 3600;
+
 export default async function Page() {
   const pricingConfig = await getPricingPackagesAction();
   return <HomePageClient initialPricingConfig={pricingConfig} />;
