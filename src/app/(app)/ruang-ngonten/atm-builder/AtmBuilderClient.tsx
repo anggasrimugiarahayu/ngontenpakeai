@@ -1,5 +1,5 @@
-import ScheduleToCalendarModal from "@/components/ui/ScheduleToCalendarModal";
 "use client";
+import ScheduleToCalendarModal from "@/components/ui/ScheduleToCalendarModal";
 
 import toast from "react-hot-toast";
 import GlobalChatLayout, { ChatMessage } from "@/components/chat/GlobalChatLayout";
