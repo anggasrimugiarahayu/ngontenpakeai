@@ -7,6 +7,8 @@ import { preload } from "swr";
 import { getDashboardDataAction } from "@/app/actions/dashboard";
 import { getPengaturanDataAction } from "@/app/actions/pengaturan";
 import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
+import { getBlueprintAction } from "@/app/actions/blueprint";
+import { getBioBuilderAction, getContentCalendarAction } from "@/app/actions/toolsData";
 
 const handleHoverPrefetch = (href: string) => {
   if (href === '/dashboard') {
@@ -15,6 +17,14 @@ const handleHoverPrefetch = (href: string) => {
     preload("pengaturan", getPengaturanDataAction);
   } else if (href === '/ruang-belajar') {
     preload("ruangBelajar", getRuangBelajarDataAction);
+  } else if (href.startsWith('/ruang-ngonten/')) {
+    preload("blueprint", getBlueprintAction);
+    
+    if (href === '/ruang-ngonten/bio-builder') {
+      preload("bioBuilder", getBioBuilderAction);
+    } else if (href === '/ruang-ngonten/content-calendar' || href === '/ruang-ngonten/script-builder' || href === '/ruang-ngonten/atm-builder') {
+      preload("contentCalendar", getContentCalendarAction);
+    }
   }
 };
 
