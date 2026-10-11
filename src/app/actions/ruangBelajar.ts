@@ -34,6 +34,8 @@ export const getCachedEbookBySlug = unstable_cache(
   { revalidate: 3600, tags: ['ebook-catalog'] }
 );
 
+import { getCachedAppUser, getCachedUserOwnedProducts } from "@/lib/cache";
+
 export async function getRuangBelajarDataAction() {
   const session = await auth();
   
@@ -42,18 +44,15 @@ export async function getRuangBelajarDataAction() {
   let isAdmin = false;
 
   const [userObj, userProducts, products] = await Promise.all([
-    session?.user?.id ? prisma.user.findUnique({ where: { id: session.user.id } }).catch(() => null) : Promise.resolve(null),
-    session?.user?.id ? prisma.userOwnedProduct.findMany({
-      where: { userId: session.user.id },
-      select: { digitalProductId: true }
-    }).catch(() => []) : Promise.resolve([]),
+    session?.user?.id ? getCachedAppUser(session.user.id) : Promise.resolve(null),
+    session?.user?.id ? getCachedUserOwnedProducts(session.user.id) : Promise.resolve([]),
     getCachedDigitalProductsList()
   ]);
 
   if (session?.user?.id && userObj) {
     isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
     isPro = userObj.role === "PRO" || isAdmin;
-    ownedProductIds = userProducts.map(up => up.digitalProductId);
+    ownedProductIds = userProducts.map((up: any) => up.digitalProductId);
   }
 
   return {
@@ -70,12 +69,9 @@ export async function getEbookDetailAction(slug: string) {
   const userId = session.user.id;
 
   const [userObj, cachedEbook, userProducts] = await Promise.all([
-    prisma.user.findUnique({ where: { id: userId }, select: { role: true } }).catch(() => null),
+    getCachedAppUser(userId),
     getCachedEbookBySlug(slug),
-    prisma.userOwnedProduct.findMany({
-      where: { userId: userId },
-      select: { digitalProductId: true }
-    }).catch(() => [])
+    getCachedUserOwnedProducts(userId)
   ]);
 
   if (!cachedEbook) {

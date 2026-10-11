@@ -120,6 +120,9 @@ export async function POST(req: NextRequest) {
     try {
       revalidateTag("admin-dashboard-stats", "default");
       revalidateTag("global-stats", "default");
+      revalidateTag("user-ownership", "default");
+      revalidateTag("user-orders", "default");
+      revalidateTag("user-session", "default");
     } catch (e) {
       console.error("Failed to revalidate tags:", e);
     }

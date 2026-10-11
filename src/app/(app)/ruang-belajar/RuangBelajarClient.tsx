@@ -10,6 +10,7 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
   const { data, isLoading } = useSWR("ruangBelajar", getRuangBelajarDataAction, {
     fallbackData: initialData,
     revalidateOnFocus: false,
+    revalidateIfStale: false,
     dedupingInterval: 60000
   });
 

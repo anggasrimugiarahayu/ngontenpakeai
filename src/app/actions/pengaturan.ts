@@ -20,6 +20,8 @@ export const getCachedAdminConfig = unstable_cache(
   { revalidate: 3600, tags: ['admin-config'] }
 );
 
+import { getCachedFeatures, getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
+
 export async function getPengaturanDataAction() {
   const session = await auth();
   if (!session?.user?.id) return null;
@@ -27,14 +29,10 @@ export async function getPengaturanDataAction() {
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
   
   const [features, usages, dbUser, userOrders] = await Promise.all([
-    prisma.feature.findMany({ where: { isActive: true }, orderBy: { createdAt: 'asc' } }),
+    getCachedFeatures(),
     prisma.usage.findMany({ where: { userId: session.user.id } }),
-    prisma.user.findUnique({ where: { id: session.user.id }, select: { proToolsExpiredAt: true, role: true } }),
-    prisma.order.findMany({ 
-      where: { userId: session.user.id, status: "SUCCESS" },
-      include: { product: true },
-      orderBy: { createdAt: "desc" }
-    })
+    getCachedAppUser(session.user.id),
+    getCachedUserOrders(session.user.id)
   ]);
 
   const hasTools = dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();

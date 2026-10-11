@@ -306,6 +306,9 @@ export async function verifyPayment(orderId: string) {
         revalidateTag("admin-dashboard-stats", "default");
         revalidateTag("global-stats", "default");
         revalidateTag("ebook-catalog", "default");
+        revalidateTag("user-ownership", "default");
+        revalidateTag("user-orders", "default");
+        revalidateTag("user-session", "default");
       } catch (e) {}
       return { success: true, status: finalStatus, justUpdated: true, expiryTime };
     }

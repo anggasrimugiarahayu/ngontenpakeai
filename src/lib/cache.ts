@@ -73,3 +73,36 @@ export const getCachedAppUser = unstable_cache(
   { revalidate: 300, tags: ['user-session'] }
 );
 
+export const getCachedUserOwnedProducts = unstable_cache(
+  async (userId: string) => {
+    try {
+      return await prisma.userOwnedProduct.findMany({
+        where: { userId },
+        select: { digitalProductId: true }
+      });
+    } catch (e) {
+      console.error("Failed to fetch user owned products in cache:", e);
+      return [];
+    }
+  },
+  ['user-owned-products'],
+  { revalidate: 86400, tags: ['user-ownership'] }
+);
+
+export const getCachedUserOrders = unstable_cache(
+  async (userId: string) => {
+    try {
+      return await prisma.order.findMany({
+        where: { userId, status: "SUCCESS" },
+        include: { product: true },
+        orderBy: { createdAt: "desc" }
+      });
+    } catch (e) {
+      console.error("Failed to fetch user orders in cache:", e);
+      return [];
+    }
+  },
+  ['user-success-orders'],
+  { revalidate: 86400, tags: ['user-orders'] }
+);
+

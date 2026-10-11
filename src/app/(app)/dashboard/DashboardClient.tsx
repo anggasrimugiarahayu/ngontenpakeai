@@ -67,10 +67,12 @@ export default function DashboardClient({ user, initialData }: { user: any, init
   const { data } = useSWR("dashboard", getDashboardDataAction, {
     fallbackData: initialData,
     revalidateOnFocus: false,
+    revalidateIfStale: false,
     dedupingInterval: 60000
   });
   const { data: insightsData } = useSWR("insights", getAudienceInsightsAction, {
     revalidateOnFocus: false,
+    revalidateIfStale: false,
     dedupingInterval: 60000
   });
   const [selectedOrder, setSelectedOrder] = useState<any>(null);

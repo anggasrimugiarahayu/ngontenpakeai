@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 
 export async function toggleFavorite(productId: string) {
   const session = await auth();
@@ -38,6 +38,10 @@ export async function addReview(productId: string, rating: number, comment: stri
     create: { userId, digitalProductId: productId, rating, comment }
   });
 
+  try {
+    revalidateTag("ebook-catalog", "default");
+  } catch (e) {}
+
   revalidatePath(`/ruang-belajar`);
   revalidatePath(`/ruang-belajar/[slug]`);
 }
@@ -72,6 +76,10 @@ export async function claimFreeEbook(productId: string) {
     update: {},
     create: { userId, digitalProductId: productId }
   });
+
+  try {
+    revalidateTag("user-ownership", "default");
+  } catch (e) {}
 
   revalidatePath(`/ruang-belajar`);
   revalidatePath(`/ruang-belajar/[slug]`);

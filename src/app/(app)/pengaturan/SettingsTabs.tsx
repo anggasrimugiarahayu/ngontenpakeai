@@ -15,6 +15,7 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
   const { data } = useSWR("pengaturan", getPengaturanDataAction, {
     fallbackData: initialData,
     revalidateOnFocus: false,
+    revalidateIfStale: false,
     dedupingInterval: 60000
   });
   const [activeTab, setActiveTab] = useState("profil");
