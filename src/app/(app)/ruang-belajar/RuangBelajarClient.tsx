@@ -60,6 +60,7 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
 
               return (
                 <Link 
+                  prefetch={true}
                   href={`/ruang-belajar/${ebook.slug}`} 
                   onMouseEnter={() => preload(["ebookDetail", ebook.slug], () => getEbookDetailAction(ebook.slug))}
                   onTouchStart={() => preload(["ebookDetail", ebook.slug], () => getEbookDetailAction(ebook.slug))} key={ebook.id} className="group flex">

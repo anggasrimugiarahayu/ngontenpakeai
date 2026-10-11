@@ -69,29 +69,31 @@ export async function getEbookDetailAction(slug: string) {
   if (!session?.user?.id) return { notFound: true, reason: 'unauthorized' };
   const userId = session.user.id;
 
-  const [userObj, ebook, userProducts] = await Promise.all([
-    prisma.user.findUnique({ where: { id: userId } }).catch(() => null),
-    prisma.digitalProduct.findFirst({
-      where: { slug: slug, isActive: true },
-      include: { 
-        category: true,
-        favorites: { where: { userId } },
-        reviews: { 
-          take: 20, // Limit reviews so server doesn't crash on popular ebooks
-          include: { user: { select: { name: true, image: true } } },
-          orderBy: { createdAt: 'desc' }
-        }
-      }
-    }).catch(() => null),
+  const [userObj, cachedEbook, userProducts] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId }, select: { role: true } }).catch(() => null),
+    getCachedEbookBySlug(slug),
     prisma.userOwnedProduct.findMany({
       where: { userId: userId },
       select: { digitalProductId: true }
     }).catch(() => [])
   ]);
 
-  if (!ebook) {
+  if (!cachedEbook) {
     return { notFound: true, reason: 'not-found' };
   }
+
+  let isFavorite = false;
+  try {
+    const fav = await prisma.productFavorite.findFirst({
+      where: { digitalProductId: cachedEbook.id, userId }
+    });
+    isFavorite = !!fav;
+  } catch (e) {}
+
+  const ebook = {
+    ...cachedEbook,
+    favorites: isFavorite ? [{ id: 'fav', userId }] : []
+  };
 
   const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
   const isPro = userObj?.role === "PRO" || isAdmin;

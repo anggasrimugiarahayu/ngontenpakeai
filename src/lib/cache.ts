@@ -57,3 +57,19 @@ export const getCachedMemberCount = unstable_cache(
   { revalidate: 300, tags: ['global-stats'] }
 );
 
+export const getCachedAppUser = unstable_cache(
+  async (userId: string) => {
+    try {
+      return await prisma.user.findUnique({
+        where: { id: userId },
+        select: { role: true, proToolsExpiredAt: true, onboardingCompleted: true }
+      });
+    } catch (e) {
+      console.error("Failed to fetch app user in cache:", e);
+      return null;
+    }
+  },
+  ['app-user-profile'],
+  { revalidate: 300, tags: ['user-session'] }
+);
+

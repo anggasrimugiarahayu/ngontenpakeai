@@ -3,32 +3,43 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 
+function revalidateAdminConfig() {
+  try {
+    revalidateTag("admin-config", "default");
+  } catch (e) {}
+}
+
 // 1. Models AI
 export async function getAiModels() {
   return await prisma.aiModel.findMany({ orderBy: { createdAt: 'desc' } });
 }
 export async function createAiModel(data: any) {
   await prisma.aiModel.create({ data });
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 export async function setDefaultModel(id: string) {
   await prisma.aiModel.updateMany({ data: { isDefault: false } });
   await prisma.aiModel.update({ where: { id }, data: { isDefault: true } });
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 
 export async function setFallbackModel(id: string) {
   await prisma.aiModel.updateMany({ data: { isFallback: false } });
   await prisma.aiModel.update({ where: { id }, data: { isFallback: true } });
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 
 export async function toggleModel(id: string, isActive: boolean) {
   await prisma.aiModel.update({ where: { id }, data: { isActive } });
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 export async function deleteModel(id: string) {
   await prisma.aiModel.delete({ where: { id } });
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 
@@ -49,6 +60,7 @@ export async function saveAppSetting(key: string, value: string) {
       console.error("Error revalidating pricing-packages:", e);
     }
   }
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 
@@ -63,6 +75,7 @@ export async function deleteAppSetting(key: string) {
   } catch (e) {
     // Ignore error if not found
   }
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 
@@ -72,10 +85,12 @@ export async function getFeatures() {
 }
 export async function toggleFeatureStatus(id: string, isActive: boolean) {
   await prisma.feature.update({ where: { id }, data: { isActive } });
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 export async function toggleFeaturePro(id: string, isProOnly: boolean) {
   await prisma.feature.update({ where: { id }, data: { isProOnly } });
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 
@@ -91,6 +106,7 @@ export async function createCategory(data: any) {
     }
   }
   await prisma.digitalCategory.create({ data });
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 
@@ -119,19 +135,22 @@ export async function createProduct(data: any) {
       category: categoryId ? { connect: { id: categoryId } } : undefined
     } 
   });
+  try {
+    revalidateTag("ebook-catalog", "default");
+  } catch (e) {}
   revalidatePath("/pengaturan");
 }
 
 export async function deleteCategory(id: string) {
-  // Check if there are products in this category first?
-  // In a real app we might prevent deletion, but Prisma relation might Cascade delete or Restrict.
-  // Assuming Restrict for now, so we need to be careful. If we want it simple, we just delete.
   await prisma.digitalCategory.delete({ where: { id } });
   revalidatePath("/pengaturan");
 }
 
 export async function deleteProduct(id: string) {
   await prisma.digitalProduct.delete({ where: { id } });
+  try {
+    revalidateTag("ebook-catalog", "default");
+  } catch (e) {}
   revalidatePath("/pengaturan");
 }
 
@@ -151,6 +170,9 @@ export async function updateProduct(id: string, data: any) {
       category: categoryId ? { connect: { id: categoryId } } : undefined
     }
   });
+  try {
+    revalidateTag("ebook-catalog", "default");
+  } catch (e) {}
   revalidatePath("/pengaturan");
 }
 

@@ -15,17 +15,9 @@ export default async function SettingsPage() {
     redirect("/login");
   }
 
-  const [initialData, dbUser, userOrders] = await Promise.all([
-    getPengaturanDataAction(),
-    prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { proToolsExpiredAt: true, role: true }
-    }),
-    prisma.order.findMany({
-      where: { userId: session.user.id, status: "SUCCESS", orderType: { in: ["PRO_BOOK", "PRO_TOOLS", "PRO_PLUS"] } },
-      orderBy: { createdAt: "desc" }
-    })
-  ]);
+  const initialData = await getPengaturanDataAction();
+  const dbUser = initialData?.dbUser || null;
+  const userOrders = initialData?.userOrders || [];
 
   return (
     <div className="flex-1 w-full max-w-4xl mx-auto p-6 py-10 md:py-16">

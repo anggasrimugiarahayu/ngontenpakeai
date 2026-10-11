@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
-import { getCachedFeatures, getCachedHasBlueprint } from "@/lib/cache";
+import { getCachedFeatures, getCachedHasBlueprint, getCachedAppUser } from "@/lib/cache";
 import ClientLayout from "./ruang-ngonten/ClientLayout";
 import { redirect } from "next/navigation";
 
@@ -24,10 +24,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   if (session?.user?.id) {
     try {
-      const dbUser = await prisma.user.findUnique({ 
-        where: { id: session.user.id }, 
-        select: { role: true, proToolsExpiredAt: true, onboardingCompleted: true } 
-      });
+      const dbUser = await getCachedAppUser(session.user.id);
       if (dbUser) {
         if (!dbUser.onboardingCompleted) {
           needsOnboarding = true;

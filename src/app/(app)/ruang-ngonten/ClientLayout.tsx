@@ -17,7 +17,7 @@ const handleHoverPrefetch = (href: string) => {
     preload("pengaturan", getPengaturanDataAction);
   } else if (href === '/ruang-belajar') {
     preload("ruangBelajar", getRuangBelajarDataAction);
-  } else if (href.startsWith('/ruang-ngonten/')) {
+  } else if (href === '/ruang-ngonten' || href.startsWith('/ruang-ngonten/')) {
     preload("blueprint", getBlueprintAction);
     
     if (href === '/ruang-ngonten/bio-builder') {

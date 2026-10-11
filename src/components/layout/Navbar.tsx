@@ -226,10 +226,10 @@ export function Navbar({ followerCount = "144K", memberCount = "0", userRole = "
                   <Link prefetch={true} onMouseEnter={() => handleHoverPrefetch("/pengaturan")} onTouchStart={() => handleHoverPrefetch("/pengaturan")} href="/pengaturan" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
                     Pengaturan
                   </Link>
-                  <Link href="/bantuan" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
+                  <Link prefetch={true} href="/bantuan" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
                     Bantuan
                   </Link>
-                  <Link href="/feedback" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
+                  <Link prefetch={true} href="/feedback" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
                     Feedback
                   </Link>
                   <button

@@ -1,13 +1,10 @@
 "use server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
 
-export async function getDashboardDataAction() {
-  const session = await auth();
-  if (!session?.user?.id) return null;
-  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
-  if (!isAdmin) return null;
-
+export const getCachedDashboardStats = unstable_cache(
+  async () => {
   // 1. BATCH 1: Users, Products, Roles, Product Analytics
   const [totalUsers, totalProducts, userRoles, analyticsGroup] = await Promise.all([
     prisma.user.count().catch(() => 0),
@@ -221,6 +218,18 @@ export async function getDashboardDataAction() {
     salesChartData,
     viewsChartData
   };
+},
+['admin-dashboard-stats'],
+{ revalidate: 300, tags: ['admin-dashboard-stats'] }
+);
+
+export async function getDashboardDataAction() {
+  const session = await auth();
+  if (!session?.user?.id) return null;
+  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
+  if (!isAdmin) return null;
+
+  return getCachedDashboardStats();
 }
 
 export async function getDashboardOrdersAction(page = 1, limit = 20, search = '', status = 'all') {

@@ -3,6 +3,23 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { getAiModels, getAppSettings, getFeatures, getCategories, getProducts } from "@/app/(app)/pengaturan/admin-actions";
 
+import { unstable_cache } from "next/cache";
+
+export const getCachedAdminConfig = unstable_cache(
+  async () => {
+    const [models, settings, adminFeatures, categories, products] = await Promise.all([
+      getAiModels(),
+      getAppSettings(),
+      getFeatures(),
+      getCategories(),
+      getProducts()
+    ]);
+    return { models, settings, features: adminFeatures, categories, products };
+  },
+  ['admin-config-data'],
+  { revalidate: 3600, tags: ['admin-config'] }
+);
+
 export async function getPengaturanDataAction() {
   const session = await auth();
   if (!session?.user?.id) return null;
@@ -15,7 +32,8 @@ export async function getPengaturanDataAction() {
     prisma.user.findUnique({ where: { id: session.user.id }, select: { proToolsExpiredAt: true, role: true } }),
     prisma.order.findMany({ 
       where: { userId: session.user.id, status: "SUCCESS" },
-      include: { product: true }
+      include: { product: true },
+      orderBy: { createdAt: "desc" }
     })
   ]);
 
@@ -35,20 +53,11 @@ export async function getPengaturanDataAction() {
 
   let adminData: any = null;
   if (isAdmin) {
-    const [models, settings, adminFeatures, categories, products] = await Promise.all([
-      getAiModels(),
-      getAppSettings(),
-      getFeatures(),
-      getCategories(),
-      getProducts()
-    ]);
-    adminData = { models, settings, features: adminFeatures, categories, products };
+    adminData = await getCachedAdminConfig();
   }
 
-  return JSON.parse(JSON.stringify({ userData, adminData, isPro, isAdmin }));
+  return JSON.parse(JSON.stringify({ userData, adminData, isPro, isAdmin, dbUser, userOrders }));
 }
-
-import { unstable_cache } from "next/cache";
 
 export const getCachedPricingPackages = unstable_cache(
   async () => {
