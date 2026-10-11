@@ -43,15 +43,12 @@ export default function AtmBuilderClient() {
   const atmPlusMenuRef = useRef<HTMLDivElement>(null);
 
   // Calendar States for "Jadwalkan" Feature
-  const [isAgendaFormOpen, setIsAgendaFormOpen] = useState(false);
-  const [agendaForm, setAgendaForm] = useState({ topic: '', script: '', caption: '', funnelStage: 'TOFU' });
-  const [isSavingAgenda, setIsSavingAgenda] = useState(false);
-  const [savedAgendaSuccess, setSavedAgendaSuccess] = useState(false);
-  const [isScriptDatePickerOpen, setIsScriptDatePickerOpen] = useState(false);
-  const [currentCalDate, setCurrentCalDate] = useState(new Date());
-  const [selectedCalDate, setSelectedCalDate] = useState<string | null>(null);
-  const [calendarData, setCalendarData] = useState<Record<string, any>>({});
+                const [calendarData, setCalendarData] = useState<Record<string, any>>({});
   const [activeScriptData, setActiveScriptData] = useState<any>(null);
+
+  const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
+  const [scheduleDefaultData, setScheduleDefaultData] = useState<{topic: string, script: string, caption?: string, funnelStage?: string} | null>(null);
+
 
   useEffect(() => {
     if (dbCalendar) {
@@ -388,194 +385,12 @@ export default function AtmBuilderClient() {
       />
 
       {/* Pop-Up Modal Tanggal */}
-      {isScriptDatePickerOpen && (
-        <div className="fixed inset-0 z-[100] bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200" onClick={() => setIsScriptDatePickerOpen(false)}>
-          <div className="bg-white dark:bg-[#121214] rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-sm overflow-hidden flex flex-col max-h-[85dvh]" onClick={e => e.stopPropagation()}>
-            <div className="px-5 py-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between bg-gray-50 dark:bg-white/5 shrink-0">
-               <h3 className="text-sm md:text-base font-bold font-heading text-gray-900 dark:text-white flex items-center gap-2">
-                 <Calendar size={18} strokeWidth={2.5} className="text-rn-accent"/> Pilih Tanggal Tayang
-               </h3>
-               <button onClick={() => setIsScriptDatePickerOpen(false)} className="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-full p-1.5 transition-colors"><X size={16} strokeWidth={2.5}/></button>
-            </div>
-            
-            <div className="p-5 overflow-y-auto no-scrollbar bg-white dark:bg-transparent">
-               <div className="flex items-center justify-between mb-4">
-                 <h4 className="font-bold text-gray-900 dark:text-white font-heading uppercase tracking-wide text-sm">
-                   {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][currentCalDate.getMonth()]} {currentCalDate.getFullYear()}
-                 </h4>
-                 <div className="flex gap-2">
-                   <button onClick={() => setCurrentCalDate(new Date(currentCalDate.getFullYear(), currentCalDate.getMonth() - 1, 1))} className="p-1.5 border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 text-gray-600 dark:text-gray-300 transition-colors"><ChevronLeft size={16} strokeWidth={2.5}/></button>
-                   <button onClick={() => setCurrentCalDate(new Date(currentCalDate.getFullYear(), currentCalDate.getMonth() + 1, 1))} className="p-1.5 border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 text-gray-600 dark:text-gray-300 transition-colors"><ChevronRight size={16} strokeWidth={2.5}/></button>
-                 </div>
-               </div>
-               
-               <div className="grid grid-cols-7 gap-1 text-center text-[11px] font-black text-gray-500 dark:text-gray-400 uppercase mb-2 font-heading">
-                 {['Min','Sen','Sel','Rab','Kam','Jum','Sab'].map(d => <div key={d} className={d === 'Min' ? 'text-red-500 dark:text-red-400' : ''}>{d}</div>)}
-               </div>
-               
-               <div className="grid grid-cols-7 gap-2">
-                 {(() => {
-                    const year = currentCalDate.getFullYear();
-                    const month = currentCalDate.getMonth();
-                    const daysInMonth = new Date(year, month + 1, 0).getDate();
-                    const firstDay = new Date(year, month, 1).getDay();
-                    
-                    const todayDate = new Date();
-                    const todayKey = `${todayDate.getFullYear()}-${String(todayDate.getMonth()+1).padStart(2,'0')}-${String(todayDate.getDate()).padStart(2,'0')}`;
-
-                    let cells = [];
-                    for(let i=0; i<firstDay; i++) cells.push(<div key={`blank-${i}`} className="h-8 md:h-10"/>);
-                    
-                    for(let i=1; i<=daysInMonth; i++) {
-                       const dateKey = `${year}-${String(month+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-                       const hasContent = !!calendarData[dateKey]?.topic;
-                       const isToday = dateKey === todayKey;
-                       const isPast = dateKey < todayKey;
-                       
-                       let btnClass = "h-8 md:h-10 rounded-xl flex items-center justify-center text-[13px] font-bold transition-all duration-200 border ";
-                       
-                       if (hasContent) {
-                          btnClass += "bg-rn-accent text-white border-rn-accent ";
-                          if (isToday) btnClass += "ring-2 ring-orange-300 dark:ring-orange-900 ring-offset-1 dark:ring-offset-[#121214] ";
-                          if (isPast) btnClass += "opacity-60 hover:opacity-100 ";
-                       } else if (isPast) {
-                          btnClass += "bg-transparent text-gray-300 dark:text-gray-600 border-transparent cursor-not-allowed";
-                       } else if (isToday) {
-                          btnClass += "bg-orange-100 dark:bg-orange-900/30 text-rn-accent border border-rn-accent";
-                       } else {
-                          btnClass += "hover:bg-gray-50 dark:hover:bg-white/10 text-gray-900 dark:text-white border-transparent hover:border-gray-200 dark:hover:border-white/20";
-                       }
-
-                       cells.push(
-                          <button 
-                            key={i} 
-                            disabled={isPast && !hasContent} 
-                            onClick={() => {
-                              setSelectedCalDate(dateKey);
-                              setIsScriptDatePickerOpen(false);
-                              
-                              let formattedScript = "";
-                              if (activeScriptData?.sections) {
-                                formattedScript = activeScriptData.sections.map((s: any) => `[${s.label}]\n${s.content}`).join('\n\n');
-                              } else {
-                                formattedScript = `=== HOOK ===\n${activeScriptData?.hook || ''}\n\n=== FORESHADOW ===\n${activeScriptData?.bridge || ''}\n\n=== BODY ===\n${activeScriptData?.body || ''}\n\n=== CTA ===\n${activeScriptData?.cta || ''}\n\n`;
-                              }
-                              
-                              setAgendaForm({
-                                topic: activeScriptData?.judul_internal?.replace(/^Versi\s*\d+\s*[-:]*\s*/i, '') || activeScriptData?.judul_internal || 'Adaptasi ATM Content',
-                                script: formattedScript,
-                                caption: activeScriptData?.caption || '',
-                                funnelStage: 'TOFU'
-                              });
-                              
-                              setTimeout(() => setIsAgendaFormOpen(true), 200);
-                            }}
-                            className={btnClass}
-                            title={hasContent ? calendarData[dateKey].topic : isPast ? "Sudah lewat" : "Kosong"}
-                          >
-                            {i}
-                          </button>
-                       );
-                    }
-                    return cells;
-                 })()}
-               </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Pop-up Modal Form Agenda Baru */}
-      {isAgendaFormOpen && (
-        <div className="fixed inset-0 z-[110] bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-200" onClick={() => !isSavingAgenda && setIsAgendaFormOpen(false)}>
-          <div className="bg-white dark:bg-[#121214] rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-lg overflow-hidden flex flex-col max-h-[90dvh]" onClick={e => e.stopPropagation()}>
-            <div className="px-5 py-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between bg-gray-50 dark:bg-white/5 shrink-0">
-               <h3 className="text-sm md:text-base font-bold font-heading text-gray-900 dark:text-white flex items-center gap-2">
-                 <Calendar size={18} strokeWidth={2.5} className="text-rn-accent"/> Konfirmasi Agenda Publikasi
-               </h3>
-               <button onClick={() => !isSavingAgenda && setIsAgendaFormOpen(false)} disabled={isSavingAgenda} className="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-full p-1.5 transition-colors disabled:opacity-50"><X size={16} strokeWidth={2.5}/></button>
-            </div>
-            
-            <form onSubmit={(e) => { e.preventDefault(); handleSaveAgendaFromBuilder(); }} className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-4">
-              
-              {savedAgendaSuccess ? (
-                 <div className="flex flex-col items-center justify-center py-10 animate-in zoom-in duration-300">
-                    <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-500 rounded-full flex items-center justify-center mb-4">
-                       <CheckCircle2 size={32} strokeWidth={3} />
-                    </div>
-                    <h3 className="font-bold text-gray-900 dark:text-white text-lg font-heading mb-2">Jadwal Tersimpan!</h3>
-                    <p className="text-gray-500 dark:text-gray-400 text-sm text-center">Konten sudah masuk ke antrean kalender kamu tanggal <strong>{selectedCalDate}</strong>.</p>
-                 </div>
-              ) : (
-                <>
-                  <div className="bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs px-4 py-3 rounded-xl flex items-center gap-2 border border-blue-100 dark:border-blue-900/30 font-medium">
-                    <Calendar size={14} /> Tanggal terpilih: <strong className="font-bold">{selectedCalDate}</strong>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 uppercase tracking-wide">Topik / Judul Konten</label>
-                    <input 
-                      type="text" 
-                      required
-                      value={agendaForm.topic}
-                      onChange={e => setAgendaForm({...agendaForm, topic: e.target.value})}
-                      className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-rn-accent/50 outline-none text-sm font-bold font-heading"
-                      placeholder="Judul konten"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 uppercase tracking-wide">Tahap Funnel</label>
-                    <div className="grid grid-cols-3 gap-2">
-                      {['TOFU', 'MOFU', 'BOFU'].map(stage => (
-                        <button
-                          key={stage}
-                          type="button"
-                          onClick={() => setAgendaForm({...agendaForm, funnelStage: stage})}
-                          className={`py-2 rounded-xl text-xs font-bold border transition-colors ${agendaForm.funnelStage === stage ? 'bg-[#1a1a1c] text-white border-transparent' : 'bg-gray-50 dark:bg-white/5 text-gray-500 border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10'}`}
-                        >
-                          {stage}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 uppercase tracking-wide">Naskah Skrip / Konten</label>
-                    <textarea 
-                      required
-                      value={agendaForm.script}
-                      onChange={e => setAgendaForm({...agendaForm, script: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-rn-accent/50 outline-none text-sm h-32 resize-none leading-relaxed"
-                      placeholder="Isi skrip..."
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5 uppercase tracking-wide">Caption (Opsional)</label>
-                    <textarea 
-                      value={agendaForm.caption}
-                      onChange={e => setAgendaForm({...agendaForm, caption: e.target.value})}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-rn-accent/50 outline-none text-sm h-20 resize-none leading-relaxed"
-                      placeholder="Caption instagram/tiktok..."
-                    />
-                  </div>
-
-                  <div className="pt-2">
-                    <button 
-                      type="submit" 
-                      disabled={isSavingAgenda}
-                      className="w-full py-3.5 bg-rn-accent text-white rounded-xl font-bold font-heading hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                      {isSavingAgenda ? <><Square size={16} className="animate-spin" /> Menyimpan...</> : <><Save size={16} /> Simpan ke Kalender</>}
-                    </button>
-                  </div>
-                </>
-              )}
-            </form>
-          </div>
-        </div>
-      )}
+      
+      <ScheduleToCalendarModal 
+        isOpen={isScheduleModalOpen}
+        onClose={() => setIsScheduleModalOpen(false)}
+        defaultData={scheduleDefaultData}
+      />
     </div>
   );
 }
