@@ -54,7 +54,8 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
   let isLocked = !isOwned;
 
 
-  const isFavorite = ebook.favorites.length > 0;
+  const isFavorite = ebook.favorites?.length > 0;
+  const favoriteCount = ebook.favoriteCount ?? (ebook._count?.favorites || 0);
 
   
   // Calculate average rating
@@ -97,6 +98,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
           <EbookActions 
             productId={ebook.id} 
             initialIsFavorite={isFavorite} 
+            initialFavoriteCount={favoriteCount}
             canReview={true} 
             userReview={userReview}
             pdfUrl={ebook.fileUrl}
@@ -150,7 +152,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                       </div>
                     </div>
                     
-                    <EbookActions productId={ebook.id} initialIsFavorite={isFavorite} pdfUrl={!isLocked ? ebook.fileUrl : null} isDownloadable={ebook.isDownloadable} />
+                    <EbookActions productId={ebook.id} initialIsFavorite={isFavorite} initialFavoriteCount={favoriteCount} pdfUrl={!isLocked ? ebook.fileUrl : null} isDownloadable={ebook.isDownloadable} />
                  </div>
                </div>
 

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { BookOpen, Star, Loader2 } from "lucide-react";
+import { BookOpen, Star, Loader2, Heart } from "lucide-react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import useSWR, { preload } from "swr";
 import { getRuangBelajarDataAction, getEbookDetailAction } from "@/app/actions/ruangBelajar";
@@ -55,6 +55,7 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
 
               const reviewCount = ebook.reviews?.length || 0;
               const buyerCount = ebook._count?.owners || 0;
+              const favCount = ebook._count?.favorites || 0;
               const averageRating = reviewCount > 0 
                 ? (ebook.reviews.reduce((acc: number, rev: any) => acc + rev.rating, 0) / reviewCount).toFixed(1)
                 : "0.0";
@@ -92,12 +93,21 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                           <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                           <span>{averageRating === "0.0" ? "0" : averageRating}</span>
                           <span className="text-gray-400 font-normal ml-0.5">
-                            ({reviewCount} ulasan)
+                            ({reviewCount})
                           </span>
                           <span className="text-gray-300 dark:text-gray-600 mx-1">•</span>
                           <span className="text-gray-500 font-medium">
                             {buyerCount} pembeli
                           </span>
+                          {favCount > 0 && (
+                            <>
+                              <span className="text-gray-300 dark:text-gray-600 mx-1">•</span>
+                              <span className="text-red-500 font-medium flex items-center gap-0.5">
+                                <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+                                {favCount}
+                              </span>
+                            </>
+                          )}
                         </div>
 
                         {ebook.description && (

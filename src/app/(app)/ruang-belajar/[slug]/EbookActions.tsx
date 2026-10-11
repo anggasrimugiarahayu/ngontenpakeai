@@ -20,6 +20,7 @@ function getDirectDownloadUrl(url: string | null | undefined) {
 export default function EbookActions({ 
   productId, 
   initialIsFavorite,
+  initialFavoriteCount = 0,
   canReview = false,
   userReview = null,
   pdfUrl = null,
@@ -27,12 +28,14 @@ export default function EbookActions({
 }: { 
   productId: string, 
   initialIsFavorite: boolean,
+  initialFavoriteCount?: number,
   canReview?: boolean,
   userReview?: any,
   pdfUrl?: string | null,
   isDownloadable?: boolean
 }) {
   const [isFav, setIsFav] = useState(initialIsFavorite);
+  const [favCount, setFavCount] = useState(initialFavoriteCount);
   const [isSubmittingFav, setIsSubmittingFav] = useState(false);
   const [shareText, setShareText] = useState("Bagikan");
 
@@ -46,11 +49,22 @@ export default function EbookActions({
   const handleFavorite = async () => {
     if (isSubmittingFav) return;
     setIsSubmittingFav(true);
-    setIsFav(!isFav); // optimistic UI
+    const prevFav = isFav;
+    const prevCount = favCount;
+    const nextFav = !prevFav;
+    setIsFav(nextFav);
+    setFavCount(nextFav ? prevCount + 1 : Math.max(0, prevCount - 1));
     try {
-      await toggleFavorite(productId);
+      const res = await toggleFavorite(productId);
+      if (res && typeof res.count === 'number') {
+        setFavCount(res.count);
+        setIsFav(res.isFavorite);
+      }
+      toast.success(nextFav ? "Disimpan ke Favorit!" : "Dihapus dari Favorit");
     } catch (e) {
-      setIsFav(isFav); // revert on error
+      setIsFav(prevFav); // revert on error
+      setFavCount(prevCount);
+      toast.error("Gagal memperbarui favorit");
     } finally {
       setIsSubmittingFav(false);
     }
@@ -117,12 +131,22 @@ export default function EbookActions({
         <button 
           onClick={handleFavorite}
           disabled={isSubmittingFav}
-          className={`flex items-center gap-1.5 text-sm font-bold transition-colors ${
-            isFav ? 'text-red-500 hover:text-red-600' : 'text-gray-600 dark:text-gray-400 hover:text-rn-accent'
+          className={`flex items-center gap-1.5 text-sm font-bold transition-all ${
+            isFav ? 'text-red-500 hover:text-red-600' : 'text-gray-600 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400'
           }`}
+          title={isFav ? "Hapus dari favorit" : "Tambah ke favorit"}
         >
-          <Heart className="w-4 h-4" fill={isFav ? "currentColor" : "none"} /> 
+          <Heart className={`w-4 h-4 transition-transform duration-200 ${isFav ? "scale-110 fill-red-500 text-red-500" : ""}`} fill={isFav ? "currentColor" : "none"} /> 
           <span className="hidden sm:inline">Favorit</span>
+          {favCount > 0 && (
+            <span className={`text-[11px] px-1.5 py-0.5 rounded-full font-mono font-bold leading-none ${
+              isFav 
+                ? "bg-red-500/10 text-red-500" 
+                : "bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400"
+            }`}>
+              {favCount}
+            </span>
+          )}
         </button>
 
         <button 

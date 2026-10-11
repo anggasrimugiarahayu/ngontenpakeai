@@ -8,7 +8,7 @@ export const getCachedDigitalProductsList = unstable_cache(
     return prisma.digitalProduct.findMany({
       where: { isActive: true },
       take: 100,
-      include: { category: true, reviews: { select: { rating: true } }, _count: { select: { owners: true } } },
+      include: { category: true, reviews: { select: { rating: true } }, _count: { select: { owners: true, favorites: true } } },
       orderBy: { createdAt: 'desc' }
     }).catch(() => []);
   },
@@ -22,6 +22,7 @@ export const getCachedEbookBySlug = unstable_cache(
       where: { slug: slug, isActive: true },
       include: { 
         category: true,
+        _count: { select: { owners: true, favorites: true } },
         reviews: { 
           take: 20,
           include: { user: { select: { name: true, image: true } } },
@@ -79,16 +80,28 @@ export async function getEbookDetailAction(slug: string) {
   }
 
   let isFavorite = false;
+  let favoriteCount = (cachedEbook as any)?._count?.favorites || 0;
   try {
-    const fav = await prisma.productFavorite.findFirst({
-      where: { digitalProductId: cachedEbook.id, userId }
-    });
+    const [fav, freshCount] = await Promise.all([
+      prisma.favorite.findUnique({
+        where: { userId_digitalProductId: { userId, digitalProductId: cachedEbook.id } }
+      }),
+      prisma.favorite.count({
+        where: { digitalProductId: cachedEbook.id }
+      })
+    ]);
     isFavorite = !!fav;
-  } catch (e) {}
+    if (typeof freshCount === 'number') {
+      favoriteCount = freshCount;
+    }
+  } catch (e) {
+    console.error("Error checking favorite status:", e);
+  }
 
   const ebook = {
     ...cachedEbook,
-    favorites: isFavorite ? [{ id: 'fav', userId }] : []
+    favorites: isFavorite ? [{ id: 'fav', userId }] : [],
+    favoriteCount
   };
 
   const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";

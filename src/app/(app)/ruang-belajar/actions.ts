@@ -14,16 +14,29 @@ export async function toggleFavorite(productId: string) {
     where: { userId_digitalProductId: { userId, digitalProductId: productId } }
   });
 
+  let isFavorite = false;
   if (existing) {
     await prisma.favorite.delete({ where: { id: existing.id } });
+    isFavorite = false;
   } else {
     await prisma.favorite.create({
       data: { userId, digitalProductId: productId }
     });
+    isFavorite = true;
   }
+
+  const count = await prisma.favorite.count({
+    where: { digitalProductId: productId }
+  });
+
+  try {
+    revalidateTag("ebook-catalog", "default");
+  } catch (e) {}
 
   revalidatePath(`/ruang-belajar`);
   revalidatePath(`/ruang-belajar/[slug]`);
+
+  return { success: true, isFavorite, count };
 }
 
 export async function addReview(productId: string, rating: number, comment: string) {
