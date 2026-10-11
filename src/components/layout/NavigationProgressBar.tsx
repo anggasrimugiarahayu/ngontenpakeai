@@ -102,25 +102,29 @@ export function NavigationProgressBar() {
   if (!loading && progress === 0) return null;
 
   return (
-    <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none transition-opacity duration-300">
+    <>
       {/* 1. Top Gradient Glowing Bar */}
-      <div
-        className="h-[3px] bg-gradient-to-r from-orange-600 via-orange-500 to-amber-400 shadow-[0_0_12px_rgba(249,115,22,0.9)] transition-all duration-150 ease-out"
-        style={{ width: `${progress}%` }}
-      />
-
-      {/* 2. Floating Percentage Counter Pill */}
-      <div className="absolute top-2.5 right-4 flex items-center gap-2 px-3 py-1 rounded-full bg-black/80 dark:bg-[#18181b]/90 backdrop-blur-md border border-white/10 text-white shadow-2xl text-[11px] font-semibold font-mono tracking-tight animate-in fade-in slide-in-from-top-1 duration-200">
-        <span
-          className={`w-1.5 h-1.5 rounded-full ${
-            progress === 100 ? "bg-emerald-400" : "bg-orange-500 animate-ping"
-          }`}
+      <div className="fixed top-0 left-0 right-0 z-[9999] pointer-events-none transition-opacity duration-300">
+        <div
+          className="h-[3px] bg-gradient-to-r from-orange-600 via-orange-500 to-amber-400 shadow-[0_0_12px_rgba(249,115,22,0.9)] transition-all duration-150 ease-out"
+          style={{ width: `${progress}%` }}
         />
-        <span className="text-gray-300">
-          {progress === 100 ? "Selesai" : "Memuat"}
-        </span>
-        <span className="text-orange-400 font-bold">{Math.min(100, progress)}%</span>
       </div>
-    </div>
+
+      {/* 2. Floating Percentage Counter Pill (Pojok Kanan Bawah) */}
+      <div className="fixed bottom-5 right-5 z-[9999] pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200">
+        <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/85 dark:bg-[#18181b]/95 backdrop-blur-md border border-white/10 text-white shadow-2xl text-[12px] font-semibold font-mono tracking-tight">
+          <span
+            className={`w-2 h-2 rounded-full ${
+              progress === 100 ? "bg-emerald-400" : "bg-orange-500 animate-ping"
+            }`}
+          />
+          <span className="text-gray-300">
+            {progress === 100 ? "Selesai" : "Memuat"}
+          </span>
+          <span className="text-orange-400 font-bold">{Math.min(100, progress)}%</span>
+        </div>
+      </div>
+    </>
   );
 }
