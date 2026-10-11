@@ -1,4 +1,5 @@
 import { verifyPayment } from "@/app/actions/payment";
+import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
 import RuangBelajarClient from "./RuangBelajarClient";
 
 export const metadata = {
@@ -13,5 +14,6 @@ export default async function RuangBelajarPage({ searchParams }: { searchParams:
     await verifyPayment(resolvedSearchParams.order_id);
   }
   
-  return <RuangBelajarClient />;
+  const initialData = await getRuangBelajarDataAction();
+  return <RuangBelajarClient initialData={initialData} />;
 }

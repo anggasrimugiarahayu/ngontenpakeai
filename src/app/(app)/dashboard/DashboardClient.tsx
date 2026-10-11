@@ -40,7 +40,7 @@ const MOCK_DONUT_DATA = [
 
 
 
-export default function DashboardClient({ user }: { user: any }) {
+export default function DashboardClient({ user, initialData }: { user: any, initialData?: any }) {
   
   const getOrderImage = (order: any) => {
     if (order.product?.coverUrl) return order.product.coverUrl;
@@ -64,8 +64,15 @@ export default function DashboardClient({ user }: { user: any }) {
     }
   };
 
-  const { data } = useSWR("dashboard", getDashboardDataAction);
-  const { data: insightsData } = useSWR("insights", getAudienceInsightsAction);
+  const { data } = useSWR("dashboard", getDashboardDataAction, {
+    fallbackData: initialData,
+    revalidateOnFocus: false,
+    dedupingInterval: 60000
+  });
+  const { data: insightsData } = useSWR("insights", getAudienceInsightsAction, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000
+  });
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderSearch, setOrderSearch] = useState('');
   const [orderStatus, setOrderStatus] = useState('all');

@@ -59,13 +59,30 @@ export default function ClientLayout({
 
   const pathname = usePathname();
   const router = useRouter();
+  const [activePath, setActivePath] = useState(pathname);
   const [isOpen, setIsOpen] = useState(false); // Mobile drawer
   const [isExpanded, setIsExpanded] = useState(false); // Desktop floating dock
+
+  useEffect(() => {
+    setActivePath(pathname);
+  }, [pathname]);
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setActivePath(window.location.pathname);
+    };
+    window.addEventListener('popstate', handleLocationChange);
+    window.addEventListener('app-shallow-navigate', handleLocationChange);
+    return () => {
+      window.removeEventListener('popstate', handleLocationChange);
+      window.removeEventListener('app-shallow-navigate', handleLocationChange);
+    };
+  }, []);
 
   // Close mobile drawer on navigation
   useEffect(() => {
     setIsOpen(false);
-  }, [pathname]);
+  }, [activePath]);
 
   // Listen for open-tools-drawer event from Navbar
   useEffect(() => {
@@ -74,8 +91,16 @@ export default function ClientLayout({
     return () => window.removeEventListener('open-tools-drawer', handleOpen);
   }, []);
 
-  
-  const isToolsMode = pathname.startsWith('/ruang-ngonten/') && pathname !== '/ruang-ngonten' && pathname !== '/ruang-ngonten/';
+  const handleToolNav = (e: React.MouseEvent, href: string) => {
+    if (activePath.startsWith('/ruang-ngonten') && href.startsWith('/ruang-ngonten')) {
+      e.preventDefault();
+      window.history.pushState(null, '', href);
+      window.dispatchEvent(new Event('app-shallow-navigate'));
+      setIsOpen(false);
+    }
+  };
+
+  const isToolsMode = activePath.startsWith('/ruang-ngonten/') && activePath !== '/ruang-ngonten' && activePath !== '/ruang-ngonten/';
 
   let GLOBAL_NAV_ITEMS = [];
 
@@ -141,9 +166,9 @@ export default function ClientLayout({
               const Icon = tool.icon;
               let isActive = false;
                 if (!isToolsMode) {
-                  isActive = pathname === tool.href || (tool.href !== '/' && tool.href !== '/?pricing=true' && !tool.href.startsWith('/login') && pathname.startsWith(tool.href));
+                  isActive = activePath === tool.href || (tool.href !== '/' && tool.href !== '/?pricing=true' && !tool.href.startsWith('/login') && activePath.startsWith(tool.href));
                 } else {
-                  isActive = pathname === tool.href;
+                  isActive = activePath === tool.href;
                 }
               const isProLocked = isToolsMode && (tool as any).isProOnly && !isPro;
               const isBlueprintLocked = isToolsMode && !hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint';
@@ -191,6 +216,7 @@ export default function ClientLayout({
                 <Link prefetch={true}
                   key={tool.href}
                   href={tool.href}
+                  onClick={(e) => handleToolNav(e, tool.href)}
                   onMouseEnter={() => handleHoverPrefetch(tool.href)}
                   onTouchStart={() => handleHoverPrefetch(tool.href)}
                   title={!isExpanded ? tool.label : undefined}
@@ -213,6 +239,7 @@ export default function ClientLayout({
           <div className="p-2 border-t border-gray-100 dark:border-white/5 mt-auto">
             <Link prefetch={true}
               href={backHref}
+              onClick={(e) => handleToolNav(e, backHref)}
               title={!isExpanded ? "Back" : undefined}
               className={`flex items-center rounded-xl transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-500/10 dark:hover:text-orange-400 ${
                 isExpanded ? 'px-3 py-3 gap-3' : 'justify-center w-10 h-10 mx-auto'
@@ -262,9 +289,9 @@ export default function ClientLayout({
                 const Icon = tool.icon;
                 let isActive = false;
                 if (!isToolsMode) {
-                  isActive = pathname === tool.href || (tool.href !== '/' && tool.href !== '/?pricing=true' && !tool.href.startsWith('/login') && pathname.startsWith(tool.href));
+                  isActive = activePath === tool.href || (tool.href !== '/' && tool.href !== '/?pricing=true' && !tool.href.startsWith('/login') && activePath.startsWith(tool.href));
                 } else {
-                  isActive = pathname === tool.href;
+                  isActive = activePath === tool.href;
                 }
                 const isProLocked = isToolsMode && (tool as any).isProOnly && !isPro;
                 const isBlueprintLocked = isToolsMode && !hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint';
@@ -310,6 +337,7 @@ export default function ClientLayout({
                   <Link prefetch={true}
                   key={tool.href}
                     href={tool.href}
+                    onClick={(e) => handleToolNav(e, tool.href)}
                     onMouseEnter={() => handleHoverPrefetch(tool.href)}
                     onTouchStart={() => handleHoverPrefetch(tool.href)}
                     className={`flex items-center gap-3 px-3 py-3 rounded-xl font-medium transition-colors ${
@@ -329,6 +357,7 @@ export default function ClientLayout({
             <div className="p-4 border-t border-gray-100 dark:border-white/5 mt-auto">
               <Link prefetch={true}
                 href={backHref}
+                onClick={(e) => handleToolNav(e, backHref)}
                 className="flex items-center gap-3 px-3 py-3 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/5 transition-colors hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-500/10 dark:hover:text-orange-400"
               >
                 <LayoutGrid size={18} />

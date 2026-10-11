@@ -11,8 +11,12 @@ import { AdminSettingsContent } from "./AdminSettingsContent";
 import { format } from "date-fns";
 import { id } from "date-fns/locale";
 
-export function SettingsTabs({ user, dbUser, orders = [] }: { user: any, dbUser?: any, orders?: any[] }) {
-  const { data } = useSWR("pengaturan", getPengaturanDataAction);
+export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user: any, dbUser?: any, orders?: any[], initialData?: any }) {
+  const { data } = useSWR("pengaturan", getPengaturanDataAction, {
+    fallbackData: initialData,
+    revalidateOnFocus: false,
+    dedupingInterval: 60000
+  });
   const [activeTab, setActiveTab] = useState("profil");
 
   if (!data) return <LoadingSpinner message="Memuat Pengaturan..." />;

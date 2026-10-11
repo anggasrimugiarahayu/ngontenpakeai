@@ -1,6 +1,38 @@
 "use server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { unstable_cache } from "next/cache";
+
+export const getCachedDigitalProductsList = unstable_cache(
+  async () => {
+    return prisma.digitalProduct.findMany({
+      where: { isActive: true },
+      take: 100,
+      include: { category: true, reviews: { select: { rating: true } }, _count: { select: { owners: true } } },
+      orderBy: { createdAt: 'desc' }
+    }).catch(() => []);
+  },
+  ['digital-products-list'],
+  { revalidate: 3600, tags: ['ebook-catalog'] }
+);
+
+export const getCachedEbookBySlug = unstable_cache(
+  async (slug: string) => {
+    return prisma.digitalProduct.findFirst({
+      where: { slug: slug, isActive: true },
+      include: { 
+        category: true,
+        reviews: { 
+          take: 20,
+          include: { user: { select: { name: true, image: true } } },
+          orderBy: { createdAt: 'desc' }
+        }
+      }
+    }).catch(() => null);
+  },
+  ['digital-product-by-slug'],
+  { revalidate: 3600, tags: ['ebook-catalog'] }
+);
 
 export async function getRuangBelajarDataAction() {
   const session = await auth();
@@ -15,12 +47,7 @@ export async function getRuangBelajarDataAction() {
       where: { userId: session.user.id },
       select: { digitalProductId: true }
     }).catch(() => []) : Promise.resolve([]),
-    prisma.digitalProduct.findMany({
-      where: { isActive: true },
-      take: 100, // Safe limit for production
-      include: { category: true, reviews: { select: { rating: true } }, _count: { select: { owners: true } } },
-      orderBy: { createdAt: 'desc' }
-    }).catch(() => [])
+    getCachedDigitalProductsList()
   ]);
 
   if (session?.user?.id && userObj) {

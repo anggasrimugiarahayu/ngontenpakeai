@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { snap, coreApi } from "@/lib/midtrans";
 import { headers } from "next/headers";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { calculatePaymentFees, PAYMENT_METHODS, PaymentMethodKey } from "@/lib/payment-calc";
 
 export async function createCheckoutToken(data: { 
@@ -302,6 +302,11 @@ export async function verifyPayment(orderId: string) {
         }
       });
       revalidatePath("/ruang-belajar");
+      try {
+        revalidateTag("admin-dashboard-stats", "default");
+        revalidateTag("global-stats", "default");
+        revalidateTag("ebook-catalog", "default");
+      } catch (e) {}
       return { success: true, status: finalStatus, justUpdated: true, expiryTime };
     }
     

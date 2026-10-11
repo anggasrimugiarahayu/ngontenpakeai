@@ -10,6 +10,8 @@ import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "react-hot-toast";
 
 import prisma from "@/lib/prisma";
+import { getCachedMemberCount } from "@/lib/cache";
+import SWRProvider from "@/components/layout/SWRProvider";
 
 export const metadata: Metadata = {
   title: "Ruang Ngonten - Strategi Faceless Creator",
@@ -29,7 +31,7 @@ export default async function RootLayout({
   let userRole = "USER";
   let badgeName = "FREE";
   try {
-    memberCount = await prisma.user.count();
+    memberCount = await getCachedMemberCount();
     const session = await auth();
     if (session?.user?.id) {
       const dbUser = await prisma.user.findUnique({ 
@@ -70,25 +72,26 @@ export default async function RootLayout({
         suppressHydrationWarning
       >
         <AuthProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem={false}
-            disableTransitionOnChange
-          >
-            <div className="w-full min-h-screen flex flex-col relative">
-              <Suspense>
-                <Navbar memberCount={memberCount.toString()} userRole={userRole} badgeName={badgeName} />
-              </Suspense>
-              <main className="flex-1 flex flex-col pt-16 md:pt-20 pb-2">
-                {children}
-              </main>
-              <Footer />
-            </div>
+          <SWRProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem={false}
+              disableTransitionOnChange
+            >
+              <div className="w-full min-h-screen flex flex-col relative">
+                <Suspense>
+                  <Navbar memberCount={memberCount.toString()} userRole={userRole} badgeName={badgeName} />
+                </Suspense>
+                <main className="flex-1 flex flex-col pt-16 md:pt-20 pb-2">
+                  {children}
+                </main>
+                <Footer />
+              </div>
 
-          <Toaster position="bottom-right" toastOptions={{ style: { background: "#333", color: "#fff" } }} />
-          </ThemeProvider>
-
+            <Toaster position="bottom-right" toastOptions={{ style: { background: "#333", color: "#fff" } }} />
+            </ThemeProvider>
+          </SWRProvider>
         </AuthProvider>
       </body>
     </html>

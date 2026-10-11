@@ -23,7 +23,7 @@ export async function PUT(req: Request) {
       }
     });
 
-    revalidateTag("blueprint");
+    revalidateTag("blueprint", "default");
     return NextResponse.json({ success: true, id: updated.id });
   } catch (error: any) {
     console.error("Error saving blueprint:", error);
@@ -56,7 +56,7 @@ export async function POST(req: Request) {
       }
     });
 
-    revalidateTag("blueprint");
+    revalidateTag("blueprint", "default");
     return NextResponse.json({ success: true, id: created.id });
   } catch (error: any) {
     console.error("Error creating blueprint:", error);
@@ -87,7 +87,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "Blueprint not found or unauthorized" }, { status: 404 });
     }
 
-    revalidateTag("blueprint");
+    revalidateTag("blueprint", "default");
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error("Error deleting blueprint:", error);

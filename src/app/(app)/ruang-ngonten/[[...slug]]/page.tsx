@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getCachedFeatures, getCachedHasBlueprint } from "@/lib/cache";
+import { getCachedFeatures, getCachedHasBlueprint, getCachedNicheReferences } from "@/lib/cache";
 import WorkspaceApp from "../WorkspaceApp";
 
 export const metadata = {
@@ -24,7 +24,7 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
     hasBlueprint = await getCachedHasBlueprint(session.user.id);
   }
   const dbFeatures = await getCachedFeatures();
-  const nicheReferences = await prisma.nicheReference.findMany({ select: { id: true, nama: true, data: true } });
+  const nicheReferences = await getCachedNicheReferences();
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
   let isPro = isAdmin;
   

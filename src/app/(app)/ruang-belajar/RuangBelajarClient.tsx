@@ -6,10 +6,14 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import useSWR, { preload } from "swr";
 import { getRuangBelajarDataAction, getEbookDetailAction } from "@/app/actions/ruangBelajar";
 
-export default function RuangBelajarClient() {
-  const { data, isLoading } = useSWR("ruangBelajar", getRuangBelajarDataAction);
+export default function RuangBelajarClient({ initialData }: { initialData?: any }) {
+  const { data, isLoading } = useSWR("ruangBelajar", getRuangBelajarDataAction, {
+    fallbackData: initialData,
+    revalidateOnFocus: false,
+    dedupingInterval: 60000
+  });
 
-  if (isLoading || !data) {
+  if (!data) {
     return (
       <div className="flex-1 flex flex-col p-4 md:p-8 max-w-7xl mx-auto w-full">
         <div className="mb-10 text-center max-w-2xl mx-auto">

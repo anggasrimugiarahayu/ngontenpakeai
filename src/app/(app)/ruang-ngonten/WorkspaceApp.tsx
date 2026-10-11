@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import AtmBuilderClient from "./atm-builder/AtmBuilderClient";
 import BioBuilderClient from "./bio-builder/BioBuilderClient";
@@ -22,16 +23,33 @@ interface Props {
 
 export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLoggedIn, nicheReferences, userImage }: Props) {
   const pathname = usePathname();
+  const [activePath, setActivePath] = useState(pathname);
+
+  useEffect(() => {
+    setActivePath(pathname);
+  }, [pathname]);
+
+  useEffect(() => {
+    const handleLocationChange = () => {
+      setActivePath(window.location.pathname);
+    };
+    window.addEventListener("popstate", handleLocationChange);
+    window.addEventListener("app-shallow-navigate", handleLocationChange);
+    return () => {
+      window.removeEventListener("popstate", handleLocationChange);
+      window.removeEventListener("app-shallow-navigate", handleLocationChange);
+    };
+  }, []);
   
-  const isDashboard = pathname === "/ruang-ngonten";
-  const isAtm = pathname.startsWith("/ruang-ngonten/atm-builder");
-  const isBio = pathname.startsWith("/ruang-ngonten/bio-builder");
-  const isCarousel = pathname.startsWith("/ruang-ngonten/carousel-builder");
-  const isCalendar = pathname.startsWith("/ruang-ngonten/content-calendar");
-  const isEbook = pathname.startsWith("/ruang-ngonten/ebook-builder");
-  const isIdeaRooms = pathname.startsWith("/ruang-ngonten/idea-rooms");
-  const isMasterBlueprint = pathname.startsWith("/ruang-ngonten/master-blueprint");
-  const isScriptBuilder = pathname.startsWith("/ruang-ngonten/script-builder");
+  const isDashboard = activePath === "/ruang-ngonten" || activePath === "/ruang-ngonten/";
+  const isAtm = activePath.startsWith("/ruang-ngonten/atm-builder");
+  const isBio = activePath.startsWith("/ruang-ngonten/bio-builder");
+  const isCarousel = activePath.startsWith("/ruang-ngonten/carousel-builder");
+  const isCalendar = activePath.startsWith("/ruang-ngonten/content-calendar");
+  const isEbook = activePath.startsWith("/ruang-ngonten/ebook-builder");
+  const isIdeaRooms = activePath.startsWith("/ruang-ngonten/idea-rooms");
+  const isMasterBlueprint = activePath.startsWith("/ruang-ngonten/master-blueprint");
+  const isScriptBuilder = activePath.startsWith("/ruang-ngonten/script-builder");
 
   return (
     <>

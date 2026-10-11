@@ -35,6 +35,14 @@ export default function ToolCard({ feature, hasBlueprint, isPro = false, isLogge
         setShowError(true);
         setTimeout(() => setShowError(false), 3000);
       }
+      return;
+    }
+
+    // Instant shallow routing if already inside /ruang-ngonten
+    if (window.location.pathname.startsWith('/ruang-ngonten')) {
+      e.preventDefault();
+      window.history.pushState(null, '', feature.href);
+      window.dispatchEvent(new Event('app-shallow-navigate'));
     }
   };
 

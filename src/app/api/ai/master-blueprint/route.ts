@@ -10,8 +10,7 @@ export async function POST(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      revalidateTag("blueprint");
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const formData = await req.json();
@@ -185,6 +184,10 @@ Platform Dipilih: ${formData.platform ? (Array.isArray(formData.platform) ? form
       });
       blueprintId = blueprint.id;
     }
+
+    try {
+      revalidateTag("blueprint", "default");
+    } catch (e) {}
 
     return NextResponse.json({ result, id: blueprintId });
 

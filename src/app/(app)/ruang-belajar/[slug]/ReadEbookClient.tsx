@@ -19,10 +19,14 @@ import ReviewSection from "./ReviewSection";
 import PdfViewer from "./PdfViewer";
 
 
-export default function ReadEbookClient({ slug }: { slug: string }) {
+export default function ReadEbookClient({ slug, initialData }: { slug: string; initialData?: any }) {
 
   const router = useRouter();
-  const { data, isLoading, mutate } = useSWR(["ebookDetail", slug], () => getEbookDetailAction(slug));
+  const { data, isLoading, mutate } = useSWR(["ebookDetail", slug], () => getEbookDetailAction(slug), {
+    fallbackData: initialData,
+    revalidateOnFocus: false,
+    dedupingInterval: 60000
+  });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
@@ -31,7 +35,7 @@ export default function ReadEbookClient({ slug }: { slug: string }) {
     }
   }, [data?.ebook?.id]);
 
-  if (isLoading || !data) {
+  if (!data) {
     return <LoadingSpinner message="Memuat E-Book..." />;
   }
 

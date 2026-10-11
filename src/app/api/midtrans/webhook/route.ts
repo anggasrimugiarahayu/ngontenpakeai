@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { revalidateTag } from "next/cache";
 import { coreApi } from "@/lib/midtrans";
 import prisma from "@/lib/prisma";
 
@@ -114,6 +115,13 @@ export async function POST(req: NextRequest) {
         where: { id: orderId },
         data: { status: finalStatus }
       });
+    }
+
+    try {
+      revalidateTag("admin-dashboard-stats", "default");
+      revalidateTag("global-stats", "default");
+    } catch (e) {
+      console.error("Failed to revalidate tags:", e);
     }
 
     return NextResponse.json({ success: true, status: finalStatus });

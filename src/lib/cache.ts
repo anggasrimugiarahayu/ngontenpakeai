@@ -30,3 +30,30 @@ export const getCachedHasBlueprint = unstable_cache(
   ['has-blueprint'],
   { revalidate: 3600, tags: ['blueprint'] }
 );
+
+export const getCachedNicheReferences = unstable_cache(
+  async () => {
+    try {
+      return await prisma.nicheReference.findMany({ select: { id: true, nama: true, data: true } });
+    } catch (e) {
+      console.error("Failed to fetch niche references:", e);
+      return [];
+    }
+  },
+  ['niche-references'],
+  { revalidate: 86400, tags: ['niche-references'] }
+);
+
+export const getCachedMemberCount = unstable_cache(
+  async () => {
+    try {
+      return await prisma.user.count();
+    } catch (e) {
+      console.error("Failed to fetch member count:", e);
+      return 0;
+    }
+  },
+  ['member-count'],
+  { revalidate: 300, tags: ['global-stats'] }
+);
+
