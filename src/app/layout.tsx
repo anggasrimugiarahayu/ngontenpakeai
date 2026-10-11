@@ -10,8 +10,9 @@ import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "react-hot-toast";
 
 import prisma from "@/lib/prisma";
-import { getCachedMemberCount } from "@/lib/cache";
+import { getCachedMemberCount, getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
 import SWRProvider from "@/components/layout/SWRProvider";
+import { NavigationProgressBar } from "@/components/layout/NavigationProgressBar";
 
 export const metadata: Metadata = {
   title: "Ruang Ngonten - Strategi Faceless Creator",
@@ -34,10 +35,10 @@ export default async function RootLayout({
     memberCount = await getCachedMemberCount();
     const session = await auth();
     if (session?.user?.id) {
-      const dbUser = await prisma.user.findUnique({ 
-        where: { id: session.user.id }, 
-        select: { role: true, proToolsExpiredAt: true, email: true } 
-      });
+      const [dbUser, userOrders] = await Promise.all([
+        getCachedAppUser(session.user.id),
+        getCachedUserOrders(session.user.id)
+      ]);
       if (dbUser) {
         userRole = dbUser.role || "USER";
         
@@ -45,15 +46,10 @@ export default async function RootLayout({
         const hasTools = dbUser.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();
         const isAdmin = dbUser.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
         
-        // Check if they ever bought PRO_BOOK or PRO_PLUS
-        const bookOrders = await prisma.order.findFirst({
-          where: {
-            userId: session.user.id,
-            status: "SUCCESS",
-            orderType: { in: ["PRO_BOOK", "PRO_PLUS"] }
-          }
-        });
-        const hasBook = !!bookOrders || isAdmin;
+        // Check if they ever bought PRO_BOOK or PRO_PLUS from cached orders
+        const hasBook = userOrders.some(
+          (o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS"
+        ) || isAdmin;
         
         if (isAdmin) badgeName = "ADMIN";
         else if (hasBook && hasTools) badgeName = "PRO PLUS";
@@ -79,6 +75,9 @@ export default async function RootLayout({
               enableSystem={false}
               disableTransitionOnChange
             >
+              <Suspense>
+                <NavigationProgressBar />
+              </Suspense>
               <div className="w-full min-h-screen flex flex-col relative">
                 <Suspense>
                   <Navbar memberCount={memberCount.toString()} userRole={userRole} badgeName={badgeName} />

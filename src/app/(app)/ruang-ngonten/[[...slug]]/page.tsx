@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getCachedFeatures, getCachedHasBlueprint, getCachedNicheReferences } from "@/lib/cache";
+import { getCachedFeatures, getCachedHasBlueprint, getCachedNicheReferences, getCachedAppUser } from "@/lib/cache";
 import WorkspaceApp from "../WorkspaceApp";
 
 export const metadata = {
@@ -29,10 +29,7 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
   let isPro = isAdmin;
   
   if (!isAdmin && session?.user?.id) {
-    const dbUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { proToolsExpiredAt: true, role: true }
-    });
+    const dbUser = await getCachedAppUser(session.user.id);
     const hasTools = dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();
     isPro = hasTools || dbUser?.role === "ADMIN";
   }

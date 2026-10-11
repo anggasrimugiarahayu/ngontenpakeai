@@ -62,7 +62,7 @@ export const getCachedAppUser = unstable_cache(
     try {
       return await prisma.user.findUnique({
         where: { id: userId },
-        select: { role: true, proToolsExpiredAt: true, onboardingCompleted: true }
+        select: { role: true, proToolsExpiredAt: true, onboardingCompleted: true, email: true }
       });
     } catch (e) {
       console.error("Failed to fetch app user in cache:", e);
