@@ -7,27 +7,41 @@ import { redirect } from "next/navigation";
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
   let hasBlueprint = false;
+  let dbFeatures: any = [];
   
-  if (session?.user?.id) {
-    hasBlueprint = await getCachedHasBlueprint(session.user.id);
+  try {
+    if (session?.user?.id) {
+      hasBlueprint = await getCachedHasBlueprint(session.user.id);
+    }
+    dbFeatures = await getCachedFeatures();
+  } catch (error) {
+    console.error("Error fetching cache/blueprint", error);
   }
-  
-  const dbFeatures = await getCachedFeatures();
   
   let userRole = "USER";
   let hasTools = false;
+  let needsOnboarding = false;
+
   if (session?.user?.id) {
-    const dbUser = await prisma.user.findUnique({ 
-      where: { id: session.user.id }, 
-      select: { role: true, proToolsExpiredAt: true, onboardingCompleted: true } 
-    });
-    if (dbUser) {
-      if (!dbUser.onboardingCompleted) {
-        redirect("/onboarding");
+    try {
+      const dbUser = await prisma.user.findUnique({ 
+        where: { id: session.user.id }, 
+        select: { role: true, proToolsExpiredAt: true, onboardingCompleted: true } 
+      });
+      if (dbUser) {
+        if (!dbUser.onboardingCompleted) {
+          needsOnboarding = true;
+        }
+        userRole = dbUser.role || "USER";
+        hasTools = dbUser.proToolsExpiredAt ? new Date(dbUser.proToolsExpiredAt) > new Date() : false;
       }
-      userRole = dbUser.role || "USER";
-      hasTools = dbUser.proToolsExpiredAt ? new Date(dbUser.proToolsExpiredAt) > new Date() : false;
+    } catch (error) {
+      console.error("Error fetching dbUser in AppLayout", error);
     }
+  }
+  
+  if (needsOnboarding) {
+    redirect("/onboarding");
   }
   
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
