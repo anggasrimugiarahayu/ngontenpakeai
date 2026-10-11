@@ -44,7 +44,6 @@ export default function AtmBuilderClient() {
 
   // Calendar States for "Jadwalkan" Feature
                 const [calendarData, setCalendarData] = useState<Record<string, any>>({});
-  const [activeScriptData, setActiveScriptData] = useState<any>(null);
 
   const [isScheduleModalOpen, setIsScheduleModalOpen] = useState(false);
   const [scheduleDefaultData, setScheduleDefaultData] = useState<{topic: string, script: string, caption?: string, funnelStage?: string} | null>(null);
@@ -67,38 +66,6 @@ export default function AtmBuilderClient() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleSaveAgendaFromBuilder = async () => {
-    setIsSavingAgenda(true);
-    const newCalendarData = {
-      ...calendarData,
-      [selectedCalDate!]: {
-        topic: agendaForm.topic,
-        script: agendaForm.script,
-        caption: agendaForm.caption,
-        funnelStage: agendaForm.funnelStage
-      }
-    };
-    
-    setCalendarData(newCalendarData);
-    
-    try {
-      await fetch('/api/calendar', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ calendarData: newCalendarData })
-      });
-      mutate("contentCalendar");
-      setSavedAgendaSuccess(true);
-      setTimeout(() => {
-        setIsAgendaFormOpen(false);
-        setSavedAgendaSuccess(false);
-      }, 1500);
-    } catch (e) {
-      console.error(e);
-    } finally {
-      setIsSavingAgenda(false);
-    }
-  };
 
   const handleCopyBlock = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -244,10 +211,26 @@ export default function AtmBuilderClient() {
                         onClick={() => {
                           setAtmActionState(`schedule-${msg.id}-${i}`);
                           setTimeout(() => {
-                            setAtmActionState(null);
-                            setActiveScriptData(ver);
-                            setIsScriptDatePickerOpen(true);
-                          }, 200);
+                        setAtmActionState(null);
+                        let formattedScript = "";
+                        try {
+                          const parsed = JSON.parse(ver.script);
+                          if (Array.isArray(parsed)) {
+                            formattedScript = parsed.map((s: any) => `[${s.label}]\n${s.content}`).join('\n\n');
+                          } else {
+                            formattedScript = ver.script;
+                          }
+                        } catch(e) {
+                          formattedScript = ver.script;
+                        }
+                        setScheduleDefaultData({
+                          topic: ver.topic || ver.judul || '',
+                          script: formattedScript,
+                          caption: '',
+                          funnelStage: 'TOFU'
+                        });
+                        setIsScheduleModalOpen(true);
+                      }, 200);
                         }}
                         className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${atmActionState === `schedule-${msg.id}-${i}` ? 'border-rn-accent bg-rn-accent text-white shadow-sm' : 'bg-white dark:bg-[#1A1A1A] border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'}`}
                     ><Calendar size={14} /> Jadwalkan</button>
