@@ -5,50 +5,18 @@ import { unstable_cache } from "next/cache";
 
 export const getCachedDashboardStats = unstable_cache(
   async () => {
-  // 1. BATCH 1: Users, Products, Roles, Product Analytics
-  const [totalUsers, totalProducts, userRoles, analyticsGroup] = await Promise.all([
-    prisma.user.count().catch(() => 0),
-    prisma.digitalProduct.count().catch(() => 0),
-    prisma.user.groupBy({ by: ['role'], _count: { id: true } }).catch(() => []),
-    prisma.productAnalytics.groupBy({ by: ['digitalProductId'], _sum: { views: true, clicks: true } }).catch(() => [])
-  ]);
-
-  let totalUsersFree = 0;
-  let totalUsersPro = 0;
-  let totalSubscribers = 0;
-
-  userRoles.forEach(ur => {
-    if (ur.role === 'PRO') {
-      totalUsersPro += ur._count.id;
-      totalSubscribers += ur._count.id;
-    } else if (ur.role === 'ADMIN') {
-      totalUsersPro += ur._count.id;
-    } else {
-      totalUsersFree += ur._count.id;
-    }
-  });
-
-  let totalViews = 0;
-  let totalClicks = 0;
-  let productAnalyticsMap: Record<string, { views: number, clicks: number }> = {};
-
-  analyticsGroup.forEach(a => {
-    totalViews += (a._sum.views || 0);
-    totalClicks += (a._sum.clicks || 0);
-    productAnalyticsMap[a.digitalProductId] = {
-      views: a._sum.views || 0,
-      clicks: a._sum.clicks || 0
-    };
-  });
-
-  // 2. BATCH 2: Orders, Top Products, and Chart Data
   const now = new Date();
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(now.getDate() - 30);
   const sixtyDaysAgo = new Date();
   sixtyDaysAgo.setDate(now.getDate() - 60);
 
+  // Run all 13 queries concurrently in a single parallel roundtrip
   const [
+    totalUsers,
+    totalProducts,
+    userRoles,
+    analyticsGroup,
     successfulOrders,
     topProducts,
     fullOrders,
@@ -59,6 +27,10 @@ export const getCachedDashboardStats = unstable_cache(
     ordersLast30,
     analyticsLast30
   ] = await Promise.all([
+    prisma.user.count().catch(() => 0),
+    prisma.digitalProduct.count().catch(() => 0),
+    prisma.user.groupBy({ by: ['role'], _count: { id: true } }).catch(() => []),
+    prisma.productAnalytics.groupBy({ by: ['digitalProductId'], _sum: { views: true, clicks: true } }).catch(() => []),
     prisma.order.aggregate({
       _sum: { amount: true },
       _count: { id: true },
@@ -113,6 +85,34 @@ export const getCachedDashboardStats = unstable_cache(
       select: { date: true, views: true, clicks: true }
     }).catch(() => [])
   ]);
+
+  let totalUsersFree = 0;
+  let totalUsersPro = 0;
+  let totalSubscribers = 0;
+
+  userRoles.forEach(ur => {
+    if (ur.role === 'PRO') {
+      totalUsersPro += ur._count.id;
+      totalSubscribers += ur._count.id;
+    } else if (ur.role === 'ADMIN') {
+      totalUsersPro += ur._count.id;
+    } else {
+      totalUsersFree += ur._count.id;
+    }
+  });
+
+  let totalViews = 0;
+  let totalClicks = 0;
+  let productAnalyticsMap: Record<string, { views: number, clicks: number }> = {};
+
+  analyticsGroup.forEach(a => {
+    totalViews += (a._sum.views || 0);
+    totalClicks += (a._sum.clicks || 0);
+    productAnalyticsMap[a.digitalProductId] = {
+      views: a._sum.views || 0,
+      clicks: a._sum.clicks || 0
+    };
+  });
 
   const lifetimeSalesIDR = successfulOrders._sum?.amount || 0;
   const lifetimeOrders = successfulOrders._count?.id || 0;
@@ -220,7 +220,7 @@ export const getCachedDashboardStats = unstable_cache(
   };
 },
 ['admin-dashboard-stats'],
-{ revalidate: 300, tags: ['admin-dashboard-stats'] }
+{ revalidate: 3600, tags: ['admin-dashboard-stats'] }
 );
 
 export async function getDashboardDataAction() {

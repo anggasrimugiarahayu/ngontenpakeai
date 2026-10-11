@@ -106,3 +106,16 @@ export const getCachedUserOrders = unstable_cache(
   { revalidate: 86400, tags: ['user-orders'] }
 );
 
+export const getCachedUserUsages = unstable_cache(
+  async (userId: string) => {
+    try {
+      return await prisma.usage.findMany({ where: { userId } });
+    } catch (e) {
+      console.error("Failed to fetch user usages in cache:", e);
+      return [];
+    }
+  },
+  ['user-usages'],
+  { revalidate: 86400, tags: ['user-usages'] }
+);
+

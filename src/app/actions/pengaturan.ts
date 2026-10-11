@@ -20,7 +20,7 @@ export const getCachedAdminConfig = unstable_cache(
   { revalidate: 3600, tags: ['admin-config'] }
 );
 
-import { getCachedFeatures, getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
+import { getCachedFeatures, getCachedAppUser, getCachedUserOrders, getCachedUserUsages } from "@/lib/cache";
 
 export async function getPengaturanDataAction() {
   const session = await auth();
@@ -28,11 +28,12 @@ export async function getPengaturanDataAction() {
 
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
   
-  const [features, usages, dbUser, userOrders] = await Promise.all([
+  const [features, usages, dbUser, userOrders, adminData] = await Promise.all([
     getCachedFeatures(),
-    prisma.usage.findMany({ where: { userId: session.user.id } }),
+    getCachedUserUsages(session.user.id),
     getCachedAppUser(session.user.id),
-    getCachedUserOrders(session.user.id)
+    getCachedUserOrders(session.user.id),
+    isAdmin ? getCachedAdminConfig() : Promise.resolve(null)
   ]);
 
   const hasTools = dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();
@@ -48,11 +49,6 @@ export async function getPengaturanDataAction() {
     proExpiredAt: dbUser?.proToolsExpiredAt || null,
     ownedEbooks
   };
-
-  let adminData: any = null;
-  if (isAdmin) {
-    adminData = await getCachedAdminConfig();
-  }
 
   return JSON.parse(JSON.stringify({ userData, adminData, isPro, isAdmin, dbUser, userOrders }));
 }
