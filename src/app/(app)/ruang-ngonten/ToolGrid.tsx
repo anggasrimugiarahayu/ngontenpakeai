@@ -17,56 +17,56 @@ const features = [
   {
     title: "Master Blueprint",
     description: "Rancang fondasi dan strategi dasar kontenmu dari nol hingga siap eksekusi.",
-    points: ["Isi Kuisioner", "Proses Generate AI", "Hasil Blueprint"],
+    points: ["Isi Kuesioner", "Proses AI", "Hasil Blueprint"],
     icon: Compass,
     href: "/ruang-ngonten/master-blueprint"
   },
   {
     title: "Bio Builder",
     description: "Optimalkan bio profil sosial mediamu agar menarik perhatian audiens baru.",
-    points: ["Headline Profile", "Call to Action", "Link Setup"],
+    points: ["Isi Profil", "Generate Bio", "Hasil Bio"],
     icon: UserCircle,
     href: "/ruang-ngonten/bio-builder"
   },
   {
     title: "Idea Rooms",
     description: "Temukan ratusan ide konten segar dan viral untuk update setiap hari.",
-    points: ["Trending Topics", "Niche Ideas", "Q&A Hooks"],
+    points: ["Ketikkan Ide", "Generate Ide", "Bank Ide"],
     icon: Lightbulb,
     href: "/ruang-ngonten/idea-rooms"
   },
   {
     title: "Script Builder",
     description: "Buat naskah video pendek yang engaging dan menahan penonton sampai akhir.",
-    points: ["Hook Kuat", "Isi Materi / Story", "Strong CTA"],
+    points: ["Pilih Topik", "Generate Script", "Hasil Script"],
     icon: FileText,
     href: "/ruang-ngonten/script-builder"
   },
   {
     title: "Carousel Prompt Builder",
     description: "Desain alur cerita slide carousel yang edukatif, rapi, dan mudah dipahami.",
-    points: ["Cover Slide", "Core Value", "Closing Slide"],
+    points: ["Isi Topik", "Generate Slide", "Prompt Visual"],
     icon: Images,
     href: "/ruang-ngonten/carousel-builder"
   },
   {
     title: "ATM Content Builder",
     description: "Strategi Amati, Tiru, dan Modifikasi konten yang sudah terbukti sukses.",
-    points: ["Analyze Viral", "Extract Format", "Re-create"],
+    points: ["Masukkan Referensi", "Analisis Konten", "Hasil Adaptasi"],
     icon: RefreshCw,
     href: "/ruang-ngonten/atm-builder"
   },
   {
     title: "Ebook Prompt Builder",
     description: "Susun kerangka dan draft Ebook secara instan untuk kebutuhan Lead Magnet.",
-    points: ["Chapter Outline", "Content Draft", "Formatting"],
+    points: ["Isi Topik", "Generate Draft", "Hasil Ebook"],
     icon: BookOpen,
     href: "/ruang-ngonten/ebook-builder"
   },
   {
     title: "Content Calendar",
     description: "Jadwalkan dan kelola publikasi konten harianmu agar selalu konsisten.",
-    points: ["Weekly Plan", "Platform Sync", "Reminder Setup"],
+    points: ["Atur Jadwal", "Susun Kalender", "Jadwal Konten"],
     icon: Calendar,
     href: "/ruang-ngonten/content-calendar"
   }
