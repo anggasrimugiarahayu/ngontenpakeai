@@ -214,20 +214,18 @@ export default function AtmBuilderClient() {
                           setTimeout(() => {
                         setAtmActionState(null);
                         let formattedScript = "";
-                        try {
-                          const parsed = JSON.parse(ver.script);
-                          if (Array.isArray(parsed)) {
-                            formattedScript = parsed.map((s: any) => `[${s.label}]\n${s.content}`).join('\n\n');
-                          } else {
-                            formattedScript = ver.script;
-                          }
-                        } catch(e) {
-                          formattedScript = ver.script;
+                        if (ver.sections) {
+                          ver.sections.forEach((sec: any) => { formattedScript += `[${sec.label}]\n${sec.content}\n\n`; });
+                        } else if (ver.hook || ver.bridge || ver.body || ver.cta) {
+                          formattedScript = `[HOOK]\n${ver.hook || ''}\n\n[FORESHADOW]\n${ver.bridge || ''}\n\n[BODY]\n${ver.body || ''}\n\n[CTA]\n${ver.cta || ''}\n\n`;
+                        } else {
+                          formattedScript = ver.script || ver.content || '';
                         }
+                        
                         setScheduleDefaultData({
-                          topic: ver.topic || ver.judul || '',
-                          script: formattedScript,
-                          caption: '',
+                          topic: ver.judul_internal ? ver.judul_internal.replace(/^Versi\s*\d+\s*[-:]*\s*/i, '') : (ver.topic || ver.judul || 'Ide Konten'),
+                          script: formattedScript.trim(),
+                          caption: ver.caption || '',
                           funnelStage: 'TOFU'
                         });
                         setIsScheduleModalOpen(true);
