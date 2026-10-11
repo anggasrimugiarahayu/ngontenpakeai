@@ -63,7 +63,8 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
       prompt: promptText,
       history: historyCtx,
       blueprint: blueprintData,
-      model: selectedModel
+      model: selectedModel,
+      isShortcut: promptText.includes('[SYSTEM AUTO-SUBMIT]')
     });
 
     if (error) {

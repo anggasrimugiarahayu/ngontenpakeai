@@ -11,7 +11,7 @@ function isGibberish(text: string): boolean {
   if (clean.length > 0 && !/[aiueo]/.test(clean)) return true;
   
   // Rule 2: Excessive consonants (5 or more in a row)
-  if (/[bcdfghjklmnpqrstvwxyz]{5,}/.test(clean)) return true;
+  if (/[bcdfghjklmnpqrstvwxyz]{6,}/.test(clean)) return true;
   
   // Rule 3: Character repetition (4 or more of the same char)
   if (/(.)\1{3,}/.test(clean)) return true;
