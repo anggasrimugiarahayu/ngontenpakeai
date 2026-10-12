@@ -65,16 +65,16 @@ export default function DashboardClient({ user, initialData }: { user: any, init
     }
   };
 
-  const { data, mutate } = useSWR("dashboard", getDashboardDataAction, {
+  const { data, mutate } = useSWR("dashboard", () => getDashboardDataAction(false), {
     fallbackData: initialData,
-    revalidateOnFocus: false,
-    revalidateIfStale: false,
-    dedupingInterval: 60000
+    revalidateOnFocus: true,
+    revalidateIfStale: true,
+    dedupingInterval: 5000
   });
-  const { data: insightsData } = useSWR("insights", getAudienceInsightsAction, {
-    revalidateOnFocus: false,
-    revalidateIfStale: false,
-    dedupingInterval: 60000
+  const { data: insightsData, mutate: mutateInsights } = useSWR("insights", getAudienceInsightsAction, {
+    revalidateOnFocus: true,
+    revalidateIfStale: true,
+    dedupingInterval: 5000
   });
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [orderSearch, setOrderSearch] = useState('');
@@ -90,7 +90,13 @@ export default function DashboardClient({ user, initialData }: { user: any, init
     setIsRefreshing(true);
     try {
       await revalidateDashboardAction();
-      await mutate();
+      const freshData = await getDashboardDataAction(true);
+      if (freshData) {
+        await mutate(freshData, false);
+      } else {
+        await mutate();
+      }
+      mutateInsights();
       const res = await getDashboardOrdersAction(orderPage, itemsPerPage, orderSearch, orderStatus);
       setServerOrders(res.orders);
       setTotalServerOrders(res.total);

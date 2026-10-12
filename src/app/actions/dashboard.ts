@@ -3,8 +3,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { unstable_cache, revalidatePath, revalidateTag } from "next/cache";
 
-export const getCachedDashboardStats = unstable_cache(
-  async () => {
+export async function calculateDashboardStats() {
   const now = new Date();
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(now.getDate() - 30);
@@ -218,9 +217,12 @@ export const getCachedDashboardStats = unstable_cache(
     salesChartData,
     viewsChartData
   };
-},
-['admin-dashboard-stats'],
-{ revalidate: 3600, tags: ['admin-dashboard-stats'] }
+}
+
+export const getCachedDashboardStats = unstable_cache(
+  calculateDashboardStats,
+  ['admin-dashboard-stats'],
+  { revalidate: 300, tags: ['admin-dashboard-stats'] }
 );
 
 export async function revalidateDashboardAction() {
@@ -233,12 +235,15 @@ export async function revalidateDashboardAction() {
   return { success: true };
 }
 
-export async function getDashboardDataAction() {
+export async function getDashboardDataAction(forceFresh = false) {
   const session = await auth();
   if (!session?.user?.id) return null;
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
   if (!isAdmin) return null;
 
+  if (forceFresh) {
+    return calculateDashboardStats();
+  }
   return getCachedDashboardStats();
 }
 
