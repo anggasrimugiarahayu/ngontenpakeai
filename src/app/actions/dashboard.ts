@@ -222,7 +222,7 @@ export async function calculateDashboardStats() {
 export const getCachedDashboardStats = unstable_cache(
   calculateDashboardStats,
   ['admin-dashboard-stats'],
-  { revalidate: 300, tags: ['admin-dashboard-stats'] }
+  { revalidate: 3600, tags: ['admin-dashboard-stats'] }
 );
 
 export async function revalidateDashboardAction() {
