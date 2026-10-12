@@ -230,10 +230,42 @@ export async function revalidateDashboardAction() {
   if (!session?.user?.id || session?.user?.email !== "anggasrimugiarahayu@gmail.com") {
     return { success: false, message: "Unauthorized" };
   }
-  revalidateTag("admin-dashboard-stats", "default");
-  revalidatePath("/dashboard");
+  
+  const tags = [
+    "admin-dashboard-stats",
+    "global-stats",
+    "user-session",
+    "user-ownership",
+    "user-orders",
+    "user-usages",
+    "ebook-catalog",
+    "pricing-packages",
+    "admin-config",
+    "blueprint",
+    "features",
+    "niche-references"
+  ];
+
+  for (const tag of tags) {
+    try {
+      (revalidateTag as any)(tag, "default");
+    } catch {
+      try {
+        revalidateTag(tag);
+      } catch {}
+    }
+  }
+
+  try {
+    revalidatePath("/", "layout");
+  } catch (err) {
+    console.error("revalidatePath layout error:", err);
+  }
+
   return { success: true };
 }
+
+export const revalidateAllAppDataAction = revalidateDashboardAction;
 
 export async function getDashboardDataAction(forceFresh = false) {
   const session = await auth();

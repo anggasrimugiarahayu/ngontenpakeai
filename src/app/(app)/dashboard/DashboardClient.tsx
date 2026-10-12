@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import useSWR from 'swr';
+import useSWR, { mutate as globalMutate } from 'swr';
 import NextLink from 'next/link';
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { getDashboardDataAction, getDashboardOrdersAction, getAudienceInsightsAction, revalidateDashboardAction } from '@/app/actions/dashboard';
@@ -89,7 +89,10 @@ export default function DashboardClient({ user, initialData }: { user: any, init
   const handleRefresh = async () => {
     setIsRefreshing(true);
     try {
+      // 1. Revalidasi seluruh server cache tags dan layout path di Next.js
       await revalidateDashboardAction();
+
+      // 2. Ambil data segar untuk dashboard
       const freshData = await getDashboardDataAction(true);
       if (freshData) {
         await mutate(freshData, false);
@@ -103,7 +106,16 @@ export default function DashboardClient({ user, initialData }: { user: any, init
       if (res.orders.length === 0) {
         setSelectedOrder(null);
       }
-      toast.success("Data Dashboard berhasil disinkronkan!");
+
+      // 3. Revalidasi seluruh SWR cache di browser untuk semua halaman tools
+      await globalMutate(() => true, undefined, { revalidate: true });
+      globalMutate("ruangBelajar");
+      globalMutate("pengaturan");
+      globalMutate("blueprint");
+      globalMutate("contentCalendar");
+      globalMutate("bioBuilder");
+
+      toast.success("Seluruh data tools & dashboard berhasil disinkronkan!");
     } catch (e) {
       console.error(e);
       toast.error("Gagal menyinkronkan data.");
@@ -808,10 +820,10 @@ export default function DashboardClient({ user, initialData }: { user: any, init
           onClick={handleRefresh}
           disabled={isRefreshing}
           className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#121214] hover:bg-gray-50 dark:hover:bg-white/5 transition-all text-gray-700 dark:text-gray-300 shadow-sm disabled:opacity-50 cursor-pointer"
-          title="Sinkronkan data terbaru dari database"
+          title="Sinkronkan seluruh data aplikasi (Dashboard, Ruang Ngonten, Ruang Belajar, dll) langsung dari database"
         >
           <RefreshCw size={13} className={isRefreshing ? "animate-spin text-orange-500" : "text-gray-500"} />
-          <span>{isRefreshing ? "Menyinkronkan..." : "Refresh Data"}</span>
+          <span>{isRefreshing ? "Menyinkronkan Semua Data..." : "Refresh Semua Data"}</span>
         </button>
       </div>
       
