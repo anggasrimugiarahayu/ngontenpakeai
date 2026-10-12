@@ -3,6 +3,24 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { verifyPayment } from "@/app/actions/payment";
+import { revalidatePath, revalidateTag } from "next/cache";
+
+export async function revalidateAfterPurchaseAction() {
+  try {
+    revalidateTag("user-ownership", "default");
+    revalidateTag("ebook-catalog", "default");
+    revalidateTag("user-orders", "default");
+    revalidateTag("user-session", "default");
+    revalidateTag("admin-dashboard-stats", "default");
+    revalidatePath("/ruang-belajar");
+    revalidatePath("/ruang-ngonten");
+    revalidatePath("/dashboard");
+    return { success: true };
+  } catch (e) {
+    console.error("Revalidation error after purchase:", e);
+    return { success: false };
+  }
+}
 
 export async function getCheckoutDetailsAction(type: string, productId?: string) {
   const session = await auth();

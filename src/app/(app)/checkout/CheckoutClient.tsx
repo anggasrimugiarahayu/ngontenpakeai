@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from "react";
 import Script from "next/script";
 import { createCheckoutToken, verifyPayment, cancelPayment } from "@/app/actions/payment";
-import { validatePromoCodeAction } from "@/app/actions/checkout";
+import { validatePromoCodeAction, revalidateAfterPurchaseAction } from "@/app/actions/checkout";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, ArrowLeft, ChevronRight, X, Lock, CreditCard, AlertCircle } from "lucide-react";
 import Link from "next/link";
@@ -78,6 +78,7 @@ export default function CheckoutClient({
   
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [agreeToMarketing, setAgreeToMarketing] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   const [currentToken, setCurrentToken] = useState(existingPendingOrder?.token || "");
   const [currentOrderId, setCurrentOrderId] = useState(existingPendingOrder?.orderId || "");
@@ -671,7 +672,29 @@ export default function CheckoutClient({
             </div>
             <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">Pembayaran Berhasil!</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-8">Terima kasih, pembayaran Anda telah kami terima.</p>
-            <button onClick={() => router.push((type === "PRO_TOOLS" || type === "PRO_PLUS") ? "/ruang-ngonten" : "/ruang-belajar")} className="block w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90">Lanjut ke {(type === "PRO_TOOLS" || type === "PRO_PLUS") ? "Ruang Ngonten" : "Ruang Belajar"}</button>
+            <button 
+              onClick={async () => {
+                setIsRedirecting(true);
+                try {
+                  await revalidateAfterPurchaseAction();
+                } catch (e) {
+                  console.error("Revalidation error:", e);
+                }
+                const targetUrl = (type === "PRO_TOOLS" || type === "PRO_PLUS") ? "/ruang-ngonten" : "/ruang-belajar";
+                window.location.href = targetUrl;
+              }} 
+              disabled={isRedirecting}
+              className="flex items-center justify-center gap-2 w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer shadow-lg shadow-rn-accent/25"
+            >
+              {isRedirecting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  <span>Menyiapkan Akses E-Book...</span>
+                </>
+              ) : (
+                `Lanjut ke ${(type === "PRO_TOOLS" || type === "PRO_PLUS") ? "Ruang Ngonten" : "Ruang Belajar"}`
+              )}
+            </button>
           </div>
         </div>
       )}

@@ -10,7 +10,7 @@ export const getCachedDigitalProductsList = unstable_cache(
       take: 100,
       include: { category: true, reviews: { select: { rating: true } }, _count: { select: { owners: true, favorites: true } } },
       orderBy: { createdAt: 'desc' }
-    }).catch(() => []);
+    });
   },
   ['digital-products-list'],
   { revalidate: 3600, tags: ['ebook-catalog'] }
@@ -29,13 +29,13 @@ export const getCachedEbookBySlug = unstable_cache(
           orderBy: { createdAt: 'desc' }
         }
       }
-    }).catch(() => null);
+    });
   },
   ['digital-product-by-slug'],
   { revalidate: 3600, tags: ['ebook-catalog'] }
 );
 
-import { getCachedAppUser, getCachedUserOwnedProducts } from "@/lib/cache";
+import { getCachedAppUser } from "@/lib/cache";
 
 export async function getRuangBelajarDataAction() {
   const session = await auth();
@@ -44,11 +44,28 @@ export async function getRuangBelajarDataAction() {
   let ownedProductIds: string[] = [];
   let isAdmin = false;
 
-  const [userObj, userProducts, products] = await Promise.all([
+  const [userObj, userProducts, cachedProducts] = await Promise.all([
     session?.user?.id ? getCachedAppUser(session.user.id) : Promise.resolve(null),
-    session?.user?.id ? getCachedUserOwnedProducts(session.user.id) : Promise.resolve([]),
-    getCachedDigitalProductsList()
+    session?.user?.id 
+      ? prisma.userOwnedProduct.findMany({ where: { userId: session.user.id }, select: { digitalProductId: true } }).catch(() => [])
+      : Promise.resolve([]),
+    getCachedDigitalProductsList().catch(() => [])
   ]);
+
+  let products = cachedProducts;
+  if (!products || products.length === 0) {
+    try {
+      products = await prisma.digitalProduct.findMany({
+        where: { isActive: true },
+        take: 100,
+        include: { category: true, reviews: { select: { rating: true } }, _count: { select: { owners: true, favorites: true } } },
+        orderBy: { createdAt: 'desc' }
+      });
+    } catch (e) {
+      console.error("Fallback fetch products error:", e);
+      products = [];
+    }
+  }
 
   if (session?.user?.id && userObj) {
     isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
@@ -72,7 +89,7 @@ export async function getEbookDetailAction(slug: string) {
   const [userObj, cachedEbook, userProducts] = await Promise.all([
     getCachedAppUser(userId),
     getCachedEbookBySlug(slug),
-    getCachedUserOwnedProducts(userId)
+    prisma.userOwnedProduct.findMany({ where: { userId }, select: { digitalProductId: true } }).catch(() => [])
   ]);
 
   if (!cachedEbook) {
