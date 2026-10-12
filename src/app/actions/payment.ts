@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
-import { snap, coreApi } from "@/lib/midtrans";
+import { snap, coreApi, isProduction } from "@/lib/midtrans";
 import { headers } from "next/headers";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { calculatePaymentFees, PAYMENT_METHODS, PaymentMethodKey } from "@/lib/payment-calc";
@@ -201,6 +201,11 @@ export async function verifyPayment(orderId: string) {
 
     // Fallback 24 hours from creation if Midtrans doesn't provide it
     let expiryTime = new Date(order.createdAt.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    // If already marked SUCCESS in DB, return immediately
+    if (order.status === "SUCCESS") {
+      return { success: true, status: "SUCCESS", justUpdated: false, expiryTime };
+    }
+
     let transactionStatus = "pending";
     let fraudStatus = "";
 
@@ -209,9 +214,6 @@ export async function verifyPayment(orderId: string) {
       transactionStatus = statusResponse.transaction_status;
       fraudStatus = statusResponse.fraud_status;
       if (statusResponse.expiry_time) {
-        // Midtrans returns "YYYY-MM-DD HH:mm:ss", which JS Date might parse with local timezone.
-        // But since we just pass it to the frontend, it's better to format it safely or just pass the string.
-        // Actually it's often better to parse it properly, but let's just use what midtrans gives if available.
         expiryTime = statusResponse.expiry_time;
       }
     } catch (midtransErr) {
@@ -230,6 +232,31 @@ export async function verifyPayment(orderId: string) {
       finalStatus = "FAILED";
     } else if (transactionStatus === "pending") {
       finalStatus = "PENDING";
+    }
+
+    // Fallback: If still PENDING, check directly with Snap Token endpoint
+    if (finalStatus === "PENDING" && order.midtransId) {
+      try {
+        const snapBaseUrl = isProduction ? "https://app.midtrans.com" : "https://app.sandbox.midtrans.com";
+        const snapRes = await fetch(`${snapBaseUrl}/snap/v1/transactions/${order.midtransId}`, {
+          headers: { "Accept": "application/json" },
+          cache: "no-store"
+        });
+        if (snapRes.status === 409) {
+          const snapText = await snapRes.text();
+          if (snapText.includes("succeed")) {
+            console.log("Verified SUCCESS via Snap token state for order:", orderId);
+            finalStatus = "SUCCESS";
+          }
+        } else if (snapRes.status === 200) {
+          const snapJson = await snapRes.json();
+          if (snapJson.expiry_time) {
+            expiryTime = snapJson.expiry_time;
+          }
+        }
+      } catch (snapErr) {
+        console.log("Snap fallback check warning:", snapErr);
+      }
     }
 
     if (order.status !== "SUCCESS" && finalStatus === "SUCCESS") {

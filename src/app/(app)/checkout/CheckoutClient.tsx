@@ -170,24 +170,32 @@ export default function CheckoutClient({
   useEffect(() => {
     if (paymentState !== "pending" || !currentOrderId) return;
 
-    const pollInterval = setInterval(async () => {
+    let isMounted = true;
+    const checkNow = async () => {
       try {
         const verifyRes = await verifyPayment(currentOrderId);
+        if (!isMounted) return;
         if (verifyRes.success && verifyRes.status === "SUCCESS") {
           setPaymentState("success");
-          clearInterval(pollInterval);
         } else if (verifyRes.success && verifyRes.status === "FAILED") {
           setPaymentState("error");
           setErrorMessage("Pesanan telah dibatalkan atau waktu telah habis.");
           setTimeLeft("EXPIRED");
-          clearInterval(pollInterval);
         }
       } catch (error) {
         // silently ignore network errors during polling
       }
-    }, 7000); // Check every 7 seconds
+    };
 
-    return () => clearInterval(pollInterval);
+    // Immediate check
+    checkNow();
+
+    const pollInterval = setInterval(checkNow, 6000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(pollInterval);
+    };
   }, [paymentState, currentOrderId]);
 
   const openSnap = (token: string, orderId: string) => {
@@ -516,7 +524,21 @@ export default function CheckoutClient({
                   <span className="text-[15px] sm:text-base">Cancel Order</span>
                 </button>
                 <button 
-                  onClick={() => openSnap(currentToken, currentOrderId)} 
+                  onClick={async () => {
+                    if (currentOrderId) {
+                      setIsCancelLoading(true);
+                      try {
+                        const checkRes = await verifyPayment(currentOrderId);
+                        if (checkRes.success && checkRes.status === "SUCCESS") {
+                          setPaymentState("success");
+                          setIsCancelLoading(false);
+                          return;
+                        }
+                      } catch (e) {}
+                      setIsCancelLoading(false);
+                    }
+                    openSnap(currentToken, currentOrderId);
+                  }} 
                   disabled={isCancelLoading}
                   className="flex-1 text-white font-bold py-3.5 px-2 rounded-xl transition-all flex items-center justify-center gap-2 shadow-md bg-rn-accent hover:bg-rn-accent/90"
                 >
