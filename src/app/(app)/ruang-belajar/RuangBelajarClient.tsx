@@ -83,7 +83,7 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                       </div>
                     </div>
                     
-                    <div className="flex flex-col flex-1 py-1">
+                    <div className="flex flex-col flex-1 min-w-0 py-1">
                       <div className="flex-1">
                         <h3 className="text-[17px] font-bold leading-tight tracking-tight text-gray-900 dark:text-white group-hover:text-rn-accent transition-colors line-clamp-2" title={ebook.title}>
                           {ebook.title}
@@ -149,7 +149,7 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                               Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
                             </span>
                             {isProEbook && (
-                               <span className="text-[9px] sm:text-[10px] text-rn-accent font-bold mt-1.5 whitespace-nowrap">(Rp 0 khusus Paket E-Book)</span>
+                               <span className="text-[9px] sm:text-[10px] text-rn-accent font-bold mt-1.5 whitespace-nowrap">(Rp 0 khusus PRO)</span>
                             )}
                           </div>
                         )}
