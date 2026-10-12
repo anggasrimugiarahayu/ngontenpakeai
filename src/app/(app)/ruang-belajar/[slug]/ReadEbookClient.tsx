@@ -178,7 +178,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                            ? "Silakan klaim e-book ini secara gratis (Rp 0) untuk memasukkannya ke dalam Brankas Perpustakaan Pribadi Anda seumur hidup."
                            : isPremiumEbook 
                              ? "E-book ini sangat eksklusif. Beli sekarang dan dapatkan akses penuh untuk membaca dan mendownload selamanya." 
-                             : "Beli satuan untuk hak milik seumur hidup, ATAU Anda bisa klaim secara GRATIS semua ebook PRO jika Anda berlangganan paket PRO!"}
+                             : isPro ? "Sebagai member Paket E-Book, Anda berhak mengklaim e-book ini secara gratis!" : "Beli satuan untuk hak milik seumur hidup, atau berlangganan Paket E-Book untuk akses gratis!"}
                        </p>
                      </div>
                      
@@ -207,7 +207,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                                setIsSubmitting(false);
                              }} className="w-full flex flex-col gap-3">
                                <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center gap-2 bg-rn-accent hover:bg-orange-600 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-rn-accent/20 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}">
-                                 Klaim Gratis (Khusus Member PRO)
+                                 Klaim Gratis (Khusus Member Paket E-Book)
                                </button>
                              </form>
                            ) : (
@@ -226,7 +226,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                                    href="/?pricing=true" 
                                    className="w-full flex items-center justify-center gap-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 px-6 py-3.5 rounded-xl font-bold transition-all border border-orange-200 dark:border-orange-500/20"
                                  >
-                                   <Crown className="w-5 h-5" /> Upgrade PRO (Akses Semua E-book PRO)
+                                   <Crown className="w-5 h-5" /> Beli Paket E-Book (Akses Semua E-book PRO)
                                  </Link>
                                )}
                              </div>

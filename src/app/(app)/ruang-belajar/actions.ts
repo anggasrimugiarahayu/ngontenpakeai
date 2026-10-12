@@ -74,13 +74,22 @@ export async function claimFreeEbook(productId: string) {
   const isFree = product.accessLevel === "FREE";
   const isProEbook = product.accessLevel === "PRO";
   
-  // Calculate if the user has an active PRO subscription
-  // In the original code, PRO is determined by: user.role === "PRO"
-  const isPro = user.role === "PRO" || user.email === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com" || user.role === "ADMIN";
+
+  // Check if user has an active order with PRO_BOOK or PRO_PLUS
+  const hasBookPackage = await prisma.order.findFirst({
+    where: {
+      userId,
+      status: "SUCCESS",
+      orderType: { in: ["PRO_BOOK", "PRO_PLUS"] }
+    }
+  });
+
+  const canClaimProEbook = isAdmin || !!hasBookPackage;
 
   // Check if they are allowed to claim for free
-  if (!isFree && !(isProEbook && isPro)) {
-    throw new Error("Produk ini tidak bisa diklaim gratis. Anda harus berlangganan PRO atau membelinya.");
+  if (!isFree && !(isProEbook && canClaimProEbook)) {
+    throw new Error("Produk ini tidak bisa diklaim gratis. Anda harus berlangganan Paket E-Book atau membelinya secara satuan.");
   }
 
   // Insert into UserOwnedProduct

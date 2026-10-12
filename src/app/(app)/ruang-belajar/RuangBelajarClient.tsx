@@ -149,7 +149,7 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                               Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
                             </span>
                             {isProEbook && (
-                               <span className="text-[9px] sm:text-[10px] text-rn-accent font-bold mt-1.5 whitespace-nowrap">(Rp 0 khusus PRO)</span>
+                               <span className="text-[9px] sm:text-[10px] text-rn-accent font-bold mt-1.5 whitespace-nowrap">(Rp 0 khusus Paket E-Book)</span>
                             )}
                           </div>
                         )}

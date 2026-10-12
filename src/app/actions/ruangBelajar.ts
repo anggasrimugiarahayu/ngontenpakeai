@@ -35,7 +35,7 @@ export const getCachedEbookBySlug = unstable_cache(
   { revalidate: 3600, tags: ['ebook-catalog'] }
 );
 
-import { getCachedAppUser } from "@/lib/cache";
+import { getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
 
 export async function getRuangBelajarDataAction() {
   const session = await auth();
@@ -44,12 +44,13 @@ export async function getRuangBelajarDataAction() {
   let ownedProductIds: string[] = [];
   let isAdmin = false;
 
-  const [userObj, userProducts, cachedProducts] = await Promise.all([
+  const [userObj, userProducts, cachedProducts, userOrders] = await Promise.all([
     session?.user?.id ? getCachedAppUser(session.user.id) : Promise.resolve(null),
     session?.user?.id 
       ? prisma.userOwnedProduct.findMany({ where: { userId: session.user.id }, select: { digitalProductId: true } }).catch(() => [])
       : Promise.resolve([]),
-    getCachedDigitalProductsList().catch(() => [])
+    getCachedDigitalProductsList().catch(() => []),
+    session?.user?.id ? getCachedUserOrders(session.user.id).catch(() => []) : Promise.resolve([])
   ]);
 
   let products = cachedProducts;
@@ -69,7 +70,10 @@ export async function getRuangBelajarDataAction() {
 
   if (session?.user?.id && userObj) {
     isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
-    isPro = userObj.role === "PRO" || isAdmin;
+    const hasBookPackage = userOrders.some(
+      (o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS"
+    );
+    isPro = hasBookPackage || isAdmin;
     ownedProductIds = userProducts.map((up: any) => up.digitalProductId);
   }
 
@@ -86,10 +90,11 @@ export async function getEbookDetailAction(slug: string) {
   if (!session?.user?.id) return { notFound: true, reason: 'unauthorized' };
   const userId = session.user.id;
 
-  const [userObj, cachedEbook, userProducts] = await Promise.all([
+  const [userObj, cachedEbook, userProducts, userOrders] = await Promise.all([
     getCachedAppUser(userId),
     getCachedEbookBySlug(slug),
-    prisma.userOwnedProduct.findMany({ where: { userId }, select: { digitalProductId: true } }).catch(() => [])
+    prisma.userOwnedProduct.findMany({ where: { userId }, select: { digitalProductId: true } }).catch(() => []),
+    getCachedUserOrders(userId).catch(() => [])
   ]);
 
   if (!cachedEbook) {
@@ -122,7 +127,10 @@ export async function getEbookDetailAction(slug: string) {
   };
 
   const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
-  const isPro = userObj?.role === "PRO" || isAdmin;
+  const hasBookPackage = userOrders.some(
+    (o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS"
+  );
+  const isPro = hasBookPackage || isAdmin;
   const ownedProductIds = userProducts.map(up => up.digitalProductId);
 
   return {
