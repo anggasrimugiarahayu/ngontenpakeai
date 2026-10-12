@@ -1,7 +1,7 @@
 "use server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { unstable_cache } from "next/cache";
+import { unstable_cache, revalidatePath, revalidateTag } from "next/cache";
 
 export const getCachedDashboardStats = unstable_cache(
   async () => {
@@ -222,6 +222,16 @@ export const getCachedDashboardStats = unstable_cache(
 ['admin-dashboard-stats'],
 { revalidate: 3600, tags: ['admin-dashboard-stats'] }
 );
+
+export async function revalidateDashboardAction() {
+  const session = await auth();
+  if (!session?.user?.id || session?.user?.email !== "anggasrimugiarahayu@gmail.com") {
+    return { success: false, message: "Unauthorized" };
+  }
+  revalidateTag("admin-dashboard-stats", "default");
+  revalidatePath("/dashboard");
+  return { success: true };
+}
 
 export async function getDashboardDataAction() {
   const session = await auth();

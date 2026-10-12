@@ -4,10 +4,10 @@ import React, { useState } from 'react';
 import useSWR from 'swr';
 import NextLink from 'next/link';
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { getDashboardDataAction, getDashboardOrdersAction, getAudienceInsightsAction } from '@/app/actions/dashboard';
+import { getDashboardDataAction, getDashboardOrdersAction, getAudienceInsightsAction, revalidateDashboardAction } from '@/app/actions/dashboard';
 import { 
   User, CheckCircle2, Link as LinkIcon, 
-  TrendingUp, Layers, Users, ShoppingBag, Settings, Calendar as CalendarIcon, Eye, Send, ArrowUp, ArrowDown, Search, Image as ImageIcon, Download, Printer, ArrowLeft, ArrowRight, X
+  TrendingUp, Layers, Users, ShoppingBag, Settings, Calendar as CalendarIcon, Eye, Send, ArrowUp, ArrowDown, Search, Image as ImageIcon, Download, Printer, ArrowLeft, ArrowRight, X, RefreshCw
 } from 'lucide-react';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
@@ -15,6 +15,7 @@ import {
 } from 'recharts';
 import { DayPicker, DateRange } from 'react-day-picker';
 import { format, subDays, eachDayOfInterval } from 'date-fns';
+import toast from 'react-hot-toast';
 import PrintModal from './PrintModal';
 import WhatsAppModal from './WhatsAppModal';
 import 'react-day-picker/dist/style.css';
@@ -64,7 +65,7 @@ export default function DashboardClient({ user, initialData }: { user: any, init
     }
   };
 
-  const { data } = useSWR("dashboard", getDashboardDataAction, {
+  const { data, mutate } = useSWR("dashboard", getDashboardDataAction, {
     fallbackData: initialData,
     revalidateOnFocus: false,
     revalidateIfStale: false,
@@ -82,7 +83,28 @@ export default function DashboardClient({ user, initialData }: { user: any, init
   const [serverOrders, setServerOrders] = useState(data?.fullOrders || []);
   const [totalServerOrders, setTotalServerOrders] = useState(data?.fullOrders?.length || 0);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const itemsPerPage = 5;
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      await revalidateDashboardAction();
+      await mutate();
+      const res = await getDashboardOrdersAction(orderPage, itemsPerPage, orderSearch, orderStatus);
+      setServerOrders(res.orders);
+      setTotalServerOrders(res.total);
+      if (res.orders.length === 0) {
+        setSelectedOrder(null);
+      }
+      toast.success("Data Dashboard berhasil disinkronkan!");
+    } catch (e) {
+      console.error(e);
+      toast.error("Gagal menyinkronkan data.");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   React.useEffect(() => {
     let isMounted = true;
@@ -93,6 +115,9 @@ export default function DashboardClient({ user, initialData }: { user: any, init
         if (isMounted) {
           setServerOrders(res.orders);
           setTotalServerOrders(res.total);
+          if (res.orders.length === 0) {
+            setSelectedOrder(null);
+          }
         }
       } catch (e) {
         console.error(e);
@@ -114,10 +139,14 @@ export default function DashboardClient({ user, initialData }: { user: any, init
   const [waOrder, setWaOrder] = useState<any>(null);
 
   React.useEffect(() => {
-    if (data?.fullOrders && data.fullOrders.length > 0 && typeof window !== 'undefined' && window.innerWidth >= 1024) {
-      setSelectedOrder(data.fullOrders[0]);
+    if (serverOrders.length === 0) {
+      setSelectedOrder(null);
+    } else if (typeof window !== 'undefined' && window.innerWidth >= 1024) {
+      if (!selectedOrder || !serverOrders.some(o => o.id === selectedOrder.id)) {
+        setSelectedOrder(serverOrders[0]);
+      }
     }
-  }, [data?.fullOrders]);
+  }, [serverOrders]);
 
   const handleOrderSelect = (order: any) => {
     setSelectedOrder(order);
@@ -765,9 +794,20 @@ export default function DashboardClient({ user, initialData }: { user: any, init
     <div className="space-y-6">
       
       {/* HEADLINE & TABS HEADERS */}
-      <h1 className="text-2xl md:text-3xl font-bold font-heading mb-8 md:mb-10 text-gray-900 dark:text-white">
-        Dashboard
-      </h1>
+      <div className="flex items-center justify-between gap-4 mb-6 md:mb-8">
+        <h1 className="text-2xl md:text-3xl font-bold font-heading text-gray-900 dark:text-white">
+          Dashboard
+        </h1>
+        <button
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#121214] hover:bg-gray-50 dark:hover:bg-white/5 transition-all text-gray-700 dark:text-gray-300 shadow-sm disabled:opacity-50 cursor-pointer"
+          title="Sinkronkan data terbaru dari database"
+        >
+          <RefreshCw size={13} className={isRefreshing ? "animate-spin text-orange-500" : "text-gray-500"} />
+          <span>{isRefreshing ? "Menyinkronkan..." : "Refresh Data"}</span>
+        </button>
+      </div>
       
       <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide mb-2">
         <button
