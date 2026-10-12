@@ -13,7 +13,10 @@ import CanvasCell from "@/components/master-blueprint/CanvasCell";
 
 
 export default function MasterBlueprintClient({ nicheReferences }: { nicheReferences?: any[] }) {
-  const { data: initialData } = useSWR("blueprint", getBlueprintAction);
+  const { data: initialData, isLoading, mutate } = useSWR("blueprint", getBlueprintAction, {
+    revalidateOnFocus: false,
+    revalidateIfStale: true,
+  });
 
   const { data: session, status } = useSession();
   const { theme, systemTheme } = useTheme();
@@ -31,6 +34,9 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
     if (initialData) {
       setCanvasData(initialData.aiResult);
       setBlueprintId(initialData.id);
+      if (initialData.inputData && Object.keys(initialData.inputData).length > 0) {
+        setFormData(prev => ({ ...prev, ...initialData.inputData }));
+      }
     }
   }, [initialData]);
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
@@ -132,7 +138,8 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
       try {
         const json = JSON.parse(event.target?.result as string);
         if (json.formData) setFormData({ ...initialForm, ...json.formData });
-        if (json.canvasData) setCanvasData(json.canvasData);
+        const importedCanvas = json.canvasData || json.aiResult || (json.canvas_blueprint ? json : null);
+        if (importedCanvas) setCanvasData(importedCanvas);
         showToast("Data berhasil diimport!");
       } catch (err) {
         showToast("Format file JSON tidak valid.", "error");
@@ -217,6 +224,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
     if (!blueprintId) {
       setCanvasData(null);
       setStep(1);
+      await mutate(null, false);
       router.refresh();
       return;
     }
@@ -231,6 +239,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
         setCanvasData(null);
         setBlueprintId(null);
         setStep(1);
+        await mutate(null, false);
         router.refresh();
       } else {
         showToast("Gagal menghapus blueprint.", "error");
@@ -258,6 +267,14 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
           body: JSON.stringify({ id: blueprintId, aiResult: canvasData }),
         });
         if (res.ok) {
+          const updatedBlueprint = {
+            id: blueprintId,
+            userId: session?.user?.id,
+            title: (canvasData.canvas_blueprint || canvasData).niche_statement || "Master Blueprint",
+            inputData: formData,
+            aiResult: canvasData
+          };
+          await mutate(updatedBlueprint, false);
           showToast("Perubahan berhasil disimpan ke database!");
           router.refresh();
         }
@@ -271,7 +288,17 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
         });
         if (res.ok) {
           const data = await res.json();
-          if (data.id) setBlueprintId(data.id);
+          const newId = data.id || blueprintId;
+          if (newId) setBlueprintId(newId);
+          
+          const newBlueprint = {
+            id: newId,
+            userId: session?.user?.id,
+            title: (canvasData.canvas_blueprint || canvasData).niche_statement || "Master Blueprint",
+            inputData: formData,
+            aiResult: canvasData
+          };
+          await mutate(newBlueprint, false);
           showToast("Data baru berhasil disimpan ke database!");
           router.refresh();
         } else {
@@ -302,7 +329,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
   }`;
   const labelClass = `text-xs font-bold mb-1.5 block ${isDark ? "text-gray-300" : "text-gray-700"}`;
 
-  if (status === "loading") {
+  if (status === "loading" || (isLoading && !canvasData)) {
     return (
       <div className="flex-1 flex justify-center items-center py-20">
         <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
