@@ -120,7 +120,11 @@ export async function createCheckoutToken(data: {
     throw new Error("Midtrans Server Key belum disetel di .env. Silakan tambahkan MIDTRANS_SERVER_KEY.");
   }
   
-  const parameter = {
+  const isShortExpiry = ['QRIS', 'GOPAY', 'SHOPEEPAY', 'OVO', 'DANA'].includes(data.paymentMethodKey);
+  const expiryDurationMinutes = isShortExpiry ? 15 : 24 * 60;
+  const calculatedExpiryTime = new Date(order.createdAt.getTime() + expiryDurationMinutes * 60 * 1000).toISOString();
+
+  const parameter: any = {
     transaction_details: {
       order_id: order.id,
       gross_amount: grossAmount
@@ -144,7 +148,11 @@ export async function createCheckoutToken(data: {
         name: "Biaya Layanan"
       }
     ],
-    enabled_payments: paymentMethod.enabled
+    enabled_payments: paymentMethod.enabled,
+    expiry: {
+      unit: isShortExpiry ? "minute" : "hour",
+      duration: isShortExpiry ? 15 : 24
+    }
   };
 
   try {
@@ -158,7 +166,7 @@ export async function createCheckoutToken(data: {
       }
     });
 
-    return { token: transaction.token, orderId: order.id };
+    return { token: transaction.token, orderId: order.id, expiryTime: calculatedExpiryTime };
   } catch (error: any) {
     console.error("Midtrans Error:", error.message);
     throw new Error(`Gagal membuat transaksi: ${error.message}`);
@@ -219,8 +227,10 @@ export async function verifyPayment(orderId: string) {
     const order = await prisma.order.findUnique({ where: { id: orderId } });
     if (!order) return { success: false };
 
-    // Fallback 24 hours from creation if Midtrans doesn't provide it
-    let expiryTime = new Date(order.createdAt.getTime() + 24 * 60 * 60 * 1000).toISOString();
+    // Fallback based on payment method: 15 mins for QRIS/E-Wallet, 24 hours for others
+    const isShort = ['QRIS', 'GOPAY', 'SHOPEEPAY', 'OVO', 'DANA'].includes(order.paymentMethod || '');
+    const expiryDurationMs = (isShort ? 15 : 24 * 60) * 60 * 1000;
+    let expiryTime = new Date(order.createdAt.getTime() + expiryDurationMs).toISOString();
     // If already marked SUCCESS in DB, return immediately
     if (order.status === "SUCCESS") {
       return { success: true, status: "SUCCESS", justUpdated: false, expiryTime };

@@ -163,7 +163,7 @@ export default function CheckoutClient({
 
     const updateTimer = () => {
       if (!targetTime) {
-        setTimeLeft("24:00:00");
+        setTimeLeft("...");
         return;
       }
       const distance = targetTime - Date.now();
@@ -286,7 +286,12 @@ export default function CheckoutClient({
     try {
       const res = await createCheckoutToken({ type, productId, paymentMethodKey: selectedMethod, customerName, customerEmail, customerPhone, addonIds: selectedAddons, voucherCode: appliedVoucher?.code, discountAmount });
       if (res?.token && res?.orderId) {
-        setCurrentToken(res.token); setCurrentOrderId(res.orderId); openSnap(res.token, res.orderId);
+        setCurrentToken(res.token); 
+        setCurrentOrderId(res.orderId);
+        if (res.expiryTime) {
+          setExpiryTime(res.expiryTime);
+        }
+        openSnap(res.token, res.orderId);
       }
       setLoading(false);
     } catch (error: any) {
