@@ -143,12 +143,31 @@ export default function CheckoutClient({
 
   useEffect(() => {
     if (paymentState !== "pending" || !expiryTime) return;
-    const interval = setInterval(() => {
-      // Fix Midtrans date format "YYYY-MM-DD HH:mm:ss" for Safari
-      const safeExpiryTime = expiryTime.includes(' ') ? expiryTime.replace(' ', 'T') : expiryTime;
-      const distance = new Date(safeExpiryTime).getTime() - new Date().getTime();
-      if (distance < 0) {
-        clearInterval(interval);
+
+    const parseDateSafely = (timeStr: string) => {
+      try {
+        let cleaned = timeStr.trim();
+        // Remove space before timezone offset like " +0000" or " -0500"
+        cleaned = cleaned.replace(/\s+([+-]\d{4})$/, "$1");
+        // Replace space between date and time with T
+        cleaned = cleaned.replace(" ", "T");
+        const d = new Date(cleaned);
+        if (!isNaN(d.getTime())) return d.getTime();
+        const fallback = new Date(timeStr);
+        if (!isNaN(fallback.getTime())) return fallback.getTime();
+      } catch (e) {}
+      return null;
+    };
+
+    const targetTime = parseDateSafely(expiryTime);
+
+    const updateTimer = () => {
+      if (!targetTime) {
+        setTimeLeft("24:00:00");
+        return;
+      }
+      const distance = targetTime - Date.now();
+      if (isNaN(distance) || distance <= 0) {
         setTimeLeft("EXPIRED");
         setPaymentState("error");
         setErrorMessage("Waktu pembayaran telah habis. Silakan buat pesanan baru.");
@@ -162,7 +181,10 @@ export default function CheckoutClient({
           setTimeLeft(`${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
         }
       }
-    }, 1000);
+    };
+
+    updateTimer();
+    const interval = setInterval(updateTimer, 1000);
     return () => clearInterval(interval);
   }, [paymentState, expiryTime]);
 

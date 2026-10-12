@@ -194,6 +194,26 @@ export async function cancelPayment(orderId: string) {
   }
 }
 
+function normalizeMidtransExpiry(dateStr: string | null | undefined): string | null {
+  if (!dateStr) return null;
+  try {
+    let cleaned = dateStr.trim();
+    // Handle "YYYY-MM-DD HH:mm:ss +0000" by stripping space before offset
+    cleaned = cleaned.replace(/\s+([+-]\d{4})$/, "$1");
+    // Replace space between date and time with T
+    cleaned = cleaned.replace(" ", "T");
+    const d = new Date(cleaned);
+    if (!isNaN(d.getTime())) {
+      return d.toISOString();
+    }
+    const raw = new Date(dateStr);
+    if (!isNaN(raw.getTime())) {
+      return raw.toISOString();
+    }
+  } catch (e) {}
+  return null;
+}
+
 export async function verifyPayment(orderId: string) {
   try {
     const order = await prisma.order.findUnique({ where: { id: orderId } });
@@ -214,7 +234,8 @@ export async function verifyPayment(orderId: string) {
       transactionStatus = statusResponse.transaction_status;
       fraudStatus = statusResponse.fraud_status;
       if (statusResponse.expiry_time) {
-        expiryTime = statusResponse.expiry_time;
+        const norm = normalizeMidtransExpiry(statusResponse.expiry_time);
+        if (norm) expiryTime = norm;
       }
     } catch (midtransErr) {
       console.log("Midtrans status API warning:", midtransErr);
@@ -251,7 +272,8 @@ export async function verifyPayment(orderId: string) {
         } else if (snapRes.status === 200) {
           const snapJson = await snapRes.json();
           if (snapJson.expiry_time) {
-            expiryTime = snapJson.expiry_time;
+            const norm = normalizeMidtransExpiry(snapJson.expiry_time);
+            if (norm) expiryTime = norm;
           }
         }
       } catch (snapErr) {
