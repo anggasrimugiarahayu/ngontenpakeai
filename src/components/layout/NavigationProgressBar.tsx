@@ -25,6 +25,9 @@ export function NavigationProgressBar() {
 
   useEffect(() => {
     const handleDocumentClick = (e: MouseEvent) => {
+      // Ignore clicks that were prevented by components (e.g. modals, disabled links, custom logic)
+      if (e.defaultPrevented) return;
+
       // Find nearest link
       const target = (e.target as HTMLElement).closest("a");
       if (!target) return;

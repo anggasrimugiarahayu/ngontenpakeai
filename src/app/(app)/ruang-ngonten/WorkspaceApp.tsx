@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import useSWR from "swr";
+import { getBlueprintAction } from "@/app/actions/blueprint";
 import AtmBuilderClient from "./atm-builder/AtmBuilderClient";
 import BioBuilderClient from "./bio-builder/BioBuilderClient";
 import CarouselBuilderClient from "./carousel-builder/CarouselBuilderClient";
@@ -24,6 +26,9 @@ interface Props {
 export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLoggedIn, nicheReferences, userImage }: Props) {
   const pathname = usePathname();
   const [activePath, setActivePath] = useState(pathname);
+
+  const { data: blueprintData } = useSWR(isLoggedIn ? "blueprint" : null, getBlueprintAction);
+  const activeHasBlueprint = hasBlueprint || !!blueprintData?.aiResult || !!blueprintData;
 
   useEffect(() => {
     setActivePath(pathname);
@@ -65,7 +70,7 @@ export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLogged
               </p>
             </div>
           </div>
-          <ToolGrid hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isLoggedIn={isLoggedIn} />
+          <ToolGrid hasBlueprint={activeHasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isLoggedIn={isLoggedIn} />
         </div>
       </div>
       

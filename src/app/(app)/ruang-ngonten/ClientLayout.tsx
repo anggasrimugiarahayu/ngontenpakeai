@@ -3,12 +3,13 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { preload } from "swr";
+import useSWR, { preload } from "swr";
 import { getDashboardDataAction } from "@/app/actions/dashboard";
 import { getPengaturanDataAction } from "@/app/actions/pengaturan";
 import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
 import { getBlueprintAction } from "@/app/actions/blueprint";
 import { getBioBuilderAction, getContentCalendarAction } from "@/app/actions/toolsData";
+import BlueprintRequiredModal from "@/components/ui/BlueprintRequiredModal";
 
 const handleHoverPrefetch = (href: string) => {
   if (href === '/dashboard') {
@@ -62,6 +63,18 @@ export default function ClientLayout({
   const [activePath, setActivePath] = useState(pathname);
   const [isOpen, setIsOpen] = useState(false); // Mobile drawer
   const [isExpanded, setIsExpanded] = useState(false); // Desktop floating dock
+
+  const { data: blueprintData } = useSWR(isLoggedIn ? "blueprint" : null, getBlueprintAction);
+  const activeHasBlueprint = hasBlueprint || !!blueprintData?.aiResult || !!blueprintData;
+  const [blueprintModal, setBlueprintModal] = useState<{ isOpen: boolean; toolName?: string }>({ isOpen: false });
+
+  useEffect(() => {
+    const handleOpenModal = (e: any) => {
+      setBlueprintModal({ isOpen: true, toolName: e.detail?.toolName || 'Fitur AI' });
+    };
+    window.addEventListener('open-blueprint-modal', handleOpenModal);
+    return () => window.removeEventListener('open-blueprint-modal', handleOpenModal);
+  }, []);
 
   useEffect(() => {
     setActivePath(pathname);
@@ -178,7 +191,7 @@ export default function ClientLayout({
                   isActive = activePath === tool.href;
                 }
               const isProLocked = isToolsMode && (tool as any).isProOnly && !isPro;
-              const isBlueprintLocked = isToolsMode && !hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint';
+              const isBlueprintLocked = isToolsMode && !activeHasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint';
               const isLocked = isProLocked || isBlueprintLocked;
               
               if ((tool as any).disabled) {
@@ -211,16 +224,27 @@ export default function ClientLayout({
                         } else {
                           router.push('/?pricing=true');
                         }
+                      } else if (isBlueprintLocked) {
+                        setBlueprintModal({ isOpen: true, toolName: tool.label });
                       }
                     }}
-                    title={!isExpanded ? `${tool.label} (Terkunci)` : undefined}
-                    className={`flex items-center rounded-xl transition-all duration-200 text-gray-400 dark:text-gray-600 opacity-60 ${isProLocked ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5' : 'cursor-not-allowed'} ${isExpanded ? 'px-3 py-3 gap-3' : 'justify-center w-10 h-10 mx-auto'}`}
+                    title={!isExpanded ? (isBlueprintLocked ? `${tool.label} (Wajib isi Master Blueprint)` : `${tool.label} (Terkunci)`) : undefined}
+                    className={`flex items-center rounded-xl transition-all duration-200 ${
+                      isBlueprintLocked
+                        ? 'text-gray-400 dark:text-gray-500 hover:text-orange-500 hover:bg-orange-500/10 cursor-pointer'
+                        : (isProLocked ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 dark:text-gray-600 opacity-60' : 'cursor-not-allowed text-gray-400 dark:text-gray-600 opacity-60')
+                    } ${isExpanded ? 'px-3 py-3 gap-3' : 'justify-center w-10 h-10 mx-auto'}`}
                   >
                     <Icon size={isExpanded ? 18 : 20} className="shrink-0" />
                     {isExpanded && (
                       <>
-                        <span className="text-sm font-medium whitespace-nowrap truncate">{tool.label}</span>
-                        <Lock size={14} className="ml-auto" />
+                        <div className="flex flex-col min-w-0 mr-auto text-left">
+                          <span className="text-sm font-medium whitespace-nowrap truncate">{tool.label}</span>
+                          {isBlueprintLocked && (
+                            <span className="text-[10px] text-orange-500 font-semibold whitespace-nowrap">Butuh Blueprint</span>
+                          )}
+                        </div>
+                        <Lock size={14} className={`shrink-0 ml-2 ${isBlueprintLocked ? 'text-orange-500' : 'text-gray-400'}`} />
                       </>
                     )}
                   </div>
@@ -309,7 +333,7 @@ export default function ClientLayout({
                   isActive = activePath === tool.href;
                 }
                 const isProLocked = isToolsMode && (tool as any).isProOnly && !isPro;
-                const isBlueprintLocked = isToolsMode && !hasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint';
+                const isBlueprintLocked = isToolsMode && !activeHasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint';
                 const isLocked = isProLocked || isBlueprintLocked;
               if ((tool as any).disabled) {
                   return (
@@ -341,15 +365,27 @@ export default function ClientLayout({
                            } else {
                              router.push('/?pricing=true');
                            }
+                        } else if (isBlueprintLocked) {
+                           setIsOpen(false);
+                           setBlueprintModal({ isOpen: true, toolName: tool.label });
                         }
                       }}
-                      className={`flex items-center justify-between px-3 py-3 rounded-xl font-medium text-gray-400 dark:text-gray-600 opacity-60 ${isProLocked ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5' : 'cursor-not-allowed'}`}
+                      className={`flex items-center justify-between px-3 py-3 rounded-xl font-medium transition-colors ${
+                        isBlueprintLocked
+                          ? 'text-gray-600 dark:text-gray-300 hover:bg-orange-500/10 hover:text-orange-500 cursor-pointer'
+                          : (isProLocked ? 'cursor-pointer hover:bg-gray-100 dark:hover:bg-white/5 text-gray-400 dark:text-gray-600 opacity-60' : 'cursor-not-allowed text-gray-400 dark:text-gray-600 opacity-60')
+                      }`}
                     >
                       <div className="flex items-center gap-3">
                         <Icon size={18} />
-                        <span className="text-sm">{tool.label}</span>
+                        <div className="flex flex-col text-left">
+                          <span className="text-sm">{tool.label}</span>
+                          {isBlueprintLocked && (
+                            <span className="text-[10px] text-orange-500 font-semibold">Wajib isi Master Blueprint</span>
+                          )}
+                        </div>
                       </div>
-                      <Lock size={14} />
+                      <Lock size={14} className={isBlueprintLocked ? "text-orange-500" : ""} />
                     </div>
                   );
                 }
@@ -399,6 +435,12 @@ export default function ClientLayout({
           {children}
         </div>
       </div>
+
+      <BlueprintRequiredModal
+        isOpen={blueprintModal.isOpen}
+        onClose={() => setBlueprintModal({ isOpen: false })}
+        toolName={blueprintModal.toolName}
+      />
     </div>
   );
 }
