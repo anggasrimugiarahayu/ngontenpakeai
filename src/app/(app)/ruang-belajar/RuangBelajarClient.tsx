@@ -54,7 +54,7 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
               if (isOwned) isLocked = false;
 
               const reviewCount = ebook.reviews?.length || 0;
-              const buyerCount = ebook._count?.owners || 0;
+              const buyerCount = (ebook as any).buyerCount ?? ebook._count?.owners ?? 0;
               const favCount = ebook._count?.favorites || 0;
               const averageRating = reviewCount > 0 
                 ? (ebook.reviews.reduce((acc: number, rev: any) => acc + rev.rating, 0) / reviewCount).toFixed(1)

@@ -2,10 +2,11 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { unstable_cache } from "next/cache";
+import { attachComputedBuyerCounts } from "@/lib/product-buyers";
 
 export const getCachedDigitalProductsList = unstable_cache(
   async () => {
-    const [products, sortSetting] = await Promise.all([
+    const [rawProducts, sortSetting] = await Promise.all([
       prisma.digitalProduct.findMany({
         where: { isActive: true },
         take: 100,
@@ -14,6 +15,8 @@ export const getCachedDigitalProductsList = unstable_cache(
       }),
       prisma.appSetting.findUnique({ where: { key: "EBOOK_SORT_ORDER" } }).catch(() => null)
     ]);
+
+    const products = await attachComputedBuyerCounts(rawProducts);
 
     if (sortSetting?.value) {
       try {
@@ -38,7 +41,7 @@ export const getCachedDigitalProductsList = unstable_cache(
 
 export const getCachedEbookBySlug = unstable_cache(
   async (slug: string) => {
-    return prisma.digitalProduct.findFirst({
+    const rawEbook = await prisma.digitalProduct.findFirst({
       where: { slug: slug, isActive: true },
       include: { 
         category: true,
@@ -50,6 +53,10 @@ export const getCachedEbookBySlug = unstable_cache(
         }
       }
     });
+
+    if (!rawEbook) return null;
+    const [computedEbook] = await attachComputedBuyerCounts([rawEbook]);
+    return computedEbook;
   },
   ['digital-product-by-slug'],
   { revalidate: 3600, tags: ['ebook-catalog'] }
@@ -76,12 +83,13 @@ export async function getRuangBelajarDataAction() {
   let products = cachedProducts;
   if (!products || products.length === 0) {
     try {
-      products = await prisma.digitalProduct.findMany({
+      const rawFallback = await prisma.digitalProduct.findMany({
         where: { isActive: true },
         take: 100,
         include: { category: true, reviews: { select: { rating: true } }, _count: { select: { owners: true, favorites: true } } },
         orderBy: { createdAt: 'desc' }
       });
+      products = await attachComputedBuyerCounts(rawFallback);
     } catch (e) {
       console.error("Fallback fetch products error:", e);
       products = [];

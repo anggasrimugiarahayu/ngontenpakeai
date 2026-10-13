@@ -546,7 +546,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               const averageRating = reviewCount > 0 
                 ? (prod.reviews.reduce((acc: number, rev: any) => acc + rev.rating, 0) / reviewCount).toFixed(1) 
                 : "0.0";
-              const buyerCount = prod._count?.owners || 0;
+              const buyerCount = (prod as any).buyerCount ?? prod._count?.owners ?? 0;
               const favCount = prod._count?.favorites || 0;
               
               return (

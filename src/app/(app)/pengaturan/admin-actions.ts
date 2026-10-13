@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { attachComputedBuyerCounts } from "@/lib/product-buyers";
 
 function revalidateAdminConfig() {
   try {
@@ -111,7 +112,7 @@ export async function createCategory(data: any) {
 }
 
 export async function getProducts() {
-  const [products, sortSetting] = await Promise.all([
+  const [rawProducts, sortSetting] = await Promise.all([
     prisma.digitalProduct.findMany({ 
       include: { 
         category: true, 
@@ -123,6 +124,8 @@ export async function getProducts() {
     }),
     prisma.appSetting.findUnique({ where: { key: "EBOOK_SORT_ORDER" } }).catch(() => null)
   ]);
+
+  const products = await attachComputedBuyerCounts(rawProducts);
 
   if (sortSetting?.value) {
     try {
