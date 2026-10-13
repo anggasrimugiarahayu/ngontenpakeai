@@ -236,6 +236,8 @@ export default function DashboardClient({ user, initialData }: { user: any, init
         if (!mainPrice || mainPrice <= 0) {
           mainPrice = Math.max(0, (o.amount || 0) - totalAddonPrice + (o.discountAmount || 0));
         }
+        const subtotalNet = (mainPrice || 0) + totalAddonPrice - (o.discountAmount || 0);
+        const convenienceFee = Math.max(0, (o.amount || 0) - subtotalNet);
 
         const rowData = [
           o.product?.title || '',
@@ -250,7 +252,7 @@ export default function DashboardClient({ user, initialData }: { user: any, init
           0,
           '',
           0,
-          0,
+          convenienceFee || 0,
           o.amount || 0,
           format(new Date(o.createdAt), 'dd-MM-yyyy HH:mm'),
           o.status || '',
@@ -318,6 +320,9 @@ export default function DashboardClient({ user, initialData }: { user: any, init
           mainItemPrice = Math.max(0, (order.amount || 0) - totalAddonPrice + (order.discountAmount || 0));
         }
       }
+
+      const subtotalNet = (mainItemPrice || 0) + totalAddonPrice - (order.discountAmount || 0);
+      const convenienceFee = Math.max(0, (order.amount || 0) - subtotalNet);
 
       return (
         <div className="p-0 sm:p-4 text-sm">
@@ -428,6 +433,12 @@ export default function DashboardClient({ user, initialData }: { user: any, init
                   <span>{addonCount > 0 ? `Total Addon (${addonCount} items)` : 'Total Addon'}</span>
                   <span className="font-medium text-gray-900 dark:text-white">
                     {addonCount > 0 ? formatIDR(totalAddonPrice) : 'Rp. 0'}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Convenience fee</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {convenienceFee > 0 ? formatIDR(convenienceFee) : 'Rp. 0'}
                   </span>
                 </div>
                 <div className="flex justify-between">
