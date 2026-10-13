@@ -238,13 +238,8 @@ export default function ClientLayout({
                     <Icon size={isExpanded ? 18 : 20} className="shrink-0" />
                     {isExpanded && (
                       <>
-                        <div className="flex flex-col min-w-0 mr-auto text-left">
-                          <span className="text-sm font-medium whitespace-nowrap truncate">{tool.label}</span>
-                          {isBlueprintLocked && (
-                            <span className="text-[10px] text-orange-500 font-semibold whitespace-nowrap">Butuh Blueprint</span>
-                          )}
-                        </div>
-                        <Lock size={14} className={`shrink-0 ml-2 ${isBlueprintLocked ? 'text-orange-500' : 'text-gray-400'}`} />
+                        <span className="text-sm font-medium whitespace-nowrap truncate">{tool.label}</span>
+                        <Lock size={14} className={`ml-auto ${isBlueprintLocked ? 'text-orange-500' : ''}`} />
                       </>
                     )}
                   </div>
@@ -378,12 +373,7 @@ export default function ClientLayout({
                     >
                       <div className="flex items-center gap-3">
                         <Icon size={18} />
-                        <div className="flex flex-col text-left">
-                          <span className="text-sm">{tool.label}</span>
-                          {isBlueprintLocked && (
-                            <span className="text-[10px] text-orange-500 font-semibold">Wajib isi Master Blueprint</span>
-                          )}
-                        </div>
+                        <span className="text-sm">{tool.label}</span>
                       </div>
                       <Lock size={14} className={isBlueprintLocked ? "text-orange-500" : ""} />
                     </div>

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, Lock, Compass } from "lucide-react";
+import { AlertCircle } from "lucide-react";
 
 export default function ToolCard({
   feature,
@@ -22,27 +22,29 @@ export default function ToolCard({
   const isMasterBlueprint = feature.href === "/ruang-ngonten/master-blueprint";
   const isProOnly = feature.isProOnly;
   const isActive = feature.isActive;
-  const isBlueprintLocked = !hasBlueprint && !isMasterBlueprint;
+  const isBlueprintLocked = isPro && !hasBlueprint && !isMasterBlueprint;
   const canAccess = (isMasterBlueprint || hasBlueprint) && isActive && (!isProOnly || isPro);
 
   const router = useRouter();
 
   const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-
     if (!isLoggedIn) {
+      e.preventDefault();
       router.push(`/login?redirect=${feature.href}`);
       return;
     }
 
     if (!canAccess) {
+      e.preventDefault();
+
       if (!isActive) {
         setShowError(true);
         setTimeout(() => setShowError(false), 3000);
       } else if (isProOnly && !isPro) {
+        // User Free atau User PRO BOOK: arahkan ke halaman langganan paket tools
         router.push("/?pricing=true");
       } else if (isBlueprintLocked) {
+        // User PRO TOOLS / PRO PLUS yang belum isi blueprint: munculkan modal
         window.dispatchEvent(
           new CustomEvent("open-blueprint-modal", {
             detail: { toolName: feature.title },
@@ -54,10 +56,9 @@ export default function ToolCard({
 
     // Instant shallow routing if already inside /ruang-ngonten
     if (window.location.pathname.startsWith("/ruang-ngonten")) {
+      e.preventDefault();
       window.history.pushState(null, "", feature.href);
       window.dispatchEvent(new Event("app-shallow-navigate"));
-    } else {
-      router.push(feature.href);
     }
   };
 
@@ -79,8 +80,6 @@ export default function ToolCard({
           className={`w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center transition-colors ${
             canAccess
               ? "text-gray-600 dark:text-gray-400 group-hover:bg-rn-accent/10 group-hover:text-rn-accent"
-              : isBlueprintLocked
-              ? "text-orange-500 group-hover:bg-orange-500/10"
               : "text-gray-500"
           }`}
         >
@@ -92,29 +91,31 @@ export default function ToolCard({
               className={`font-bold text-base leading-tight transition-colors ${
                 canAccess
                   ? "text-gray-900 dark:text-white group-hover:text-rn-accent"
-                  : isBlueprintLocked
-                  ? "text-gray-900 dark:text-white group-hover:text-orange-500"
                   : "text-gray-900 dark:text-white"
               }`}
             >
               {feature.title}
             </h3>
             <div className="flex items-center gap-1 shrink-0">
-              {isBlueprintLocked ? (
-                <span className="text-[9px] font-bold bg-orange-50 text-orange-600 dark:bg-orange-950/60 dark:text-orange-400 px-1.5 py-0.5 rounded flex items-center gap-1 border border-orange-200 dark:border-orange-800/40">
-                  <Lock className="w-2.5 h-2.5" /> Butuh Blueprint
-                </span>
-              ) : isProOnly ? (
-                <span
-                  className={`text-[9px] font-bold px-1.5 py-0.5 rounded ${
-                    !isPro
-                      ? "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400"
-                      : "bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400"
-                  }`}
-                >
-                  PRO
-                </span>
+              {isProOnly ? (
+                !isPro ? (
+                  // User belum langganan paket tools (User Free atau PRO BOOK)
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400">
+                    PRO
+                  </span>
+                ) : !hasBlueprint ? (
+                  // User SUDAH langganan PRO TOOLS / PRO PLUS tapi belum isi blueprint
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400">
+                    Butuh Blueprint
+                  </span>
+                ) : (
+                  // User SUDAH langganan PRO dan blueprint aktif
+                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400">
+                    PRO
+                  </span>
+                )
               ) : (
+                // Fitur gratis
                 <span className="text-[9px] font-bold bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded">
                   FREE
                 </span>
@@ -130,7 +131,7 @@ export default function ToolCard({
       </p>
 
       {/* Timeline List */}
-      <div className="relative ml-1.5 space-y-3 mb-2">
+      <div className="relative ml-1.5 space-y-3">
         <div className="absolute left-[3px] top-1.5 bottom-1.5 w-[2px] bg-gray-200 dark:bg-white/5" />
 
         {feature.points.map((point: string, pIdx: number) => (
@@ -140,8 +141,6 @@ export default function ToolCard({
                 pIdx === 0
                   ? canAccess
                     ? "bg-rn-accent ring-4 ring-rn-accent/20"
-                    : isBlueprintLocked
-                    ? "bg-orange-400 ring-4 ring-orange-400/20"
                     : "bg-gray-400 ring-4 ring-gray-400/20"
                   : `bg-gray-300 dark:bg-gray-600 ${
                       canAccess ? "group-hover:bg-rn-accent/50" : ""
@@ -164,33 +163,14 @@ export default function ToolCard({
           </div>
         ))}
       </div>
-
-      {/* Blueprint requirement banner on card hover/footer */}
-      {isBlueprintLocked && (
-        <div className="mt-auto pt-3 border-t border-gray-100 dark:border-white/5 flex items-center justify-between text-[11px] text-orange-600 dark:text-orange-400 font-semibold transition-colors">
-          <span className="flex items-center gap-1.5">
-            <Compass className="w-3.5 h-3.5 text-orange-500 shrink-0" />
-            Wajib Isi Blueprint
-          </span>
-          <span className="text-[10px] text-orange-500 font-bold group-hover:underline">
-            Klik untuk Buka &rarr;
-          </span>
-        </div>
-      )}
     </>
   );
 
   const cardClasses = `group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-300 cursor-pointer z-0 overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/5 ${
-    canAccess
-      ? "hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 shadow-gray-200 dark:shadow-black/50"
-      : isBlueprintLocked
-      ? "hover:border-orange-500/60 dark:hover:border-orange-500/60 hover:shadow-lg hover:-translate-y-1"
-      : "opacity-80 hover:border-red-500/50 dark:hover:border-red-500/50"
+    !canAccess
+      ? "opacity-80 hover:border-gray-300 dark:hover:border-white/20"
+      : "hover:border-rn-accent dark:hover:border-rn-accent/50 shadow-gray-200 dark:shadow-black/50 hover:shadow-xl hover:-translate-y-1.5"
   }`;
-
-  const tooltipTitle = isBlueprintLocked
-    ? `Wajib mengisi Master Blueprint terlebih dahulu agar AI memahami persona & topik bisnismu. Klik untuk buka panduan.`
-    : undefined;
 
   if (!canAccess) {
     return (
@@ -201,7 +181,6 @@ export default function ToolCard({
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") handleClick(e as any);
         }}
-        title={tooltipTitle}
         className={cardClasses}
       >
         {cardContent}
@@ -213,7 +192,6 @@ export default function ToolCard({
     <Link
       href={feature.href}
       onClick={handleClick}
-      title={tooltipTitle}
       className={cardClasses}
     >
       {cardContent}
