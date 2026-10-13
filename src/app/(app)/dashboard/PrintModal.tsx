@@ -108,6 +108,23 @@ function ReceiptContent({ order, showLogo, hideProduct, showNote, size, session 
   const receiverEmail = order.user?.email || order.customerEmail || '-';
   const receiverPhone = order.user?.phone || order.customerPhone || '-';
   const notes = order.note || '-';
+  const addonList = Array.isArray(order.addons) ? order.addons : [];
+  const addonCount = addonList.length;
+  const totalAddonPrice = addonList.reduce((sum: number, a: any) => sum + (a.price || 0), 0);
+
+  let mainItemPrice = order.product?.price;
+  if (!mainItemPrice || mainItemPrice <= 0) {
+    if (order.orderType === 'PRO_BOOK' || order.orderType === 'PRO_TOOLS') {
+      mainItemPrice = 99000;
+    } else if (order.orderType === 'PRO_PLUS') {
+      mainItemPrice = 149000;
+    } else {
+      mainItemPrice = Math.max(0, (order.amount || 0) - totalAddonPrice + (order.discountAmount || 0));
+    }
+  }
+
+  const subtotalNet = (mainItemPrice || 0) + totalAddonPrice - (order.discountAmount || 0);
+  const convenienceFee = Math.max(0, (order.amount || 0) - subtotalNet);
 
   return (
     <div className="p-5 font-mono text-[12px] leading-tight text-gray-900 bg-white">
@@ -153,9 +170,27 @@ function ReceiptContent({ order, showLogo, hideProduct, showNote, size, session 
           <span>0.0 kg</span>
         </div>
         <div className="flex justify-between">
-          <span>Total item</span>
-          <span>{1 + (order.addons?.length || 0)} item</span>
+          <span>Total item ({1} item)</span>
+          <span>{formatIDR(mainItemPrice)}</span>
         </div>
+        {addonCount > 0 && (
+          <div className="flex justify-between">
+            <span>Total Addon ({addonCount} item)</span>
+            <span>{formatIDR(totalAddonPrice)}</span>
+          </div>
+        )}
+        {convenienceFee > 0 && (
+          <div className="flex justify-between">
+            <span>Convenience fee</span>
+            <span>{formatIDR(convenienceFee)}</span>
+          </div>
+        )}
+        {order.discountAmount && order.discountAmount > 0 ? (
+          <div className="flex justify-between">
+            <span>Discount {order.voucherCode ? `(${order.voucherCode})` : ''}</span>
+            <span>- {formatIDR(order.discountAmount)}</span>
+          </div>
+        ) : null}
         <div className="flex justify-between">
           <span>Total Harga</span>
           <span className="font-bold">{formatIDR(order.amount || 0)}</span>
