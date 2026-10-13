@@ -111,15 +111,62 @@ export async function createCategory(data: any) {
 }
 
 export async function getProducts() {
-  return await prisma.digitalProduct.findMany({ 
-    include: { 
-      category: true, 
-      vouchers: true, 
-      reviews: { select: { rating: true } }, 
-      _count: { select: { owners: true } } 
-    }, 
-    orderBy: { createdAt: 'desc' } 
+  const [products, sortSetting] = await Promise.all([
+    prisma.digitalProduct.findMany({ 
+      include: { 
+        category: true, 
+        vouchers: true, 
+        reviews: { select: { rating: true } }, 
+        _count: { select: { owners: true } } 
+      }, 
+      orderBy: { createdAt: 'desc' } 
+    }),
+    prisma.appSetting.findUnique({ where: { key: "EBOOK_SORT_ORDER" } }).catch(() => null)
+  ]);
+
+  if (sortSetting?.value) {
+    try {
+      const orderIds: string[] = JSON.parse(sortSetting.value);
+      const orderMap = new Map<string, number>();
+      orderIds.forEach((id, idx) => orderMap.set(id, idx));
+
+      return [...products].sort((a, b) => {
+        const orderA = orderMap.has(a.id) ? orderMap.get(a.id)! : 999999;
+        const orderB = orderMap.has(b.id) ? orderMap.get(b.id)! : 999999;
+        if (orderA !== orderB) return orderA - orderB;
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      });
+    } catch (e) {}
+  }
+
+  return products;
+}
+
+export async function toggleProductStatus(id: string, isActive: boolean) {
+  await prisma.digitalProduct.update({
+    where: { id },
+    data: { isActive }
   });
+  try {
+    revalidateTag("ebook-catalog", "default");
+  } catch (e) {}
+  revalidateAdminConfig();
+  revalidatePath("/pengaturan");
+  revalidatePath("/ruang-belajar");
+}
+
+export async function reorderProducts(orderedIds: string[]) {
+  await prisma.appSetting.upsert({
+    where: { key: "EBOOK_SORT_ORDER" },
+    update: { value: JSON.stringify(orderedIds) },
+    create: { key: "EBOOK_SORT_ORDER", value: JSON.stringify(orderedIds) }
+  });
+  try {
+    revalidateTag("ebook-catalog", "default");
+  } catch (e) {}
+  revalidateAdminConfig();
+  revalidatePath("/pengaturan");
+  revalidatePath("/ruang-belajar");
 }
 export async function createProduct(data: any) {
   if (data.slug) {

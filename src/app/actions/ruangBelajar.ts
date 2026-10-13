@@ -5,12 +5,32 @@ import { unstable_cache } from "next/cache";
 
 export const getCachedDigitalProductsList = unstable_cache(
   async () => {
-    return prisma.digitalProduct.findMany({
-      where: { isActive: true },
-      take: 100,
-      include: { category: true, reviews: { select: { rating: true } }, _count: { select: { owners: true, favorites: true } } },
-      orderBy: { createdAt: 'desc' }
-    });
+    const [products, sortSetting] = await Promise.all([
+      prisma.digitalProduct.findMany({
+        where: { isActive: true },
+        take: 100,
+        include: { category: true, reviews: { select: { rating: true } }, _count: { select: { owners: true, favorites: true } } },
+        orderBy: { createdAt: 'desc' }
+      }),
+      prisma.appSetting.findUnique({ where: { key: "EBOOK_SORT_ORDER" } }).catch(() => null)
+    ]);
+
+    if (sortSetting?.value) {
+      try {
+        const orderIds: string[] = JSON.parse(sortSetting.value);
+        const orderMap = new Map<string, number>();
+        orderIds.forEach((id, idx) => orderMap.set(id, idx));
+
+        return [...products].sort((a, b) => {
+          const orderA = orderMap.has(a.id) ? orderMap.get(a.id)! : 999999;
+          const orderB = orderMap.has(b.id) ? orderMap.get(b.id)! : 999999;
+          if (orderA !== orderB) return orderA - orderB;
+          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        });
+      } catch (e) {}
+    }
+
+    return products;
   },
   ['digital-products-list'],
   { revalidate: 3600, tags: ['ebook-catalog'] }

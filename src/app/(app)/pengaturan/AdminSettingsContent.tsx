@@ -1,9 +1,9 @@
 "use client";
 
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { mutate } from "swr";
-import { Plus, Trash2, Edit, BookOpen, Tag, X, Star, Ticket, Key, ExternalLink } from "lucide-react";
+import { Plus, Trash2, Edit, BookOpen, Tag, X, Star, Ticket, Key, ExternalLink, MoreVertical, GripVertical, Eye, EyeOff } from "lucide-react";
 import { PricingConfigSection } from "./PricingConfigSection";
 import { 
 
@@ -22,7 +22,9 @@ import {
   deleteCategory,
   deleteProduct,
   createVoucher,
-  deleteVoucher
+  deleteVoucher,
+  toggleProductStatus,
+  reorderProducts
 } from "./admin-actions";
 import Swal from 'sweetalert2';
 const confirmSwal = async (text: string) => {
@@ -48,6 +50,15 @@ const confirmSwal = async (text: string) => {
 
 export function AdminSettingsContent({ activeTab, adminData }: { activeTab: string, adminData: any }) {
   const { models, settings, features, categories, products } = adminData;
+  const [productList, setProductList] = useState(products || []);
+  const [openMenuProductId, setOpenMenuProductId] = useState<string | null>(null);
+  const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
+  const [dragOverIdx, setDragOverIdx] = useState<number | null>(null);
+
+  useEffect(() => {
+    setProductList(products || []);
+  }, [products]);
+
   const [loading, setLoading] = useState(false);
   const [uploadedUrls, setUploadedUrls] = useState<Record<string, string>>({});
 
@@ -85,16 +96,80 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
         }
         if (labelEl) {
           labelEl.innerText = "BERHASIL ✓";
+          labelEl.classList.remove("text-red-500", "text-gray-400");
           labelEl.classList.add("text-green-500");
         }
+        toast.success("Gambar berhasil diunggah!");
       } else {
-        toast.error("Gagal upload gambar.");
-        if (labelEl) labelEl.innerText = "GAGAL X";
+        toast.error(data.error || "Gagal upload gambar.");
+        if (labelEl) {
+          labelEl.innerText = "GAGAL X";
+          labelEl.classList.remove("text-green-500", "text-gray-400");
+          labelEl.classList.add("text-red-500");
+        }
       }
+    } catch (err: any) {
+      console.error(err);
+      toast.error(err?.message || "Error upload gambar.");
+      if (labelEl) {
+        labelEl.innerText = "GAGAL X";
+        labelEl.classList.remove("text-green-500", "text-gray-400");
+        labelEl.classList.add("text-red-500");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCoverDelete = async (targetInputId: string, defaultLabel: string, fieldKey?: string) => {
+    const currentUrl = uploadedUrls[targetInputId] !== undefined 
+      ? uploadedUrls[targetInputId] 
+      : (editingProduct && fieldKey ? editingProduct[fieldKey] : "");
+
+    setLoading(true);
+    try {
+      if (currentUrl) {
+        await fetch("/api/upload", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: currentUrl })
+        });
+      }
+
+      setUploadedUrls(prev => ({ ...prev, [targetInputId]: "" }));
+      
+      const input = document.getElementById(targetInputId) as HTMLInputElement;
+      if (input) {
+        input.value = "";
+      }
+
+      const fileInput = document.getElementById("file-" + targetInputId) as HTMLInputElement;
+      if (fileInput) {
+        fileInput.value = "";
+      }
+
+      const img = document.getElementById("preview-" + targetInputId) as HTMLImageElement;
+      if (img) {
+        img.src = "";
+        img.classList.add('hidden');
+        img.classList.remove('ring-2', 'ring-green-500', 'opacity-100', 'z-10');
+      }
+
+      const labelEl = document.getElementById("label-" + targetInputId);
+      if (labelEl) {
+        labelEl.innerText = defaultLabel;
+        labelEl.classList.remove("text-green-500", "text-red-500");
+        labelEl.classList.add("text-gray-400");
+      }
+
+      if (editingProduct && fieldKey) {
+        setEditingProduct((prev: any) => ({ ...prev, [fieldKey]: "" }));
+      }
+
+      toast.success("Gambar berhasil dihapus dari server!");
     } catch (err) {
       console.error(err);
-      toast.error("Error upload gambar.");
-      if (labelEl) labelEl.innerText = "GAGAL X";
+      toast.error("Gagal menghapus gambar.");
     } finally {
       setLoading(false);
     }
@@ -464,19 +539,70 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 <Plus className="w-4 h-4" /> Tambah E-Book
               </button>
             </div>
-          </div>      {/* Cards Grid */}
+          </div>          {/* Cards Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-            {products.map((prod: any) => {
+            {productList.map((prod: any, index: number) => {
               const reviewCount = prod.reviews?.length || 0;
               const averageRating = reviewCount > 0 
-                ? (prod.reviews.reduce((acc, rev) => acc + rev.rating, 0) / reviewCount).toFixed(1) 
+                ? (prod.reviews.reduce((acc: number, rev: any) => acc + rev.rating, 0) / reviewCount).toFixed(1) 
                 : "0.0";
               const buyerCount = prod._count?.owners || 0;
               
               return (
-              <div key={prod.id} className="flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-[16px] sm:rounded-[20px] overflow-hidden relative p-3 sm:p-4 gap-3 sm:gap-4">
+              <div 
+                key={prod.id} 
+                draggable
+                onDragStart={(e) => {
+                  setDraggedIdx(index);
+                  e.dataTransfer.effectAllowed = "move";
+                  e.dataTransfer.setData("text/plain", prod.id);
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                  if (dragOverIdx !== index) {
+                    setDragOverIdx(index);
+                  }
+                }}
+                onDragLeave={() => {
+                  if (dragOverIdx === index) {
+                    setDragOverIdx(null);
+                  }
+                }}
+                onDrop={async (e) => {
+                  e.preventDefault();
+                  setDragOverIdx(null);
+                  if (draggedIdx === null || draggedIdx === index) return;
+
+                  const newItems = [...productList];
+                  const [draggedItem] = newItems.splice(draggedIdx, 1);
+                  newItems.splice(index, 0, draggedItem);
+
+                  setProductList(newItems);
+                  setDraggedIdx(null);
+
+                  const orderedIds = newItems.map((p: any) => p.id);
+                  try {
+                    await reorderProducts(orderedIds);
+                    toast.success("Urutan E-Book berhasil diperbarui!");
+                  } catch (err) {
+                    toast.error("Gagal menyimpan urutan e-book.");
+                  }
+                }}
+                onDragEnd={() => {
+                  setDraggedIdx(null);
+                  setDragOverIdx(null);
+                }}
+                className={`cursor-grab active:cursor-grabbing select-none flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-[16px] sm:rounded-[20px] relative p-3 sm:p-4 gap-3 sm:gap-4 ${
+                  draggedIdx === index ? "opacity-30 scale-95 border-dashed border-rn-accent ring-2 ring-rn-accent/30" : ""
+                } ${
+                  dragOverIdx === index && draggedIdx !== index ? "ring-2 ring-rn-accent shadow-2xl border-rn-accent scale-[1.01]" : ""
+                } ${
+                  prod.isActive === false ? "opacity-75 bg-gray-50/70 dark:bg-[#141417]" : ""
+                }`}
+              >
                 
-                <div className="w-[100px] sm:w-[120px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
+                <div className="w-[100px] sm:w-[120px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm pointer-events-none">
                   <div className="aspect-[3/4] relative flex items-center justify-center">
                     {prod.coverUrl ? (
                       <>
@@ -493,11 +619,71 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 
                 <div className="flex flex-col flex-1 py-1 h-full min-h-[133px] sm:min-h-[160px]">
                   <div className="flex-1">
-                    <h3 className="text-[17px] font-bold leading-tight tracking-tight text-gray-900 dark:text-white group-hover:text-rn-accent transition-colors line-clamp-2" title={prod.title}>
-                      {prod.title}
-                    </h3>
+                    <div className="flex items-start justify-between gap-1 mb-1">
+                      <div className="flex items-start gap-1 min-w-0 flex-1">
+                        <span title="Tahan dan geser untuk memindah posisi card" className="text-gray-300 dark:text-gray-600 hover:text-gray-500 cursor-grab shrink-0 mt-0.5">
+                          <GripVertical size={16} />
+                        </span>
+                        <h3 className="text-[17px] font-bold leading-tight tracking-tight text-gray-900 dark:text-white group-hover:text-rn-accent transition-colors line-clamp-2" title={prod.title}>
+                          {prod.title}
+                        </h3>
+                      </div>
+
+                      {/* Menu Titik Tiga Vertikal */}
+                      <div className="relative shrink-0 ml-1" onMouseDown={(e) => e.stopPropagation()}>
+                        <button 
+                          type="button" 
+                          onClick={() => setOpenMenuProductId(openMenuProductId === prod.id ? null : prod.id)}
+                          className="p-1 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                          title="Pengaturan Card E-Book"
+                        >
+                          <MoreVertical size={16} />
+                        </button>
+
+                        {openMenuProductId === prod.id && (
+                          <>
+                            <div 
+                              className="fixed inset-0 z-30" 
+                              onClick={() => setOpenMenuProductId(null)} 
+                            />
+                            <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#1f1f23] rounded-xl shadow-xl border border-gray-200 dark:border-white/10 p-1.5 z-40 text-xs animate-in fade-in zoom-in-95 duration-150">
+                              <div className="px-2.5 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-white/5 mb-1">
+                                Status E-Book
+                              </div>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  setOpenMenuProductId(null);
+                                  const newStatus = prod.isActive === false ? true : false;
+                                  setProductList((prev: any) => prev.map((p: any) => p.id === prod.id ? { ...p, isActive: newStatus } : p));
+                                  try {
+                                    await toggleProductStatus(prod.id, newStatus);
+                                    mutate("pengaturan");
+                                    toast.success(newStatus ? "E-Book diaktifkan (tampil di katalog)" : "E-Book dinonaktifkan (disembunyikan dari katalog)");
+                                  } catch (e) {
+                                    toast.error("Gagal mengubah status");
+                                    mutate("pengaturan");
+                                  }
+                                }}
+                                className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg font-medium transition-colors text-left ${
+                                  prod.isActive !== false
+                                    ? "hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-700 dark:text-gray-300 hover:text-red-600" 
+                                    : "hover:bg-green-50 dark:hover:bg-green-500/10 text-gray-700 dark:text-gray-300 hover:text-green-600"
+                                }`}
+                              >
+                                <span className="flex items-center gap-2">
+                                  {prod.isActive !== false ? <EyeOff size={14} className="text-red-500" /> : <Eye size={14} className="text-green-500" />}
+                                  {prod.isActive !== false ? "Nonaktifkan E-Book" : "Aktifkan E-Book"}
+                                </span>
+                                <span className={`w-2 h-2 rounded-full ${prod.isActive !== false ? 'bg-green-500' : 'bg-gray-400'}`} />
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    </div>
                     
-                    <div className="flex items-center gap-1 text-xs font-medium text-gray-500 mt-1.5 mb-2">
+                    <div className="flex items-center gap-1 text-xs font-medium text-gray-500 mt-1 mb-2">
                       <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                       <span>{averageRating === "0.0" ? "0" : averageRating}</span>
                       <span className="text-gray-400 font-normal ml-0.5">
@@ -522,6 +708,11 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                       <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                         {prod.category?.name || 'PRODUK DIGITAL'}
                       </div>
+                      {prod.isActive === false && (
+                        <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 uppercase tracking-wider flex items-center gap-1">
+                          <EyeOff size={10} /> Nonaktif
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -540,7 +731,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                         )}
                     </div>
                     
-                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 ml-auto">
+                    <div className="flex items-center gap-1 sm:gap-1.5 shrink-0 ml-auto" onMouseDown={(e) => e.stopPropagation()}>
                       <button 
                         onClick={() => setEditingProduct(prod)} 
                         className="flex items-center justify-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
@@ -566,7 +757,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
               </div>
             );
             })}
-            {products.length === 0 && (
+            {productList.length === 0 && (
               <div className="col-span-full py-12 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl bg-gray-50 dark:bg-white/5">
                 <BookOpen size={40} className="mb-3 opacity-20 text-gray-400" />
                 <p className="font-medium text-gray-500 text-sm">Belum ada produk e-book yang ditambahkan.</p>
@@ -826,30 +1017,66 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 <div className="col-span-2 space-y-3">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Galeri Gambar E-Book (Maks 3)</label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
-                    <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-hidden">
-      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
-        <span id="label-coverUrlInput" className="text-[10px] font-bold text-gray-400 block mb-1">1. COVER UTAMA</span>
-        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrlInput")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
-        <input type="hidden" name="coverUrl" id="coverUrlInput" />
-      </div>
-      <img id="preview-coverUrlInput" src={uploadedUrls["coverUrlInput"] || undefined} className={`\${uploadedUrls["coverUrlInput"] ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover relative shrink-0 ml-auto z-0 rounded shadow opacity-50 transition-all duration-300`} />
-    </div>
-                    <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-hidden">
-      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
-        <span id="label-coverUrl2Input" className="text-[10px] font-bold text-gray-400 block mb-1">2. PREVIEW 1</span>
-        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrl2Input")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
-        <input type="hidden" name="coverUrl2" id="coverUrl2Input" />
-      </div>
-      <img id="preview-coverUrl2Input" src={uploadedUrls["coverUrl2Input"] || undefined} className={`\${uploadedUrls["coverUrl2Input"] ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover relative shrink-0 ml-auto z-0 rounded shadow opacity-50 transition-all duration-300`} />
-    </div>
-                    <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-hidden">
-      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
-        <span id="label-coverUrl3Input" className="text-[10px] font-bold text-gray-400 block mb-1">3. PREVIEW 2</span>
-        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrl3Input")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
-        <input type="hidden" name="coverUrl3" id="coverUrl3Input" />
-      </div>
-      <img id="preview-coverUrl3Input" src={uploadedUrls["coverUrl3Input"] || undefined} className={`\${uploadedUrls["coverUrl3Input"] ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover relative shrink-0 ml-auto z-0 rounded shadow opacity-50 transition-all duration-300`} />
-    </div>
+                    <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-visible">
+                      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
+                        <span id="label-coverUrlInput" className="text-[10px] font-bold text-gray-400 block mb-1">1. COVER UTAMA</span>
+                        <input id="file-coverUrlInput" type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrlInput")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
+                        <input type="hidden" name="coverUrl" id="coverUrlInput" />
+                      </div>
+                      <div className="relative shrink-0 ml-auto">
+                        <img id="preview-coverUrlInput" src={uploadedUrls["coverUrlInput"] || undefined} className={`${uploadedUrls["coverUrlInput"] ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover z-0 rounded shadow opacity-100 ring-2 ring-green-500 transition-all duration-300`} />
+                        {uploadedUrls["coverUrlInput"] && (
+                          <button 
+                            type="button" 
+                            onClick={() => handleCoverDelete("coverUrlInput", "1. COVER UTAMA")}
+                            className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow-md z-20 transition-transform hover:scale-110 cursor-pointer"
+                            title="Hapus gambar dari server"
+                          >
+                            <X size={10} className="stroke-[3]" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-visible">
+                      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
+                        <span id="label-coverUrl2Input" className="text-[10px] font-bold text-gray-400 block mb-1">2. PREVIEW 1</span>
+                        <input id="file-coverUrl2Input" type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrl2Input")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
+                        <input type="hidden" name="coverUrl2" id="coverUrl2Input" />
+                      </div>
+                      <div className="relative shrink-0 ml-auto">
+                        <img id="preview-coverUrl2Input" src={uploadedUrls["coverUrl2Input"] || undefined} className={`${uploadedUrls["coverUrl2Input"] ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover z-0 rounded shadow opacity-100 ring-2 ring-green-500 transition-all duration-300`} />
+                        {uploadedUrls["coverUrl2Input"] && (
+                          <button 
+                            type="button" 
+                            onClick={() => handleCoverDelete("coverUrl2Input", "2. PREVIEW 1")}
+                            className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow-md z-20 transition-transform hover:scale-110 cursor-pointer"
+                            title="Hapus gambar dari server"
+                          >
+                            <X size={10} className="stroke-[3]" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-visible">
+                      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
+                        <span id="label-coverUrl3Input" className="text-[10px] font-bold text-gray-400 block mb-1">3. PREVIEW 2</span>
+                        <input id="file-coverUrl3Input" type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "coverUrl3Input")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
+                        <input type="hidden" name="coverUrl3" id="coverUrl3Input" />
+                      </div>
+                      <div className="relative shrink-0 ml-auto">
+                        <img id="preview-coverUrl3Input" src={uploadedUrls["coverUrl3Input"] || undefined} className={`${uploadedUrls["coverUrl3Input"] ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover z-0 rounded shadow opacity-100 ring-2 ring-green-500 transition-all duration-300`} />
+                        {uploadedUrls["coverUrl3Input"] && (
+                          <button 
+                            type="button" 
+                            onClick={() => handleCoverDelete("coverUrl3Input", "3. PREVIEW 2")}
+                            className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow-md z-20 transition-transform hover:scale-110 cursor-pointer"
+                            title="Hapus gambar dari server"
+                          >
+                            <X size={10} className="stroke-[3]" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1012,14 +1239,14 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
             </div>
             <form action={async (formData) => {
               setLoading(true);
-                            await updateProduct(editingProduct.id, {
+              await updateProduct(editingProduct.id, {
                 title: formData.get("title") as string,
                 slug: formData.get("slug") as string,
                 categoryId: formData.get("categoryId") as string,
                 description: formData.get("description") as string,
-                coverUrl: uploadedUrls["editCoverUrlInput"] || formData.get("coverUrl") as string,
-                coverUrl2: uploadedUrls["editCoverUrl2Input"] || formData.get("coverUrl2") as string,
-                coverUrl3: uploadedUrls["editCoverUrl3Input"] || formData.get("coverUrl3") as string,
+                coverUrl: uploadedUrls["editCoverUrlInput"] !== undefined ? uploadedUrls["editCoverUrlInput"] : (formData.get("coverUrl") as string || null),
+                coverUrl2: uploadedUrls["editCoverUrl2Input"] !== undefined ? uploadedUrls["editCoverUrl2Input"] : (formData.get("coverUrl2") as string || null),
+                coverUrl3: uploadedUrls["editCoverUrl3Input"] !== undefined ? uploadedUrls["editCoverUrl3Input"] : (formData.get("coverUrl3") as string || null),
                 fileUrl: formData.get("fileUrl") as string,
                 accessLevel: formData.get("accessLevel") as string,
                 isProOnly: formData.get("accessLevel") === "PRO" || formData.get("accessLevel") === "PREMIUM",
@@ -1064,30 +1291,87 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 <div className="col-span-2 space-y-3">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">Galeri Gambar E-Book (Maks 3)</label>
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-3">
-                    <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-hidden">
-      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
-        <span id="label-editCoverUrlInput" className="text-[10px] font-bold text-gray-400 block mb-1">1. COVER UTAMA</span>
-        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrlInput")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
-        <input type="hidden" name="coverUrl" id="editCoverUrlInput" defaultValue={editingProduct.coverUrl || ''} />
-      </div>
-      <img id="preview-editCoverUrlInput" src={uploadedUrls["editCoverUrlInput"] || editingProduct.coverUrl || undefined} className={`\${uploadedUrls["editCoverUrlInput"] || editingProduct.coverUrl ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover relative shrink-0 ml-auto z-0 rounded shadow opacity-50 transition-all duration-300`} />
-    </div>
-                    <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-hidden">
-      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
-        <span id="label-editCoverUrl2Input" className="text-[10px] font-bold text-gray-400 block mb-1">2. PREVIEW 1</span>
-        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrl2Input")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
-        <input type="hidden" name="coverUrl2" id="editCoverUrl2Input" defaultValue={editingProduct.coverUrl2 || ''} />
-      </div>
-      <img id="preview-editCoverUrl2Input" src={uploadedUrls["editCoverUrl2Input"] || editingProduct.coverUrl2 || undefined} className={`\${uploadedUrls["editCoverUrl2Input"] || editingProduct.coverUrl2 ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover relative shrink-0 ml-auto z-0 rounded shadow opacity-50 transition-all duration-300`} />
-    </div>
-                    <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-hidden">
-      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
-        <span id="label-editCoverUrl3Input" className="text-[10px] font-bold text-gray-400 block mb-1">3. PREVIEW 2</span>
-        <input type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrl3Input")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
-        <input type="hidden" name="coverUrl3" id="editCoverUrl3Input" defaultValue={editingProduct.coverUrl3 || ''} />
-      </div>
-      <img id="preview-editCoverUrl3Input" src={uploadedUrls["editCoverUrl3Input"] || editingProduct.coverUrl3 || undefined} className={`\${uploadedUrls["editCoverUrl3Input"] || editingProduct.coverUrl3 ? "" : "hidden"} w-10 h-12 sm:w-8 sm:h-10 object-cover relative shrink-0 ml-auto z-0 rounded shadow opacity-50 transition-all duration-300`} />
-    </div>
+                    <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-visible">
+                      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
+                        <span id="label-editCoverUrlInput" className="text-[10px] font-bold text-gray-400 block mb-1">1. COVER UTAMA</span>
+                        <input id="file-editCoverUrlInput" type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrlInput")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
+                        <input type="hidden" name="coverUrl" id="editCoverUrlInput" defaultValue={editingProduct.coverUrl || ''} />
+                      </div>
+                      <div className="relative shrink-0 ml-auto">
+                        {(() => {
+                          const url = uploadedUrls["editCoverUrlInput"] !== undefined ? uploadedUrls["editCoverUrlInput"] : (editingProduct.coverUrl || "");
+                          return url ? (
+                            <>
+                              <img id="preview-editCoverUrlInput" src={url} className="w-10 h-12 sm:w-8 sm:h-10 object-cover z-0 rounded shadow opacity-100 ring-2 ring-green-500 transition-all duration-300" />
+                              <button 
+                                type="button" 
+                                onClick={() => handleCoverDelete("editCoverUrlInput", "1. COVER UTAMA", "coverUrl")}
+                                className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow-md z-20 transition-transform hover:scale-110 cursor-pointer"
+                                title="Hapus gambar dari server"
+                              >
+                                <X size={10} className="stroke-[3]" />
+                              </button>
+                            </>
+                          ) : (
+                            <img id="preview-editCoverUrlInput" className="hidden w-10 h-12 sm:w-8 sm:h-10 object-cover z-0 rounded shadow transition-all duration-300" />
+                          );
+                        })()}
+                      </div>
+                    </div>
+                    <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-visible">
+                      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
+                        <span id="label-editCoverUrl2Input" className="text-[10px] font-bold text-gray-400 block mb-1">2. PREVIEW 1</span>
+                        <input id="file-editCoverUrl2Input" type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrl2Input")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
+                        <input type="hidden" name="coverUrl2" id="editCoverUrl2Input" defaultValue={editingProduct.coverUrl2 || ''} />
+                      </div>
+                      <div className="relative shrink-0 ml-auto">
+                        {(() => {
+                          const url = uploadedUrls["editCoverUrl2Input"] !== undefined ? uploadedUrls["editCoverUrl2Input"] : (editingProduct.coverUrl2 || "");
+                          return url ? (
+                            <>
+                              <img id="preview-editCoverUrl2Input" src={url} className="w-10 h-12 sm:w-8 sm:h-10 object-cover z-0 rounded shadow opacity-100 ring-2 ring-green-500 transition-all duration-300" />
+                              <button 
+                                type="button" 
+                                onClick={() => handleCoverDelete("editCoverUrl2Input", "2. PREVIEW 1", "coverUrl2")}
+                                className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow-md z-20 transition-transform hover:scale-110 cursor-pointer"
+                                title="Hapus gambar dari server"
+                              >
+                                <X size={10} className="stroke-[3]" />
+                              </button>
+                            </>
+                          ) : (
+                            <img id="preview-editCoverUrl2Input" className="hidden w-10 h-12 sm:w-8 sm:h-10 object-cover z-0 rounded shadow transition-all duration-300" />
+                          );
+                        })()}
+                      </div>
+                    </div>
+                    <div className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-visible">
+                      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
+                        <span id="label-editCoverUrl3Input" className="text-[10px] font-bold text-gray-400 block mb-1">3. PREVIEW 2</span>
+                        <input id="file-editCoverUrl3Input" type="file" accept="image/*" onChange={(e) => handleCoverUpload(e, "editCoverUrl3Input")} className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer" />
+                        <input type="hidden" name="coverUrl3" id="editCoverUrl3Input" defaultValue={editingProduct.coverUrl3 || ''} />
+                      </div>
+                      <div className="relative shrink-0 ml-auto">
+                        {(() => {
+                          const url = uploadedUrls["editCoverUrl3Input"] !== undefined ? uploadedUrls["editCoverUrl3Input"] : (editingProduct.coverUrl3 || "");
+                          return url ? (
+                            <>
+                              <img id="preview-editCoverUrl3Input" src={url} className="w-10 h-12 sm:w-8 sm:h-10 object-cover z-0 rounded shadow opacity-100 ring-2 ring-green-500 transition-all duration-300" />
+                              <button 
+                                type="button" 
+                                onClick={() => handleCoverDelete("editCoverUrl3Input", "3. PREVIEW 2", "coverUrl3")}
+                                className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full p-0.5 shadow-md z-20 transition-transform hover:scale-110 cursor-pointer"
+                                title="Hapus gambar dari server"
+                              >
+                                <X size={10} className="stroke-[3]" />
+                              </button>
+                            </>
+                          ) : (
+                            <img id="preview-editCoverUrl3Input" className="hidden w-10 h-12 sm:w-8 sm:h-10 object-cover z-0 rounded shadow transition-all duration-300" />
+                          );
+                        })()}
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
