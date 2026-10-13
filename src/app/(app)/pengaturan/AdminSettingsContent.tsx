@@ -3,7 +3,7 @@
 import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { mutate } from "swr";
-import { Plus, Trash2, Edit, BookOpen, Tag, X, Star, Ticket, Key, ExternalLink, MoreVertical, GripVertical, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2, Edit, BookOpen, Tag, X, Star, Ticket, Key, ExternalLink, MoreVertical, Eye, EyeOff } from "lucide-react";
 import { PricingConfigSection } from "./PricingConfigSection";
 import { 
 
@@ -619,15 +619,10 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 
                 <div className="flex flex-col flex-1 py-1 h-full min-h-[133px] sm:min-h-[160px]">
                   <div className="flex-1">
-                    <div className="flex items-start justify-between gap-1 mb-1">
-                      <div className="flex items-start gap-1 min-w-0 flex-1">
-                        <span title="Tahan dan geser untuk memindah posisi card" className="text-gray-300 dark:text-gray-600 hover:text-gray-500 cursor-grab shrink-0 mt-0.5">
-                          <GripVertical size={16} />
-                        </span>
-                        <h3 className="text-[17px] font-bold leading-tight tracking-tight text-gray-900 dark:text-white group-hover:text-rn-accent transition-colors line-clamp-2" title={prod.title}>
-                          {prod.title}
-                        </h3>
-                      </div>
+                    <div className="flex items-start justify-between gap-2 mb-1">
+                      <h3 className="text-[17px] font-bold leading-tight tracking-tight text-gray-900 dark:text-white group-hover:text-rn-accent transition-colors line-clamp-2 flex-1" title={prod.title}>
+                        {prod.title}
+                      </h3>
 
                       {/* Menu Titik Tiga Vertikal */}
                       <div className="relative shrink-0 ml-1" onMouseDown={(e) => e.stopPropagation()}>
