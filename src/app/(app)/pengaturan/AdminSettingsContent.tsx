@@ -3,7 +3,7 @@
 import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { mutate } from "swr";
-import { Plus, Trash2, Edit, BookOpen, Tag, X, Star, Ticket, Key, ExternalLink, MoreVertical, Eye, EyeOff } from "lucide-react";
+import { Plus, Trash2, Edit, BookOpen, Tag, X, Star, Ticket, Key, ExternalLink, MoreVertical, Eye, EyeOff, Heart } from "lucide-react";
 import { PricingConfigSection } from "./PricingConfigSection";
 import { 
 
@@ -547,6 +547,7 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                 ? (prod.reviews.reduce((acc: number, rev: any) => acc + rev.rating, 0) / reviewCount).toFixed(1) 
                 : "0.0";
               const buyerCount = prod._count?.owners || 0;
+              const favCount = prod._count?.favorites || 0;
               
               return (
               <div 
@@ -688,6 +689,15 @@ export function AdminSettingsContent({ activeTab, adminData }: { activeTab: stri
                       <span className="text-gray-500 font-medium">
                         {buyerCount} pembeli
                       </span>
+                      {favCount > 0 && (
+                        <>
+                          <span className="text-gray-300 dark:text-gray-600 mx-1">•</span>
+                          <span className="text-red-500 font-medium flex items-center gap-0.5">
+                            <Heart className="w-3 h-3 fill-red-500 text-red-500" />
+                            {favCount}
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     {prod.description && (

@@ -117,7 +117,7 @@ export async function getProducts() {
         category: true, 
         vouchers: true, 
         reviews: { select: { rating: true } }, 
-        _count: { select: { owners: true } } 
+        _count: { select: { owners: true, favorites: true } } 
       }, 
       orderBy: { createdAt: 'desc' } 
     }),
