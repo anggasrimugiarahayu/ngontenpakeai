@@ -154,7 +154,7 @@ function ReceiptContent({ order, showLogo, hideProduct, showNote, size, session 
         </div>
         <div className="flex justify-between">
           <span>Total item</span>
-          <span>1 item</span>
+          <span>{1 + (order.addons?.length || 0)} item</span>
         </div>
         <div className="flex justify-between">
           <span>Total Harga</span>
@@ -167,7 +167,12 @@ function ReceiptContent({ order, showLogo, hideProduct, showNote, size, session 
 
       <div className="space-y-3">
         {!hideProduct && (
-          <p className="uppercase leading-relaxed">1x {order.product?.title || 'Produk Digital'}</p>
+          <>
+            <p className="uppercase leading-relaxed">1x {order.product?.title || 'Produk Digital'}</p>
+            {order.addons?.map((addon: any, idx: number) => (
+              <p key={idx} className="uppercase leading-relaxed text-gray-700">1x (Add-on) {addon.title}</p>
+            ))}
+          </>
         )}
         {showNote && (
           <p>Notes:<br/>{notes}</p>

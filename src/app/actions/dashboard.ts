@@ -3,6 +3,26 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { unstable_cache, revalidatePath, revalidateTag } from "next/cache";
 
+async function populateOrderAddons(orders: any[]) {
+  if (!orders || orders.length === 0) return orders;
+  const allAddonIds = Array.from(new Set(orders.flatMap((o: any) => o.addonIds || []))).filter(Boolean) as string[];
+  if (allAddonIds.length === 0) {
+    return orders.map((o: any) => ({ ...o, addons: [] }));
+  }
+
+  const addonProducts = await prisma.digitalProduct.findMany({
+    where: { id: { in: allAddonIds } },
+    select: { id: true, title: true, coverUrl: true, price: true }
+  }).catch(() => []);
+
+  const addonMap = new Map(addonProducts.map((p: any) => [p.id, p]));
+
+  return orders.map((o: any) => ({
+    ...o,
+    addons: (o.addonIds || []).map((id: string) => addonMap.get(id)).filter(Boolean)
+  }));
+}
+
 export async function calculateDashboardStats() {
   const now = new Date();
   const thirtyDaysAgo = new Date();
@@ -49,7 +69,7 @@ export async function calculateDashboardStats() {
       take: 50,
       include: {
         user: { select: { name: true, email: true, phone: true } },
-        product: { select: { title: true, coverUrl: true, isProOnly: true } }
+        product: { select: { id: true, title: true, coverUrl: true, price: true, isProOnly: true } }
       },
       orderBy: { createdAt: 'desc' }
     }).catch(() => []),
@@ -199,6 +219,8 @@ export async function calculateDashboardStats() {
     };
   });
 
+  const enrichedFullOrders = await populateOrderAddons(fullOrders);
+
   return {
     totalUsers,
     totalUsersFree, 
@@ -211,7 +233,7 @@ export async function calculateDashboardStats() {
     totalViews,
     totalClicks,
     realProductSales: JSON.parse(JSON.stringify(realProductSales)),
-    fullOrders: JSON.parse(JSON.stringify(fullOrders)),
+    fullOrders: JSON.parse(JSON.stringify(enrichedFullOrders)),
     salesGrowth: parseFloat(salesGrowth.toFixed(2)),
     viewsGrowth: parseFloat(viewsGrowth.toFixed(2)),
     salesChartData,
@@ -302,14 +324,16 @@ export async function getDashboardOrdersAction(page = 1, limit = 20, search = ''
       skip: (page - 1) * limit,
       include: {
         user: { select: { name: true, email: true, phone: true } },
-        product: { select: { title: true, coverUrl: true, isProOnly: true } }
+        product: { select: { id: true, title: true, coverUrl: true, price: true, isProOnly: true } }
       },
       orderBy: { createdAt: 'desc' }
     }).catch(() => []),
     prisma.order.count({ where }).catch(() => 0)
   ]);
 
-  return { orders: JSON.parse(JSON.stringify(orders)), total };
+  const enrichedOrders = await populateOrderAddons(orders);
+
+  return { orders: JSON.parse(JSON.stringify(enrichedOrders)), total };
 }
 
 export async function getAudienceInsightsAction() {

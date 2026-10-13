@@ -229,15 +229,23 @@ export default function DashboardClient({ user, initialData }: { user: any, init
       ];
 
       const rows = exportData.map((o: any) => {
+        const addonList = Array.isArray(o.addons) ? o.addons : [];
+        const totalAddonPrice = addonList.reduce((sum: number, a: any) => sum + (a.price || 0), 0);
+        const addonTitles = addonList.map((a: any) => a.title).join('; ');
+        let mainPrice = o.product?.price;
+        if (!mainPrice || mainPrice <= 0) {
+          mainPrice = Math.max(0, (o.amount || 0) - totalAddonPrice + (o.discountAmount || 0));
+        }
+
         const rowData = [
           o.product?.title || '',
           '',
-          o.amount || 0,
+          mainPrice || 0,
           1,
-          o.amount || 0,
+          mainPrice || 0,
+          o.discountAmount || 0,
           0,
-          0,
-          0,
+          totalAddonPrice || 0,
           0,
           0,
           '',
@@ -250,8 +258,8 @@ export default function DashboardClient({ user, initialData }: { user: any, init
           o.user?.name || '',
           o.user?.phone || '',
           o.note || '',
-          '',
-          '',
+          addonTitles || '',
+          o.voucherCode || '',
           '',
           '',
           '',
@@ -295,6 +303,21 @@ export default function DashboardClient({ user, initialData }: { user: any, init
       
       const orderDate = new Date(order.createdAt);
       const paymentDate = new Date(orderDate.getTime() + 2 * 60000);
+
+      const addonList = Array.isArray(order.addons) ? order.addons : [];
+      const addonCount = addonList.length;
+      const totalAddonPrice = addonList.reduce((sum: number, a: any) => sum + (a.price || 0), 0);
+
+      let mainItemPrice = order.product?.price;
+      if (!mainItemPrice || mainItemPrice <= 0) {
+        if (order.orderType === 'PRO_BOOK' || order.orderType === 'PRO_TOOLS') {
+          mainItemPrice = 99000;
+        } else if (order.orderType === 'PRO_PLUS') {
+          mainItemPrice = 149000;
+        } else {
+          mainItemPrice = Math.max(0, (order.amount || 0) - totalAddonPrice + (order.discountAmount || 0));
+        }
+      }
 
       return (
         <div className="p-0 sm:p-4 text-sm">
@@ -352,10 +375,37 @@ export default function DashboardClient({ user, initialData }: { user: any, init
                     </span>
                   </div>
                   <div className="pl-6 pt-1">
-                    <p className="text-gray-900 dark:text-gray-200 text-sm font-semibold">1 x {formatIDR(order.amount)}</p>
+                    <p className="text-gray-900 dark:text-gray-200 text-sm font-semibold">1 x {formatIDR(mainItemPrice)}</p>
                   </div>
                 </div>
               </div>
+
+              {/* Addon Products List (if any) */}
+              {addonCount > 0 && (
+                <div className="border-t border-gray-100 dark:border-white/10 pt-3 pb-1 mb-4 space-y-2">
+                  <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                    Add-on Produk ({addonCount})
+                  </p>
+                  {addonList.map((addon: any, idx: number) => (
+                    <div key={addon.id || idx} className="flex gap-3 items-center bg-gray-50/70 dark:bg-[#121214] p-2.5 rounded-lg border border-gray-100 dark:border-white/5">
+                      <div className="w-10 h-12 bg-white dark:bg-[#1a1a1c] rounded overflow-hidden shrink-0 border border-gray-200 dark:border-white/10 p-0.5 flex items-center justify-center">
+                        {addon.coverUrl ? (
+                          <img src={addon.coverUrl} className="max-w-full max-h-full object-contain" alt={addon.title} />
+                        ) : (
+                          <span className="text-[9px] text-gray-400">No Img</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-1.5">
+                          <span className="font-bold text-gray-900 dark:text-white text-xs">1x</span>
+                          <p className="font-bold text-gray-900 dark:text-white text-xs truncate">{addon.title}</p>
+                        </div>
+                        <p className="text-xs text-orange-500 font-semibold pl-4 pt-0.5">1 x {formatIDR(addon.price || 0)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
               
               <div className="bg-[#f8fafc] dark:bg-[#121214] rounded-lg p-3 border border-gray-100 dark:border-white/5">
                 <p className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Notes</p>
@@ -372,19 +422,23 @@ export default function DashboardClient({ user, initialData }: { user: any, init
                 
                 <div className="flex justify-between">
                   <span>Total item (1 items)</span>
-                  <span className="font-medium text-gray-900 dark:text-white">{formatIDR(order.amount)}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">{formatIDR(mainItemPrice)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Total Addon</span>
-                  <span className="font-medium text-gray-900 dark:text-white">Rp. 0</span>
+                  <span>{addonCount > 0 ? `Total Addon (${addonCount} items)` : 'Total Addon'}</span>
+                  <span className="font-medium text-gray-900 dark:text-white">
+                    {addonCount > 0 ? formatIDR(totalAddonPrice) : 'Rp. 0'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Total shipping</span>
                   <span className="font-medium text-gray-900 dark:text-white">Rp. 0</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Discount</span>
-                  <span className="font-medium text-emerald-500">- Rp. 0</span>
+                  <span>Discount {order.voucherCode ? `(${order.voucherCode})` : ''}</span>
+                  <span className="font-medium text-emerald-500">
+                    {order.discountAmount && order.discountAmount > 0 ? `- ${formatIDR(order.discountAmount)}` : '- Rp. 0'}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Affiliate</span>
@@ -553,10 +607,15 @@ export default function DashboardClient({ user, initialData }: { user: any, init
                             </div>
                             <div className="flex-1 flex flex-col justify-start">
                               <h3 className="font-bold text-gray-900 dark:text-white text-sm leading-tight mb-1">{getOrderTitle(order)}</h3>
-                              <div>
+                              <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="inline-block text-[10px] font-semibold px-2 py-0.5 border border-gray-200 dark:border-white/20 rounded-full text-gray-500 dark:text-gray-400">
                                   digital
                                 </span>
+                                {order.addons && order.addons.length > 0 && (
+                                  <span className="inline-block text-[10px] font-bold px-2 py-0.5 bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400 border border-orange-200 dark:border-orange-800/40 rounded-full">
+                                    +{order.addons.length} Add-on
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
