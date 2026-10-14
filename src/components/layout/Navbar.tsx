@@ -93,7 +93,7 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
   }, [session?.user?.id]);
 
   const isDark = mounted ? theme === "dark" : true;
-  const isWorkspace = pathname === "/" || pathname?.startsWith("/dashboard") || pathname?.startsWith("/ruang-ngonten") || pathname?.startsWith("/ruang-belajar") || pathname?.startsWith("/ruang-growing") || pathname?.startsWith("/pengaturan") || pathname?.startsWith("/bantuan") || pathname?.startsWith("/feedback") || pathname?.startsWith("/checkout") || pathname?.startsWith("/login") || pathname?.startsWith("/signup");
+  const isWorkspace = pathname === "/" || pathname?.startsWith("/dashboard") || pathname?.startsWith("/ruang-ngonten") || pathname?.startsWith("/ruang-belajar") || pathname?.startsWith("/ruang-automation") || pathname?.startsWith("/ruang-growing") || pathname?.startsWith("/pengaturan") || pathname?.startsWith("/bantuan") || pathname?.startsWith("/feedback") || pathname?.startsWith("/checkout") || pathname?.startsWith("/login") || pathname?.startsWith("/signup");
   
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
   const isPro = badgeName !== "FREE";

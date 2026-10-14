@@ -12,6 +12,7 @@ function LoginContent() {
 
   const searchParams = useSearchParams();
   const redirectUrl = searchParams.get("redirect") || "";
+  const error = searchParams.get("error") || "";
 
   useEffect(() => {
     setMounted(true);
@@ -27,9 +28,17 @@ function LoginContent() {
         <h1 className={`text-2xl font-bold font-heading mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
           Sign in
         </h1>
-        <p className={`text-sm mb-8 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+        <p className={`text-sm mb-6 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
           Sign in to your account to continue
         </p>
+
+        {error && (
+          <div className="w-full mb-6 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs text-center font-medium animate-in fade-in">
+            {error === "Configuration"
+              ? "Koneksi login sedang diperbarui. Silakan klik tombol di bawah untuk mencoba kembali."
+              : `Terjadi kendala autentikasi (${error}). Silakan coba klik login kembali.`}
+          </div>
+        )}
 
         <button
           onClick={() => signIn("google", { callbackUrl: redirectUrl || "/" })}

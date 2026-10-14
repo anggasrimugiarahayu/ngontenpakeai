@@ -59,6 +59,7 @@ model User {
   reviews          Review[]
   orders           Order[]
   ownedProducts    UserOwnedProduct[]
+  instagramAccounts InstagramAccount[]
 
   @@map("users")
 }
@@ -333,3 +334,63 @@ model Voucher {
   @@unique([code, digitalProductId])
   @@map("vouchers")
 }
+
+model InstagramAccount {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  instagramId     String   @unique @map("instagram_id")
+  username        String
+  name            String?
+  profilePicUrl   String?  @map("profile_pic_url")
+  accessToken     String   @db.Text @map("access_token")
+  pageId          String?  @map("page_id")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rules           InstagramAutomationRule[]
+  logs            InstagramAutomationLog[]
+
+  @@map("instagram_accounts")
+}
+
+model InstagramAutomationRule {
+  id              String   @id @default(cuid())
+  accountId       String   @map("account_id")
+  name            String
+  triggerType     String   @default("ALL_POSTS") // ALL_POSTS, SPECIFIC_POST
+  specificPostId  String?  @map("specific_post_id")
+  keywords        String[] @default([])
+  commentReplies  String[] @default([])
+  dmMessage       String   @db.Text
+  buttonText      String?  @map("button_text")
+  buttonUrl       String?  @map("button_url")
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  account         InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  logs            InstagramAutomationLog[]
+
+  @@map("instagram_automation_rules")
+}
+
+model InstagramAutomationLog {
+  id                 String   @id @default(cuid())
+  accountId          String   @map("account_id")
+  ruleId             String?  @map("rule_id")
+  fromUsername       String   @map("from_username")
+  commentText        String   @map("comment_text")
+  commentId          String   @map("comment_id")
+  dmStatus           String   @default("SENT") // SENT, FAILED
+  replyCommentStatus String   @default("SENT") // SENT, FAILED, SKIPPED
+  errorMessage       String?  @map("error_message")
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  account            InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  rule               InstagramAutomationRule? @relation(fields: [ruleId], references: [id], onDelete: SetNull)
+
+  @@map("instagram_automation_logs")
+}
+

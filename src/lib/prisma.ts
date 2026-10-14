@@ -8,7 +8,18 @@ declare const globalThis: {
   prismaGlobal: ReturnType<typeof prismaClientSingleton>;
 } & typeof global;
 
-const prisma = globalThis.prismaGlobal ?? prismaClientSingleton()
+const getPrismaClient = () => {
+  if (globalThis.prismaGlobal && 'instagramAccount' in globalThis.prismaGlobal) {
+    return globalThis.prismaGlobal
+  }
+  const client = prismaClientSingleton()
+  if (process.env.NODE_ENV !== 'production') {
+    globalThis.prismaGlobal = client
+  }
+  return client
+}
+
+const prisma = getPrismaClient()
 
 export default prisma
 

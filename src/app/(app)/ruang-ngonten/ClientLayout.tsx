@@ -9,6 +9,7 @@ import { getPengaturanDataAction } from "@/app/actions/pengaturan";
 import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
 import { getBlueprintAction } from "@/app/actions/blueprint";
 import { getBioBuilderAction, getContentCalendarAction } from "@/app/actions/toolsData";
+import { getInstagramAutomationDataAction } from "@/app/actions/instagramAutomation";
 import BlueprintRequiredModal from "@/components/ui/BlueprintRequiredModal";
 
 const handleHoverPrefetch = (href: string) => {
@@ -18,6 +19,8 @@ const handleHoverPrefetch = (href: string) => {
     preload("pengaturan", getPengaturanDataAction);
   } else if (href === '/ruang-belajar') {
     preload("ruangBelajar", getRuangBelajarDataAction);
+  } else if (href === '/ruang-automation' || href === '/ruang-growing') {
+    preload("instagramAutomation", getInstagramAutomationDataAction);
   } else if (href === '/ruang-ngonten' || href.startsWith('/ruang-ngonten/')) {
     preload("blueprint", getBlueprintAction);
     
@@ -29,7 +32,7 @@ const handleHoverPrefetch = (href: string) => {
   }
 };
 
-import { CreditCard, Compass, User, Lightbulb, FileText, LayoutTemplate, RefreshCw, BookOpen, Calendar, Menu, X, ChevronRight, ChevronLeft, ArrowLeft, Lock, LayoutGrid, Settings, HelpCircle, MessageSquare, LayoutDashboard } from 'lucide-react';
+import { CreditCard, Compass, User, Lightbulb, FileText, LayoutTemplate, RefreshCw, BookOpen, Calendar, Menu, X, ChevronRight, ChevronLeft, ArrowLeft, Lock, LayoutGrid, Settings, HelpCircle, MessageSquare, LayoutDashboard, Bot } from 'lucide-react';
 
 const TOOLS = [
   { href: '/ruang-ngonten/master-blueprint', label: 'Master Blueprint', icon: Compass },
@@ -128,14 +131,14 @@ export default function ClientLayout({
     GLOBAL_NAV_ITEMS = [
       { label: "Ruang Belajar", href: "/ruang-belajar", icon: BookOpen },
       { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate },
-      { label: "Ruang Growing", href: "#", icon: RefreshCw, disabled: true },
+      { label: "Ruang Automation", href: "/ruang-automation", icon: Bot },
       { label: "Pricing", href: "/?pricing=true", icon: CreditCard },
     ];
   } else {
     GLOBAL_NAV_ITEMS = [
       { label: "Ruang Belajar", href: "/ruang-belajar", icon: BookOpen },
       { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate },
-      { label: "Ruang Growing", href: "/ruang-growing", icon: RefreshCw },
+      { label: "Ruang Automation", href: "/ruang-automation", icon: Bot },
     ];
     if (isAdmin) {
       GLOBAL_NAV_ITEMS.push({ label: 'Dashboard', icon: LayoutDashboard, href: '/dashboard' });
