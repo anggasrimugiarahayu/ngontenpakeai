@@ -26,7 +26,7 @@ interface NavbarProps {
   badgeName?: string;
 }
 
-export function Navbar({ followerCount = "144K", memberCount = "0", userRole = "USER", badgeName = "FREE" }: NavbarProps) {
+export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "USER", badgeName = "FREE" }: NavbarProps) {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const { data: session, status } = useSession();
@@ -69,7 +69,9 @@ export function Navbar({ followerCount = "144K", memberCount = "0", userRole = "
     fetch("/api/instagram")
       .then((res) => res.json())
       .then((data) => {
-        if (data.followers) {
+        if (data.formatted) {
+          setFollowers(data.formatted);
+        } else if (data.followers) {
           const formatted = Math.floor(data.followers / 1000) + "K";
           setFollowers(formatted);
         }
