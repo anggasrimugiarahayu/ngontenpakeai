@@ -38,12 +38,14 @@ export async function GET(request: NextRequest) {
     console.warn("Meta OAuth cancelled or error:", error, errorReason, errorDescription);
     const redirectUrl = new URL("/ruang-automation", origin);
     redirectUrl.searchParams.set("error", "cancelled");
+    redirectUrl.searchParams.set("platform", "instagram");
     return NextResponse.redirect(redirectUrl);
   }
 
   if (!code) {
     const redirectUrl = new URL("/ruang-automation", origin);
     redirectUrl.searchParams.set("error", "no_code");
+    redirectUrl.searchParams.set("platform", "instagram");
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -53,6 +55,7 @@ export async function GET(request: NextRequest) {
     console.error("Meta OAuth state mismatch. Stored:", storedState, "Received:", state);
     const redirectUrl = new URL("/ruang-automation", origin);
     redirectUrl.searchParams.set("error", "invalid_state");
+    redirectUrl.searchParams.set("platform", "instagram");
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -63,6 +66,7 @@ export async function GET(request: NextRequest) {
     console.error("Missing INSTAGRAM_CLIENT_ID or INSTAGRAM_CLIENT_SECRET in environment");
     const redirectUrl = new URL("/ruang-automation", origin);
     redirectUrl.searchParams.set("error", "missing_credentials");
+    redirectUrl.searchParams.set("platform", "instagram");
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -219,6 +223,7 @@ export async function GET(request: NextRequest) {
     if (!targetIgAccount || !targetIgAccount.id) {
       const redirectUrl = new URL("/ruang-automation", origin);
       redirectUrl.searchParams.set("error", "no_business_account");
+      redirectUrl.searchParams.set("platform", "instagram");
       return NextResponse.redirect(redirectUrl);
     }
 
@@ -229,54 +234,108 @@ export async function GET(request: NextRequest) {
     const name = targetIgAccount.name || (username ? `@${username}` : "Instagram Creator");
     const profilePicUrl = targetIgAccount.profile_picture_url || null;
 
-    // 4. Deactivate any previously active accounts for this user
-    await (db as any).instagramAccount.updateMany({
-      where: { userId },
-      data: { isActive: false },
-    });
+    const targetAgentIdCookie = request.cookies.get("meta_oauth_agent_id")?.value;
+    const targetAgentId =
+      targetAgentIdCookie &&
+      targetAgentIdCookie !== "[object Object]" &&
+      targetAgentIdCookie !== "undefined" &&
+      targetAgentIdCookie !== "null"
+        ? targetAgentIdCookie
+        : null;
 
-    // 5. Upsert the Instagram account into the database linked to this user
-    await (db as any).instagramAccount.upsert({
-      where: { instagramId },
-      update: {
-        userId,
-        username,
-        name,
-        profilePicUrl,
-        accessToken: targetAccessToken,
-        isActive: true,
-      },
-      create: {
-        userId,
-        instagramId,
-        username,
-        name,
-        profilePicUrl,
-        accessToken: targetAccessToken,
-        isActive: true,
-      },
-    });
+    let boundAgentId = targetAgentId;
+    let existingAgent: any = null;
+
+    // 1. Coba cari agen yang ditargetkan secara eksplisit oleh user
+    if (targetAgentId) {
+      existingAgent = await (db as any).instagramAccount.findFirst({
+        where: { id: targetAgentId, userId },
+      });
+    }
+
+    // 2. Jika tidak ditemukan atau tidak ada cookie, cek apakah ada agen milik user yang cocok dengan instagramId ini
+    if (!existingAgent) {
+      existingAgent = await (db as any).instagramAccount.findFirst({
+        where: {
+          userId,
+          OR: [
+            { instagramId },
+            { instagramId: { startsWith: `unlinked_${targetAgentId || ""}` } },
+          ],
+        },
+      });
+    }
+
+    // 3. Fallback: jika agen baru saja diputus koneksinya (unlinked_) atau berstatus pending, sambungkan kembali ke agen tersebut
+    if (!existingAgent) {
+      existingAgent = await (db as any).instagramAccount.findFirst({
+        where: {
+          userId,
+          OR: [
+            { instagramId: { startsWith: "unlinked_" } },
+            { instagramId: { startsWith: "pending_" } },
+          ],
+        },
+        orderBy: { updatedAt: "desc" },
+      });
+    }
+
+    if (existingAgent) {
+      // Perbarui agen yang sudah ada: pertahankan nama agen kustom, simpan kredensial Meta baru, aktifkan kembali
+      await (db as any).instagramAccount.update({
+        where: { id: existingAgent.id },
+        data: {
+          instagramId,
+          username,
+          name: existingAgent.name && !existingAgent.name.startsWith("Agen @") ? existingAgent.name : name,
+          profilePicUrl,
+          accessToken: targetAccessToken,
+          isActive: true,
+        },
+      });
+      boundAgentId = existingAgent.id;
+    } else {
+      // 4. Hanya buat agen baru jika user belum memiliki agen sama sekali
+      const created = await (db as any).instagramAccount.create({
+        data: {
+          userId,
+          instagramId,
+          username,
+          name: name || `Agen @${username}`,
+          profilePicUrl,
+          accessToken: targetAccessToken,
+          isActive: true,
+        },
+      });
+      boundAgentId = created.id;
+    }
 
     // 6. Invalidate caches
     revalidateTag("instagram-automation");
+    revalidateTag(`instagram-automation-${userId}`);
     revalidatePath("/ruang-automation");
 
     // 7. Redirect back to Ruang Automation with success flag
-    // Preserves the incoming protocol (https vs http)
     const redirectUrl = new URL("/ruang-automation", origin);
     redirectUrl.searchParams.set("connected", "true");
     redirectUrl.searchParams.set("username", username);
+    redirectUrl.searchParams.set("platform", "instagram");
+    if (boundAgentId) {
+      redirectUrl.searchParams.set("agentId", boundAgentId);
+    }
 
     const response = NextResponse.redirect(redirectUrl);
 
-    // Clear state cookie
+    // Clear state cookies
     response.cookies.delete("meta_oauth_state");
+    response.cookies.delete("meta_oauth_agent_id");
 
     return response;
   } catch (err: any) {
     console.error("Meta OAuth callback exception:", err);
     const redirectUrl = new URL("/ruang-automation", origin);
     redirectUrl.searchParams.set("error", encodeURIComponent(err.message || "Terjadi kesalahan server"));
+    redirectUrl.searchParams.set("platform", "instagram");
     return NextResponse.redirect(redirectUrl);
   }
 }

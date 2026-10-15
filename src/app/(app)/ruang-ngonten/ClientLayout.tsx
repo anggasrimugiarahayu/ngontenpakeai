@@ -45,6 +45,71 @@ const TOOLS = [
   { href: '/ruang-ngonten/content-calendar', label: 'Content Calendar', icon: Calendar },
 ];
 
+function InstagramIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
+      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+    </svg>
+  );
+}
+
+function TikTokIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
+    </svg>
+  );
+}
+
+function WhatsAppIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+    </svg>
+  );
+}
+
+const AUTOMATION_TOOLS = [
+  { href: '/ruang-automation?platform=instagram', label: 'Instagram Automation', icon: InstagramIcon, platformKey: 'instagram' },
+  { href: '/ruang-automation?platform=tiktok', label: 'TikTok Automation', icon: TikTokIcon, platformKey: 'tiktok', disabled: true },
+  { href: '/ruang-automation?platform=whatsapp', label: 'WhatsApp Automation', icon: WhatsAppIcon, platformKey: 'whatsapp', disabled: true },
+];
+
 export default function ClientLayout({
   children,
   hasBlueprint,
@@ -64,6 +129,7 @@ export default function ClientLayout({
   const pathname = usePathname();
   const router = useRouter();
   const [activePath, setActivePath] = useState(pathname);
+  const [activePlatform, setActivePlatform] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false); // Mobile drawer
   const [isExpanded, setIsExpanded] = useState(false); // Desktop floating dock
 
@@ -81,17 +147,41 @@ export default function ClientLayout({
 
   useEffect(() => {
     setActivePath(pathname);
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const plat = params.get("platform");
+      if (pathname.startsWith("/ruang-automation") && plat) {
+        setActivePlatform(plat);
+      } else if (!pathname.startsWith("/ruang-automation")) {
+        setActivePlatform(null);
+      }
+    }
   }, [pathname]);
 
   useEffect(() => {
     const handleLocationChange = () => {
       setActivePath(window.location.pathname);
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const plat = params.get("platform");
+        if (window.location.pathname.startsWith("/ruang-automation") && plat) {
+          setActivePlatform(plat);
+        } else if (!window.location.pathname.startsWith("/ruang-automation")) {
+          setActivePlatform(null);
+        }
+      }
     };
+    const handlePlatformChange = (e: any) => {
+      setActivePlatform(e.detail || null);
+    };
+
     window.addEventListener('popstate', handleLocationChange);
     window.addEventListener('app-shallow-navigate', handleLocationChange);
+    window.addEventListener('automation-platform-change', handlePlatformChange);
     return () => {
       window.removeEventListener('popstate', handleLocationChange);
       window.removeEventListener('app-shallow-navigate', handleLocationChange);
+      window.removeEventListener('automation-platform-change', handlePlatformChange);
     };
   }, []);
 
@@ -113,6 +203,22 @@ export default function ClientLayout({
       window.history.pushState(null, '', href);
       window.dispatchEvent(new Event('app-shallow-navigate'));
       setIsOpen(false);
+    } else if (href === '/ruang-automation' && isAutomationMode) {
+      e.preventDefault();
+      window.history.pushState(null, '', '/ruang-automation');
+      setActivePlatform(null);
+      window.dispatchEvent(new CustomEvent('automation-platform-change', { detail: null }));
+      window.dispatchEvent(new Event('app-shallow-navigate'));
+      setIsOpen(false);
+    } else if (href.startsWith('/ruang-automation?platform=')) {
+      e.preventDefault();
+      const params = new URLSearchParams(href.split('?')[1]);
+      const plat = params.get('platform');
+      window.history.pushState(null, '', href);
+      setActivePlatform(plat);
+      window.dispatchEvent(new CustomEvent('automation-platform-change', { detail: plat }));
+      window.dispatchEvent(new Event('app-shallow-navigate'));
+      setIsOpen(false);
     } else if ((href === '/' || href === '/?pricing=true') && (activePath === '/' || activePath === '' || activePath.startsWith('/?'))) {
       e.preventDefault();
       const isPricing = href === '/?pricing=true';
@@ -124,6 +230,7 @@ export default function ClientLayout({
   };
 
   const isToolsMode = activePath.startsWith('/ruang-ngonten/') && activePath !== '/ruang-ngonten' && activePath !== '/ruang-ngonten/';
+  const isAutomationMode = activePath.startsWith('/ruang-automation') && !!activePlatform;
 
   let GLOBAL_NAV_ITEMS = [];
 
@@ -159,8 +266,19 @@ export default function ClientLayout({
     };
   }).filter(tool => tool.isActive);
 
-  const itemsToRender = isToolsMode ? mappedTools : GLOBAL_NAV_ITEMS;
-  const backHref = isToolsMode ? '/ruang-ngonten' : '/';
+  let itemsToRender: any[] = GLOBAL_NAV_ITEMS;
+  let backHref = '/';
+  let drawerTitle = 'Navigasi';
+
+  if (isToolsMode) {
+    itemsToRender = mappedTools;
+    backHref = '/ruang-ngonten';
+    drawerTitle = 'Menu Tools';
+  } else if (isAutomationMode) {
+    itemsToRender = AUTOMATION_TOOLS;
+    backHref = '/ruang-automation';
+    drawerTitle = 'Menu Automasi';
+  }
 
   return (
     <div className="flex flex-1 w-full relative">
@@ -188,11 +306,13 @@ export default function ClientLayout({
             {itemsToRender.map((tool) => {
               const Icon = tool.icon;
               let isActive = false;
-                if (!isToolsMode) {
-                  isActive = activePath === tool.href || (tool.href !== '/' && tool.href !== '/?pricing=true' && !tool.href.startsWith('/login') && activePath.startsWith(tool.href));
-                } else {
-                  isActive = activePath === tool.href;
-                }
+              if (isAutomationMode) {
+                isActive = activePlatform === (tool as any).platformKey;
+              } else if (!isToolsMode) {
+                isActive = activePath === tool.href || (tool.href !== '/' && tool.href !== '/?pricing=true' && !tool.href.startsWith('/login') && activePath.startsWith(tool.href));
+              } else {
+                isActive = activePath === tool.href;
+              }
               const isProLocked = isToolsMode && (tool as any).isProOnly && !isPro;
               const isBlueprintLocked = isToolsMode && !activeHasBlueprint && tool.href !== '/ruang-ngonten/master-blueprint';
               const isLocked = isProLocked || isBlueprintLocked;
@@ -272,7 +392,7 @@ export default function ClientLayout({
             })}
           </div>
 
-          {isToolsMode && (
+          {(isToolsMode || isAutomationMode) && (
           <div className="p-2 border-t border-gray-100 dark:border-white/5 mt-auto">
             <Link prefetch={true}
               href={backHref}
@@ -311,7 +431,7 @@ export default function ClientLayout({
             }`}
           >
             <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/5">
-              <span className="font-bold text-gray-900 dark:text-white">{isToolsMode ? 'Menu Tools' : 'Navigasi'}</span>
+              <span className="font-bold text-gray-900 dark:text-white">{drawerTitle}</span>
               <button 
                 onClick={() => setIsOpen(false)}
                 className="p-2 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300"
@@ -325,7 +445,9 @@ export default function ClientLayout({
               {itemsToRender.map((tool) => {
                 const Icon = tool.icon;
                 let isActive = false;
-                if (!isToolsMode) {
+                if (isAutomationMode) {
+                  isActive = activePlatform === (tool as any).platformKey;
+                } else if (!isToolsMode) {
                   isActive = activePath === tool.href || (tool.href !== '/' && tool.href !== '/?pricing=true' && !tool.href.startsWith('/login') && activePath.startsWith(tool.href));
                 } else {
                   isActive = activePath === tool.href;
@@ -403,7 +525,7 @@ export default function ClientLayout({
               })}
             </div>
 
-            {isToolsMode && (
+            {(isToolsMode || isAutomationMode) && (
             <div className="p-4 border-t border-gray-100 dark:border-white/5 mt-auto">
               <Link prefetch={true}
                 href={backHref}

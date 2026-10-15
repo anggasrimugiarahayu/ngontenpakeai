@@ -19,6 +19,8 @@ export async function GET(request: NextRequest) {
     );
   }
 
+  const agentId = request.nextUrl.searchParams.get("agentId");
+
   // Generate random CSRF state token
   const state = crypto.randomBytes(16).toString("hex");
 
@@ -49,6 +51,18 @@ export async function GET(request: NextRequest) {
     path: "/",
     maxAge: 600,
   });
+
+  if (agentId && agentId !== "[object Object]" && agentId !== "undefined" && agentId !== "null") {
+    response.cookies.set("meta_oauth_agent_id", agentId, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+      path: "/",
+      maxAge: 600,
+    });
+  } else {
+    response.cookies.delete("meta_oauth_agent_id");
+  }
 
   return response;
 }

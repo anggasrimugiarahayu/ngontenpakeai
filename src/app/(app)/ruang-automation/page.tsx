@@ -8,7 +8,11 @@ export const metadata = {
   description: "Pusat automasi balasan komentar, direct message, dan interaksi media sosial otomatis.",
 };
 
-export default async function RuangAutomationPage() {
+export default async function RuangAutomationPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
   const session = await auth();
   const isLoggedIn = !!session?.user;
   const isAdmin = session?.user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
@@ -20,10 +24,13 @@ export default async function RuangAutomationPage() {
     isPro = !!hasTools || dbUser?.role === "ADMIN" || dbUser?.role === "PRO";
   }
 
-  let initialData = { account: null, rules: [], stats: { totalComments: 0, totalDms: 0 }, logs: [] };
+  const resolvedParams = searchParams ? await searchParams : {};
+  const initialAgentId = typeof resolvedParams.agentId === "string" ? resolvedParams.agentId : null;
+
+  let initialData = { agents: [], account: null, rules: [], stats: { totalComments: 0, totalDms: 0 }, logs: [] };
   if (isLoggedIn && (isPro || isAdmin)) {
     try {
-      initialData = await getInstagramAutomationDataAction();
+      initialData = await getInstagramAutomationDataAction(initialAgentId || undefined);
     } catch (err) {
       console.error("Error fetching initialData in RuangAutomationPage:", err);
     }
@@ -35,6 +42,7 @@ export default async function RuangAutomationPage() {
       isLoggedIn={isLoggedIn}
       isPro={isPro}
       isAdmin={isAdmin}
+      initialAgentId={initialAgentId}
     />
   );
 }
