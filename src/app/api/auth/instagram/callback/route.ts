@@ -326,6 +326,21 @@ export async function GET(request: NextRequest) {
       boundAgentId = created.id;
     }
 
+    // 5. Daftarkan webhook subscribed_apps ke akun Instagram / Halaman Meta agar komentar otomatis mengalir
+    try {
+      await fetch(
+        `https://graph.instagram.com/v22.0/me/subscribed_apps?subscribed_fields=comments,messages&access_token=${targetAccessToken}`,
+        { method: "POST" }
+      ).catch(() => null);
+
+      await fetch(
+        `https://graph.facebook.com/v22.0/me/subscribed_apps?subscribed_fields=feed,comments,messages&access_token=${targetAccessToken}`,
+        { method: "POST" }
+      ).catch(() => null);
+    } catch (subErr) {
+      console.warn("Webhook subscribed_apps call error:", subErr);
+    }
+
     // 6. Invalidate caches
     revalidateTag("instagram-automation");
     revalidateTag(`instagram-automation-${userId}`);
