@@ -969,7 +969,12 @@ export default function RuangAutomationClient({
       rule.dmMessage ||
       (Array.isArray(rule.dmTemplates) ? rule.dmTemplates[0] : rule.dmTemplates) ||
       "";
-    const target = rule.triggerType === "SPECIFIC_POST" ? "Postingan Tertentu" : "Semua Postingan";
+    const target =
+      rule.triggerType === "SPECIFIC_POST"
+        ? "Postingan Tertentu"
+        : rule.triggerType === "NEXT_POST"
+        ? "Postingan Berikutnya"
+        : "Semua Postingan";
 
     const hasButtons = Boolean(rule.buttonText || rule.buttonUrl);
     const initialButtons = hasButtons
@@ -994,7 +999,12 @@ export default function RuangAutomationClient({
     setRuleFormData({
       name: rule.name || "",
       targetOtomasi: target,
-      postType: rule.triggerType === "SPECIFIC_POST" ? "SPECIFIC" : "ALL",
+      postType:
+        rule.triggerType === "SPECIFIC_POST"
+          ? "SPECIFIC"
+          : rule.triggerType === "NEXT_POST"
+          ? "NEXT"
+          : "ALL",
       postId: rule.specificPostId || matched.id,
       triggerCommentType: keywordsStr.trim() ? "KEYWORDS" : "ALL",
       keywords: keywordsStr || "mau, harga, info, spill",
@@ -1232,11 +1242,18 @@ export default function RuangAutomationClient({
     const serializedDm = JSON.stringify(extendedConfig);
 
     const targetAccountId = selectedAgentId || account?.id;
+    const postType =
+      ruleFormData.targetOtomasi === "Postingan Tertentu"
+        ? "SPECIFIC"
+        : ruleFormData.targetOtomasi === "Postingan Berikutnya"
+        ? "NEXT"
+        : "ALL";
+
     const payload = {
       ruleId: editingRule?.id,
       accountId: targetAccountId,
       name: ruleFormData.name,
-      postType: ruleFormData.targetOtomasi === "Postingan Tertentu" ? "SPECIFIC" : "ALL",
+      postType,
       postId: chosenPostId,
       buttonUrl: buttonUrl || undefined,
       buttonText: buttonText || undefined,
@@ -1256,7 +1273,12 @@ export default function RuangAutomationClient({
       id: optimisticId,
       accountId: targetAccountId || "temp",
       name: payload.name,
-      triggerType: payload.postType === "SPECIFIC" ? "SPECIFIC_POST" : "ALL_POSTS",
+      triggerType:
+        payload.postType === "SPECIFIC"
+          ? "SPECIFIC_POST"
+          : payload.postType === "NEXT"
+          ? "NEXT_POST"
+          : "ALL_POSTS",
       specificPostId: payload.postId || null,
       buttonUrl: buttonUrl || null,
       buttonText: buttonText || null,
@@ -2464,7 +2486,11 @@ export default function RuangAutomationClient({
                             )}
                             <span className="text-gray-300 dark:text-gray-600">•</span>
                             <span className="font-medium text-gray-600 dark:text-gray-300">
-                              {rule.triggerType === "SPECIFIC_POST" ? "Postingan Tertentu" : "Semua Postingan"}
+                              {rule.triggerType === "SPECIFIC_POST"
+                                ? "Postingan Tertentu"
+                                : rule.triggerType === "NEXT_POST"
+                                ? "Postingan Berikutnya"
+                                : "Semua Postingan"}
                             </span>
                             {isAccountLinked && rule.triggerType === "SPECIFIC_POST" && rule.specificPostId && (
                               <>
@@ -2929,7 +2955,12 @@ export default function RuangAutomationClient({
                                     setRuleFormData({
                                       ...ruleFormData,
                                       targetOtomasi: item,
-                                      postType: item === "Postingan Tertentu" ? "SPECIFIC" : "ALL",
+                                      postType:
+                                        item === "Postingan Tertentu"
+                                          ? "SPECIFIC"
+                                          : item === "Postingan Berikutnya"
+                                          ? "NEXT"
+                                          : "ALL",
                                     });
                                     setIsTargetDropdownOpen(false);
                                   }}

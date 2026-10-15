@@ -662,8 +662,13 @@ export async function saveAutomationRuleAction(payload: {
       where: { id: existingId },
       data: {
         name: payload.name.trim(),
-        triggerType: payload.postType === "SPECIFIC" ? "SPECIFIC_POST" : "ALL_POSTS",
-        specificPostId: payload.postId?.trim() || null,
+        triggerType:
+          payload.postType === "SPECIFIC"
+            ? "SPECIFIC_POST"
+            : payload.postType === "NEXT"
+            ? "NEXT_POST"
+            : "ALL_POSTS",
+        specificPostId: payload.postType === "SPECIFIC" ? (payload.postId?.trim() || null) : null,
         keywords: cleanKeywords,
         commentReplies: cleanReplies,
         dmMessage: cleanDm,
@@ -683,8 +688,13 @@ export async function saveAutomationRuleAction(payload: {
       data: {
         accountId: targetAccountId,
         name: payload.name.trim() || `Aturan: ${cleanKeywords[0] || "Umum"}`,
-        triggerType: payload.postType === "SPECIFIC" ? "SPECIFIC_POST" : "ALL_POSTS",
-        specificPostId: payload.postId?.trim() || null,
+        triggerType:
+          payload.postType === "SPECIFIC"
+            ? "SPECIFIC_POST"
+            : payload.postType === "NEXT"
+            ? "NEXT_POST"
+            : "ALL_POSTS",
+        specificPostId: payload.postType === "SPECIFIC" ? (payload.postId?.trim() || null) : null,
         keywords: cleanKeywords,
         commentReplies: cleanReplies,
         dmMessage: cleanDm,

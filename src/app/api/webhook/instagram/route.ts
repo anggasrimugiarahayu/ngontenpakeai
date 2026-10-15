@@ -206,6 +206,18 @@ export async function POST(req: NextRequest) {
                 console.log(`⏩ [Meta Webhook] Media ID mismatch for rule "${rule.name}": expects ${rule.specificPostId}, but comment is on ${mediaId}`);
                 return false;
               }
+            } else if (rule.triggerType === "NEXT_POST") {
+              if (!rule.specificPostId) {
+                // Postingan baru pertama kali terdeteksi! Kunci specificPostId ke postingan baru ini
+                console.log(`🎯 [Meta Webhook] Next post detected! Binding rule "${rule.name}" to media ID: ${mediaId}`);
+                (prisma as any).instagramAutomationRule.update({
+                  where: { id: rule.id },
+                  data: { specificPostId: mediaId },
+                }).catch(() => null);
+              } else if (rule.specificPostId !== mediaId) {
+                console.log(`⏩ [Meta Webhook] Media ID mismatch for rule "${rule.name}" (NEXT_POST locked to ${rule.specificPostId}): comment is on ${mediaId}`);
+                return false;
+              }
             }
 
             // Cek kata kunci pemicu
