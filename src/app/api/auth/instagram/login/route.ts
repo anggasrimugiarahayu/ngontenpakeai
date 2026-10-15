@@ -25,7 +25,12 @@ export async function GET(request: NextRequest) {
   const state = crypto.randomBytes(16).toString("hex");
 
   // OAuth Redirect URI - must match exactly what's registered in Meta
-  const redirectUri = process.env.INSTAGRAM_REDIRECT_URI || `${origin}/api/auth/instagram/callback`;
+  let redirectUri = `${origin}/api/auth/instagram/callback`;
+  if (process.env.INSTAGRAM_REDIRECT_URI) {
+    if (origin.includes("localhost") || !process.env.INSTAGRAM_REDIRECT_URI.includes("localhost")) {
+      redirectUri = process.env.INSTAGRAM_REDIRECT_URI;
+    }
+  }
 
   // Required scopes for Instagram API with Instagram Business Login
   const scopes = [

@@ -70,7 +70,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  const redirectUri = process.env.INSTAGRAM_REDIRECT_URI || `${origin}/api/auth/instagram/callback`;
+  let redirectUri = `${origin}/api/auth/instagram/callback`;
+  if (process.env.INSTAGRAM_REDIRECT_URI) {
+    if (origin.includes("localhost") || !process.env.INSTAGRAM_REDIRECT_URI.includes("localhost")) {
+      redirectUri = process.env.INSTAGRAM_REDIRECT_URI;
+    }
+  }
 
   const cleanCode = (code || "").replace(/#_$/, "");
 
