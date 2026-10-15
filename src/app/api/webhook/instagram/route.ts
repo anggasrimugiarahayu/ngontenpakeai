@@ -28,6 +28,42 @@ function resolveVariables(text: string, username: string): string {
 }
 
 /**
+ * Helper: Mengirim request POST ke Meta Graph API
+ * Mendukung format Instagram Login (graph.instagram.com) maupun Facebook Page (graph.facebook.com)
+ */
+async function postToMetaGraph(endpoint: string, payload: any, token: string) {
+  const isIgToken = token && token.startsWith("IG");
+  const primaryDomain = isIgToken ? "https://graph.instagram.com/v22.0" : "https://graph.facebook.com/v22.0";
+  const fallbackDomain = isIgToken ? "https://graph.facebook.com/v22.0" : "https://graph.instagram.com/v22.0";
+
+  const url = `${primaryDomain}${endpoint}`;
+  let res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ ...payload, access_token: token }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.clone().json().catch(() => null);
+    // Jika token tidak cocok di domain utama (misal error 190 OAuthException), coba domain alternatif
+    if (errorData?.error?.code === 190 || errorData?.error?.type === "OAuthException") {
+      const fallbackUrl = `${fallbackDomain}${endpoint}`;
+      console.log(`🔄 [Meta Webhook] Retrying Meta Graph request via fallback domain: ${fallbackUrl}`);
+      const fallbackRes = await fetch(fallbackUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...payload, access_token: token }),
+      });
+      if (fallbackRes.ok) {
+        return fallbackRes;
+      }
+    }
+  }
+
+  return res;
+}
+
+/**
  * 1. GET Handler: Verifikasi Meta Webhook
  * Meta Developer Dashboard memvalidasi endpoint ini menggunakan hub.challenge & hub.verify_token
  */
@@ -72,16 +108,42 @@ export async function POST(req: NextRequest) {
     // Proses setiap entry secara asinkron (background pipeline)
     for (const entry of entries) {
       const igAccountId = entry.id;
+      console.log(`📡 [Meta Webhook] Received entry for account ID: ${igAccountId}`);
 
       // 1. Cari akun Instagram terdaftar di database kita
-      const account = await (prisma as any).instagramAccount.findFirst({
+      let account = await (prisma as any).instagramAccount.findFirst({
         where: {
-          OR: [{ instagramId: igAccountId }, { id: igAccountId }],
+          OR: [
+            { instagramId: igAccountId },
+            { pageId: igAccountId },
+            { id: igAccountId },
+          ],
           isActive: true,
         },
       });
 
+      // Fallback cerdas: Jika belum cocok persis (misal Meta mengirim Business ID vs Scoped User ID), cari akun aktif
+      if (!account) {
+        account = await (prisma as any).instagramAccount.findFirst({
+          where: {
+            isActive: true,
+            accessToken: { not: "" },
+          },
+        });
+        if (account && igAccountId) {
+          console.log(`🔄 [Meta Webhook] Auto-syncing account @${account.username} to Meta account ID: ${igAccountId}`);
+          await (prisma as any).instagramAccount.update({
+            where: { id: account.id },
+            data: {
+              instagramId: igAccountId,
+              pageId: account.pageId || account.instagramId,
+            },
+          }).catch(() => null);
+        }
+      }
+
       if (!account || !account.accessToken) {
+        console.warn(`⚠️ [Meta Webhook] No active connected account found for ID: ${igAccountId}`);
         continue;
       }
 
@@ -99,10 +161,17 @@ export async function POST(req: NextRequest) {
           const fromUsername = fromUser.username || "pengguna";
           const mediaId = comment.media?.id;
 
+          console.log(`💬 [Meta Webhook] New comment on media ${mediaId} from @${fromUsername} (${fromId}): "${commentText}"`);
+
           if (!commentId || !commentText) continue;
 
           // Guardrail 1: Anti-Self Loop (Abaikan komentar dari akun bot sendiri)
-          if (fromId === account.instagramId || fromUsername.toLowerCase() === (account.username || "").toLowerCase()) {
+          if (
+            fromId === account.instagramId ||
+            fromId === account.pageId ||
+            fromUsername.toLowerCase() === (account.username || "").toLowerCase()
+          ) {
+            console.log(`⏩ [Meta Webhook] Ignoring self-comment from @${fromUsername}`);
             continue;
           }
 
@@ -183,21 +252,20 @@ export async function POST(req: NextRequest) {
             const formattedCommentReply = resolveVariables(randomReply, fromUsername);
 
             try {
-              const res = await fetch(`https://graph.facebook.com/v22.0/${commentId}/replies`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  message: formattedCommentReply,
-                  access_token: account.accessToken,
-                }),
-              });
+              const res = await postToMetaGraph(
+                `/${commentId}/replies`,
+                { message: formattedCommentReply },
+                account.accessToken
+              );
 
               if (res.ok) {
                 replyCommentStatus = "SENT";
+                console.log(`✅ [Meta Webhook] Public reply sent to @${fromUsername}`);
               } else {
                 const errData = await res.json().catch(() => ({}));
                 replyCommentStatus = "FAILED";
                 failureReason = errData?.error?.message || "Gagal membalas komentar di Meta";
+                console.error(`❌ [Meta Webhook] Failed to reply comment:`, errData);
 
                 // Circuit Breaker: Jika akun terkena action block (Error 368)
                 if (errData?.error?.code === 368) {
@@ -210,6 +278,7 @@ export async function POST(req: NextRequest) {
             } catch (err: any) {
               replyCommentStatus = "FAILED";
               failureReason = err.message;
+              console.error(`❌ [Meta Webhook] Exception replying comment:`, err);
             }
           }
 
@@ -311,24 +380,25 @@ export async function POST(req: NextRequest) {
             }
 
             // Panggil Meta Graph API Private Reply Endpoint
-            const dmRes = await fetch(`https://graph.facebook.com/v22.0/me/messages`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
+            const dmRes = await postToMetaGraph(
+              `/me/messages`,
+              {
                 recipient: { comment_id: commentId },
                 message: dmPayloadMessage,
-                access_token: account.accessToken,
-              }),
-            });
+              },
+              account.accessToken
+            );
 
             if (dmRes.ok) {
               dmStatus = "SENT";
+              console.log(`✅ [Meta Webhook] Private reply DM sent to @${fromUsername}`);
             } else {
               const errDm = await dmRes.json().catch(() => ({}));
               dmStatus = "FAILED";
               failureReason = failureReason
                 ? `${failureReason} | DM: ${errDm?.error?.message || "Gagal"}`
                 : errDm?.error?.message || "Gagal mengirim DM";
+              console.error(`❌ [Meta Webhook] Failed to send private DM:`, errDm);
 
               // Circuit Breaker jika token expired (Error 190)
               if (errDm?.error?.code === 190) {
@@ -341,6 +411,7 @@ export async function POST(req: NextRequest) {
           } catch (err: any) {
             dmStatus = "FAILED";
             failureReason = failureReason ? `${failureReason} | DM: ${err.message}` : err.message;
+            console.error(`❌ [Meta Webhook] Exception sending private DM:`, err);
           }
 
           // =====================================================================
@@ -422,15 +493,14 @@ export async function POST(req: NextRequest) {
               }
 
               if (nextMsg) {
-                await fetch(`https://graph.facebook.com/v22.0/me/messages`, {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({
+                await postToMetaGraph(
+                  `/me/messages`,
+                  {
                     recipient: { id: senderId },
                     message: nextMsg,
-                    access_token: account.accessToken,
-                  }),
-                }).catch(() => {});
+                  },
+                  account.accessToken
+                ).catch(() => {});
               }
             }
           }
@@ -444,15 +514,14 @@ export async function POST(req: NextRequest) {
           // Kirim pesan konfirmasi delivery pesan utama
           const confirmText = "Sip, kontak kamu sudah tersimpan dengan aman! Ini link akses materinya ya:";
 
-          await fetch(`https://graph.facebook.com/v22.0/me/messages`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+          await postToMetaGraph(
+            `/me/messages`,
+            {
               recipient: { id: senderId },
               message: { text: confirmText },
-              access_token: account.accessToken,
-            }),
-          }).catch(() => {});
+            },
+            account.accessToken
+          ).catch(() => {});
         }
       }
     }

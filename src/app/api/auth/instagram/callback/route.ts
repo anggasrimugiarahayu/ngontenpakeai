@@ -329,12 +329,12 @@ export async function GET(request: NextRequest) {
     // 5. Daftarkan webhook subscribed_apps ke akun Instagram / Halaman Meta agar komentar otomatis mengalir
     try {
       await fetch(
-        `https://graph.instagram.com/v22.0/me/subscribed_apps?subscribed_fields=comments,messages&access_token=${targetAccessToken}`,
+        `https://graph.instagram.com/v22.0/me/subscribed_apps?subscribed_fields=comments,messages,messaging_postbacks&access_token=${targetAccessToken}`,
         { method: "POST" }
       ).catch(() => null);
 
       await fetch(
-        `https://graph.facebook.com/v22.0/me/subscribed_apps?subscribed_fields=feed,comments,messages&access_token=${targetAccessToken}`,
+        `https://graph.facebook.com/v22.0/me/subscribed_apps?subscribed_fields=comments,messages,messaging_postbacks&access_token=${targetAccessToken}`,
         { method: "POST" }
       ).catch(() => null);
     } catch (subErr) {
