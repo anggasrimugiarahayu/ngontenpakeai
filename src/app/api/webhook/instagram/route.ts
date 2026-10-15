@@ -122,23 +122,28 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Fallback cerdas: Jika belum cocok persis (misal Meta mengirim Business ID vs Scoped User ID), cari akun aktif
+      // Fallback: Jika belum cocok persis dengan ID di query awal
       if (!account) {
-        account = await (prisma as any).instagramAccount.findFirst({
+        const activeAccounts = await (prisma as any).instagramAccount.findMany({
           where: {
             isActive: true,
             accessToken: { not: "" },
           },
         });
-        if (account && igAccountId) {
-          console.log(`🔄 [Meta Webhook] Auto-syncing account @${account.username} to Meta account ID: ${igAccountId}`);
-          await (prisma as any).instagramAccount.update({
-            where: { id: account.id },
-            data: {
-              instagramId: igAccountId,
-              pageId: account.pageId || account.instagramId,
-            },
-          }).catch(() => null);
+
+        if (activeAccounts.length === 1) {
+          account = activeAccounts[0];
+          console.log(`🔄 [Meta Webhook] Matched single active account @${account.username} for Meta ID: ${igAccountId}`);
+          if (account.instagramId !== igAccountId && !account.instagramId?.startsWith("1784")) {
+            await (prisma as any).instagramAccount.update({
+              where: { id: account.id },
+              data: { instagramId: igAccountId },
+            }).catch(() => null);
+          }
+        } else if (activeAccounts.length > 1) {
+          account = activeAccounts.find(
+            (a: any) => a.instagramId === igAccountId || a.pageId === igAccountId || a.id === igAccountId
+          );
         }
       }
 
@@ -194,9 +199,11 @@ export async function POST(req: NextRequest) {
 
           // Filter aturan yang cocok
           const matchedRule = rules.find((rule: any) => {
+            console.log(`🔍 [Meta Webhook] Checking rule "${rule.name}" (${rule.triggerType}) against media ID: ${mediaId}`);
             // Cek target postingan
             if (rule.triggerType === "SPECIFIC_POST" && rule.specificPostId) {
               if (rule.specificPostId !== mediaId) {
+                console.log(`⏩ [Meta Webhook] Media ID mismatch for rule "${rule.name}": expects ${rule.specificPostId}, but comment is on ${mediaId}`);
                 return false;
               }
             }
@@ -205,15 +212,23 @@ export async function POST(req: NextRequest) {
             const keywords = Array.isArray(rule.keywords) ? rule.keywords : [];
             if (keywords.length === 0) {
               // Rule pemicu "SEMUA KATA"
+              console.log(`✅ [Meta Webhook] Rule "${rule.name}" matched: trigger on ALL keywords`);
               return true;
             }
 
             // Rule pemicu "KATA KUNCI TERTENTU"
             const upperComment = commentText.toUpperCase();
-            return keywords.some((kw: string) => upperComment.includes(kw.trim().toUpperCase()));
+            const matched = keywords.some((kw: string) => upperComment.includes(kw.trim().toUpperCase()));
+            if (matched) {
+              console.log(`✅ [Meta Webhook] Rule "${rule.name}" matched keyword: "${commentText}"`);
+            } else {
+              console.log(`⏩ [Meta Webhook] Keyword mismatch for comment "${commentText}" against keywords:`, keywords);
+            }
+            return matched;
           });
 
           if (!matchedRule) {
+            console.log(`⏩ [Meta Webhook] No active rule matched for comment on media ${mediaId} from @${fromUsername}`);
             continue;
           }
 

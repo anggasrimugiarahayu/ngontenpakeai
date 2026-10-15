@@ -1317,7 +1317,8 @@ export default function RuangAutomationClient({
   const handleResyncAccount = () => {
     startTransition(async () => {
       try {
-        const res = await connectInstagramAccountAction();
+        const targetAccountId = selectedAgentId || data.account?.id;
+        const res = await connectInstagramAccountAction(undefined, targetAccountId);
         if (res.success && res.account) {
           showToast("success", `Akun @${res.account.username} berhasil disinkronkan kembali!`);
           setAvatarError(false);

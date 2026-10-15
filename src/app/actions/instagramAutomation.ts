@@ -301,13 +301,29 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
     }
 
     const userId = session.user.id;
-    const token = tokenInput?.trim() || process.env.INSTAGRAM_ACCESS_TOKEN;
+    const db = getDb();
+
+    // 1. Dapatkan akun target jika agentId diberikan (misal saat Sinkronkan Ulang)
+    let existingAccount: any = null;
+    if (agentId) {
+      existingAccount = await (db as any).instagramAccount.findFirst({
+        where: { id: agentId, userId },
+      });
+    }
+
+    // 2. Tentukan access token: prioritaskan input token, token tersimpan di akun, atau env
+    const token =
+      tokenInput?.trim() ||
+      existingAccount?.accessToken ||
+      process.env.INSTAGRAM_ACCESS_TOKEN;
 
     if (!token) {
       return { success: false, error: "Token Akses Instagram tidak ditemukan" };
     }
 
-    const res = await fetch(`https://graph.instagram.com/me?fields=id,username,name,profile_picture_url,account_type&access_token=${token}`);
+    const res = await fetch(
+      `https://graph.instagram.com/me?fields=id,username,name,profile_picture_url,account_type&access_token=${token}`
+    );
     if (!res.ok) {
       const errText = await res.text();
       console.error("Meta Graph API error:", res.status, errText);
@@ -316,44 +332,56 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
 
     const data = await res.json();
     if (!data.id) {
-      return { success: false, error: "Gagal mengambil ID Akun Instagram dari Meta" };
+      return { success: false, error: "Gagal mengambil data Akun Instagram dari Meta" };
     }
 
-    const db = getDb();
+    // 3. Pastikan webhook disubscribe ke Meta untuk akun ini (comments, messages, messaging_postbacks)
+    await fetch(
+      `https://graph.instagram.com/v22.0/me/subscribed_apps?subscribed_fields=comments,messages,messaging_postbacks&access_token=${token}`,
+      { method: "POST" }
+    ).catch(() => null);
+
     let account: any = null;
 
-    if (agentId) {
+    if (agentId && existingAccount) {
+      // Pertahankan Business ID Meta jika sudah ada, simpan Scoped ID di pageId
+      const isBusinessId = existingAccount.instagramId && existingAccount.instagramId.startsWith("1784");
+      const targetInstagramId = isBusinessId ? existingAccount.instagramId : (data.id || existingAccount.instagramId);
+
       account = await (db as any).instagramAccount.update({
         where: { id: agentId },
         data: {
-          instagramId: data.id,
-          username: data.username || "ruangcreativemuslim",
-          name: data.name || (data.username ? `@${data.username}` : "Ruang Creative Muslim"),
-          profilePicUrl: data.profile_picture_url || null,
+          instagramId: targetInstagramId,
+          pageId: data.id,
+          username: data.username || existingAccount.username,
+          name: data.name || (data.username ? `@${data.username}` : existingAccount.name),
+          profilePicUrl: data.profile_picture_url || existingAccount.profilePicUrl || null,
           accessToken: token,
-          isActive: true
-        }
+          isActive: true,
+        },
       });
     } else {
       account = await (db as any).instagramAccount.upsert({
         where: { instagramId: data.id },
         update: {
           userId,
-          username: data.username || "ruangcreativemuslim",
-          name: data.name || (data.username ? `@${data.username}` : "Ruang Creative Muslim"),
+          pageId: data.id,
+          username: data.username || "",
+          name: data.name || (data.username ? `@${data.username}` : "Akun Instagram"),
           profilePicUrl: data.profile_picture_url || null,
           accessToken: token,
-          isActive: true
+          isActive: true,
         },
         create: {
           userId,
           instagramId: data.id,
-          username: data.username || "ruangcreativemuslim",
-          name: data.name || (data.username ? `@${data.username}` : "Ruang Creative Muslim"),
+          pageId: data.id,
+          username: data.username || "",
+          name: data.name || (data.username ? `@${data.username}` : "Akun Instagram"),
           profilePicUrl: data.profile_picture_url || null,
           accessToken: token,
-          isActive: true
-        }
+          isActive: true,
+        },
       });
     }
 
