@@ -270,6 +270,7 @@ export default function RuangAutomationClient({
     isLinked: account.isLinked,
     isActive: account.isActive,
   } : null);
+  const displayAccount = currentAgent || account;
 
   // If user has not exited to hub and platform is null, default to Instagram platform
   useEffect(() => {
@@ -811,7 +812,7 @@ export default function RuangAutomationClient({
   const [spintaxPreview, setSpintaxPreview] = useState("");
 
   const handleOpenAddRuleModal = () => {
-    if (!account || !account.isActive) {
+    if (!displayAccount || !displayAccount.isLinked) {
       showToast("error", "Silakan hubungkan akun Instagram terlebih dahulu untuk membuat aturan automasi.");
       return;
     }
@@ -2023,17 +2024,17 @@ export default function RuangAutomationClient({
           {/* ========================================================================= */}
           {activeIgTab === "koneksi" && (
             <div className="space-y-6 animate-in fade-in duration-200">
-          {account && account.isActive ? (
+          {displayAccount && displayAccount.isLinked ? (
             <div className="rounded-2xl border border-gray-200 dark:border-white/5 p-6 bg-white dark:bg-[#121214] shadow-sm">
               <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                 <div className="flex items-start md:items-center gap-4">
                   {/* Avatar / Profile Picture */}
                   <div className="relative shrink-0">
                     <div className="w-14 h-14 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 overflow-hidden">
-                      {account.profilePicUrl && !avatarError ? (
+                      {displayAccount.profilePicUrl && !avatarError ? (
                         <img
-                          src={account.profilePicUrl}
-                          alt={account.username || "Instagram Avatar"}
+                          src={displayAccount.profilePicUrl}
+                          alt={displayAccount.username || "Instagram Avatar"}
                           referrerPolicy="no-referrer"
                           onError={() => setAvatarError(true)}
                           className="w-full h-full object-cover"
@@ -2048,11 +2049,11 @@ export default function RuangAutomationClient({
 
                   <div className="space-y-1">
                     <h2 className="text-xl md:text-2xl font-black font-heading text-gray-900 dark:text-white">
-                      @{account.username}
+                      @{displayAccount.username}
                     </h2>
-                    {account.name && (
+                    {displayAccount.name && (
                       <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {account.name}
+                        {displayAccount.name}
                       </p>
                     )}
                     <div className="flex items-center gap-2 pt-1 text-xs text-gray-500 dark:text-gray-400">
@@ -2112,7 +2113,7 @@ export default function RuangAutomationClient({
                 </div>
 
                 <button
-                  onClick={() => handleStartMetaOAuth(selectedAgentId || account?.id)}
+                  onClick={() => handleStartMetaOAuth(displayAccount?.id || selectedAgentId || account?.id)}
                   disabled={isPending}
                   className="px-5 py-2.5 rounded-xl bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all self-start sm:self-auto shrink-0 cursor-pointer"
                   title="Hubungkan akun Instagram Anda secara resmi via Meta"

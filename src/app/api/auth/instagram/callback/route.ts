@@ -246,10 +246,20 @@ export async function GET(request: NextRequest) {
     let boundAgentId = targetAgentId;
     let existingAgent: any = null;
 
+    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    const userMatchCondition = isAdmin
+      ? {}
+      : {
+          OR: [
+            { userId },
+            { user: { email: session.user.email || "" } }
+          ]
+        };
+
     // 1. Coba cari agen yang ditargetkan secara eksplisit oleh user
     if (targetAgentId) {
       existingAgent = await (db as any).instagramAccount.findFirst({
-        where: { id: targetAgentId, userId },
+        where: { id: targetAgentId, ...userMatchCondition },
       });
     }
 
@@ -257,7 +267,7 @@ export async function GET(request: NextRequest) {
     if (!existingAgent) {
       existingAgent = await (db as any).instagramAccount.findFirst({
         where: {
-          userId,
+          ...userMatchCondition,
           OR: [
             { instagramId },
             { instagramId: { startsWith: `unlinked_${targetAgentId || ""}` } },
@@ -270,7 +280,7 @@ export async function GET(request: NextRequest) {
     if (!existingAgent) {
       existingAgent = await (db as any).instagramAccount.findFirst({
         where: {
-          userId,
+          ...userMatchCondition,
           OR: [
             { instagramId: { startsWith: "unlinked_" } },
             { instagramId: { startsWith: "pending_" } },
@@ -285,6 +295,7 @@ export async function GET(request: NextRequest) {
       await (db as any).instagramAccount.update({
         where: { id: existingAgent.id },
         data: {
+          userId, // pastikan userId sesuai dengan session saat ini
           instagramId,
           username,
           name: existingAgent.name && !existingAgent.name.startsWith("Agen @") ? existingAgent.name : name,

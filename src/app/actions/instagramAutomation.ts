@@ -218,15 +218,29 @@ export async function updateInstagramAgentAction({
 
     const db = getDb();
     const userId = session.user.id;
+    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
 
     const dataToUpdate: any = {};
     if (typeof name === "string") dataToUpdate.name = name.trim();
     if (typeof isActive === "boolean") dataToUpdate.isActive = isActive;
 
-    await (db as any).instagramAccount.updateMany({
-      where: { id: agentId, userId },
-      data: dataToUpdate,
-    });
+    if (isAdmin) {
+      await (db as any).instagramAccount.updateMany({
+        where: { id: agentId },
+        data: dataToUpdate,
+      });
+    } else {
+      await (db as any).instagramAccount.updateMany({
+        where: {
+          id: agentId,
+          OR: [
+            { userId },
+            { user: { email: session.user.email || "" } }
+          ]
+        },
+        data: dataToUpdate,
+      });
+    }
 
     revalidateTag("instagram-automation");
     revalidateTag(`instagram-automation-${userId}`);
@@ -248,10 +262,23 @@ export async function deleteInstagramAgentAction(agentId: string) {
 
     const db = getDb();
     const userId = session.user.id;
+    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
 
-    await (db as any).instagramAccount.deleteMany({
-      where: { id: agentId, userId }
-    });
+    if (isAdmin) {
+      await (db as any).instagramAccount.deleteMany({
+        where: { id: agentId }
+      });
+    } else {
+      await (db as any).instagramAccount.deleteMany({
+        where: {
+          id: agentId,
+          OR: [
+            { userId },
+            { user: { email: session.user.email || "" } }
+          ]
+        }
+      });
+    }
 
     revalidateTag("instagram-automation");
     revalidateTag(`instagram-automation-${userId}`);
@@ -351,11 +378,23 @@ export async function disconnectInstagramAccountAction(accountId: string) {
     }
 
     const db = getDb();
-    const account = await (db as any).instagramAccount.findUnique({
-      where: { id: accountId }
+    const account = await (db as any).instagramAccount.findFirst({
+      where: {
+        id: accountId,
+        OR: [
+          { userId: session.user.id },
+          { user: { email: session.user.email || "" } }
+        ]
+      }
     });
 
-    if (!account || (account.userId !== session.user.id && session.user.email !== "anggasrimugiarahayu@gmail.com")) {
+    const targetAccount = account || (
+      session.user.email === "anggasrimugiarahayu@gmail.com"
+        ? await (db as any).instagramAccount.findUnique({ where: { id: accountId } })
+        : null
+    );
+
+    if (!targetAccount) {
       return { success: false, error: "Akun tidak ditemukan atau tidak memiliki izin" };
     }
 
@@ -395,13 +434,30 @@ export async function getInstagramFeedMediaAction(limit: number = 12, accountId?
     const db = getDb();
     let account: any = null;
 
+    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
     if (accountId) {
       account = await (db as any).instagramAccount.findFirst({
-        where: { id: accountId, userId },
+        where: isAdmin
+          ? { id: accountId }
+          : {
+              id: accountId,
+              OR: [
+                { userId },
+                { user: { email: session.user.email || "" } }
+              ]
+            },
       });
     } else {
       account = await (db as any).instagramAccount.findFirst({
-        where: { userId, isActive: true },
+        where: isAdmin
+          ? { isActive: true }
+          : {
+              OR: [
+                { userId },
+                { user: { email: session.user.email || "" } }
+              ],
+              isActive: true
+            },
       });
     }
 
@@ -534,7 +590,13 @@ export async function saveAutomationRuleAction(payload: {
   // Jika accountId tidak dikirim langsung, cari akun aktif milik user
   if (!targetAccountId) {
     const activeAccount = await (db as any).instagramAccount.findFirst({
-      where: { userId: session.user.id, isActive: true }
+      where: {
+        OR: [
+          { userId: session.user.id },
+          { user: { email: session.user.email || "" } }
+        ],
+        isActive: true
+      }
     });
     if (!activeAccount) {
       throw new Error("Akun Instagram belum terhubung");
