@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   XCircle,
   AlertCircle,
+  AlertTriangle,
   ArrowLeft,
   Plus,
   Trash2,
@@ -271,6 +272,7 @@ export default function RuangAutomationClient({
     isActive: account.isActive,
   } : null);
   const displayAccount = currentAgent || account;
+  const isAccountLinked = Boolean(displayAccount && displayAccount.isLinked);
 
   // If user has not exited to hub and platform is null, default to Instagram platform
   useEffect(() => {
@@ -698,7 +700,7 @@ export default function RuangAutomationClient({
   const [simulatedFollowStep, setSimulatedFollowStep] = useState<"GATE" | "RETRY" | "VERIFIED">("GATE");
   const [openButtonDropdown, setOpenButtonDropdown] = useState<{ id: string; type: "label" | "action" } | null>(null);
   const [simulatedButtonId, setSimulatedButtonId] = useState<string | null>(null);
-  const [selectedPost, setSelectedPost] = useState<any>(SAMPLE_INSTAGRAM_POSTS[0]);
+  const [selectedPost, setSelectedPost] = useState<any>(null);
   const [showAllPostsModal, setShowAllPostsModal] = useState(false);
   const [isKeywordRuleOpen, setIsKeywordRuleOpen] = useState(false);
 
@@ -708,7 +710,7 @@ export default function RuangAutomationClient({
     name: "",
     targetOtomasi: "Postingan Tertentu",
     postType: "SPECIFIC",
-    postId: SAMPLE_INSTAGRAM_POSTS[0].id,
+    postId: "",
     triggerCommentType: "KEYWORDS" as "KEYWORDS" | "ALL",
     keywords: "mau",
     keywordRule: "Contains" as "Contains" | "Match" | "Starts with",
@@ -782,7 +784,7 @@ export default function RuangAutomationClient({
     isValidating: isValidatingFeed,
     mutate: mutateFeed,
   } = useSWR(
-    selectedAgentId && data?.account?.isActive ? ["instagramFeedMedia", selectedAgentId] : null,
+    selectedAgentId && isAccountLinked ? ["instagramFeedMedia", selectedAgentId] : null,
     ([, agentId]) => getInstagramFeedMediaAction(30, agentId),
     {
       revalidateOnFocus: false,
@@ -791,9 +793,9 @@ export default function RuangAutomationClient({
     }
   );
 
-  const feedPosts: any[] = (feedData?.success && Array.isArray(feedData.posts) && feedData.posts.length > 0)
+  const feedPosts: any[] = (isAccountLinked && feedData?.success && Array.isArray(feedData.posts) && feedData.posts.length > 0)
     ? feedData.posts
-    : SAMPLE_INSTAGRAM_POSTS;
+    : [];
   const isFeedLive = !!feedData?.isLive;
   const feedError = feedData?.error || null;
 
@@ -812,12 +814,12 @@ export default function RuangAutomationClient({
   const [spintaxPreview, setSpintaxPreview] = useState("");
 
   const handleOpenAddRuleModal = () => {
-    if (!displayAccount || !displayAccount.isLinked) {
+    if (!isAccountLinked) {
       showToast("error", "Silakan hubungkan akun Instagram terlebih dahulu untuk membuat aturan automasi.");
       return;
     }
     setEditingRule(null);
-    const defaultPost = feedPosts.length > 0 ? feedPosts[0] : SAMPLE_INSTAGRAM_POSTS[0];
+    const defaultPost = feedPosts.length > 0 ? feedPosts[0] : null;
     setSelectedPost(defaultPost);
     const initialReply = "{Halo|Hai|Kak} @username, cek DM ya kak sudah kami kirimkan link detailnya! 😊";
     setActivePreviewTab("COMMENT");
@@ -825,7 +827,7 @@ export default function RuangAutomationClient({
       name: "",
       targetOtomasi: "Postingan Tertentu",
       postType: "SPECIFIC",
-      postId: defaultPost?.id || "post_1",
+      postId: defaultPost?.id || "",
       triggerCommentType: "KEYWORDS",
       keywords: "mau",
       keywordRule: "Contains",
@@ -911,8 +913,7 @@ export default function RuangAutomationClient({
 
   const handleOpenEditRuleModal = (rule: any) => {
     setEditingRule(rule);
-    const pool = feedPosts.length > 0 ? feedPosts : SAMPLE_INSTAGRAM_POSTS;
-    let matched = pool.find((p) => p.id === rule.specificPostId);
+    let matched = feedPosts.find((p) => p.id === rule.specificPostId);
     if (!matched && rule.specificPostId) {
       const isDirectImg =
         typeof rule.buttonUrl === "string" &&
@@ -921,11 +922,11 @@ export default function RuangAutomationClient({
       matched = {
         id: rule.specificPostId,
         title: rule.name || "Postingan Terpilih",
-        image: (isDirectImg ? rule.buttonUrl : null) || "/images/instagram/post-1-full.png",
-        thumb: (isDirectImg ? rule.buttonUrl : null) || "/images/instagram/thumb-1-clean.png",
+        image: isDirectImg ? rule.buttonUrl : null,
+        thumb: isDirectImg ? rule.buttonUrl : null,
       };
     } else if (!matched) {
-      matched = pool[0];
+      matched = feedPosts[0] || null;
     }
     setSelectedPost(matched);
     const keywordsStr = Array.isArray(rule.keywords)
@@ -1107,6 +1108,10 @@ export default function RuangAutomationClient({
 
   // Toggle rule status ON/OFF with optimistic SWR update
   const handleToggleRule = (ruleId: string, currentStatus: boolean) => {
+    if (!isAccountLinked) {
+      showToast("error", "Akun Instagram belum terhubung. Hubungkan akun Anda terlebih dahulu di tab Koneksi Akun untuk mengaktifkan aturan ini.");
+      return;
+    }
     const nextStatus = !currentStatus;
 
     // Optimistic SWR mutate
@@ -2287,57 +2292,71 @@ export default function RuangAutomationClient({
                     <div
                       key={rule.id}
                       className={`flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-[16px] sm:rounded-[20px] relative p-3 sm:p-4 gap-3 sm:gap-4 ${
-                        rule.isActive ? "" : "opacity-75 bg-gray-50/70 dark:bg-[#141417]"
+                        !isAccountLinked
+                          ? "border-amber-200/60 dark:border-amber-500/20 bg-amber-500/[0.02]"
+                          : rule.isActive
+                          ? ""
+                          : "opacity-75 bg-gray-50/70 dark:bg-[#141417]"
                       }`}
                     >
-                      {/* Sisi Kiri: Cover 3:4 (Gaya E-Book Ruang Belajar) */}
-                      <div className="w-[105px] sm:w-[125px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
-                        <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
-                          {rule.triggerType === "SPECIFIC_POST" ? (
-                            (() => {
-                              const matchedPost =
-                                feedPosts.find((p) => p.id === rule.specificPostId) ||
-                                SAMPLE_INSTAGRAM_POSTS.find((p) => p.id === rule.specificPostId);
-                              const isDirectImg =
-                                typeof rule.buttonUrl === "string" &&
-                                (rule.buttonUrl.startsWith("/images/") ||
-                                  rule.buttonUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i));
-                              const coverImg =
-                                matchedPost?.thumb ||
-                                matchedPost?.image ||
-                                (isDirectImg ? rule.buttonUrl : null) ||
-                                "/images/instagram/thumb-1-clean.png";
+                      {/* Sisi Kiri: Cover 3:4 (hanya tampil jika akun terhubung) */}
+                      {isAccountLinked && (
+                        <div className="w-[105px] sm:w-[125px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
+                          <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
+                            {rule.triggerType === "SPECIFIC_POST" ? (
+                              (() => {
+                                const matchedPost = feedPosts.find((p) => p.id === rule.specificPostId);
+                                const isDirectImg =
+                                  typeof rule.buttonUrl === "string" &&
+                                  (rule.buttonUrl.startsWith("/images/") ||
+                                    rule.buttonUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i));
+                                const coverImg =
+                                  matchedPost?.thumb ||
+                                  matchedPost?.image ||
+                                  (isDirectImg ? rule.buttonUrl : null);
 
-                              return (
-                                <>
-                                  <img
-                                    src={coverImg}
-                                    alt={rule.name}
-                                    referrerPolicy="no-referrer"
-                                    className="absolute inset-0 w-full h-full object-cover"
-                                    onError={(e) => {
-                                      (e.currentTarget as HTMLImageElement).src = "/images/instagram/thumb-1-clean.png";
-                                    }}
-                                  />
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                                  <div className="absolute bottom-1.5 left-2 right-2 text-[10px] font-bold text-white truncate drop-shadow">
-                                    {matchedPost?.title || rule.name}
-                                  </div>
-                                </>
-                              );
-                            })()
-                          ) : (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-orange-500/10 dark:bg-white/5">
-                              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
-                                <InstagramIcon className="w-4 h-4" />
+                                if (!coverImg) {
+                                  return (
+                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gray-100 dark:bg-white/5 text-gray-400">
+                                      <InstagramIcon className="w-5 h-5 mb-1 opacity-60 text-gray-500" />
+                                      <span className="text-[10px] font-semibold text-gray-500 truncate max-w-full px-1">
+                                        Postingan Tertentu
+                                      </span>
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <>
+                                    <img
+                                      src={coverImg}
+                                      alt={rule.name}
+                                      referrerPolicy="no-referrer"
+                                      className="absolute inset-0 w-full h-full object-cover"
+                                      onError={(e) => {
+                                        (e.currentTarget as HTMLElement).style.display = "none";
+                                      }}
+                                    />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                                    <div className="absolute bottom-1.5 left-2 right-2 text-[10px] font-bold text-white truncate drop-shadow">
+                                      {matchedPost?.title || rule.name}
+                                    </div>
+                                  </>
+                                );
+                              })()
+                            ) : (
+                              <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-orange-500/10 dark:bg-white/5">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
+                                  <InstagramIcon className="w-4 h-4" />
+                                </div>
+                                <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
+                                  Semua<br />Postingan
+                                </span>
                               </div>
-                              <span className="text-[11px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
-                                Semua<br />Postingan
-                              </span>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
-                      </div>
+                      )}
 
                       {/* Sisi Kanan: Konten Informasi */}
                       <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5">
@@ -2427,15 +2446,26 @@ export default function RuangAutomationClient({
 
                           {/* Baris 2: Status & Target & Lihat Post */}
                           <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-2 flex-wrap">
-                            <span className={`w-2 h-2 rounded-full ${rule.isActive ? "bg-emerald-500" : "bg-gray-400"}`} />
-                            <span className={`font-semibold ${rule.isActive ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400"}`}>
-                              {rule.isActive ? "Berjalan" : "Nonaktif"}
-                            </span>
+                            {!isAccountLinked ? (
+                              <>
+                                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                                <span className="font-semibold text-amber-600 dark:text-amber-400">
+                                  Terputus
+                                </span>
+                              </>
+                            ) : (
+                              <>
+                                <span className={`w-2 h-2 rounded-full ${rule.isActive ? "bg-emerald-500" : "bg-gray-400"}`} />
+                                <span className={`font-semibold ${rule.isActive ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400"}`}>
+                                  {rule.isActive ? "Berjalan" : "Nonaktif"}
+                                </span>
+                              </>
+                            )}
                             <span className="text-gray-300 dark:text-gray-600">•</span>
                             <span className="font-medium text-gray-600 dark:text-gray-300">
                               {rule.triggerType === "SPECIFIC_POST" ? "Postingan Tertentu" : "Semua Postingan"}
                             </span>
-                            {rule.triggerType === "SPECIFIC_POST" && rule.specificPostId && (
+                            {isAccountLinked && rule.triggerType === "SPECIFIC_POST" && rule.specificPostId && (
                               <>
                                 <span className="text-gray-300 dark:text-gray-600">•</span>
                                 <a
@@ -2449,6 +2479,13 @@ export default function RuangAutomationClient({
                               </>
                             )}
                           </div>
+
+                          {!isAccountLinked && (
+                            <div className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-200/80 dark:border-amber-500/20 flex items-center gap-1.5 mb-2.5">
+                              <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-500" />
+                              <span>Koneksi akun terputus — automasi ini dijeda otomatis.</span>
+                            </div>
+                          )}
 
                           {/* Baris 3: Kata Pemicu */}
                           <div className="mb-3">
@@ -2920,59 +2957,79 @@ export default function RuangAutomationClient({
                           <label className="text-xs font-bold text-gray-800 dark:text-gray-200">
                             Pilih Postingan
                           </label>
-                          {isFeedLive && (
+                          {isFeedLive && isAccountLinked && (
                             <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
                               <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                               LIVE FEED META
                             </span>
                           )}
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => setShowAllPostsModal(true)}
-                          className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
-                        >
-                          Lihat semua
-                        </button>
+                        {isAccountLinked && feedPosts.length > 4 && (
+                          <button
+                            type="button"
+                            onClick={() => setShowAllPostsModal(true)}
+                            className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:underline cursor-pointer"
+                          >
+                            Lihat semua ({feedPosts.length})
+                          </button>
+                        )}
                       </div>
 
-                      {/* 4 Post Thumbnails in a row */}
-                      <div className="grid grid-cols-4 gap-2.5">
-                        {(feedPosts.length > 0 ? feedPosts.slice(0, 4) : SAMPLE_INSTAGRAM_POSTS.slice(0, 4)).map((post) => {
-                          const isSelected = selectedPost?.id === post.id;
-                          return (
-                            <button
-                              key={post.id}
-                              type="button"
-                              onClick={() => {
-                                setSelectedPost(post);
-                                setRuleFormData({ ...ruleFormData, postId: post.id });
-                              }}
-                              className={`relative rounded-xl overflow-hidden aspect-[4/5] border-2 transition-all cursor-pointer ${
-                                isSelected
-                                  ? "border-blue-600 ring-2 ring-blue-500/30 scale-[1.02] shadow-sm"
-                                  : "border-gray-200 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20 opacity-85 hover:opacity-100"
-                              }`}
-                              title={post.title || post.caption}
-                            >
-                              <img
-                                src={post.thumb || post.image}
-                                alt={post.title || "Post"}
-                                referrerPolicy="no-referrer"
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  (e.currentTarget as HTMLImageElement).src = "/images/instagram/thumb-1-clean.png";
+                      {!isAccountLinked ? (
+                        <div className="p-3.5 rounded-xl border border-amber-200 dark:border-amber-500/20 bg-amber-50/70 dark:bg-amber-500/5 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2.5">
+                          <AlertCircle className="w-4 h-4 shrink-0 text-amber-500 mt-0.5" />
+                          <div className="space-y-1">
+                            <p className="font-bold">Akun Instagram Belum Terhubung</p>
+                            <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed">
+                              Daftar postingan asli Anda tidak dapat dimuat karena koneksi akun sedang terputus. Silakan hubungkan kembali akun Anda di tab <strong>Koneksi Akun</strong> untuk memilih postingan spesifik.
+                            </p>
+                          </div>
+                        </div>
+                      ) : isLoadingFeed ? (
+                        <div className="p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 flex items-center justify-center gap-2 text-xs text-gray-500">
+                          <RefreshCw className="w-4 h-4 animate-spin text-gray-400" />
+                          <span>Memuat postingan feed Instagram Anda...</span>
+                        </div>
+                      ) : feedPosts.length === 0 ? (
+                        <div className="p-3.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-center text-xs text-gray-500 space-y-1">
+                          <p className="font-semibold text-gray-700 dark:text-gray-300">Belum Ada Postingan Ditemukan</p>
+                          <p className="text-[11px] text-gray-400">Pastikan akun Instagram Anda sudah memiliki postingan feed atau Reels publik.</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-4 gap-2.5">
+                          {feedPosts.slice(0, 4).map((post) => {
+                            const isSelected = selectedPost?.id === post.id;
+                            return (
+                              <button
+                                key={post.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedPost(post);
+                                  setRuleFormData({ ...ruleFormData, postId: post.id });
                                 }}
-                              />
-                              {post.mediaType === "VIDEO" && (
-                                <div className="absolute top-1 right-1 bg-black/70 rounded px-1 py-0.5 text-[8px] font-bold text-white">
-                                  REEL
-                                </div>
-                              )}
-                            </button>
-                          );
-                        })}
-                      </div>
+                                className={`relative rounded-xl overflow-hidden aspect-[4/5] border-2 transition-all cursor-pointer ${
+                                  isSelected
+                                    ? "border-blue-600 ring-2 ring-blue-500/30 scale-[1.02] shadow-sm"
+                                    : "border-gray-200 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20 opacity-85 hover:opacity-100"
+                                }`}
+                                title={post.title || post.caption}
+                              >
+                                <img
+                                  src={post.thumb || post.image}
+                                  alt={post.title || "Post"}
+                                  referrerPolicy="no-referrer"
+                                  className="w-full h-full object-cover"
+                                />
+                                {post.mediaType === "VIDEO" && (
+                                  <div className="absolute top-1 right-1 bg-black/70 rounded px-1 py-0.5 text-[8px] font-bold text-white">
+                                    REEL
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   )}
 
@@ -3665,7 +3722,7 @@ export default function RuangAutomationClient({
                                   <div
                                     onClick={() => {
                                       const next = [...ruleFormData.carouselSlides];
-                                      next[slideIdx].image = selectedPost?.image || SAMPLE_INSTAGRAM_POSTS[slideIdx % SAMPLE_INSTAGRAM_POSTS.length].image;
+                                      next[slideIdx].image = selectedPost?.image || "";
                                       setRuleFormData({ ...ruleFormData, carouselSlides: next });
                                     }}
                                     className="flex flex-col items-center gap-1.5 cursor-pointer"
@@ -5148,11 +5205,17 @@ export default function RuangAutomationClient({
                                             className="w-44 shrink-0 rounded-2xl bg-white dark:bg-[#202024] border border-gray-200 dark:border-white/10 shadow-xs overflow-hidden flex flex-col"
                                           >
                                             <div className="w-full aspect-square bg-gray-100 dark:bg-white/5 overflow-hidden">
-                                              <img
-                                                src={slide.image || selectedPost?.image || SAMPLE_INSTAGRAM_POSTS[sIdx % SAMPLE_INSTAGRAM_POSTS.length].image}
-                                                alt={slide.title || "Slide"}
-                                                className="w-full h-full object-cover"
-                                              />
+                                              {slide.image || selectedPost?.image ? (
+                                                <img
+                                                  src={slide.image || selectedPost?.image}
+                                                  alt={slide.title || "Slide"}
+                                                  className="w-full h-full object-cover"
+                                                />
+                                              ) : (
+                                                <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100 dark:bg-white/5">
+                                                  <ImageIcon className="w-6 h-6 opacity-40" />
+                                                </div>
+                                              )}
                                             </div>
                                             <div className="p-2.5 space-y-0.5 flex-1">
                                               <h5 className="font-bold text-xs text-gray-900 dark:text-white truncate">
@@ -5322,18 +5385,21 @@ export default function RuangAutomationClient({
 
                           {/* Post Media Container (Aspect 4:5 Portrait) */}
                           <div className="w-full aspect-[4/5] bg-gray-100 dark:bg-white/5 flex flex-col items-center justify-center text-center overflow-hidden">
-                            {ruleFormData.targetOtomasi === "Postingan Tertentu" && selectedPost ? (
+                            {ruleFormData.targetOtomasi === "Postingan Tertentu" && selectedPost?.image ? (
                               <img
                                 src={selectedPost.image}
-                                alt={selectedPost.title}
+                                alt={selectedPost.title || "Post"}
                                 className="w-full h-full object-cover"
                               />
                             ) : (
-                              <span className="text-xs sm:text-sm font-bold text-gray-400 dark:text-gray-500 p-4">
-                                {ruleFormData.targetOtomasi === "Semua Postingan"
-                                  ? "Semua Postingan"
-                                  : ruleFormData.targetOtomasi}
-                              </span>
+                              <div className="flex flex-col items-center justify-center p-4 text-center text-gray-400">
+                                <InstagramIcon className="w-8 h-8 mb-2 opacity-40 text-gray-400" />
+                                <span className="text-xs font-semibold text-gray-500">
+                                  {ruleFormData.targetOtomasi === "Semua Postingan"
+                                    ? "Semua Postingan"
+                                    : "Postingan Tertentu"}
+                                </span>
+                              </div>
                             )}
                           </div>
 
@@ -5553,7 +5619,7 @@ export default function RuangAutomationClient({
             </div>
 
             <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-80 overflow-y-auto pr-1">
-              {(feedPosts.length > 0 ? feedPosts : SAMPLE_INSTAGRAM_POSTS).map((post) => {
+              {feedPosts.map((post) => {
                 const isSelected = selectedPost?.id === post.id;
                 return (
                   <button
@@ -5575,9 +5641,6 @@ export default function RuangAutomationClient({
                       alt={post.title}
                       referrerPolicy="no-referrer"
                       className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).src = "/images/instagram/thumb-1-clean.png";
-                      }}
                     />
                   </button>
                 );
