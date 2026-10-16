@@ -1406,7 +1406,7 @@ export default function RuangAutomationClient({
       name: payload.name,
       triggerType: payload.triggerType,
       specificPostId: payload.postId || null,
-      buttonUrl: buttonUrl || null,
+      buttonUrl: buttonUrl || postCoverUrl || null,
       buttonText: buttonText || null,
       keywords: keywordArray,
       commentReplies: payload.commentReplies,
@@ -1427,6 +1427,13 @@ export default function RuangAutomationClient({
       },
       false // Jangan revalidate segera untuk menghindari stale cache sementara
     );
+
+    // Otomatis arahkan tab aktif ke jenis automasi yang baru dibuat agar kartu langsung terlihat seketika (0ms)!
+    if (isStoryTarget && automationTab !== "STORY") {
+      setAutomationTab("STORY");
+    } else if (!isStoryTarget && automationTab !== "POST") {
+      setAutomationTab("POST");
+    }
 
     setIsRuleModalOpen(false);
     showToast("success", editingRule ? "Aturan berhasil diperbarui!" : "Aturan baru berhasil ditambahkan!");
@@ -2488,6 +2495,9 @@ export default function RuangAutomationClient({
                   const matchedPost = rule.specificPostId
                     ? feedPosts.find((p) => String(p.id) === String(rule.specificPostId))
                     : null;
+                  const matchedStory = rule.specificPostId
+                    ? activeStories.find((s) => String(s.id) === String(rule.specificPostId))
+                    : null;
 
                   // Real metrics dari log rule ini (tanpa angka dummy/hardcode)
                   const ruleLogs = (logs || []).filter((l: any) => l.ruleId === rule.id);
@@ -2538,19 +2548,55 @@ export default function RuangAutomationClient({
                                 </span>
                               </div>
                             ) : rule.triggerType === "SPECIFIC_STORY" || ruleConfig.targetOtomasi === "Story Tertentu" ? (
-                              <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-pink-500/20 via-rose-500/15 to-purple-500/20 dark:bg-white/5">
-                                <div className="absolute top-2 left-1.5 right-1.5 flex justify-center">
-                                  <span className="px-2 py-0.5 rounded-md bg-pink-600 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider shadow-sm truncate">
-                                    Story Tertentu
-                                  </span>
-                                </div>
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center text-white mb-1 mt-3 shadow-sm">
-                                  <Camera className="w-4 h-4" />
-                                </div>
-                                <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
-                                  Story<br />Tertentu
-                                </span>
-                              </div>
+                              (() => {
+                                const isDirectImg =
+                                  typeof rule.buttonUrl === "string" &&
+                                  (rule.buttonUrl.startsWith("/images/") ||
+                                    rule.buttonUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i));
+                                const storyCover =
+                                  matchedStory?.image ||
+                                  matchedStory?.thumb ||
+                                  ruleConfig.postCoverUrl ||
+                                  (isDirectImg ? rule.buttonUrl : null);
+
+                                if (storyCover) {
+                                  return (
+                                    <div className="relative w-full h-full">
+                                      <img
+                                        src={storyCover}
+                                        alt={rule.name}
+                                        referrerPolicy="no-referrer"
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                        onError={(e) => {
+                                          (e.currentTarget as HTMLElement).style.display = "none";
+                                        }}
+                                      />
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
+                                      <div className="absolute top-2 left-1.5 right-1.5 flex justify-center z-10">
+                                        <span className="px-2 py-0.5 rounded-md bg-pink-600 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider shadow-sm truncate">
+                                          Story Tertentu
+                                        </span>
+                                      </div>
+                                    </div>
+                                  );
+                                }
+
+                                return (
+                                  <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-pink-500/20 via-rose-500/15 to-purple-500/20 dark:bg-white/5">
+                                    <div className="absolute top-2 left-1.5 right-1.5 flex justify-center">
+                                      <span className="px-2 py-0.5 rounded-md bg-pink-600 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider shadow-sm truncate">
+                                        Story Tertentu
+                                      </span>
+                                    </div>
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center text-white mb-1 mt-3 shadow-sm">
+                                      <Camera className="w-4 h-4" />
+                                    </div>
+                                    <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
+                                      Story<br />Tertentu
+                                    </span>
+                                  </div>
+                                );
+                              })()
                             ) : rule.triggerType === "STORY_MENTION" || ruleConfig.targetOtomasi === "Story Mention" ? (
                               <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-indigo-500/20 via-purple-500/15 to-pink-500/20 dark:bg-white/5">
                                 <div className="absolute top-2 left-1.5 right-1.5 flex justify-center">
