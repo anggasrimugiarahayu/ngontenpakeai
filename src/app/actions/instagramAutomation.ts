@@ -733,59 +733,69 @@ export async function saveAutomationRuleAction(payload: {
 
   const existingId = payload.id || payload.ruleId;
 
-  if (existingId) {
-    // Update
-    const updated = await (db as any).instagramAutomationRule.update({
-      where: { id: existingId },
-      data: {
-        name: payload.name.trim(),
-        triggerType:
-          payload.postType === "SPECIFIC"
-            ? "SPECIFIC_POST"
-            : payload.postType === "NEXT"
-            ? "NEXT_POST"
-            : "ALL_POSTS",
-        specificPostId: payload.postType === "SPECIFIC" ? (payload.postId?.trim() || null) : null,
-        keywords: cleanKeywords,
-        commentReplies: cleanReplies,
-        dmMessage: cleanDm,
-        buttonText: payload.buttonText?.trim() || null,
-        buttonUrl: payload.buttonUrl?.trim() || null,
-        isActive: payload.isActive ?? true
-      }
-    });
+    const resolvedTriggerType =
+      payload.triggerType || (
+        payload.postType === "SPECIFIC" || payload.postType === "SPECIFIC_POST"
+          ? "SPECIFIC_POST"
+          : payload.postType === "NEXT" || payload.postType === "NEXT_POST"
+          ? "NEXT_POST"
+          : payload.postType === "ALL_STORIES" || payload.postType === "Semua Story"
+          ? "ALL_STORIES"
+          : payload.postType === "SPECIFIC_STORY" || payload.postType === "Story Tertentu"
+          ? "SPECIFIC_STORY"
+          : payload.postType === "STORY_MENTION" || payload.postType === "Story Mention"
+          ? "STORY_MENTION"
+          : "ALL_POSTS"
+      );
 
-    revalidateTag("instagram-automation");
-    revalidateTag(`instagram-automation-${session.user.id}`);
-    revalidatePath("/ruang-automation");
-    return { success: true, rule: JSON.parse(JSON.stringify(updated)) };
-  } else {
-    // Create
-    const created = await (db as any).instagramAutomationRule.create({
-      data: {
-        accountId: targetAccountId,
-        name: payload.name.trim() || `Aturan: ${cleanKeywords[0] || "Umum"}`,
-        triggerType:
-          payload.postType === "SPECIFIC"
-            ? "SPECIFIC_POST"
-            : payload.postType === "NEXT"
-            ? "NEXT_POST"
-            : "ALL_POSTS",
-        specificPostId: payload.postType === "SPECIFIC" ? (payload.postId?.trim() || null) : null,
-        keywords: cleanKeywords,
-        commentReplies: cleanReplies,
-        dmMessage: cleanDm,
-        buttonText: payload.buttonText?.trim() || null,
-        buttonUrl: payload.buttonUrl?.trim() || null,
-        isActive: payload.isActive ?? true
-      }
-    });
+    const resolvedSpecificPostId =
+      (payload.postType === "SPECIFIC" || payload.postType === "SPECIFIC_POST" || payload.postType === "SPECIFIC_STORY")
+        ? (payload.postId?.trim() || null)
+        : null;
 
-    revalidateTag("instagram-automation");
-    revalidateTag(`instagram-automation-${session.user.id}`);
-    revalidatePath("/ruang-automation");
-    return { success: true, rule: JSON.parse(JSON.stringify(created)) };
-  }
+    if (existingId) {
+      // Update
+      const updated = await (db as any).instagramAutomationRule.update({
+        where: { id: existingId },
+        data: {
+          name: payload.name.trim(),
+          triggerType: resolvedTriggerType,
+          specificPostId: resolvedSpecificPostId,
+          keywords: cleanKeywords,
+          commentReplies: cleanReplies,
+          dmMessage: cleanDm,
+          buttonText: payload.buttonText?.trim() || null,
+          buttonUrl: payload.buttonUrl?.trim() || null,
+          isActive: payload.isActive ?? true
+        }
+      });
+
+      revalidateTag("instagram-automation");
+      revalidateTag(`instagram-automation-${session.user.id}`);
+      revalidatePath("/ruang-automation");
+      return { success: true, rule: JSON.parse(JSON.stringify(updated)) };
+    } else {
+      // Create
+      const created = await (db as any).instagramAutomationRule.create({
+        data: {
+          accountId: targetAccountId,
+          name: payload.name.trim() || `Aturan: ${cleanKeywords[0] || "Umum"}`,
+          triggerType: resolvedTriggerType,
+          specificPostId: resolvedSpecificPostId,
+          keywords: cleanKeywords,
+          commentReplies: cleanReplies,
+          dmMessage: cleanDm,
+          buttonText: payload.buttonText?.trim() || null,
+          buttonUrl: payload.buttonUrl?.trim() || null,
+          isActive: payload.isActive ?? true
+        }
+      });
+
+      revalidateTag("instagram-automation");
+      revalidateTag(`instagram-automation-${session.user.id}`);
+      revalidatePath("/ruang-automation");
+      return { success: true, rule: JSON.parse(JSON.stringify(created)) };
+    }
 }
 
 /**

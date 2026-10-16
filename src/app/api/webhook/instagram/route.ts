@@ -867,7 +867,238 @@ export async function POST(req: NextRequest) {
           continue;
         }
 
-        // 2. Cek apakah user sedang berada di tahap Ask for Contact (mengirim teks balasan di DM)
+        // 2. Cek apakah ini Story Reply / Reaksi Story / Story Mention
+        const isStoryReply = Boolean(msgEvent.message?.reply_to?.story);
+        const isStoryMention = Boolean(
+          msgEvent.message?.attachments?.some((a: any) => a.type === "story_mention") ||
+          (msgEvent.message as any)?.story_mention ||
+          (msgEvent as any).story_mention
+        );
+        const storyId = msgEvent.message?.reply_to?.story?.id;
+        const messageId = msgEvent.message?.mid;
+
+        if ((isStoryReply || isStoryMention) && !msgEvent.message?.is_echo) {
+          console.log(`📸 [Meta Webhook] Story interaction detected from ${senderId}. StoryId: ${storyId}, text: "${msgText}"`);
+
+          // Deduplikasi Idempotency
+          if (messageId) {
+            const existingLog = await (prisma as any).instagramAutomationLog.findFirst({
+              where: { commentId: messageId },
+            });
+            if (existingLog) {
+              console.log(`⏩ [Meta Webhook] Story message ${messageId} already processed, skipping.`);
+              continue;
+            }
+          }
+
+          // Cari semua aturan aktif untuk akun ini
+          const activeRules = await (prisma as any).instagramAutomationRule.findMany({
+            where: {
+              accountId: account.id,
+              isActive: true,
+            },
+            orderBy: { createdAt: "desc" },
+          });
+
+          // Filter aturan Story yang sesuai dengan tipe pemicunya
+          let matchedRule: any = null;
+
+          if (isStoryReply) {
+            // Prioritas 1: SPECIFIC_STORY yang cocok dengan storyId
+            if (storyId) {
+              matchedRule = activeRules.find(
+                (r: any) => r.triggerType === "SPECIFIC_STORY" && r.specificPostId === storyId
+              );
+            }
+            // Prioritas 2: ALL_STORIES (semua story)
+            if (!matchedRule) {
+              matchedRule = activeRules.find((r: any) => r.triggerType === "ALL_STORIES");
+            }
+          } else if (isStoryMention) {
+            // Prioritas 1: STORY_MENTION
+            matchedRule = activeRules.find((r: any) => r.triggerType === "STORY_MENTION");
+          }
+
+          if (matchedRule) {
+            let ruleConfig: any = {};
+            try {
+              if (matchedRule.dmMessage && (matchedRule.dmMessage.startsWith("{") || matchedRule.dmMessage.includes('"mainMessage"'))) {
+                ruleConfig = JSON.parse(matchedRule.dmMessage);
+              }
+            } catch (e) {}
+
+            // Cek kecocokan kata kunci (keywords) jika triggerCommentType === "KEYWORDS"
+            let isTriggerMatched = true;
+            if (matchedRule.triggerCommentType === "KEYWORDS") {
+              const ruleKeywords = (matchedRule.keywords || "").split(",").map((k: string) => k.trim().toLowerCase()).filter(Boolean);
+              const userText = msgText.toLowerCase();
+              const ruleStyle = (ruleConfig.keywordRule || "Contains").toLowerCase();
+
+              if (ruleKeywords.length > 0) {
+                if (ruleStyle === "match") {
+                  isTriggerMatched = ruleKeywords.some((kw: string) => userText === kw);
+                } else if (ruleStyle === "starts with") {
+                  isTriggerMatched = ruleKeywords.some((kw: string) => userText.startsWith(kw));
+                } else {
+                  // Contains (default)
+                  isTriggerMatched = ruleKeywords.some((kw: string) => userText.includes(kw));
+                }
+              }
+            }
+
+            if (isTriggerMatched) {
+              console.log(`🎯 [Meta Webhook] Story Rule "${matchedRule.name}" matched for sender ${senderId}!`);
+
+              // A. Balas Reaksi Love (❤️) jika diaktifkan di konfigurasi aturan
+              if (ruleConfig.replyHeartReaction && messageId) {
+                console.log(`❤️ [Meta Webhook] Sending heart reaction to story reply ${messageId}`);
+                await postToMetaGraph(
+                  `/me/messages`,
+                  {
+                    recipient: { id: senderId },
+                    message: {
+                      reaction: {
+                        action: "react",
+                        emoji: "❤️",
+                        message_id: messageId,
+                      },
+                    },
+                  },
+                  account.accessToken
+                ).catch((err) => {
+                  console.warn("⚠️ [Meta Webhook] Failed to react with heart:", err);
+                });
+              }
+
+              // B. Ambil Profil & Status Follow Pengguna
+              const userProfile = await getIgUserProfile(senderId, account.accessToken);
+              const senderUsername = userProfile.username || "kak";
+
+              const initialMeta: Record<string, any> = {
+                senderId,
+                read: false,
+                sentAt: new Date().toISOString(),
+                isStory: true,
+                storyId: storyId || "story_mention",
+              };
+
+              let dmStatus = "SENT";
+              let failureReason = "";
+
+              // C. Eksekusi Funnel Pesan (Welcome -> Ask Follow -> Ask Contact -> Main Message)
+              try {
+                let firstDmPayload: any = null;
+
+                if (ruleConfig.featureWelcomeMessage && ruleConfig.welcomeMessage) {
+                  // 1. Pesan Pembuka
+                  initialMeta.awaitingWelcome = true;
+                  const welcomeText = resolveVariables(ruleConfig.welcomeMessage, senderUsername);
+                  const welcomeBtnLabel = ruleConfig.welcomeButtonLabel || "Ya, Saya Mau!";
+                  firstDmPayload =
+                    ruleConfig.welcomeMessageType === "Template Tombol"
+                      ? buildButtonTemplateMessage(welcomeText, [
+                          {
+                            type: "postback",
+                            title: welcomeBtnLabel.slice(0, 20),
+                            payload: `WELCOME_AGREE_${matchedRule.id}`,
+                          },
+                        ])
+                      : { text: welcomeText };
+                } else if (ruleConfig.featureAskForFollow && ruleConfig.askForFollowMessage) {
+                  // 2. Ask For Follow
+                  if (userProfile.isFollowing === true) {
+                    console.log(`✅ [Meta Webhook] User already follows, proceeding to main DM`);
+                    initialMeta.awaitingWelcome = false;
+                  } else {
+                    initialMeta.wasUnfollowed = true;
+                    const followText = resolveVariables(ruleConfig.askForFollowMessage, senderUsername);
+                    const followBtnLabel = ruleConfig.askForFollowButtonLabel || "Sudah mengikuti 🙌";
+                    firstDmPayload = buildButtonTemplateMessage(followText, [
+                      {
+                        type: "postback",
+                        title: followBtnLabel.slice(0, 20),
+                        payload: `CHECK_FOLLOW_${matchedRule.id}`,
+                      },
+                    ]);
+                  }
+                }
+
+                // 3. Jika belum diisi oleh Welcome / Ask Follow -> Cek Ask For Contact atau Pesan Utama
+                if (!firstDmPayload) {
+                  if (ruleConfig.featureAskForContact && ruleConfig.askContactMessage) {
+                    initialMeta.awaitingContact = true;
+                    initialMeta.askContactType = ruleConfig.askContactType || "Email Saja";
+                    firstDmPayload = { text: resolveVariables(ruleConfig.askContactMessage, senderUsername) };
+                  } else {
+                    // Pesan Utama Langsung
+                    initialMeta.mainSentAt = new Date().toISOString();
+                    const mainText = resolveVariables(ruleConfig.mainMessage || matchedRule.dmMessage || "", senderUsername);
+                    if (matchedRule.buttonText && matchedRule.buttonUrl) {
+                      const trackedUrl = buildTrackedUrl(
+                        origin,
+                        matchedRule.buttonUrl,
+                        matchedRule.id,
+                        ruleConfig.featureLinkTracking !== false,
+                        undefined,
+                        senderId
+                      );
+                      firstDmPayload = buildButtonTemplateMessage(mainText, [
+                        {
+                          type: "web_url",
+                          url: trackedUrl,
+                          title: matchedRule.buttonText.slice(0, 20),
+                        },
+                      ]);
+                    } else {
+                      firstDmPayload = { text: mainText };
+                    }
+                  }
+                }
+
+                const dmRes = await postToMetaGraph(
+                  `/me/messages`,
+                  {
+                    recipient: { id: senderId },
+                    message: firstDmPayload,
+                  },
+                  account.accessToken
+                );
+
+                if (!dmRes.ok) {
+                  const errDm = await dmRes.json().catch(() => ({}));
+                  dmStatus = "FAILED";
+                  failureReason = errDm?.error?.message || "Gagal mengirim DM Story";
+                  console.error(`❌ [Meta Webhook] Failed to send story reply DM:`, errDm);
+                } else {
+                  console.log(`✅ [Meta Webhook] Story automation DM sent successfully to ${senderId}`);
+                }
+              } catch (err: any) {
+                dmStatus = "FAILED";
+                failureReason = err.message || "Exception sending story DM";
+              }
+
+              // D. Catat Log ke Database
+              await (prisma as any).instagramAutomationLog.create({
+                data: {
+                  accountId: account.id,
+                  ruleId: matchedRule.id,
+                  fromUsername: senderUsername || "pengguna",
+                  commentText: isStoryMention
+                    ? `[Story Mention] ${msgText || ""}`.trim()
+                    : `[Story Reply] ${msgText || "Reaction"}`,
+                  commentId: messageId || `story_${Date.now()}`,
+                  replyCommentStatus: "SKIPPED",
+                  dmStatus: dmStatus,
+                  errorMessage: failureReason ? failureReason : stringifyLogMeta(initialMeta),
+                },
+              });
+
+              continue;
+            }
+          }
+        }
+
+        // 3. Cek apakah user sedang berada di tahap Ask for Contact (mengirim teks balasan di DM)
         if (msgText && !msgEvent.message?.is_echo) {
           const userProfile = await getIgUserProfile(senderId, account.accessToken);
           const senderUsername = userProfile.username || "kak";

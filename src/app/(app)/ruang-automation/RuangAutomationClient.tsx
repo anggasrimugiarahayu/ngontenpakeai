@@ -808,6 +808,7 @@ export default function RuangAutomationClient({
     askContactMessage: "Sip! Biar aksesnya langsung terkirim dan tersimpan aman di inbox kamu, boleh ketik Email aktif kamu di bawah ini ya 👇",
     askContactInvalidMessage: "Waduh, format emailnya kayaknya belum pas nih kak 😅 Coba cek dan ketik ulang email aktif kamu ya 🙏",
     featureLinkTracking: true,
+    replyHeartReaction: false,
     isActive: true,
   });
 
@@ -857,13 +858,14 @@ export default function RuangAutomationClient({
     setSelectedPost(defaultPost);
     const initialReply = "{Halo|Hai|Kak} @username, cek DM ya kak sudah kami kirimkan link detailnya! 😊";
     setActivePreviewTab("COMMENT");
+    const isCreatingStory = automationTab === "STORY";
     setRuleFormData({
       name: "",
-      targetOtomasi: "Postingan Tertentu",
-      postType: "SPECIFIC",
-      postId: defaultPost?.id || "",
+      targetOtomasi: isCreatingStory ? "Semua Story" : "Postingan Tertentu",
+      postType: isCreatingStory ? "ALL_STORIES" : "SPECIFIC",
+      postId: isCreatingStory ? "" : (defaultPost?.id || ""),
       triggerCommentType: "KEYWORDS",
-      keywords: "mau",
+      keywords: isCreatingStory ? "coba" : "mau",
       keywordRule: "Contains",
       messageType: "BUTTON_TEMPLATE",
       dmMessage: "Halo {first_name}! Terima kasih sudah tertarik. Ini link akses yang kamu minta:\nhttps://ruangcreativemuslim.com",
@@ -925,6 +927,7 @@ export default function RuangAutomationClient({
       askContactMessage: "Sip! Biar aksesnya langsung terkirim dan tersimpan aman di inbox kamu, boleh ketik Email aktif kamu di bawah ini ya 👇",
       askContactInvalidMessage: "Waduh, format emailnya kayaknya belum pas nih kak 😅 Coba cek dan ketik ulang email aktif kamu ya 🙏",
       featureLinkTracking: true,
+      replyHeartReaction: false,
       isActive: true,
     });
     setSpintaxPreview(parseSpintax(initialReply));
@@ -1008,6 +1011,12 @@ export default function RuangAutomationClient({
         ? "Postingan Tertentu"
         : rule.triggerType === "NEXT_POST"
         ? "Postingan Berikutnya"
+        : rule.triggerType === "ALL_STORIES" || config.targetOtomasi === "Semua Story"
+        ? "Semua Story"
+        : rule.triggerType === "SPECIFIC_STORY" || config.targetOtomasi === "Story Tertentu"
+        ? "Story Tertentu"
+        : rule.triggerType === "STORY_MENTION" || config.targetOtomasi === "Story Mention"
+        ? "Story Mention"
         : "Semua Postingan";
 
     const hasButtons = Boolean(rule.buttonText || rule.buttonUrl);
@@ -1038,6 +1047,12 @@ export default function RuangAutomationClient({
           ? "SPECIFIC"
           : rule.triggerType === "NEXT_POST"
           ? "NEXT"
+          : rule.triggerType === "ALL_STORIES" || config.targetOtomasi === "Semua Story"
+          ? "ALL_STORIES"
+          : rule.triggerType === "SPECIFIC_STORY" || config.targetOtomasi === "Story Tertentu"
+          ? "SPECIFIC_STORY"
+          : rule.triggerType === "STORY_MENTION" || config.targetOtomasi === "Story Mention"
+          ? "STORY_MENTION"
           : "ALL",
       postId: rule.specificPostId || matched.id,
       triggerCommentType: keywordsStr.trim() ? "KEYWORDS" : "ALL",
@@ -1093,6 +1108,7 @@ export default function RuangAutomationClient({
       askContactMessage: config.askContactMessage || "Sip! Biar aksesnya langsung terkirim dan tersimpan aman di inbox kamu, boleh ketik Email aktif kamu di bawah ini ya 👇",
       askContactInvalidMessage: config.askContactInvalidMessage || "Waduh, format emailnya kayaknya belum pas nih kak 😅 Coba cek dan ketik ulang email aktif kamu ya 🙏",
       featureLinkTracking: config.featureLinkTracking ?? true,
+      replyHeartReaction: config.replyHeartReaction ?? false,
       isActive: rule.isActive ?? true,
     });
     setSpintaxPreview(parseSpintax(replyTemplateStr || commentRepliesArray[0] || "Pesan terkirim! 🚀"));
@@ -1273,10 +1289,16 @@ export default function RuangAutomationClient({
       followUpButtonLabel: ruleFormData.followUpButtonLabel,
       featureReplyComment: ruleFormData.featureReplyComment,
       featureLinkTracking: ruleFormData.featureLinkTracking,
+      replyHeartReaction: ruleFormData.replyHeartReaction,
+      targetOtomasi: ruleFormData.targetOtomasi,
+      keywordRule: ruleFormData.keywordRule,
+      triggerCommentType: ruleFormData.triggerCommentType,
       postPermalink: selectedPost?.permalink || null,
       postCoverUrl: postCoverUrl || null,
     };
     const serializedDm = JSON.stringify(extendedConfig);
+
+    const isStoryTarget = ["Semua Story", "Story Tertentu", "Story Mention"].includes(ruleFormData.targetOtomasi);
 
     const targetAccountId = selectedAgentId || account?.id;
     const postType =
@@ -1284,18 +1306,38 @@ export default function RuangAutomationClient({
         ? "SPECIFIC"
         : ruleFormData.targetOtomasi === "Postingan Berikutnya"
         ? "NEXT"
+        : ruleFormData.targetOtomasi === "Semua Story"
+        ? "ALL_STORIES"
+        : ruleFormData.targetOtomasi === "Story Tertentu"
+        ? "SPECIFIC_STORY"
+        : ruleFormData.targetOtomasi === "Story Mention"
+        ? "STORY_MENTION"
         : "ALL";
+
+    const triggerType =
+      postType === "SPECIFIC"
+        ? "SPECIFIC_POST"
+        : postType === "NEXT"
+        ? "NEXT_POST"
+        : postType === "ALL_STORIES"
+        ? "ALL_STORIES"
+        : postType === "SPECIFIC_STORY"
+        ? "SPECIFIC_STORY"
+        : postType === "STORY_MENTION"
+        ? "STORY_MENTION"
+        : "ALL_POSTS";
 
     const payload = {
       ruleId: editingRule?.id,
       accountId: targetAccountId,
       name: ruleFormData.name,
       postType,
+      triggerType,
       postId: chosenPostId,
       buttonUrl: buttonUrl || undefined,
       buttonText: buttonText || undefined,
       keywords: keywordArray,
-      commentReplies: ruleFormData.featureReplyComment
+      commentReplies: (!isStoryTarget && ruleFormData.featureReplyComment)
         ? (ruleFormData.commentReplyVariations.filter((v) => v.trim().length > 0).length > 0
             ? ruleFormData.commentReplyVariations.filter((v) => v.trim().length > 0)
             : ["Pesan terkirim! 🚀"])
@@ -1310,12 +1352,7 @@ export default function RuangAutomationClient({
       id: optimisticId,
       accountId: targetAccountId || "temp",
       name: payload.name,
-      triggerType:
-        payload.postType === "SPECIFIC"
-          ? "SPECIFIC_POST"
-          : payload.postType === "NEXT"
-          ? "NEXT_POST"
-          : "ALL_POSTS",
+      triggerType: payload.triggerType,
       specificPostId: payload.postId || null,
       buttonUrl: buttonUrl || null,
       buttonText: buttonText || null,
@@ -1435,9 +1472,18 @@ export default function RuangAutomationClient({
   const stats = data?.stats || { totalComments: 0, totalDms: 0 };
   const logs = data?.logs || [];
 
+  const isStoryRule = (r: any) =>
+    ["ALL_STORIES", "SPECIFIC_STORY", "STORY_MENTION"].includes(r.triggerType) ||
+    ["Semua Story", "Story Tertentu", "Story Mention"].includes(parseClientRuleConfig(r.dmMessage)?.targetOtomasi);
+
+  const isPostRule = (r: any) => !isStoryRule(r) && r.triggerType !== "LIVE" && r.triggerType !== "DM";
+
   // Filtered rules according to tab and filter dropdown
   const filteredRules = rules.filter((rule: any) => {
-    if (automationTab !== "POST") return false;
+    if (automationTab === "POST" && !isPostRule(rule)) return false;
+    if (automationTab === "STORY" && !isStoryRule(rule)) return false;
+    if (automationTab === "LIVE" && rule.triggerType !== "LIVE") return false;
+    if (automationTab === "DM" && rule.triggerType !== "DM") return false;
     if (filterStatus === "ACTIVE") return rule.isActive;
     if (filterStatus === "INACTIVE") return !rule.isActive;
     return true;
@@ -1445,6 +1491,7 @@ export default function RuangAutomationClient({
 
   // Progressive disclosure check for rule creation studio
   const isBasicInfoFilled = Boolean(ruleFormData.name.trim()) && Boolean(ruleFormData.targetOtomasi);
+  const isStoryTarget = ["Semua Story", "Story Tertentu", "Story Mention"].includes(ruleFormData.targetOtomasi);
 
   // Active simulated button for DM interactive preview
   const activeSimulatedButton =
@@ -2344,7 +2391,7 @@ export default function RuangAutomationClient({
             {filteredRules.length === 0 ? (
               <div className="text-center py-16 px-4 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl space-y-4 bg-white dark:bg-[#18181b]">
                 <div className="w-14 h-14 mx-auto rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 flex items-center justify-center">
-                  <Bot className="w-7 h-7" />
+                  {automationTab === "STORY" ? <Camera className="w-7 h-7 text-pink-500" /> : <Bot className="w-7 h-7" />}
                 </div>
                 <div className="space-y-1">
                   <h4 className="font-bold text-gray-900 dark:text-white">
@@ -2352,14 +2399,29 @@ export default function RuangAutomationClient({
                       ? filterStatus !== "ALL" 
                         ? "Tidak ada aturan yang sesuai filter" 
                         : "Belum Ada Post Automation" 
-                      : `${automationTab === "STORY" ? "Story" : automationTab === "LIVE" ? "Live" : "DM"} Automations Segera Hadir`}
+                      : automationTab === "STORY"
+                      ? filterStatus !== "ALL"
+                        ? "Tidak ada aturan yang sesuai filter"
+                        : "Belum Ada Story Automation"
+                      : `${automationTab === "LIVE" ? "Live" : "DM"} Automations Segera Hadir`}
                   </h4>
                   <p className="text-sm text-gray-500 max-w-md mx-auto">
                     {automationTab === "POST"
                       ? "Buat aturan automasi postingan pertama Anda agar sistem membalas komentar dan mengirim link ke DM followers secara instan."
+                      : automationTab === "STORY"
+                      ? "Buat aturan automasi Story pertama Anda untuk membalas reaksi/reply story dan kirim DM instan 24/7."
                       : "Fitur automasi ini sedang dalam pengembangan dan akan segera aktif via pembaruan Meta Graph API."}
                   </p>
                 </div>
+                {automationTab === "STORY" && isAccountLinked && (
+                  <button
+                    onClick={handleOpenAddRuleModal}
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rn-accent text-white font-bold text-xs shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    Buat Story Automation
+                  </button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -2409,7 +2471,49 @@ export default function RuangAutomationClient({
                       {isAccountLinked && (
                         <div className="w-[105px] sm:w-[125px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
                           <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
-                            {rule.triggerType === "SPECIFIC_POST" ? (
+                            {rule.triggerType === "ALL_STORIES" || ruleConfig.targetOtomasi === "Semua Story" ? (
+                              <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-fuchsia-600/20 via-pink-500/20 to-amber-500/20 dark:bg-white/5">
+                                <div className="absolute top-2 left-1.5 right-1.5 flex justify-center">
+                                  <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider shadow-sm truncate">
+                                    Semua Story
+                                  </span>
+                                </div>
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-fuchsia-600 flex items-center justify-center text-white mb-1 mt-3 shadow-sm">
+                                  <Camera className="w-4 h-4" />
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
+                                  Semua<br />Story IG
+                                </span>
+                              </div>
+                            ) : rule.triggerType === "SPECIFIC_STORY" || ruleConfig.targetOtomasi === "Story Tertentu" ? (
+                              <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-pink-500/20 via-rose-500/15 to-purple-500/20 dark:bg-white/5">
+                                <div className="absolute top-2 left-1.5 right-1.5 flex justify-center">
+                                  <span className="px-2 py-0.5 rounded-md bg-pink-600 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider shadow-sm truncate">
+                                    Story Tertentu
+                                  </span>
+                                </div>
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center text-white mb-1 mt-3 shadow-sm">
+                                  <Camera className="w-4 h-4" />
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
+                                  Story<br />Tertentu
+                                </span>
+                              </div>
+                            ) : rule.triggerType === "STORY_MENTION" || ruleConfig.targetOtomasi === "Story Mention" ? (
+                              <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-indigo-500/20 via-purple-500/15 to-pink-500/20 dark:bg-white/5">
+                                <div className="absolute top-2 left-1.5 right-1.5 flex justify-center">
+                                  <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider shadow-sm truncate">
+                                    Story Mention
+                                  </span>
+                                </div>
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white mb-1 mt-3 shadow-sm">
+                                  <Sparkles className="w-4 h-4" />
+                                </div>
+                                <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
+                                  Story<br />Mention
+                                </span>
+                              </div>
+                            ) : rule.triggerType === "SPECIFIC_POST" ? (
                               (() => {
                                 const isDirectImg =
                                   typeof rule.buttonUrl === "string" &&
@@ -2634,6 +2738,11 @@ export default function RuangAutomationClient({
                                     {kw}
                                   </span>
                                 ))
+                              )}
+                              {ruleConfig.replyHeartReaction && (
+                                <span className="font-semibold rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 inline-flex items-center gap-1">
+                                  ❤️ Balas Reaksi
+                                </span>
                               )}
                             </div>
                           </div>
@@ -3061,6 +3170,12 @@ export default function RuangAutomationClient({
                                           ? "SPECIFIC"
                                           : item === "Postingan Berikutnya"
                                           ? "NEXT"
+                                          : item === "Semua Story"
+                                          ? "ALL_STORIES"
+                                          : item === "Story Tertentu"
+                                          ? "SPECIFIC_STORY"
+                                          : item === "Story Mention"
+                                          ? "STORY_MENTION"
                                           : "ALL",
                                     });
                                     setIsTargetDropdownOpen(false);
@@ -3187,8 +3302,12 @@ export default function RuangAutomationClient({
                         className="space-y-3 pt-2"
                       >
                         <div>
-                          <h3 className="text-sm font-bold text-gray-900 dark:text-white">Trigger Komentar</h3>
-                          <p className="text-xs text-gray-500">Komentar yang akan memicu otomasi</p>
+                          <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+                            {isStoryTarget ? "Pemicu Pesan" : "Trigger Komentar"}
+                          </h3>
+                          <p className="text-xs text-gray-500">
+                            {isStoryTarget ? "Pesan yang akan memicu otomasi" : "Komentar yang akan memicu otomasi"}
+                          </p>
                         </div>
 
                         <div className="space-y-2.5">
@@ -3236,6 +3355,38 @@ export default function RuangAutomationClient({
                                   <p className="text-[10px] text-gray-400">
                                     Gunakan koma untuk memisahkan beberapa kata
                                   </p>
+
+                                  {/* Quick Reaction Emoji Bar untuk Story */}
+                                  {isStoryTarget && (
+                                    <div className="pt-1.5 space-y-1.5">
+                                      <div className="flex items-center gap-1.5 flex-wrap">
+                                        {["😂", "😮", "😍", "😢", "👏", "🔥"].map((emoji) => (
+                                          <button
+                                            key={emoji}
+                                            type="button"
+                                            onClick={() => {
+                                              const current = ruleFormData.keywords.trim();
+                                              if (!current) {
+                                                setRuleFormData({ ...ruleFormData, keywords: emoji });
+                                              } else {
+                                                const parts = current.split(",").map((p) => p.trim());
+                                                if (!parts.includes(emoji)) {
+                                                  setRuleFormData({ ...ruleFormData, keywords: `${current}, ${emoji}` });
+                                                }
+                                              }
+                                            }}
+                                            className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 flex items-center justify-center text-base transition-transform hover:scale-110 active:scale-95 cursor-pointer shadow-2xs"
+                                            title={`Tambahkan emoji ${emoji}`}
+                                          >
+                                            {emoji}
+                                          </button>
+                                        ))}
+                                      </div>
+                                      <p className="text-[10px] text-gray-400">
+                                        Klik emoji di atas untuk reaksi cepat story
+                                      </p>
+                                    </div>
+                                  )}
                                 </div>
 
                                 {/* Ubah aturan toggle */}
@@ -3331,6 +3482,30 @@ export default function RuangAutomationClient({
                       </div>
                     </div>
                   </div>
+
+                  {/* Balas Reaksi Card (Hanya untuk Story Automation) */}
+                  {isStoryTarget && (
+                    <div className="p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] flex items-center justify-between gap-3 animate-in fade-in duration-200">
+                      <div className="space-y-0.5">
+                        <div className="flex items-center gap-1.5">
+                          <span className="text-xs font-bold text-gray-900 dark:text-white">Balas Reaksi</span>
+                          <span className="text-sm">❤️</span>
+                        </div>
+                        <p className="text-[11px] text-gray-500">Balas ❤️ pada balasan story Anda</p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setRuleFormData({ ...ruleFormData, replyHeartReaction: !ruleFormData.replyHeartReaction })}
+                        className={`w-10 h-6 rounded-full transition-colors relative p-0.5 cursor-pointer ${
+                          ruleFormData.replyHeartReaction ? "bg-gray-900 dark:bg-white" : "bg-gray-200 dark:bg-white/15"
+                        }`}
+                      >
+                        <div className={`w-5 h-5 rounded-full bg-white dark:bg-black shadow-sm transition-transform ${
+                          ruleFormData.replyHeartReaction ? "translate-x-4" : "translate-x-0"
+                        }`} />
+                      </button>
+                    </div>
+                  )}
 
                   {/* 5. Pesan yang Dikirim Setelah Komentar */}
                   <div
@@ -4246,11 +4421,12 @@ export default function RuangAutomationClient({
                         )}
                       </div>
 
-                      {/* 2. Balasan Komentar */}
-                      <div
-                        onClick={() => setActivePreviewTab("COMMENT")}
-                        className="p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3"
-                      >
+                      {/* 2. Balasan Komentar (Hanya untuk Post / Reels, sembunyikan untuk Story) */}
+                      {!isStoryTarget && (
+                        <div
+                          onClick={() => setActivePreviewTab("COMMENT")}
+                          className="p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3"
+                        >
                         <div className="flex items-center justify-between gap-3">
                           <div className="space-y-0.5">
                             <span className="text-xs font-bold text-gray-900 dark:text-white">Balasan Komentar</span>
@@ -4440,7 +4616,8 @@ export default function RuangAutomationClient({
                             </div>
                           </div>
                         )}
-                      </div>
+                        </div>
+                      )}
 
                       {/* 3. Pesan Pembuka */}
                       <div
@@ -4955,17 +5132,17 @@ export default function RuangAutomationClient({
                 {/* Switcher Tab Pratinjau: Postingan & Komentar vs Pesan DM */}
                 <div className="flex items-center justify-center pt-2 pb-1">
                   <div className="p-1 rounded-xl bg-gray-200/80 dark:bg-white/10 flex items-center gap-1 text-xs font-semibold">
-                    <button
-                      type="button"
-                      onClick={() => setActivePreviewTab("COMMENT")}
-                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                        activePreviewTab === "COMMENT"
-                          ? "bg-white dark:bg-[#18181b] text-gray-900 dark:text-white shadow-xs"
-                          : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
-                      }`}
-                    >
-                      Postingan & Komentar
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => setActivePreviewTab("COMMENT")}
+                        className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                          activePreviewTab === "COMMENT"
+                            ? "bg-white dark:bg-[#18181b] text-gray-900 dark:text-white shadow-xs"
+                            : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                        }`}
+                      >
+                        {isStoryTarget ? "Story Instagram" : "Postingan & Komentar"}
+                      </button>
                     <button
                       type="button"
                       onClick={() => setActivePreviewTab("DM")}
@@ -5052,9 +5229,52 @@ export default function RuangAutomationClient({
                             {/* Centered Trigger Notification Badge */}
                             <div className="flex justify-center pt-1">
                               <span className="px-3 py-1 rounded-full bg-gray-200/90 dark:bg-white/10 text-[10px] font-medium text-gray-600 dark:text-gray-300 shadow-2xs text-center">
-                                User commented on your post
+                                {isStoryTarget ? "User replied to your story" : "User commented on your post"}
                               </span>
                             </div>
+
+                            {/* Story Quoted User Bubble (when isStoryTarget) */}
+                            {isStoryTarget && (
+                              <div className="flex justify-end pt-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                                <div className="relative group max-w-[78%]">
+                                  {/* User Bubble with quoted story preview */}
+                                  <div className="rounded-2xl rounded-tr-xs bg-[#7048e8] text-white p-2.5 shadow-xs space-y-1.5">
+                                    {/* Quoted Story Card Header */}
+                                    <div className="flex items-center gap-2 p-1.5 rounded-xl bg-white/15 border border-white/20 text-[10px]">
+                                      <div className="w-4 h-6 rounded bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 shrink-0 flex items-center justify-center shadow-2xs">
+                                        <InstagramIcon className="w-2.5 h-2.5 text-white" />
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <span className="font-semibold block truncate text-white/95">
+                                          {ruleFormData.targetOtomasi === "Semua Story"
+                                            ? "All Stories"
+                                            : ruleFormData.targetOtomasi === "Story Mention"
+                                            ? "Story Mention"
+                                            : "Story"}
+                                        </span>
+                                        <span className="text-[9px] text-white/70 block truncate">
+                                          Balasan Cerita
+                                        </span>
+                                      </div>
+                                    </div>
+
+                                    {/* User Text or Reaction */}
+                                    <div className="text-xs font-semibold pl-1 pr-1 break-words">
+                                      {ruleFormData.triggerCommentType === "ALL"
+                                        ? "🔥"
+                                        : (ruleFormData.keywords.split(",")[0]?.trim() || ruleFormData.keywords.trim() || "🔥")}
+                                    </div>
+                                  </div>
+
+                                  {/* Small Heart Badge on User Message if Balas Reaksi is active */}
+                                  {ruleFormData.replyHeartReaction && (
+                                    <div className="absolute -bottom-2 -right-1 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/15 rounded-full px-1.5 py-0.5 shadow-md flex items-center justify-center animate-in zoom-in-75 duration-200">
+                                      <span className="text-xs leading-none">❤️</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            )}
 
                             {/* 0. PESAN PEMBUKA (Icebreaker / Welcome Message) */}
                             {ruleFormData.featureWelcomeMessage && (
@@ -5475,6 +5695,98 @@ export default function RuangAutomationClient({
                                 <Plus className="w-3.5 h-3.5 hover:text-gray-900 dark:hover:text-white cursor-pointer" />
                               </div>
                             </div>
+                          </div>
+                        </div>
+                      ) : isStoryTarget ? (
+                        /* INSTAGRAM STORY VIEW */
+                        <div className="flex-1 flex flex-col overflow-hidden relative bg-black text-white">
+                          {/* 1. Top Story Progress Bars */}
+                          <div className="flex items-center gap-1 px-3 pt-2.5 z-20 shrink-0">
+                            <div className="flex-1 h-[2px] rounded-full bg-white shadow-xs" />
+                            <div className="flex-1 h-[2px] rounded-full bg-white/40" />
+                            <div className="flex-1 h-[2px] rounded-full bg-white/40" />
+                          </div>
+
+                          {/* 2. Top Story Header (User Info + Close) */}
+                          <div className="flex items-center justify-between px-3 py-2 z-20 shrink-0">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-yellow-400 via-rose-500 to-purple-600 p-[1.5px] shrink-0 overflow-hidden shadow-xs">
+                                <img
+                                  src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
+                                  alt={account?.username || "ruangcreativemuslim"}
+                                  className="w-full h-full object-cover rounded-full"
+                                  onError={(e) => {
+                                    (e.currentTarget as HTMLImageElement).src = "/images/instagram/rcm-avatar.png";
+                                  }}
+                                />
+                              </div>
+                              <span className="font-bold text-xs text-white truncate max-w-[120px]">
+                                {account?.username || "ruangcreativemuslim"}
+                              </span>
+                              <span className="text-[11px] text-white/70 shrink-0">10m</span>
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => setActivePreviewTab("DM")}
+                              className="text-white/80 hover:text-white transition-opacity p-1 cursor-pointer"
+                              title="Tutup Story"
+                            >
+                              <X className="w-4 h-4" />
+                            </button>
+                          </div>
+
+                          {/* 3. Story Visual Canvas */}
+                          <div className="flex-1 relative flex flex-col items-center justify-center p-6 text-center overflow-hidden bg-gradient-to-br from-[#833ab4] via-[#fd1d1d] to-[#fcb045]">
+                            {/* Decorative background glow rings */}
+                            <div className="absolute inset-0 bg-radial from-white/10 to-transparent pointer-events-none" />
+
+                            {/* Center Floating Story Sticker Card */}
+                            <div className="w-full max-w-[210px] p-4 rounded-2xl bg-black/40 backdrop-blur-md border border-white/20 text-white shadow-2xl space-y-2.5 animate-in zoom-in-95 duration-200">
+                              <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-pink-500 flex items-center justify-center mx-auto shadow-md">
+                                <InstagramIcon className="w-5 h-5 text-white" />
+                              </div>
+
+                              <div className="space-y-0.5">
+                                <span className="inline-block px-2 py-0.5 rounded-full bg-white/20 text-[9px] font-bold tracking-wider uppercase text-white/95">
+                                  {ruleFormData.targetOtomasi}
+                                </span>
+                                <h4 className="text-xs font-bold text-white line-clamp-2 pt-1 leading-snug">
+                                  {ruleFormData.name.trim() || "Otomasi Story"}
+                                </h4>
+                              </div>
+
+                              <div className="pt-1 border-t border-white/15">
+                                <p className="text-[10px] text-white/80 leading-tight">
+                                  {ruleFormData.triggerCommentType === "ALL"
+                                    ? "Balas story apa saja untuk memicu DM otomatis"
+                                    : `Ketik "${ruleFormData.keywords.split(",")[0]?.trim() || "kata kunci"}" untuk info lengkap`}
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* 4. Bottom Story Interactive Bar (Input + Heart + Send) */}
+                          <div className="flex items-center gap-2.5 px-3 py-3 z-20 shrink-0 bg-black/40 backdrop-blur-sm">
+                            <div className="flex-1 px-3 py-2 rounded-full border border-white/40 bg-white/10 text-[11px] text-white/70 flex items-center justify-between">
+                              <span className="truncate">Kirim pesan...</span>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => setRuleFormData({ ...ruleFormData, replyHeartReaction: !ruleFormData.replyHeartReaction })}
+                              className="p-1 hover:scale-110 active:scale-90 transition-transform cursor-pointer"
+                              title="Kirim Reaksi Love"
+                            >
+                              <Heart className={`w-5 h-5 ${ruleFormData.replyHeartReaction ? "text-rose-500 fill-rose-500" : "text-white"}`} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setActivePreviewTab("DM")}
+                              className="p-1 hover:scale-110 active:scale-90 transition-transform cursor-pointer"
+                              title="Buka DM"
+                            >
+                              <Send className="w-5 h-5 text-white" />
+                            </button>
                           </div>
                         </div>
                       ) : (
