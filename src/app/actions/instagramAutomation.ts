@@ -665,6 +665,130 @@ export async function getInstagramFeedMediaAction(limit: number = 12, accountId?
 }
 
 /**
+ * Server Action: Mengambil Daftar Story Aktif (24 Jam Terakhir) dari Meta Graph API
+ */
+export async function getInstagramStoriesAction(limit: number = 20, accountId?: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return { success: false, error: "Silakan login terlebih dahulu", stories: [] };
+    }
+
+    const userId = session.user.id;
+    const db = getDb();
+    let account: any = null;
+
+    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    if (accountId) {
+      account = await (db as any).instagramAccount.findFirst({
+        where: isAdmin
+          ? { id: accountId }
+          : {
+              id: accountId,
+              OR: [
+                { userId },
+                { user: { email: session.user.email || "" } }
+              ]
+            },
+      });
+    } else {
+      account = await (db as any).instagramAccount.findFirst({
+        where: isAdmin
+          ? { isActive: true }
+          : {
+              OR: [
+                { userId },
+                { user: { email: session.user.email || "" } }
+              ],
+              isActive: true
+            },
+      });
+    }
+
+    const token = account?.accessToken || process.env.INSTAGRAM_ACCESS_TOKEN;
+    const instagramId = account?.instagramId;
+
+    if (!token) {
+      return { success: false, error: "Akun Instagram belum terhubung.", stories: [] };
+    }
+
+    let storyItems: any[] = [];
+    let metaErrorMessage: string | null = null;
+
+    // 1. Panggil Instagram Graph API untuk /me/stories
+    try {
+      const igUrl = `https://graph.instagram.com/me/stories?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=${limit}&access_token=${token}`;
+      const res = await fetch(igUrl, { cache: "no-store" });
+      if (res.ok) {
+        const json = await res.json();
+        if (Array.isArray(json.data)) {
+          storyItems = json.data;
+        }
+      } else {
+        const errJson = await res.json().catch(() => null);
+        if (errJson?.error?.message) {
+          metaErrorMessage = errJson.error.message;
+        }
+      }
+    } catch (e: any) {
+      console.warn("Direct Instagram Graph API stories fetch warning:", e.message || e);
+    }
+
+    // 2. Jika belum dapat atau token Page, coba Facebook Graph API
+    if (storyItems.length === 0 && instagramId && !token.startsWith("IG")) {
+      try {
+        const fbUrl = `https://graph.facebook.com/v22.0/${instagramId}/stories?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp&limit=${limit}&access_token=${token}`;
+        const res = await fetch(fbUrl, { cache: "no-store" });
+        if (res.ok) {
+          const json = await res.json();
+          if (Array.isArray(json.data)) {
+            storyItems = json.data;
+          }
+        }
+      } catch (e: any) {
+        console.warn("Facebook Graph API stories fetch warning:", e.message || e);
+      }
+    }
+
+    const formattedStories = storyItems.map((item: any) => {
+      const img = item.media_url || item.thumbnail_url || "";
+      const dateObj = item.timestamp ? new Date(item.timestamp) : new Date();
+      const formattedDate = dateObj.toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+
+      return {
+        id: item.id,
+        title: item.caption ? item.caption.slice(0, 50) : "Instagram Story",
+        caption: item.caption || "",
+        image: img,
+        thumb: item.thumbnail_url || img,
+        mediaType: item.media_type || "IMAGE",
+        permalink: item.permalink || "",
+        date: formattedDate,
+        rawTimestamp: item.timestamp,
+      };
+    });
+
+    return {
+      success: true,
+      isLive: true,
+      stories: formattedStories,
+    };
+  } catch (err: any) {
+    console.error("getInstagramStoriesAction exception:", err);
+    return {
+      success: false,
+      error: err.message || "Gagal mengambil stories Instagram dari Meta API",
+      stories: [],
+    };
+  }
+}
+
+/**
  * Server Action: Menyimpan (Create / Update) Aturan Automasi
  */
 export async function saveAutomationRuleAction(payload: {

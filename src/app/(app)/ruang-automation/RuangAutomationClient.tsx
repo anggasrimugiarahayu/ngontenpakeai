@@ -69,6 +69,7 @@ import {
   connectInstagramAccountAction,
   disconnectInstagramAccountAction,
   getInstagramFeedMediaAction,
+  getInstagramStoriesAction,
   retryFailedAutomationLogsAction,
   rewindAutomationCommentsAction
 } from "@/app/actions/instagramAutomation";
@@ -732,6 +733,7 @@ export default function RuangAutomationClient({
   const [openButtonDropdown, setOpenButtonDropdown] = useState<{ id: string; type: "label" | "action" } | null>(null);
   const [simulatedButtonId, setSimulatedButtonId] = useState<string | null>(null);
   const [selectedPost, setSelectedPost] = useState<any>(null);
+  const [selectedStory, setSelectedStory] = useState<any>(null);
   const [showAllPostsModal, setShowAllPostsModal] = useState(false);
   const [isKeywordRuleOpen, setIsKeywordRuleOpen] = useState(false);
   const [detailRuleId, setDetailRuleId] = useState<string | null>(null);
@@ -842,6 +844,38 @@ export default function RuangAutomationClient({
       showToast("success", "Feed Instagram berhasil diperbarui!");
     } catch {
       showToast("error", "Gagal menyinkronkan feed Instagram.");
+    }
+  };
+
+  // Real Instagram Stories managed by SWR
+  const {
+    data: storiesData,
+    isLoading: isLoadingStories,
+    isValidating: isValidatingStories,
+    mutate: mutateStories,
+  } = useSWR(
+    selectedAgentId && isAccountLinked ? ["instagramStories", selectedAgentId] : null,
+    ([, agentId]) => getInstagramStoriesAction(20, agentId),
+    {
+      revalidateOnFocus: false,
+      revalidateIfStale: false,
+      dedupingInterval: 60000,
+    }
+  );
+
+  const activeStories: any[] = (isAccountLinked && storiesData?.success && Array.isArray(storiesData.stories))
+    ? storiesData.stories
+    : [];
+  const isStoriesLive = !!storiesData?.isLive;
+
+  // Manual resync stories trigger
+  const handleRefreshStories = async () => {
+    try {
+      showToast("info", "Menyinkronkan story aktif dari Instagram...");
+      await mutateStories();
+      showToast("success", "Story Instagram berhasil diperbarui!");
+    } catch {
+      showToast("error", "Gagal menyinkronkan story Instagram.");
     }
   };
 
@@ -966,6 +1000,20 @@ export default function RuangAutomationClient({
       matched = feedPosts[0] || null;
     }
     setSelectedPost(matched);
+
+    let matchedStory = activeStories.find((s) => s.id === rule.specificPostId);
+    if (!matchedStory && rule.specificPostId) {
+      matchedStory = {
+        id: rule.specificPostId,
+        title: rule.name || "Story Terpilih",
+        image: null,
+        thumb: null,
+        date: "Story",
+      };
+    } else if (!matchedStory) {
+      matchedStory = activeStories[0] || null;
+    }
+    setSelectedStory(matchedStory);
     const keywordsStr = Array.isArray(rule.keywords)
       ? rule.keywords.join(", ")
       : typeof rule.keywords === "string"
@@ -1254,10 +1302,14 @@ export default function RuangAutomationClient({
 
     const postCoverUrl = ruleFormData.targetOtomasi === "Postingan Tertentu"
       ? (selectedPost?.image || selectedPost?.thumb || null)
+      : ruleFormData.targetOtomasi === "Story Tertentu"
+      ? (selectedStory?.image || selectedStory?.thumb || null)
       : null;
 
     const chosenPostId = ruleFormData.targetOtomasi === "Postingan Tertentu"
       ? (selectedPost?.id || ruleFormData.postId || (feedPosts[0]?.id) || "post_1")
+      : ruleFormData.targetOtomasi === "Story Tertentu"
+      ? (selectedStory?.id || ruleFormData.postId || (activeStories[0]?.id) || "story_1")
       : undefined;
 
     const primaryButton = ruleFormData.buttons && ruleFormData.buttons.length > 0 ? ruleFormData.buttons[0] : null;
@@ -3271,6 +3323,126 @@ export default function RuangAutomationClient({
                                 {post.mediaType === "VIDEO" && (
                                   <div className="absolute top-1 right-1 bg-black/70 rounded px-1 py-0.5 text-[8px] font-bold text-white">
                                     REEL
+                                  </div>
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* 3b. Pilih Story (untuk Story Tertentu) */}
+                  {ruleFormData.targetOtomasi === "Story Tertentu" && (
+                    <div className="space-y-2.5 pt-1 animate-in fade-in duration-200">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <label className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                            Pilih Story Aktif
+                          </label>
+                          {isStoriesLive && isAccountLinked && activeStories.length > 0 && (
+                            <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-pink-500/10 text-pink-600 dark:text-pink-400 border border-pink-500/20 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-pink-500 animate-pulse" />
+                              STORY LIVE
+                            </span>
+                          )}
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleRefreshStories}
+                          className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
+                        >
+                          <RefreshCw className={`w-3 h-3 ${isValidatingStories ? "animate-spin" : ""}`} />
+                          <span>Muat Ulang</span>
+                        </button>
+                      </div>
+
+                      {!isAccountLinked ? (
+                        <div className="p-3.5 rounded-xl border border-amber-200 dark:border-amber-500/20 bg-amber-50/70 dark:bg-amber-500/5 text-xs text-amber-800 dark:text-amber-300 flex items-start gap-2.5">
+                          <AlertCircle className="w-4 h-4 shrink-0 text-amber-500 mt-0.5" />
+                          <div className="space-y-1">
+                            <p className="font-bold">Akun Instagram Belum Terhubung</p>
+                            <p className="text-[11px] text-amber-700/80 dark:text-amber-400/80 leading-relaxed">
+                              Daftar story aktif Anda tidak dapat dimuat karena akun belum terhubung.
+                            </p>
+                          </div>
+                        </div>
+                      ) : isLoadingStories ? (
+                        <div className="p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 flex items-center justify-center gap-2 text-xs text-gray-500">
+                          <RefreshCw className="w-4 h-4 animate-spin text-gray-400" />
+                          <span>Memeriksa story aktif dari Meta API...</span>
+                        </div>
+                      ) : activeStories.length === 0 ? (
+                        <div className="p-4 rounded-xl border border-blue-200/70 dark:border-blue-500/20 bg-blue-50/50 dark:bg-blue-950/20 space-y-2">
+                          <div className="flex items-start gap-2.5">
+                            <Info className="w-4 h-4 text-blue-500 shrink-0 mt-0.5" />
+                            <div className="space-y-1">
+                              <p className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                                Belum Ada Story Aktif dalam 24 Jam Terakhir
+                              </p>
+                              <p className="text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed">
+                                Meta Graph API hanya mendeteksi Story yang sedang tayang (maksimal 24 jam). Story yang sudah lewat 24 jam atau berada di <strong>Sorotan / Highlights</strong> tidak dikirim oleh Meta.
+                              </p>
+                              <div className="pt-1.5 flex items-center gap-2">
+                                <button
+                                  type="button"
+                                  onClick={handleRefreshStories}
+                                  className="px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold flex items-center gap-1 shadow-2xs transition-colors cursor-pointer"
+                                >
+                                  <RefreshCw className={`w-3 h-3 ${isValidatingStories ? "animate-spin" : ""}`} />
+                                  <span>Cek Ulang Story</span>
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setRuleFormData({
+                                      ...ruleFormData,
+                                      targetOtomasi: "Semua Story",
+                                      postType: "ALL_STORIES",
+                                    });
+                                  }}
+                                  className="px-2.5 py-1 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-gray-700 dark:text-gray-200 text-[11px] font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                                >
+                                  Gunakan Opsi Semua Story
+                                </button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-4 gap-2.5">
+                          {activeStories.map((story) => {
+                            const isSelected = (selectedStory?.id === story.id) || (ruleFormData.postId === story.id);
+                            return (
+                              <button
+                                key={story.id}
+                                type="button"
+                                onClick={() => {
+                                  setSelectedStory(story);
+                                  setRuleFormData({ ...ruleFormData, postId: story.id });
+                                }}
+                                className={`relative rounded-xl overflow-hidden aspect-[9/16] border-2 transition-all cursor-pointer ${
+                                  isSelected
+                                    ? "border-pink-500 ring-2 ring-pink-500/30 scale-[1.02] shadow-sm"
+                                    : "border-gray-200 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20 opacity-85 hover:opacity-100"
+                                }`}
+                                title={story.caption || "Story"}
+                              >
+                                <img
+                                  src={story.thumb || story.image}
+                                  alt={story.title || "Story"}
+                                  referrerPolicy="no-referrer"
+                                  className="w-full h-full object-cover"
+                                />
+                                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent p-1.5 text-left">
+                                  <span className="text-[9px] font-semibold text-white block truncate">
+                                    {story.date}
+                                  </span>
+                                </div>
+                                {isSelected && (
+                                  <div className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-pink-500 flex items-center justify-center text-white shadow-xs">
+                                    <Check className="w-2.5 h-2.5 stroke-[3]" />
                                   </div>
                                 )}
                               </button>
@@ -5738,11 +5910,23 @@ export default function RuangAutomationClient({
 
                           {/* 3. Story Visual Canvas */}
                           <div className="flex-1 relative flex flex-col items-center justify-center p-6 text-center overflow-hidden bg-gradient-to-br from-[#833ab4] via-[#fd1d1d] to-[#fcb045]">
-                            {/* Decorative background glow rings */}
-                            <div className="absolute inset-0 bg-radial from-white/10 to-transparent pointer-events-none" />
+                            {/* Selected Story Actual Image Preview */}
+                            {ruleFormData.targetOtomasi === "Story Tertentu" && (selectedStory?.image || selectedStory?.thumb) && (
+                              <img
+                                src={selectedStory.image || selectedStory.thumb}
+                                alt="Story Content"
+                                className="absolute inset-0 w-full h-full object-cover z-0"
+                              />
+                            )}
+
+                            {/* Decorative background glow rings & dimming overlay */}
+                            <div className="absolute inset-0 bg-radial from-white/10 to-transparent pointer-events-none z-1" />
+                            {ruleFormData.targetOtomasi === "Story Tertentu" && (selectedStory?.image || selectedStory?.thumb) && (
+                              <div className="absolute inset-0 bg-black/40 backdrop-blur-[1px] z-1" />
+                            )}
 
                             {/* Center Floating Story Sticker Card */}
-                            <div className="w-full max-w-[210px] p-4 rounded-2xl bg-black/40 backdrop-blur-md border border-white/20 text-white shadow-2xl space-y-2.5 animate-in zoom-in-95 duration-200">
+                            <div className="w-full max-w-[210px] p-4 rounded-2xl bg-black/50 backdrop-blur-md border border-white/20 text-white shadow-2xl space-y-2.5 animate-in zoom-in-95 duration-200 z-10">
                               <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-amber-400 to-pink-500 flex items-center justify-center mx-auto shadow-md">
                                 <InstagramIcon className="w-5 h-5 text-white" />
                               </div>
@@ -5752,7 +5936,7 @@ export default function RuangAutomationClient({
                                   {ruleFormData.targetOtomasi}
                                 </span>
                                 <h4 className="text-xs font-bold text-white line-clamp-2 pt-1 leading-snug">
-                                  {ruleFormData.name.trim() || "Otomasi Story"}
+                                  {ruleFormData.name.trim() || (selectedStory?.title || "Otomasi Story")}
                                 </h4>
                               </div>
 
