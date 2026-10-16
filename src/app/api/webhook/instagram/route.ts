@@ -431,28 +431,57 @@ export async function POST(req: NextRequest) {
             orderBy: { createdAt: "desc" },
           });
 
-          // Filter aturan yang cocok
-          const matchedRule = rules.find((rule: any) => {
+          // Rule Isolation & Priority Hierarchy
+          // 1. Cek apakah mediaId ini memiliki aturan khusus (SPECIFIC_POST atau NEXT_POST yang sudah terikat)
+          const specificRules = rules.filter((r: any) => 
+            (r.triggerType === "SPECIFIC_POST" && r.specificPostId === mediaId) ||
+            (r.triggerType === "NEXT_POST" && r.specificPostId === mediaId)
+          );
+
+          // 2. Cek apakah ada aturan NEXT_POST yang belum terikat (unbound)
+          const unboundNextPostRules = rules.filter((r: any) => 
+            r.triggerType === "NEXT_POST" && !r.specificPostId
+          );
+
+          // Jika mediaId ini belum punya specificRule, tapi ada unboundNextPostRule:
+          if (specificRules.length === 0 && unboundNextPostRules.length > 0) {
+            const nextRule = unboundNextPostRules[0];
+            console.log(`🎯 [Meta Webhook] Next post detected! Binding NEXT_POST rule "${nextRule.name}" to media ID: ${mediaId}`);
+            (prisma as any).instagramAutomationRule.update({
+              where: { id: nextRule.id },
+              data: { specificPostId: mediaId },
+            }).catch(() => null);
+            nextRule.specificPostId = mediaId;
+            specificRules.push(nextRule);
+          }
+
+          // 3. SELEKSI CANDIDATE RULES DENGAN ATURAN ISOLASI:
+          let candidateRules: any[] = [];
+          if (specificRules.length > 0) {
+            // Postingan ini adalah POSTINGAN KHUSUS!
+            // Aturan "ALL_POSTS" DIBLOKIR TOTAL dari postingan ini agar tidak tumpang tindih / saling serobot.
+            console.log(`🔒 [Meta Webhook] Media ${mediaId} is a DEDICATED post with ${specificRules.length} specific rule(s). ALL_POSTS rules are strictly excluded.`);
+            candidateRules = specificRules;
+          } else {
+            // Postingan ini adalah POSTINGAN UMUM (tidak punya aturan khusus).
+            // Hanya aturan ALL_POSTS yang boleh berjalan!
+            console.log(`🌐 [Meta Webhook] Media ${mediaId} is a GENERAL post without dedicated rules. Evaluating ALL_POSTS rules.`);
+            candidateRules = rules.filter((r: any) => r.triggerType === "ALL_POSTS");
+          }
+
+          // 4. SORTING PRIORITAS KATA KUNCI:
+          // Aturan dengan kata kunci spesifik lebih diutamakan daripada aturan "Semua Kata" (wildcard)
+          candidateRules.sort((a: any, b: any) => {
+            const aKeywords = Array.isArray(a.keywords) ? a.keywords.length : 0;
+            const bKeywords = Array.isArray(b.keywords) ? b.keywords.length : 0;
+            if (aKeywords > 0 && bKeywords === 0) return -1;
+            if (aKeywords === 0 && bKeywords > 0) return 1;
+            return 0;
+          });
+
+          // Filter aturan yang cocok kata kuncinya (Single Winner Rule)
+          const matchedRule = candidateRules.find((rule: any) => {
             console.log(`🔍 [Meta Webhook] Checking rule "${rule.name}" (${rule.triggerType}) against media ID: ${mediaId}`);
-            // Cek target postingan
-            if (rule.triggerType === "SPECIFIC_POST" && rule.specificPostId) {
-              if (rule.specificPostId !== mediaId) {
-                console.log(`⏩ [Meta Webhook] Media ID mismatch for rule "${rule.name}": expects ${rule.specificPostId}, but comment is on ${mediaId}`);
-                return false;
-              }
-            } else if (rule.triggerType === "NEXT_POST") {
-              if (!rule.specificPostId) {
-                // Postingan baru pertama kali terdeteksi! Kunci specificPostId ke postingan baru ini
-                console.log(`🎯 [Meta Webhook] Next post detected! Binding rule "${rule.name}" to media ID: ${mediaId}`);
-                (prisma as any).instagramAutomationRule.update({
-                  where: { id: rule.id },
-                  data: { specificPostId: mediaId },
-                }).catch(() => null);
-              } else if (rule.specificPostId !== mediaId) {
-                console.log(`⏩ [Meta Webhook] Media ID mismatch for rule "${rule.name}" (NEXT_POST locked to ${rule.specificPostId}): comment is on ${mediaId}`);
-                return false;
-              }
-            }
 
             // Cek kata kunci pemicu
             const keywords = Array.isArray(rule.keywords) ? rule.keywords : [];
