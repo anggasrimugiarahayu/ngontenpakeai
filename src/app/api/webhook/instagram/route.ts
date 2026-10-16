@@ -64,6 +64,54 @@ async function postToMetaGraph(endpoint: string, payload: any, token: string) {
 }
 
 /**
+ * Helper: Membuat payload pesan DM dengan tombol menggunakan Button Template standar Instagram
+ * Tanpa header kartu tambahan (seperti "Pesan Pembuka" / nama aturan) dan menampilkan teks hitam jelas (bukan subtitle abu-abu tipis)
+ */
+function buildButtonTemplateMessage(text: string, buttons: any[]) {
+  return {
+    attachment: {
+      type: "template",
+      payload: {
+        template_type: "button",
+        text: (text || "").slice(0, 640),
+        buttons,
+      },
+    },
+  };
+}
+
+/**
+ * Helper: Mengecek profil & status follow real-time (is_user_follow_business) dari pengirim DM ke akun bisnis
+ */
+async function getIgUserProfile(
+  senderId: string,
+  token: string
+): Promise<{ username: string; name: string; isFollowing: boolean | null }> {
+  const isIgToken = token && token.startsWith("IG");
+  const primaryDomain = isIgToken ? "https://graph.instagram.com/v22.0" : "https://graph.facebook.com/v22.0";
+  const fallbackDomain = isIgToken ? "https://graph.facebook.com/v22.0" : "https://graph.instagram.com/v22.0";
+
+  for (const domain of [primaryDomain, fallbackDomain]) {
+    try {
+      const res = await fetch(
+        `${domain}/${senderId}?fields=id,name,username,is_user_follow_business&access_token=${token}`,
+        { cache: "no-store" }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        return {
+          username: data.username || "kak",
+          name: data.name || data.username || "Kak",
+          isFollowing: typeof data.is_user_follow_business === "boolean" ? data.is_user_follow_business : null,
+        };
+      }
+    } catch {}
+  }
+
+  return { username: "kak", name: "Kak", isFollowing: null };
+}
+
+/**
  * 1. GET Handler: Verifikasi Meta Webhook
  * Meta Developer Dashboard memvalidasi endpoint ini menggunakan hub.challenge & hub.verify_token
  */
@@ -368,57 +416,29 @@ export async function POST(req: NextRequest) {
             let dmPayloadMessage: any = null;
 
             if (ruleConfig.featureWelcomeMessage && ruleConfig.welcomeMessage) {
-              // Step 4a: Pesan Pembuka
+              // Step 4a: Pesan Pembuka (Tanpa header kartu, teks hitam jelas)
               const welcomeText = resolveVariables(ruleConfig.welcomeMessage, fromUsername);
               const btnLabel = ruleConfig.welcomeButtonLabel || "Ya, Saya Mau!";
 
-              dmPayloadMessage = {
-                attachment: {
-                  type: "template",
-                  payload: {
-                    template_type: "generic",
-                    elements: [
-                      {
-                        title: "Pesan Pembuka",
-                        subtitle: welcomeText,
-                        buttons: [
-                          {
-                            type: "postback",
-                            title: btnLabel.slice(0, 20),
-                            payload: `WELCOME_AGREE_${matchedRule.id}`,
-                          },
-                        ],
-                      },
-                    ],
-                  },
+              dmPayloadMessage = buildButtonTemplateMessage(welcomeText, [
+                {
+                  type: "postback",
+                  title: btnLabel.slice(0, 20),
+                  payload: `WELCOME_AGREE_${matchedRule.id}`,
                 },
-              };
+              ]);
             } else if (ruleConfig.featureAskForFollow && ruleConfig.askForFollowMessage) {
-              // Step 4b: Ask For Follow Gate
+              // Step 4b: Ask For Follow Gate (Tanpa header kartu, teks hitam jelas)
               const followText = resolveVariables(ruleConfig.askForFollowMessage, fromUsername);
-              const btnLabel = ruleConfig.askForFollowButtonLabel || "Udah follow 🙌";
+              const btnLabel = ruleConfig.askForFollowButtonLabel || "Sudah mengikuti 🙌";
 
-              dmPayloadMessage = {
-                attachment: {
-                  type: "template",
-                  payload: {
-                    template_type: "generic",
-                    elements: [
-                      {
-                        title: "Follow Terlebih Dahulu",
-                        subtitle: followText,
-                        buttons: [
-                          {
-                            type: "postback",
-                            title: btnLabel.slice(0, 20),
-                            payload: `CHECK_FOLLOW_${matchedRule.id}`,
-                          },
-                        ],
-                      },
-                    ],
-                  },
+              dmPayloadMessage = buildButtonTemplateMessage(followText, [
+                {
+                  type: "postback",
+                  title: btnLabel.slice(0, 20),
+                  payload: `CHECK_FOLLOW_${matchedRule.id}`,
                 },
-              };
+              ]);
             } else if (ruleConfig.featureAskForContact && ruleConfig.askContactMessage) {
               // Step 4c: Ask for Contact Request
               const contactText = resolveVariables(ruleConfig.askContactMessage, fromUsername);
@@ -428,28 +448,14 @@ export async function POST(req: NextRequest) {
               const deliveredText = resolveVariables(mainDmText, fromUsername);
 
               if (matchedRule.buttonText && matchedRule.buttonUrl) {
-                // Template Tombol
-                dmPayloadMessage = {
-                  attachment: {
-                    type: "template",
-                    payload: {
-                      template_type: "generic",
-                      elements: [
-                        {
-                          title: matchedRule.name || "Akses Konten",
-                          subtitle: deliveredText.slice(0, 80),
-                          buttons: [
-                            {
-                              type: "web_url",
-                              url: matchedRule.buttonUrl,
-                              title: matchedRule.buttonText.slice(0, 20),
-                            },
-                          ],
-                        },
-                      ],
-                    },
+                // Template Tombol tanpa header aturan dan tanpa pemotongan 80 karakter
+                dmPayloadMessage = buildButtonTemplateMessage(deliveredText, [
+                  {
+                    type: "web_url",
+                    url: matchedRule.buttonUrl,
+                    title: matchedRule.buttonText.slice(0, 20),
                   },
-                };
+                ]);
               } else {
                 // Teks Biasa
                 dmPayloadMessage = { text: deliveredText };
@@ -514,13 +520,13 @@ export async function POST(req: NextRequest) {
       // =========================================================================
       const messagingList = entry.messaging || [];
       for (const msgEvent of messagingList) {
-        const senderId = msgEvent.sender?.id;
+        const senderId = String(msgEvent.sender?.id || "");
         const msgText = msgEvent.message?.text || "";
         const postbackPayload = msgEvent.postback?.payload || msgEvent.message?.quick_reply?.payload;
 
-        if (!senderId || senderId === account.instagramId) continue;
+        if (!senderId || senderId === account.instagramId || senderId === account.pageId) continue;
 
-        // 1. Cek apakah ada postback (contoh: user klik "Udah Follow" atau "Ya, Saya Mau")
+        // 1. Cek apakah ada postback (contoh: user klik tombol di Pesan Pembuka atau "Sudah mengikuti 🙌")
         if (postbackPayload) {
           const ruleId = postbackPayload.split("_").pop();
           const targetRule = await (prisma as any).instagramAutomationRule.findFirst({
@@ -530,55 +536,98 @@ export async function POST(req: NextRequest) {
           if (targetRule) {
             let ruleConfig: any = {};
             try {
-              if (targetRule.dmMessage && targetRule.dmMessage.startsWith("{")) {
+              if (targetRule.dmMessage && (targetRule.dmMessage.startsWith("{") || targetRule.dmMessage.includes('"mainMessage"'))) {
                 ruleConfig = JSON.parse(targetRule.dmMessage);
               }
             } catch (e) {}
 
-            const mainText = ruleConfig.mainMessage || targetRule.dmMessage;
+            // Ambil profil & status follow real-time (is_user_follow_business) dari Meta Graph API
+            const userProfile = await getIgUserProfile(senderId, account.accessToken);
+            const senderUsername = userProfile.username || "kak";
+            const mainText = resolveVariables(ruleConfig.mainMessage || targetRule.dmMessage || "", senderUsername);
 
-            // Jika user klik "Udah follow", lanjut ke Ask for Contact atau Pesan Utama
-            if (postbackPayload.startsWith("CHECK_FOLLOW") || postbackPayload.startsWith("WELCOME_AGREE")) {
-              let nextMsg: any = null;
-
+            // Helper untuk membangun pesan tahap akhir (Ask for Contact atau Pesan Utama)
+            const buildFinalOrContactStep = () => {
               if (ruleConfig.featureAskForContact && ruleConfig.askContactMessage) {
-                nextMsg = { text: ruleConfig.askContactMessage };
-              } else if (targetRule.buttonText && targetRule.buttonUrl) {
-                nextMsg = {
-                  attachment: {
-                    type: "template",
-                    payload: {
-                      template_type: "generic",
-                      elements: [
-                        {
-                          title: targetRule.name || "Akses Kamu",
-                          subtitle: mainText.slice(0, 80),
-                          buttons: [
-                            {
-                              type: "web_url",
-                              url: targetRule.buttonUrl,
-                              title: targetRule.buttonText.slice(0, 20),
-                            },
-                          ],
-                        },
-                      ],
-                    },
-                  },
-                };
-              } else {
-                nextMsg = { text: mainText };
+                return { text: resolveVariables(ruleConfig.askContactMessage, senderUsername) };
               }
-
-              if (nextMsg) {
-                await postToMetaGraph(
-                  `/me/messages`,
+              if (targetRule.buttonText && targetRule.buttonUrl) {
+                return buildButtonTemplateMessage(mainText, [
                   {
-                    recipient: { id: senderId },
-                    message: nextMsg,
+                    type: "web_url",
+                    url: targetRule.buttonUrl,
+                    title: targetRule.buttonText.slice(0, 20),
                   },
-                  account.accessToken
-                ).catch(() => {});
+                ]);
               }
+              return { text: mainText };
+            };
+
+            let nextMsg: any = null;
+
+            if (postbackPayload.startsWith("WELCOME_AGREE")) {
+              // User baru saja klik tombol pada Pesan Pembuka
+              // Cek apakah aturan mengaktifkan Ask For Follow
+              if (ruleConfig.featureAskForFollow && ruleConfig.askForFollowMessage) {
+                if (userProfile.isFollowing === true) {
+                  // Jika ternyata user sudah follow, langsung kirim Ask For Contact / Pesan Utama
+                  console.log(`✅ [Meta Webhook] @${senderUsername} already follows @${account.username}, skipping Ask For Follow gate.`);
+                  nextMsg = buildFinalOrContactStep();
+                } else {
+                  // Jika belum follow, kirim pesan Ask For Follow
+                  console.log(`🔒 [Meta Webhook] @${senderUsername} has not followed @${account.username} yet. Sending Ask For Follow gate.`);
+                  const followText = resolveVariables(ruleConfig.askForFollowMessage, senderUsername);
+                  const followBtnLabel = ruleConfig.askForFollowButtonLabel || "Sudah mengikuti 🙌";
+                  nextMsg = buildButtonTemplateMessage(followText, [
+                    {
+                      type: "postback",
+                      title: followBtnLabel.slice(0, 20),
+                      payload: `CHECK_FOLLOW_${targetRule.id}`,
+                    },
+                  ]);
+                }
+              } else {
+                // Ask For Follow tidak aktif -> langsung ke Ask For Contact / Pesan Utama
+                nextMsg = buildFinalOrContactStep();
+              }
+            } else if (postbackPayload.startsWith("CHECK_FOLLOW")) {
+              // User klik tombol "Sudah mengikuti 🙌" -> Verifikasi real-time ke Meta API
+              if (userProfile.isFollowing === false) {
+                // User belum benar-benar follow! Kirim pesan Retry / Peringatan Belum Follow
+                console.log(`⚠️ [Meta Webhook] @${senderUsername} clicked CHECK_FOLLOW but is_user_follow_business is false. Sending retry prompt.`);
+                const retryRawText =
+                  (ruleConfig.askForFollowHasRetry !== false && ruleConfig.askForFollowRetryMessage)
+                    ? ruleConfig.askForFollowRetryMessage
+                    : (ruleConfig.askForFollowMessage || "Oiya kak, sepertinya akun ini belum di-follow 😊\n\nFollow dulu ya kak, setelah itu klik tombol di bawah 🙌");
+                const retryText = resolveVariables(retryRawText, senderUsername);
+                const retryBtnLabel =
+                  ruleConfig.askForFollowRetryButtonLabel ||
+                  ruleConfig.askForFollowButtonLabel ||
+                  "Sudah mengikuti 🙌";
+
+                nextMsg = buildButtonTemplateMessage(retryText, [
+                  {
+                    type: "postback",
+                    title: retryBtnLabel.slice(0, 20),
+                    payload: `CHECK_FOLLOW_${targetRule.id}`,
+                  },
+                ]);
+              } else {
+                // User sudah benar-benar follow! Kirim Ask For Contact atau Pesan Utama
+                console.log(`✅ [Meta Webhook] Verified @${senderUsername} follows @${account.username}! Delivering content.`);
+                nextMsg = buildFinalOrContactStep();
+              }
+            }
+
+            if (nextMsg) {
+              await postToMetaGraph(
+                `/me/messages`,
+                {
+                  recipient: { id: senderId },
+                  message: nextMsg,
+                },
+                account.accessToken
+              ).catch(() => {});
             }
           }
         }
@@ -588,17 +637,44 @@ export async function POST(req: NextRequest) {
         const phoneMatch = msgText.match(/(?:\+62|62|08)[0-9]{8,13}/);
 
         if (emailMatch || phoneMatch) {
-          // Kirim pesan konfirmasi delivery pesan utama
-          const confirmText = "Sip, kontak kamu sudah tersimpan dengan aman! Ini link akses materinya ya:";
+          // Cari aturan aktif terakhir pada akun ini yang menggunakan Ask for Contact
+          const latestRule = await (prisma as any).instagramAutomationRule.findFirst({
+            where: { accountId: account.id, isActive: true },
+            orderBy: { updatedAt: "desc" },
+          });
 
-          await postToMetaGraph(
-            `/me/messages`,
-            {
-              recipient: { id: senderId },
-              message: { text: confirmText },
-            },
-            account.accessToken
-          ).catch(() => {});
+          if (latestRule) {
+            let ruleConfig: any = {};
+            try {
+              if (latestRule.dmMessage && (latestRule.dmMessage.startsWith("{") || latestRule.dmMessage.includes('"mainMessage"'))) {
+                ruleConfig = JSON.parse(latestRule.dmMessage);
+              }
+            } catch {}
+            const userProfile = await getIgUserProfile(senderId, account.accessToken);
+            const deliveredMain = resolveVariables(
+              ruleConfig.mainMessage || latestRule.dmMessage || "Sip, kontak kamu sudah tersimpan dengan aman! Ini link akses materinya ya:",
+              userProfile.username
+            );
+            const finalPayload =
+              latestRule.buttonText && latestRule.buttonUrl
+                ? buildButtonTemplateMessage(deliveredMain, [
+                    {
+                      type: "web_url",
+                      url: latestRule.buttonUrl,
+                      title: latestRule.buttonText.slice(0, 20),
+                    },
+                  ])
+                : { text: deliveredMain };
+
+            await postToMetaGraph(
+              `/me/messages`,
+              {
+                recipient: { id: senderId },
+                message: finalPayload,
+              },
+              account.accessToken
+            ).catch(() => {});
+          }
         }
       }
     }
