@@ -874,8 +874,8 @@ export async function POST(req: NextRequest) {
           (msgEvent.message as any)?.story_mention ||
           (msgEvent as any).story_mention
         );
-        const storyId = msgEvent.message?.reply_to?.story?.id;
-        const messageId = msgEvent.message?.mid;
+        const storyId = msgEvent.message?.reply_to?.story?.id || (msgEvent.message as any)?.story_id;
+        const messageId = msgEvent.message?.mid || msgEvent.message?.id || (msgEvent as any)?.mid;
 
         if ((isStoryReply || isStoryMention) && !msgEvent.message?.is_echo) {
           console.log(`📸 [Meta Webhook] Story interaction detected from ${senderId}. StoryId: ${storyId}, text: "${msgText}"`);
@@ -929,12 +929,18 @@ export async function POST(req: NextRequest) {
 
             // Cek kecocokan kata kunci (keywords) jika triggerCommentType === "KEYWORDS"
             let isTriggerMatched = true;
-            if (matchedRule.triggerCommentType === "KEYWORDS") {
-              const ruleKeywords = (matchedRule.keywords || "").split(",").map((k: string) => k.trim().toLowerCase()).filter(Boolean);
+            const triggerTypeSetting = ruleConfig.triggerCommentType || (matchedRule as any).triggerCommentType;
+            if (triggerTypeSetting === "KEYWORDS") {
+              const rawKeywords = matchedRule.keywords;
+              const ruleKeywords = Array.isArray(rawKeywords)
+                ? rawKeywords.map((k: string) => k.trim().toLowerCase()).filter(Boolean)
+                : (typeof rawKeywords === "string" ? rawKeywords.split(",") : [])
+                    .map((k: string) => k.trim().toLowerCase())
+                    .filter(Boolean);
               const userText = msgText.toLowerCase();
               const ruleStyle = (ruleConfig.keywordRule || "Contains").toLowerCase();
 
-              if (ruleKeywords.length > 0) {
+              if (ruleKeywords.length > 0 && userText.length > 0) {
                 if (ruleStyle === "match") {
                   isTriggerMatched = ruleKeywords.some((kw: string) => userText === kw);
                 } else if (ruleStyle === "starts with") {
@@ -950,24 +956,32 @@ export async function POST(req: NextRequest) {
               console.log(`🎯 [Meta Webhook] Story Rule "${matchedRule.name}" matched for sender ${senderId}!`);
 
               // A. Balas Reaksi Love (❤️) jika diaktifkan di konfigurasi aturan
-              if (ruleConfig.replyHeartReaction && messageId) {
-                console.log(`❤️ [Meta Webhook] Sending heart reaction to story reply ${messageId}`);
-                await postToMetaGraph(
-                  `/me/messages`,
-                  {
-                    recipient: { id: senderId },
-                    message: {
-                      reaction: {
-                        action: "react",
-                        emoji: "❤️",
+              const shouldReplyHeart = Boolean(ruleConfig.replyHeartReaction);
+              if (shouldReplyHeart && messageId) {
+                console.log(`❤️ [Meta Webhook] Sending heart reaction to story message ${messageId} for sender ${senderId}`);
+                try {
+                  const reactionRes = await postToMetaGraph(
+                    `/me/messages`,
+                    {
+                      recipient: { id: senderId },
+                      sender_action: "react",
+                      payload: {
                         message_id: messageId,
+                        reaction: "❤️",
                       },
                     },
-                  },
-                  account.accessToken
-                ).catch((err) => {
-                  console.warn("⚠️ [Meta Webhook] Failed to react with heart:", err);
-                });
+                    account.accessToken
+                  );
+
+                  if (!reactionRes.ok) {
+                    const reactionErr = await reactionRes.json().catch(() => ({}));
+                    console.warn(`⚠️ [Meta Webhook] Reaction failed (${reactionRes.status}):`, reactionErr);
+                  } else {
+                    console.log(`✅ [Meta Webhook] Heart reaction ❤️ successfully sent to message ${messageId}`);
+                  }
+                } catch (err: any) {
+                  console.warn("⚠️ [Meta Webhook] Exception while sending reaction:", err?.message || err);
+                }
               }
 
               // B. Ambil Profil & Status Follow Pengguna
