@@ -2087,69 +2087,93 @@ export default function RuangAutomationClient({
           {activeIgTab === "koneksi" && (
             <div className="space-y-6 animate-in fade-in duration-200">
           {displayAccount && displayAccount.isLinked ? (
-            <div className="rounded-2xl border border-gray-200 dark:border-white/5 p-6 bg-white dark:bg-[#121214] shadow-sm">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <div className="flex items-start md:items-center gap-4">
-                  {/* Avatar / Profile Picture */}
-                  <div className="relative shrink-0">
-                    <div className="w-14 h-14 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 overflow-hidden">
-                      {displayAccount.profilePicUrl && !avatarError ? (
-                        <img
-                          src={displayAccount.profilePicUrl}
-                          alt={displayAccount.username || "Instagram Avatar"}
-                          referrerPolicy="no-referrer"
-                          onError={() => setAvatarError(true)}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <InstagramIcon className="w-7 h-7 text-gray-600 dark:text-gray-400" />
+            (() => {
+              const d = displayAccount.updatedAt || displayAccount.createdAt ? new Date(displayAccount.updatedAt || displayAccount.createdAt) : new Date();
+              const yyyy = d.getFullYear();
+              const mm = String(d.getMonth() + 1).padStart(2, "0");
+              const dd = String(d.getDate()).padStart(2, "0");
+              const hh = String(d.getHours()).padStart(2, "0");
+              const min = String(d.getMinutes()).padStart(2, "0");
+              const formattedUpdated = `${yyyy}-${mm}-${dd} ${hh}:${min}`;
+
+              const agentDisplayName = currentAgent?.name || account?.name || "NAMA AGEN";
+              const igUsername = displayAccount.username || "ruangcreativemuslim";
+              const igBioOrTitle = igUsername.toLowerCase().includes("ruangcreative")
+                ? "Harits | Faceless Conten Preneur"
+                : (displayAccount.name || "Akun Profesional");
+
+              const avatarSrc = displayAccount.profilePicUrl && !avatarError
+                ? displayAccount.profilePicUrl
+                : (igUsername.toLowerCase().includes("ruangcreative") ? "/images/instagram/rcm-avatar.png" : null);
+
+              return (
+                <div className="rounded-2xl border border-gray-200 dark:border-white/5 p-6 bg-white dark:bg-[#121214] shadow-sm">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+                    <div className="flex items-start md:items-center gap-4 sm:gap-5">
+                      {/* Avatar / Profile Picture (Lingkaran Bulat) */}
+                      <div className="relative shrink-0">
+                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 overflow-hidden shadow-2xs">
+                          {avatarSrc ? (
+                            <img
+                              src={avatarSrc}
+                              alt={igUsername}
+                              referrerPolicy="no-referrer"
+                              onError={() => setAvatarError(true)}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center">
+                              <InstagramIcon className="w-8 h-8 text-gray-600 dark:text-gray-400" />
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </div>
+                      </div>
 
-                  <div className="space-y-1">
-                    <h2 className="text-xl md:text-2xl font-black font-heading text-gray-900 dark:text-white">
-                      @{displayAccount.username}
-                    </h2>
-                    {displayAccount.name && (
-                      <p className="text-sm text-gray-600 dark:text-gray-400">
-                        {displayAccount.name}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-2 pt-1 text-xs text-gray-500 dark:text-gray-400">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <span>
-                        Status: <strong className="text-emerald-600 dark:text-emerald-400 font-semibold">Terhubung</strong>
-                      </span>
+                      {/* Detail Akun & Status */}
+                      <div className="space-y-0.5 sm:space-y-1">
+                        <h2 className="text-sm sm:text-base font-extrabold uppercase tracking-tight text-gray-900 dark:text-white leading-tight">
+                          {agentDisplayName}
+                        </h2>
+                        <div className="text-sm sm:text-base font-bold text-gray-900 dark:text-white leading-tight">
+                          @{igUsername}
+                        </div>
+                        <p className="text-xs text-gray-700 dark:text-gray-300 font-normal leading-normal">
+                          {igBioOrTitle}
+                        </p>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 font-normal leading-normal">
+                          Status Koneksi: Terhubung
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 font-normal leading-normal">
+                          Terakhir Diperbaharui: {formattedUpdated}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Buttons: Singkronkan ulang & Putuskan Koneksi */}
+                    <div className="flex items-center gap-3 self-start lg:self-center flex-wrap shrink-0">
+                      <button
+                        onClick={handleResyncAccount}
+                        disabled={isPending}
+                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-white/20 bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/5 text-gray-800 dark:text-gray-200 text-xs font-medium flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
+                        title="Sinkronkan ulang data profil dari Meta API"
+                      >
+                        <RefreshCw className={`w-3.5 h-3.5 text-gray-600 dark:text-gray-400 ${isPending ? "animate-spin" : ""}`} />
+                        <span>Singkronkan ulang</span>
+                      </button>
+                      <button
+                        onClick={handleDisconnect}
+                        disabled={isPending}
+                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-white/20 bg-white dark:bg-transparent hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-medium flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
+                        title="Putuskan koneksi akun ini"
+                      >
+                        <Unlink className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
+                        <span>Putuskan Koneksi</span>
+                      </button>
                     </div>
                   </div>
                 </div>
-
-                {/* Action Buttons for Connected Account */}
-                <div className="flex items-center gap-2.5 self-start lg:self-auto flex-wrap">
-                  <button
-                    onClick={handleResyncAccount}
-                    disabled={isPending}
-                    className="px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/5 text-gray-700 dark:text-gray-300 text-xs font-bold flex items-center gap-2 transition-colors disabled:opacity-50"
-                    title="Sinkronkan ulang data profil dari Meta API"
-                  >
-                    <RefreshCw className={`w-3.5 h-3.5 ${isPending ? "animate-spin" : ""}`} />
-                    Sinkronkan Ulang
-                  </button>
-                  <button
-                    onClick={handleDisconnect}
-                    disabled={isPending}
-                    className="px-3.5 py-2 rounded-xl border border-rose-500/20 hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-bold flex items-center gap-1.5 transition-colors disabled:opacity-50"
-                    title="Putuskan koneksi akun ini"
-                  >
-                    <Unlink className="w-3.5 h-3.5" />
-                    Putuskan Koneksi
-                  </button>
-                </div>
-              </div>
-            </div>
+              );
+            })()
           ) : (
             /* DISCONNECTED STATE */
             <div className="rounded-2xl border-2 border-dashed border-gray-300 dark:border-white/10 p-6 md:p-8 bg-gray-50/50 dark:bg-white/[0.02] shadow-sm">
