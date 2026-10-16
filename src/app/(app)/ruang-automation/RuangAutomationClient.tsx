@@ -2541,41 +2541,38 @@ export default function RuangAutomationClient({
                             </div>
                           </div>
 
-                          {/* Baris 2: Status & Lihat Post & Detail */}
-                          <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-2 flex-wrap">
+                          {/* Baris 2: Status (Tanpa Icon Dot) */}
+                          <div className="mb-1.5">
                             {!isAccountLinked ? (
-                              <>
-                                <span className="w-2 h-2 rounded-full bg-amber-500" />
-                                <span className="font-semibold text-amber-600 dark:text-amber-400">
-                                  Terputus
-                                </span>
-                              </>
+                              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                                Terputus
+                              </span>
                             ) : (
-                              <>
-                                <span className={`w-2 h-2 rounded-full ${rule.isActive ? "bg-emerald-500" : "bg-gray-400"}`} />
-                                <span className={`font-semibold ${rule.isActive ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400"}`}>
-                                  {rule.isActive ? "Berjalan" : "Nonaktif"}
-                                </span>
-                              </>
+                              <span className={`text-xs font-semibold ${rule.isActive ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400"}`}>
+                                {rule.isActive ? "Berjalan" : "Nonaktif"}
+                              </span>
                             )}
+                          </div>
+
+                          {/* Baris 3: Lihat Post & Detail (Seragam Warna Orange) */}
+                          <div className="flex items-center gap-2 text-xs mb-3 flex-wrap">
                             {isAccountLinked && rule.triggerType === "SPECIFIC_POST" && rule.specificPostId && (
                               <>
-                                <span className="text-gray-300 dark:text-gray-600">•</span>
                                 <a
                                   href={postPermalink}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-gray-500 hover:text-orange-500 dark:hover:text-orange-400 inline-flex items-center gap-0.5 font-medium transition-colors"
+                                  className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 inline-flex items-center gap-1 font-semibold transition-colors"
                                 >
-                                  Lihat Post <ExternalLink className="w-3 h-3 ml-0.5" />
+                                  Lihat Post <ExternalLink className="w-3 h-3" />
                                 </a>
+                                <span className="text-gray-300 dark:text-gray-600">•</span>
                               </>
                             )}
-                            <span className="text-gray-300 dark:text-gray-600">•</span>
                             <button
                               type="button"
                               onClick={() => setDetailRuleId(rule.id)}
-                              className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 inline-flex items-center gap-0.5 font-bold transition-colors cursor-pointer"
+                              className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 inline-flex items-center gap-0.5 font-semibold transition-colors cursor-pointer"
                             >
                               Detail <ChevronRight className="w-3.5 h-3.5" />
                             </button>
@@ -2588,21 +2585,21 @@ export default function RuangAutomationClient({
                             </div>
                           )}
 
-                          {/* Baris 3: Kata Pemicu */}
-                          <div className="mb-3">
-                            <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400 block mb-1">
+                          {/* Baris 4: Kata Pemicu (Clean, Bukan Huruf Besar Semua) */}
+                          <div className="mb-3.5">
+                            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 block mb-1.5">
                               Kata Pemicu
                             </span>
                             <div className="flex items-center gap-1.5 flex-wrap">
                               {keywordList.length === 0 ? (
-                                <span className="font-bold rounded px-2 py-0.5 text-[9px] uppercase tracking-wider bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 inline-flex items-center gap-1">
+                                <span className="font-semibold rounded-md px-2.5 py-1 text-[11px] bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 inline-flex items-center gap-1">
                                   <Link2 className="w-3 h-3" /> Semua Kata
                                 </span>
                               ) : (
                                 keywordList.map((kw: string, idx: number) => (
                                   <span
                                     key={idx}
-                                    className="font-bold rounded px-2 py-0.5 text-[9px] uppercase tracking-wider bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300"
+                                    className="font-medium rounded-md px-2.5 py-0.5 text-[11px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-white/5"
                                   >
                                     {kw}
                                   </span>
@@ -2612,8 +2609,8 @@ export default function RuangAutomationClient({
                           </div>
                         </div>
 
-                        {/* Baris 4 (Bawah): 4 Metrics Columns Lengkap (Terkirim, Klik, Follower, CTR) */}
-                        <div className="pt-2.5 border-t border-gray-100 dark:border-white/5 grid grid-cols-4 gap-1.5 text-center sm:text-left">
+                        {/* Baris 5 (Bawah): 4 Metrics Columns Lengkap (Terkirim, Klik, Follower, CTR) */}
+                        <div className="pt-3 border-t border-gray-100 dark:border-white/5 grid grid-cols-4 gap-2 text-center sm:text-left">
                           <div>
                             <span className="text-[10px] text-gray-400 block font-medium leading-none">Terkirim</span>
                             <span className="text-sm sm:text-base font-black text-orange-600 dark:text-orange-400 block mt-1 leading-none">
