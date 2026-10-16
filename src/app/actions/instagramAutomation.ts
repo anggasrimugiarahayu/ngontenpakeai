@@ -88,7 +88,7 @@ export async function fetchFreshInstagramData(userId: string, isAdmin: boolean, 
       }).catch(() => 0),
       (db as any).instagramAutomationLog.findMany({
         where: { accountId: activeAccount.id },
-        take: 20,
+        take: 300,
         orderBy: { createdAt: "desc" },
         include: { rule: { select: { name: true } } }
       }).catch(() => [])
@@ -860,3 +860,515 @@ export async function duplicateAutomationRuleAction(ruleId: string) {
     return { success: false, error: err.message || "Gagal membuat salinan aturan" };
   }
 }
+
+/**
+ * Helper internal: Parse extended config dari dmMessage / buttonText
+ */
+function parseRuleExtendedConfig(raw: string | null | undefined): any {
+  if (!raw) return {};
+  try {
+    if (raw.trim().startsWith("{") || raw.includes('"mainMessage"')) {
+      return JSON.parse(raw);
+    }
+  } catch {
+    // ignore
+  }
+  return {};
+}
+
+/**
+ * Helper internal: Bungkus link dengan URL Tracker jika trackLinks aktif
+ */
+function wrapTrackedLink(rawUrl: string, trackLinks: boolean, ruleId: string, logId?: string): string {
+  if (!rawUrl || !rawUrl.trim()) return "https://instagram.com";
+  let cleanUrl = rawUrl.trim();
+  if (!/^https?:\/\//i.test(cleanUrl)) {
+    cleanUrl = `https://${cleanUrl}`;
+  }
+  if (!trackLinks) return cleanUrl;
+
+  const baseUrl =
+    process.env.NEXT_PUBLIC_APP_URL ||
+    process.env.NEXTAUTH_URL ||
+    "https://ruangcreativemuslim-seven.vercel.app";
+
+  const params = new URLSearchParams();
+  params.set("url", cleanUrl);
+  params.set("ruleId", ruleId);
+  if (logId) params.set("logId", logId);
+
+  return `${baseUrl.replace(/\/$/, "")}/api/track/instagram?${params.toString()}`;
+}
+
+/**
+ * Server Action: Coba Lagi Semua yang Gagal (Retry Failed Logs dalam 14 hari terakhir)
+ */
+export async function retryFailedAutomationLogsAction(ruleId: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    const db = getDb();
+    const rule = await (db as any).instagramAutomationRule.findUnique({
+      where: { id: ruleId },
+      include: { account: true }
+    });
+
+    if (!rule || !rule.account?.accessToken) {
+      return { success: false, error: "Aturan atau token akses akun tidak ditemukan." };
+    }
+
+    const accessToken = rule.account.accessToken;
+    const igBusinessId = rule.account.instagramId || "me";
+    const ext = parseRuleExtendedConfig(rule.dmMessage);
+    const trackLinks = ext.featureLinkTracking !== false;
+    const rawMainDm = ext.mainMessage || rule.dmMessage || "";
+
+    const fourteenDaysAgo = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+    const failedLogs = await (db as any).instagramAutomationLog.findMany({
+      where: {
+        ruleId: rule.id,
+        createdAt: { gte: fourteenDaysAgo },
+        OR: [
+          { dmStatus: "FAILED" },
+          { replyCommentStatus: "FAILED" }
+        ]
+      },
+      orderBy: { createdAt: "desc" }
+    });
+
+    if (!failedLogs || failedLogs.length === 0) {
+      return { success: true, retriedCount: 0, successCount: 0, message: "Tidak ada log gagal untuk dicoba ulang." };
+    }
+
+    let successCount = 0;
+
+    for (const log of failedLogs) {
+      let newReplyStatus = log.replyCommentStatus;
+      let newDmStatus = log.dmStatus;
+      let lastError = "";
+      const isCommentEvent = log.commentId && !String(log.commentId).startsWith("dm_");
+
+      // 1. Retry Public Comment Reply jika sebelumnya FAILED
+      if (log.replyCommentStatus === "FAILED" && isCommentEvent) {
+        const replies: string[] = Array.isArray(rule.commentReplies) ? rule.commentReplies : [];
+        if (replies.length > 0 && ext.featureReplyComment !== false) {
+          const randomReply = replies[Math.floor(Math.random() * replies.length)];
+          const personalizedReply = randomReply
+            .replace(/@\{username\}/gi, `@${log.commenterUsername || "kak"}`)
+            .replace(/\{username\}/gi, `@${log.commenterUsername || "kak"}`);
+          try {
+            const replyRes = await fetch(`https://graph.instagram.com/v22.0/${log.commentId}/replies`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+              },
+              body: JSON.stringify({ message: personalizedReply })
+            });
+            const replyData = await replyRes.json();
+            if (replyRes.ok && !replyData.error) {
+              newReplyStatus = "SENT";
+            } else {
+              lastError = replyData.error?.message || "Gagal membalas komentar";
+            }
+          } catch (e: any) {
+            lastError = e.message;
+          }
+        }
+      }
+
+      // 2. Retry DM jika sebelumnya FAILED
+      if (log.dmStatus === "FAILED" && isCommentEvent && rawMainDm) {
+        const dmText = rawMainDm
+          .replace(/@\{username\}/gi, `@${log.commenterUsername || "Kak"}`)
+          .replace(/\{username\}/gi, log.commenterUsername || "Kak")
+          .replace(/\{first_name\}/gi, log.commenterUsername || "Kak");
+        let btnTitle = rule.buttonText || "Buka Tautan";
+        if (ext && Array.isArray(ext.buttons) && ext.buttons[0]) {
+          btnTitle = ext.buttons[0];
+        } else if (rule.buttonText && rule.buttonText.trim().startsWith("{")) {
+          btnTitle = "Buka Tautan";
+        }
+
+        const recipientPayload = { comment_id: log.commentId };
+        let dmBody: any;
+
+        if (rule.buttonUrl && rule.buttonUrl.trim() !== "") {
+          const trackedUrl = wrapTrackedLink(rule.buttonUrl.trim(), trackLinks, rule.id, log.id);
+          dmBody = {
+            recipient: recipientPayload,
+            message: {
+              attachment: {
+                type: "template",
+                payload: {
+                  template_type: "button",
+                  text: dmText.substring(0, 640),
+                  buttons: [
+                    {
+                      type: "web_url",
+                      url: trackedUrl,
+                      title: btnTitle.substring(0, 20)
+                    }
+                  ]
+                }
+              }
+            }
+          };
+        } else {
+          dmBody = {
+            recipient: recipientPayload,
+            message: { text: dmText }
+          };
+        }
+
+        try {
+          const dmRes = await fetch(`https://graph.instagram.com/v22.0/${igBusinessId}/messages`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${accessToken}`
+            },
+            body: JSON.stringify(dmBody)
+          });
+          const dmData = await dmRes.json();
+          if (dmRes.ok && !dmData.error) {
+            newDmStatus = "SENT";
+          } else {
+            // Fallback plain text jika template gagal
+            const fallbackUrl = rule.buttonUrl
+              ? wrapTrackedLink(rule.buttonUrl.trim(), trackLinks, rule.id, log.id)
+              : "";
+            const fallbackText = fallbackUrl ? `${dmText}\n\n🔗 ${btnTitle}: ${fallbackUrl}` : dmText;
+            const fbRes = await fetch(`https://graph.instagram.com/v22.0/${igBusinessId}/messages`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+              },
+              body: JSON.stringify({
+                recipient: recipientPayload,
+                message: { text: fallbackText }
+              })
+            });
+            const fbData = await fbRes.json();
+            if (fbRes.ok && !fbData.error) {
+              newDmStatus = "SENT";
+            } else {
+              lastError = fbData.error?.message || dmData.error?.message || "Gagal mengirim DM";
+            }
+          }
+        } catch (e: any) {
+          lastError = e.message;
+        }
+      }
+
+      const isNowSuccess =
+        (log.replyCommentStatus !== "FAILED" || newReplyStatus === "SENT") &&
+        (log.dmStatus !== "FAILED" || newDmStatus === "SENT");
+
+      if (newReplyStatus === "SENT" || newDmStatus === "SENT") {
+        successCount++;
+      }
+
+      const metaObj = {
+        commentedAt: log.createdAt ? new Date(log.createdAt).toISOString() : new Date().toISOString(),
+        read: newDmStatus === "SENT",
+        retriedAt: new Date().toISOString(),
+        mainSentAt: newDmStatus === "SENT" ? new Date().toISOString() : undefined
+      };
+
+      await (db as any).instagramAutomationLog.update({
+        where: { id: log.id },
+        data: {
+          replyCommentStatus: newReplyStatus,
+          dmStatus: newDmStatus,
+          errorMessage: isNowSuccess ? `__META__:${JSON.stringify(metaObj)}` : (lastError || log.errorMessage)
+        }
+      });
+    }
+
+    revalidateTag("instagram-automation");
+    revalidateTag(`instagram-automation-${session.user.id}`);
+    revalidatePath("/ruang-automation");
+
+    return {
+      success: true,
+      retriedCount: failedLogs.length,
+      successCount,
+      message: `Berhasil memproses ulang ${successCount} dari ${failedLogs.length} log yang gagal.`
+    };
+  } catch (err: any) {
+    console.error("retryFailedAutomationLogsAction error:", err);
+    return { success: false, error: err.message || "Gagal mencoba ulang log." };
+  }
+}
+
+/**
+ * Server Action: Rewind Komentar (Menarik & memproses komentar terlewat dari 14 hari terakhir di postingan)
+ */
+export async function rewindAutomationCommentsAction(ruleId: string) {
+  try {
+    const session = await auth();
+    if (!session?.user?.id) return { success: false, error: "Unauthorized" };
+
+    const db = getDb();
+    const rule = await (db as any).instagramAutomationRule.findUnique({
+      where: { id: ruleId },
+      include: { account: true }
+    });
+
+    if (!rule || !rule.account?.accessToken) {
+      return { success: false, error: "Aturan atau token akses akun tidak ditemukan." };
+    }
+
+    const accessToken = rule.account.accessToken;
+    const igBusinessId = rule.account.instagramId || "me";
+    const ownerUsername = (rule.account.username || "").toLowerCase();
+    const ext = parseRuleExtendedConfig(rule.dmMessage);
+    const trackLinks = ext.featureLinkTracking !== false;
+    const rawMainDm = ext.mainMessage || rule.dmMessage || "";
+
+    // 1. Tentukan daftar mediaId yang akan di-scan
+    let mediaIds: string[] = [];
+    if (rule.triggerType === "SPECIFIC_POST" && rule.specificPostId) {
+      mediaIds = [rule.specificPostId];
+    } else {
+      // Ambil 5 postingan terbaru dari akun jika ALL_POSTS / NEXT_POST
+      const mediaRes = await fetch(
+        `https://graph.instagram.com/v22.0/me/media?fields=id,timestamp&limit=5&access_token=${encodeURIComponent(accessToken)}`,
+        { cache: "no-store" }
+      );
+      if (mediaRes.ok) {
+        const mediaData = await mediaRes.json();
+        if (Array.isArray(mediaData?.data)) {
+          mediaIds = mediaData.data.map((m: any) => String(m.id));
+        }
+      }
+    }
+
+    if (mediaIds.length === 0) {
+      return { success: false, error: "Tidak ada postingan yang ditemukan untuk di-rewind." };
+    }
+
+    // 2. Ambil semua commentId yang sudah pernah diproses oleh rule ini agar tidak dobel
+    const existingLogs = await (db as any).instagramAutomationLog.findMany({
+      where: { ruleId: rule.id },
+      select: { commentId: true }
+    });
+    const processedCommentIds = new Set(existingLogs.map((l: any) => String(l.commentId)));
+
+    const fourteenDaysAgoMs = Date.now() - 14 * 24 * 60 * 60 * 1000;
+    const sevenDaysAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000; // Batas Private Reply Meta untuk komentar adalah 7 hari
+    const keywords: string[] = Array.isArray(rule.keywords) ? rule.keywords : [];
+
+    let processedCount = 0;
+    let skippedOldCount = 0;
+
+    for (const mediaId of mediaIds) {
+      const commentsRes = await fetch(
+        `https://graph.instagram.com/v22.0/${mediaId}/comments?fields=id,text,username,timestamp,from&limit=50&access_token=${encodeURIComponent(accessToken)}`,
+        { cache: "no-store" }
+      );
+      if (!commentsRes.ok) continue;
+
+      const commentsData = await commentsRes.json();
+      const comments: any[] = Array.isArray(commentsData?.data) ? commentsData.data : [];
+
+      for (const c of comments) {
+        const commentId = String(c.id || "");
+        if (!commentId || processedCommentIds.has(commentId)) continue;
+
+        const commenterUsername = c.username || c.from?.username || "instagram_user";
+        const commenterId = c.from?.id ? String(c.from.id) : "";
+
+        // Jangan balas komentar dari akun sendiri
+        if (
+          (ownerUsername && commenterUsername.toLowerCase() === ownerUsername) ||
+          (commenterId && commenterId === String(rule.account.instagramId))
+        ) {
+          continue;
+        }
+
+        const commentTimeMs = c.timestamp ? new Date(c.timestamp).getTime() : Date.now();
+        if (commentTimeMs < fourteenDaysAgoMs) continue;
+
+        const commentText = String(c.text || "").trim();
+        const upperText = commentText.toUpperCase();
+
+        // Cek kecocokan keyword
+        const isMatched =
+          keywords.length === 0 ||
+          keywords.some((kw) => {
+            const cleanKw = kw.trim().toUpperCase();
+            return cleanKw === "SEMUA" || cleanKw === "*" || upperText.includes(cleanKw);
+          });
+
+        if (!isMatched) continue;
+
+        // Buat log record terlebih dahulu agar dapat logId untuk tracking
+        const initialMeta = {
+          commentedAt: c.timestamp ? new Date(c.timestamp).toISOString() : new Date().toISOString(),
+          mediaId,
+          read: false,
+          senderId: commenterId,
+          rewound: true
+        };
+
+        const createdLog = await (db as any).instagramAutomationLog.create({
+          data: {
+            accountId: rule.account.id,
+            ruleId: rule.id,
+            commentId,
+            commentText,
+            commenterUsername,
+            replyCommentStatus: "SKIPPED",
+            dmStatus: "SKIPPED",
+            errorMessage: `__META__:${JSON.stringify(initialMeta)}`
+          }
+        });
+
+        let replyCommentStatus = "SKIPPED";
+        let dmStatus = "SKIPPED";
+        let errorMsg = "";
+
+        // A. Balas Komentar Publik
+        const replies: string[] = Array.isArray(rule.commentReplies) ? rule.commentReplies : [];
+        if (replies.length > 0 && ext.featureReplyComment !== false) {
+          const randomReply = replies[Math.floor(Math.random() * replies.length)];
+          const personalizedReply = randomReply
+            .replace(/@\{username\}/gi, `@${commenterUsername}`)
+            .replace(/\{username\}/gi, `@${commenterUsername}`);
+          try {
+            const replyRes = await fetch(`https://graph.instagram.com/v22.0/${commentId}/replies`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`
+              },
+              body: JSON.stringify({ message: personalizedReply })
+            });
+            const replyData = await replyRes.json();
+            if (replyRes.ok && !replyData.error) {
+              replyCommentStatus = "SENT";
+            } else {
+              replyCommentStatus = "FAILED";
+              errorMsg = replyData.error?.message || "Gagal membalas komentar";
+            }
+          } catch (e: any) {
+            replyCommentStatus = "FAILED";
+            errorMsg = e.message;
+          }
+        }
+
+        // B. Kirim DM (Private Reply via comment_id berlaku maksimal 7 hari menurut kebijakan Meta)
+        if (rawMainDm) {
+          if (commentTimeMs < sevenDaysAgoMs) {
+            dmStatus = "FAILED";
+            errorMsg = "Komentar lebih dari 7 hari (batas Private Reply Meta)";
+            skippedOldCount++;
+          } else {
+            const dmText = rawMainDm
+              .replace(/@\{username\}/gi, `@${commenterUsername}`)
+              .replace(/\{username\}/gi, commenterUsername)
+              .replace(/\{first_name\}/gi, commenterUsername);
+            let btnTitle = rule.buttonText || "Buka Tautan";
+            if (ext && Array.isArray(ext.buttons) && ext.buttons[0]) {
+              btnTitle = ext.buttons[0];
+            } else if (rule.buttonText && rule.buttonText.trim().startsWith("{")) {
+              btnTitle = "Buka Tautan";
+            }
+
+            const recipientPayload = { comment_id: commentId };
+            let dmBody: any;
+
+            if (rule.buttonUrl && rule.buttonUrl.trim() !== "") {
+              const trackedUrl = wrapTrackedLink(rule.buttonUrl.trim(), trackLinks, rule.id, createdLog.id);
+              dmBody = {
+                recipient: recipientPayload,
+                message: {
+                  attachment: {
+                    type: "template",
+                    payload: {
+                      template_type: "button",
+                      text: dmText.substring(0, 640),
+                      buttons: [
+                        {
+                          type: "web_url",
+                          url: trackedUrl,
+                          title: btnTitle.substring(0, 20)
+                        }
+                      ]
+                    }
+                  }
+                }
+              };
+            } else {
+              dmBody = {
+                recipient: recipientPayload,
+                message: { text: dmText }
+              };
+            }
+
+            try {
+              const dmRes = await fetch(`https://graph.instagram.com/v22.0/${igBusinessId}/messages`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${accessToken}`
+                },
+                body: JSON.stringify(dmBody)
+              });
+              const dmData = await dmRes.json();
+              if (dmRes.ok && !dmData.error) {
+                dmStatus = "SENT";
+              } else {
+                dmStatus = "FAILED";
+                errorMsg = (errorMsg ? errorMsg + " | " : "") + (dmData.error?.message || "Gagal mengirim DM");
+              }
+            } catch (e: any) {
+              dmStatus = "FAILED";
+              errorMsg = (errorMsg ? errorMsg + " | " : "") + e.message;
+            }
+          }
+        }
+
+        const updatedMeta = {
+          ...initialMeta,
+          read: dmStatus === "SENT",
+          mainSentAt: dmStatus === "SENT" ? new Date().toISOString() : undefined
+        };
+
+        await (db as any).instagramAutomationLog.update({
+          where: { id: createdLog.id },
+          data: {
+            replyCommentStatus,
+            dmStatus,
+            errorMessage: errorMsg ? errorMsg : `__META__:${JSON.stringify(updatedMeta)}`
+          }
+        });
+
+        processedCommentIds.add(commentId);
+        processedCount++;
+      }
+    }
+
+    revalidateTag("instagram-automation");
+    revalidateTag(`instagram-automation-${session.user.id}`);
+    revalidatePath("/ruang-automation");
+
+    return {
+      success: true,
+      processedCount,
+      skippedOldCount,
+      message:
+        processedCount > 0
+          ? `Rewind selesai! ${processedCount} komentar terlewat berhasil diproses.`
+          : "Tidak ditemukan komentar baru yang terlewat dari 14 hari terakhir."
+    };
+  } catch (err: any) {
+    console.error("rewindAutomationCommentsAction error:", err);
+    return { success: false, error: err.message || "Gagal melakukan Rewind Komentar." };
+  }
+}
+

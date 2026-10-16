@@ -111,6 +111,142 @@ async function getIgUserProfile(
   return { username: "kak", name: "Kak", isFollowing: null };
 }
 
+function parseLogMeta(errorMessage?: string | null): Record<string, any> {
+  if (!errorMessage || !errorMessage.startsWith("__META__:")) return {};
+  try {
+    return JSON.parse(errorMessage.slice(9));
+  } catch {
+    return {};
+  }
+}
+
+function stringifyLogMeta(meta: Record<string, any>): string {
+  return `__META__:${JSON.stringify(meta)}`;
+}
+
+function buildTrackedUrl(
+  origin: string,
+  rawUrl: string,
+  ruleId: string,
+  enableTracking: boolean = true,
+  logId?: string,
+  senderId?: string
+): string {
+  const cleanUrl = (rawUrl || "https://ruangcreativemuslim.com").trim();
+  if (!enableTracking) return cleanUrl;
+  const params = new URLSearchParams({
+    url: cleanUrl,
+    ruleId,
+    ...(logId ? { logId } : {}),
+    ...(senderId ? { senderId } : {}),
+  });
+  return `${origin}/api/track/instagram?${params.toString()}`;
+}
+
+function parseDelayToMs(delayStr?: string): number {
+  if (!delayStr) return 60 * 60 * 1000;
+  const lower = delayStr.toLowerCase();
+  if (lower.includes("15 menit")) return 15 * 60 * 1000;
+  if (lower.includes("30 menit")) return 30 * 60 * 1000;
+  if (lower.includes("1 jam")) return 60 * 60 * 1000;
+  if (lower.includes("3 jam")) return 3 * 60 * 60 * 1000;
+  if (lower.includes("6 jam")) return 6 * 60 * 60 * 1000;
+  if (lower.includes("12 jam")) return 12 * 60 * 60 * 1000;
+  if (lower.includes("23 jam") || lower.includes("24 jam")) return 23 * 60 * 60 * 1000;
+  return 60 * 60 * 1000;
+}
+
+async function processPendingFollowUps(account: any, origin: string) {
+  try {
+    const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const logs = await (prisma as any).instagramAutomationLog.findMany({
+      where: {
+        accountId: account.id,
+        dmStatus: "SENT",
+        createdAt: { gte: since24h },
+      },
+      include: { rule: true },
+      orderBy: { createdAt: "desc" },
+      take: 40,
+    });
+
+    for (const log of logs) {
+      if (!log.rule || !log.rule.isActive) continue;
+      const meta = parseLogMeta(log.errorMessage);
+      if (!meta.senderId || !meta.mainSentAt || meta.followUpSent || meta.followUpSkipped) continue;
+
+      let ruleConfig: any = {};
+      try {
+        if (log.rule.dmMessage && (log.rule.dmMessage.startsWith("{") || log.rule.dmMessage.includes('"mainMessage"'))) {
+          ruleConfig = JSON.parse(log.rule.dmMessage);
+        }
+      } catch {}
+
+      if (!ruleConfig.featureFollowUp || !ruleConfig.followUpMessage) continue;
+
+      const delayMs = parseDelayToMs(ruleConfig.followUpDelay);
+      const elapsed = Date.now() - new Date(meta.mainSentAt).getTime();
+      if (elapsed < delayMs) continue;
+
+      // Cek kondisi Follow Up
+      if (ruleConfig.followUpCondition === "Hanya yang Belum Klik Link" && meta.clicked) {
+        await (prisma as any).instagramAutomationLog.update({
+          where: { id: log.id },
+          data: { errorMessage: stringifyLogMeta({ ...meta, followUpSkipped: true }) },
+        }).catch(() => {});
+        continue;
+      }
+
+      const followUpText = resolveVariables(ruleConfig.followUpMessage, log.fromUsername || "kak");
+      const btnLabel = ruleConfig.followUpButtonLabel || log.rule.buttonText || "Buka Link Sekarang";
+      const targetUrl = log.rule.buttonUrl || "https://ruangcreativemuslim.com";
+      const trackedUrl = buildTrackedUrl(
+        origin,
+        targetUrl,
+        log.rule.id,
+        ruleConfig.featureLinkTracking !== false,
+        log.id,
+        meta.senderId
+      );
+
+      const followUpPayload =
+        ruleConfig.followUpMessageType === "Teks Biasa" || !log.rule.buttonUrl
+          ? { text: followUpText }
+          : buildButtonTemplateMessage(followUpText, [
+              {
+                type: "web_url",
+                url: trackedUrl,
+                title: btnLabel.slice(0, 20),
+              },
+            ]);
+
+      const res = await postToMetaGraph(
+        `/me/messages`,
+        {
+          recipient: { id: meta.senderId },
+          message: followUpPayload,
+        },
+        account.accessToken
+      );
+
+      if (res.ok) {
+        await (prisma as any).instagramAutomationLog.update({
+          where: { id: log.id },
+          data: {
+            errorMessage: stringifyLogMeta({
+              ...meta,
+              followUpSent: true,
+              followUpSentAt: new Date().toISOString(),
+            }),
+          },
+        }).catch(() => {});
+      }
+    }
+  } catch (err) {
+    console.warn("FollowUp processor warning:", err);
+  }
+}
+
 /**
  * 1. GET Handler: Verifikasi Meta Webhook
  * Meta Developer Dashboard memvalidasi endpoint ini menggunakan hub.challenge & hub.verify_token
@@ -410,6 +546,18 @@ export async function POST(req: NextRequest) {
           // =====================================================================
           // 4. EKSEKUSI: KIRIM PESAN DM PRIVAT (Private Reply to Comment)
           // =====================================================================
+          const origin =
+            req.nextUrl.origin && !req.nextUrl.origin.includes("localhost")
+              ? req.nextUrl.origin
+              : "https://ruangcreativemuslim-seven.vercel.app";
+
+          const initialMeta: Record<string, any> = {
+            commentedAt: comment.created_time
+              ? new Date(Number(comment.created_time) * 1000 || comment.created_time).toISOString()
+              : new Date().toISOString(),
+            mediaId: mediaId || null,
+          };
+
           try {
             // Tentukan konten pesan sesuai alur Funnel:
             // Flow: Pesan Pembuka -> Ask For Follow -> Ask for Contact -> Pesan Utama
@@ -443,16 +591,25 @@ export async function POST(req: NextRequest) {
               // Step 4c: Ask for Contact Request
               const contactText = resolveVariables(ruleConfig.askContactMessage, fromUsername);
               dmPayloadMessage = { text: contactText };
+              initialMeta.awaitingContact = true;
+              initialMeta.askContactType = ruleConfig.askContactType || "Email Saja";
             } else {
               // Step 4d: Pesan Utama (Delivery Akses/Materi Langsung)
               const deliveredText = resolveVariables(mainDmText, fromUsername);
+              initialMeta.mainSentAt = new Date().toISOString();
 
               if (matchedRule.buttonText && matchedRule.buttonUrl) {
+                const trackedUrl = buildTrackedUrl(
+                  origin,
+                  matchedRule.buttonUrl,
+                  matchedRule.id,
+                  ruleConfig.featureLinkTracking !== false
+                );
                 // Template Tombol tanpa header aturan dan tanpa pemotongan 80 karakter
                 dmPayloadMessage = buildButtonTemplateMessage(deliveredText, [
                   {
                     type: "web_url",
-                    url: matchedRule.buttonUrl,
+                    url: trackedUrl,
                     title: matchedRule.buttonText.slice(0, 20),
                   },
                 ]);
@@ -509,7 +666,7 @@ export async function POST(req: NextRequest) {
               commentId: commentId,
               replyCommentStatus: replyCommentStatus,
               dmStatus: dmStatus,
-              errorMessage: failureReason,
+              errorMessage: failureReason ? failureReason : stringifyLogMeta(initialMeta),
             },
           });
         }
@@ -518,10 +675,15 @@ export async function POST(req: NextRequest) {
       // =========================================================================
       // B. EVENT: INTERAKSI DM BALASAN (User Mengirim Email/WA atau Klik Tombol)
       // =========================================================================
+      const origin =
+        req.nextUrl.origin && !req.nextUrl.origin.includes("localhost")
+          ? req.nextUrl.origin
+          : "https://ruangcreativemuslim-seven.vercel.app";
+
       const messagingList = entry.messaging || [];
       for (const msgEvent of messagingList) {
         const senderId = String(msgEvent.sender?.id || "");
-        const msgText = msgEvent.message?.text || "";
+        const msgText = (msgEvent.message?.text || "").trim();
         const postbackPayload = msgEvent.postback?.payload || msgEvent.message?.quick_reply?.payload;
 
         if (!senderId || senderId === account.instagramId || senderId === account.pageId) continue;
@@ -546,16 +708,50 @@ export async function POST(req: NextRequest) {
             const senderUsername = userProfile.username || "kak";
             const mainText = resolveVariables(ruleConfig.mainMessage || targetRule.dmMessage || "", senderUsername);
 
+            // Cari log terbaru untuk user & rule ini agar bisa diupdate status read / newFollower / awaitingContact
+            const recentLogs = await (prisma as any).instagramAutomationLog.findMany({
+              where: { ruleId: targetRule.id },
+              orderBy: { createdAt: "desc" },
+              take: 25,
+            });
+            const userLog =
+              recentLogs.find((l: any) => {
+                const m = parseLogMeta(l.errorMessage);
+                return (
+                  m.senderId === senderId ||
+                  (senderUsername && l.fromUsername?.toLowerCase() === senderUsername.toLowerCase())
+                );
+              }) || recentLogs[0];
+
+            const currentMeta = userLog ? parseLogMeta(userLog.errorMessage) : {};
+            const updatedMeta: Record<string, any> = {
+              ...currentMeta,
+              read: true,
+              senderId,
+            };
+
             // Helper untuk membangun pesan tahap akhir (Ask for Contact atau Pesan Utama)
             const buildFinalOrContactStep = () => {
-              if (ruleConfig.featureAskForContact && ruleConfig.askContactMessage) {
+              if (ruleConfig.featureAskForContact && ruleConfig.askContactMessage && !updatedMeta.contact) {
+                updatedMeta.awaitingContact = true;
+                updatedMeta.askContactType = ruleConfig.askContactType || "Email Saja";
                 return { text: resolveVariables(ruleConfig.askContactMessage, senderUsername) };
               }
+              updatedMeta.awaitingContact = false;
+              updatedMeta.mainSentAt = new Date().toISOString();
               if (targetRule.buttonText && targetRule.buttonUrl) {
+                const trackedUrl = buildTrackedUrl(
+                  origin,
+                  targetRule.buttonUrl,
+                  targetRule.id,
+                  ruleConfig.featureLinkTracking !== false,
+                  userLog?.id,
+                  senderId
+                );
                 return buildButtonTemplateMessage(mainText, [
                   {
                     type: "web_url",
-                    url: targetRule.buttonUrl,
+                    url: trackedUrl,
                     title: targetRule.buttonText.slice(0, 20),
                   },
                 ]);
@@ -567,14 +763,14 @@ export async function POST(req: NextRequest) {
 
             if (postbackPayload.startsWith("WELCOME_AGREE")) {
               // User baru saja klik tombol pada Pesan Pembuka
-              // Cek apakah aturan mengaktifkan Ask For Follow
               if (ruleConfig.featureAskForFollow && ruleConfig.askForFollowMessage) {
                 if (userProfile.isFollowing === true) {
                   // Jika ternyata user sudah follow, langsung kirim Ask For Contact / Pesan Utama
                   console.log(`✅ [Meta Webhook] @${senderUsername} already follows @${account.username}, skipping Ask For Follow gate.`);
                   nextMsg = buildFinalOrContactStep();
                 } else {
-                  // Jika belum follow, kirim pesan Ask For Follow
+                  // Tandai bahwa user awalnya belum follow (agar saat nanti follow terhitung sebagai New Follower)
+                  updatedMeta.wasUnfollowed = true;
                   console.log(`🔒 [Meta Webhook] @${senderUsername} has not followed @${account.username} yet. Sending Ask For Follow gate.`);
                   const followText = resolveVariables(ruleConfig.askForFollowMessage, senderUsername);
                   const followBtnLabel = ruleConfig.askForFollowButtonLabel || "Sudah mengikuti 🙌";
@@ -593,6 +789,7 @@ export async function POST(req: NextRequest) {
             } else if (postbackPayload.startsWith("CHECK_FOLLOW")) {
               // User klik tombol "Sudah mengikuti 🙌" -> Verifikasi real-time ke Meta API
               if (userProfile.isFollowing === false) {
+                updatedMeta.wasUnfollowed = true;
                 // User belum benar-benar follow! Kirim pesan Retry / Peringatan Belum Follow
                 console.log(`⚠️ [Meta Webhook] @${senderUsername} clicked CHECK_FOLLOW but is_user_follow_business is false. Sending retry prompt.`);
                 const retryRawText =
@@ -613,10 +810,18 @@ export async function POST(req: NextRequest) {
                   },
                 ]);
               } else {
-                // User sudah benar-benar follow! Kirim Ask For Contact atau Pesan Utama
+                // User sudah benar-benar follow! Catat sebagai New Follower
+                updatedMeta.newFollower = true;
                 console.log(`✅ [Meta Webhook] Verified @${senderUsername} follows @${account.username}! Delivering content.`);
                 nextMsg = buildFinalOrContactStep();
               }
+            }
+
+            if (userLog && (!userLog.errorMessage || userLog.errorMessage.startsWith("__META__:"))) {
+              await (prisma as any).instagramAutomationLog.update({
+                where: { id: userLog.id },
+                data: { errorMessage: stringifyLogMeta(updatedMeta) },
+              }).catch(() => {});
             }
 
             if (nextMsg) {
@@ -630,53 +835,169 @@ export async function POST(req: NextRequest) {
               ).catch(() => {});
             }
           }
+          continue;
         }
 
-        // 2. Cek apakah user mengirim Email / No WhatsApp (Respon Ask for Contact)
-        const emailMatch = msgText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
-        const phoneMatch = msgText.match(/(?:\+62|62|08)[0-9]{8,13}/);
+        // 2. Cek apakah user sedang berada di tahap Ask for Contact (mengirim teks balasan di DM)
+        if (msgText && !msgEvent.message?.is_echo) {
+          const userProfile = await getIgUserProfile(senderId, account.accessToken);
+          const senderUsername = userProfile.username || "kak";
 
-        if (emailMatch || phoneMatch) {
-          // Cari aturan aktif terakhir pada akun ini yang menggunakan Ask for Contact
-          const latestRule = await (prisma as any).instagramAutomationRule.findFirst({
-            where: { accountId: account.id, isActive: true },
-            orderBy: { updatedAt: "desc" },
+          // Cari log terbaru milik user ini yang sedang menunggu input kontak (awaitingContact === true)
+          const recentAccountLogs = await (prisma as any).instagramAutomationLog.findMany({
+            where: { accountId: account.id },
+            include: { rule: true },
+            orderBy: { createdAt: "desc" },
+            take: 30,
           });
 
-          if (latestRule) {
+          const awaitingLog = recentAccountLogs.find((l: any) => {
+            const m = parseLogMeta(l.errorMessage);
+            const isSameUser =
+              m.senderId === senderId ||
+              (senderUsername && l.fromUsername?.toLowerCase() === senderUsername.toLowerCase());
+            return isSameUser && m.awaitingContact === true;
+          });
+
+          const emailMatch = msgText.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/);
+          const phoneMatch = msgText.match(/(?:\+62|62|08)[0-9]{8,13}/);
+
+          if (awaitingLog && awaitingLog.rule) {
+            const targetRule = awaitingLog.rule;
             let ruleConfig: any = {};
             try {
-              if (latestRule.dmMessage && (latestRule.dmMessage.startsWith("{") || latestRule.dmMessage.includes('"mainMessage"'))) {
-                ruleConfig = JSON.parse(latestRule.dmMessage);
+              if (targetRule.dmMessage && (targetRule.dmMessage.startsWith("{") || targetRule.dmMessage.includes('"mainMessage"'))) {
+                ruleConfig = JSON.parse(targetRule.dmMessage);
               }
             } catch {}
-            const userProfile = await getIgUserProfile(senderId, account.accessToken);
-            const deliveredMain = resolveVariables(
-              ruleConfig.mainMessage || latestRule.dmMessage || "Sip, kontak kamu sudah tersimpan dengan aman! Ini link akses materinya ya:",
-              userProfile.username
-            );
-            const finalPayload =
-              latestRule.buttonText && latestRule.buttonUrl
-                ? buildButtonTemplateMessage(deliveredMain, [
-                    {
-                      type: "web_url",
-                      url: latestRule.buttonUrl,
-                      title: latestRule.buttonText.slice(0, 20),
-                    },
-                  ])
-                : { text: deliveredMain };
 
-            await postToMetaGraph(
-              `/me/messages`,
-              {
-                recipient: { id: senderId },
-                message: finalPayload,
-              },
-              account.accessToken
-            ).catch(() => {});
+            const contactType = (ruleConfig.askContactType || "Email Saja").toLowerCase();
+            const isEmailValid = Boolean(emailMatch);
+            const isPhoneValid = Boolean(phoneMatch);
+            const isValidContact = contactType.includes("whatsapp") && !contactType.includes("email")
+              ? isPhoneValid
+              : contactType.includes("email") && !contactType.includes("whatsapp")
+              ? isEmailValid
+              : isEmailValid || isPhoneValid;
+
+            if (!isValidContact) {
+              // Kirim pesan peringatan format kontak belum sesuai (askContactInvalidMessage)
+              const invalidMsg = resolveVariables(
+                ruleConfig.askContactInvalidMessage ||
+                  "Waduh, format kontaknya kayaknya belum pas nih kak 😅 Coba cek dan ketik ulang ya 🙏",
+                senderUsername
+              );
+              await postToMetaGraph(
+                `/me/messages`,
+                {
+                  recipient: { id: senderId },
+                  message: { text: invalidMsg },
+                },
+                account.accessToken
+              ).catch(() => {});
+            } else {
+              // Kontak valid! Simpan kontak ke metadata log dan kirim Pesan Utama
+              const currentMeta = parseLogMeta(awaitingLog.errorMessage);
+              const updatedMeta = {
+                ...currentMeta,
+                read: true,
+                senderId,
+                awaitingContact: false,
+                contact: emailMatch?.[0] || phoneMatch?.[0] || msgText,
+                mainSentAt: new Date().toISOString(),
+              };
+
+              await (prisma as any).instagramAutomationLog.update({
+                where: { id: awaitingLog.id },
+                data: { errorMessage: stringifyLogMeta(updatedMeta) },
+              }).catch(() => {});
+
+              const deliveredMain = resolveVariables(
+                ruleConfig.mainMessage || targetRule.dmMessage || "Sip, kontak kamu sudah tersimpan dengan aman! Ini link akses materinya ya:",
+                senderUsername
+              );
+
+              const trackedUrl = buildTrackedUrl(
+                origin,
+                targetRule.buttonUrl || "https://ruangcreativemuslim.com",
+                targetRule.id,
+                ruleConfig.featureLinkTracking !== false,
+                awaitingLog.id,
+                senderId
+              );
+
+              const finalPayload =
+                targetRule.buttonText && targetRule.buttonUrl
+                  ? buildButtonTemplateMessage(deliveredMain, [
+                      {
+                        type: "web_url",
+                        url: trackedUrl,
+                        title: targetRule.buttonText.slice(0, 20),
+                      },
+                    ])
+                  : { text: deliveredMain };
+
+              await postToMetaGraph(
+                `/me/messages`,
+                {
+                  recipient: { id: senderId },
+                  message: finalPayload,
+                },
+                account.accessToken
+              ).catch(() => {});
+            }
+          } else if (emailMatch || phoneMatch) {
+            // Fallback jika ada aturan aktif yang meminta kontak namun belum tercatat awaitingContact
+            const latestRule = await (prisma as any).instagramAutomationRule.findFirst({
+              where: { accountId: account.id, isActive: true },
+              orderBy: { updatedAt: "desc" },
+            });
+
+            if (latestRule) {
+              let ruleConfig: any = {};
+              try {
+                if (latestRule.dmMessage && (latestRule.dmMessage.startsWith("{") || latestRule.dmMessage.includes('"mainMessage"'))) {
+                  ruleConfig = JSON.parse(latestRule.dmMessage);
+                }
+              } catch {}
+              const deliveredMain = resolveVariables(
+                ruleConfig.mainMessage || latestRule.dmMessage || "Sip, kontak kamu sudah tersimpan dengan aman! Ini link akses materinya ya:",
+                senderUsername
+              );
+              const trackedUrl = buildTrackedUrl(
+                origin,
+                latestRule.buttonUrl || "https://ruangcreativemuslim.com",
+                latestRule.id,
+                ruleConfig.featureLinkTracking !== false,
+                undefined,
+                senderId
+              );
+              const finalPayload =
+                latestRule.buttonText && latestRule.buttonUrl
+                  ? buildButtonTemplateMessage(deliveredMain, [
+                      {
+                        type: "web_url",
+                        url: trackedUrl,
+                        title: latestRule.buttonText.slice(0, 20),
+                      },
+                    ])
+                  : { text: deliveredMain };
+
+              await postToMetaGraph(
+                `/me/messages`,
+                {
+                  recipient: { id: senderId },
+                  message: finalPayload,
+                },
+                account.accessToken
+              ).catch(() => {});
+            }
           }
         }
       }
+
+      // Jalankan pemeriksaan pesan Follow Up yang sudah jatuh tempo secara non-blocking
+      processPendingFollowUps(account, origin).catch(() => {});
     }
 
     return new NextResponse("EVENT_RECEIVED", { status: 200 });
