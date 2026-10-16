@@ -2459,7 +2459,7 @@ export default function RuangAutomationClient({
                       <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5">
                         <div>
                           {/* Baris 1: Judul & Menu Titik Tiga */}
-                          <div className="flex items-start justify-between gap-2 mb-1">
+                          <div className="flex items-start justify-between gap-2 mb-0.5">
                             <h3
                               className="text-[15px] sm:text-[17px] font-bold leading-tight tracking-tight text-gray-900 dark:text-white line-clamp-1 flex-1"
                               title={rule.name}
@@ -2541,21 +2541,21 @@ export default function RuangAutomationClient({
                             </div>
                           </div>
 
-                          {/* Baris 2: Status (Tanpa Icon Dot) */}
-                          <div className="mb-1.5">
+                          {/* Baris 2: Status (Tanpa Icon Dot, Dekat dengan Judul) */}
+                          <div className="mb-1 leading-none">
                             {!isAccountLinked ? (
-                              <span className="text-xs font-semibold text-amber-600 dark:text-amber-400">
+                              <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
                                 Terputus
                               </span>
                             ) : (
-                              <span className={`text-xs font-semibold ${rule.isActive ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400"}`}>
+                              <span className={`text-[11px] font-semibold ${rule.isActive ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400"}`}>
                                 {rule.isActive ? "Berjalan" : "Nonaktif"}
                               </span>
                             )}
                           </div>
 
-                          {/* Baris 3: Lihat Post & Detail (Seragam Warna Orange) */}
-                          <div className="flex items-center gap-2 text-xs mb-3 flex-wrap">
+                          {/* Baris 3: Lihat Post & Detail (Dekat dengan Status, Seragam Warna Orange) */}
+                          <div className="flex items-center gap-1.5 text-xs mb-2.5 flex-wrap">
                             {isAccountLinked && rule.triggerType === "SPECIFIC_POST" && rule.specificPostId && (
                               <>
                                 <a
@@ -2579,27 +2579,27 @@ export default function RuangAutomationClient({
                           </div>
 
                           {!isAccountLinked && (
-                            <div className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-200/80 dark:border-amber-500/20 flex items-center gap-1.5 mb-2.5">
+                            <div className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-200/80 dark:border-amber-500/20 flex items-center gap-1.5 mb-2">
                               <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-500" />
                               <span>Koneksi akun terputus — automasi ini dijeda otomatis.</span>
                             </div>
                           )}
 
-                          {/* Baris 4: Kata Pemicu (Clean, Bukan Huruf Besar Semua) */}
-                          <div className="mb-3.5">
-                            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 block mb-1.5">
+                          {/* Baris 4: Kata Pemicu (Clean, Proporsional) */}
+                          <div className="mb-2.5">
+                            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 block mb-1">
                               Kata Pemicu
                             </span>
                             <div className="flex items-center gap-1.5 flex-wrap">
                               {keywordList.length === 0 ? (
-                                <span className="font-semibold rounded-md px-2.5 py-1 text-[11px] bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 inline-flex items-center gap-1">
+                                <span className="font-semibold rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 inline-flex items-center gap-1">
                                   <Link2 className="w-3 h-3" /> Semua Kata
                                 </span>
                               ) : (
                                 keywordList.map((kw: string, idx: number) => (
                                   <span
                                     key={idx}
-                                    className="font-medium rounded-md px-2.5 py-0.5 text-[11px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-white/5"
+                                    className="font-medium rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-white/5"
                                   >
                                     {kw}
                                   </span>
@@ -2610,7 +2610,7 @@ export default function RuangAutomationClient({
                         </div>
 
                         {/* Baris 5 (Bawah): 4 Metrics Columns Lengkap (Terkirim, Klik, Follower, CTR) */}
-                        <div className="pt-3 border-t border-gray-100 dark:border-white/5 grid grid-cols-4 gap-2 text-center sm:text-left">
+                        <div className="pt-2 border-t border-gray-100 dark:border-white/5 grid grid-cols-4 gap-1.5 text-center sm:text-left">
                           <div>
                             <span className="text-[10px] text-gray-400 block font-medium leading-none">Terkirim</span>
                             <span className="text-sm sm:text-base font-black text-orange-600 dark:text-orange-400 block mt-1 leading-none">
