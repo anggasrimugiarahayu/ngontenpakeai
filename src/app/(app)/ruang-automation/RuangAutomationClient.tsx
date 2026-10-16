@@ -1103,9 +1103,14 @@ export default function RuangAutomationClient({
           ? "STORY_MENTION"
           : "ALL",
       postId: rule.specificPostId || matched.id,
-      triggerCommentType: keywordsStr.trim() ? "KEYWORDS" : "ALL",
+      triggerCommentType: (config.triggerCommentType as "KEYWORDS" | "ALL") || (keywordsStr.trim() ? "KEYWORDS" : "ALL"),
       keywords: keywordsStr || "mau, harga, info, spill",
-      keywordRule: "Contains",
+      keywordRule:
+        config.keywordRule === "Match" || config.keywordRule === "match"
+          ? "Match"
+          : config.keywordRule === "Starts with" || config.keywordRule === "starts with" || config.keywordRule === "StartsWith"
+          ? "Starts with"
+          : "Contains",
       messageType: hasButtons ? "BUTTON_TEMPLATE" : "PLAIN_TEXT",
       dmMessage: dmTemplateStr || "Halo {first_name}! Terima kasih sudah tertarik. Ini link akses yang kamu minta:\nhttps://ruangcreativemuslim.com",
       buttons: initialButtons,
@@ -2828,14 +2833,21 @@ export default function RuangAutomationClient({
                                   <Link2 className="w-3 h-3" /> Semua Kata
                                 </span>
                               ) : (
-                                keywordList.map((kw: string, idx: number) => (
-                                  <span
-                                    key={idx}
-                                    className="font-medium rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-white/5"
-                                  >
-                                    {kw}
-                                  </span>
-                                ))
+                                <>
+                                  {ruleConfig.keywordRule && ruleConfig.keywordRule !== "Contains" && (
+                                    <span className="font-extrabold rounded-md px-1.5 py-0.5 text-[9px] sm:text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 uppercase tracking-wider">
+                                      {ruleConfig.keywordRule}
+                                    </span>
+                                  )}
+                                  {keywordList.map((kw: string, idx: number) => (
+                                    <span
+                                      key={idx}
+                                      className="font-medium rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-white/5"
+                                    >
+                                      {kw}
+                                    </span>
+                                  ))}
+                                </>
                               )}
                               {ruleConfig.replyHeartReaction && (
                                 <span className="font-semibold rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 inline-flex items-center gap-1">

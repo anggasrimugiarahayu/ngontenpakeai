@@ -28,6 +28,45 @@ function resolveVariables(text: string, username: string): string {
 }
 
 /**
+ * Helper: Memeriksa kecocokan kata kunci berdasarkan aturan (Contains, Match, Starts with)
+ * Digunakan secara konsisten baik pada komentar Post/Reels maupun interaksi Story
+ */
+function checkKeywordMatch(
+  inputText: string,
+  rawKeywords: string[] | string,
+  ruleStyle: string = "Contains"
+): boolean {
+  const keywords = (
+    Array.isArray(rawKeywords)
+      ? rawKeywords
+      : typeof rawKeywords === "string"
+      ? rawKeywords.split(",")
+      : []
+  )
+    .map((k: string) => k.trim().toLowerCase())
+    .filter(Boolean);
+
+  // Jika daftar kata kunci kosong, dianggap pemicu wildcard (semua kata cocok)
+  if (keywords.length === 0) return true;
+
+  const cleanText = (inputText || "").trim().toLowerCase();
+  if (!cleanText) return false;
+
+  const style = (ruleStyle || "Contains").toLowerCase().trim();
+
+  if (style === "match" || style === "exact") {
+    // Match: Seluruh kata/pesan komentar harus sama persis dengan salah satu kata kunci
+    return keywords.some((kw) => cleanText === kw);
+  } else if (style === "starts with" || style === "startswith") {
+    // Starts with: Komentar/pesan harus diawali dengan salah satu kata kunci
+    return keywords.some((kw) => cleanText.startsWith(kw));
+  } else {
+    // Contains (default): Komentar/pesan mengandung kata kunci di mana saja
+    return keywords.some((kw) => cleanText.includes(kw));
+  }
+}
+
+/**
  * Helper: Mengirim request POST ke Meta Graph API
  * Mendukung format Instagram Login (graph.instagram.com) maupun Facebook Page (graph.facebook.com)
  */
@@ -483,23 +522,35 @@ export async function POST(req: NextRequest) {
           const matchedRule = candidateRules.find((rule: any) => {
             console.log(`🔍 [Meta Webhook] Checking rule "${rule.name}" (${rule.triggerType}) against media ID: ${mediaId}`);
 
-            // Cek kata kunci pemicu
+            // Unpack konfigurasi aturan lanjutan jika ada
+            let cfg: any = {};
+            try {
+              if (rule.dmMessage && (rule.dmMessage.startsWith("{") || rule.dmMessage.includes('"mainMessage"'))) {
+                cfg = JSON.parse(rule.dmMessage);
+              }
+            } catch (e) {}
+
+            // Cek jika triggerCommentType === "ALL" (Semua Komentar)
+            if (cfg.triggerCommentType === "ALL") {
+              console.log(`✅ [Meta Webhook] Rule "${rule.name}" matched: triggerCommentType is ALL`);
+              return true;
+            }
+
+            // Cek kata kunci pemicu dengan aturan (Contains, Match, Starts with)
             const keywords = Array.isArray(rule.keywords) ? rule.keywords : [];
             if (keywords.length === 0) {
-              // Rule pemicu "SEMUA KATA"
               console.log(`✅ [Meta Webhook] Rule "${rule.name}" matched: trigger on ALL keywords`);
               return true;
             }
 
-            // Rule pemicu "KATA KUNCI TERTENTU"
-            const upperComment = commentText.toUpperCase();
-            const matched = keywords.some((kw: string) => upperComment.includes(kw.trim().toUpperCase()));
-            if (matched) {
-              console.log(`✅ [Meta Webhook] Rule "${rule.name}" matched keyword: "${commentText}"`);
+            const ruleStyle = cfg.keywordRule || "Contains";
+            const isMatched = checkKeywordMatch(commentText, keywords, ruleStyle);
+            if (isMatched) {
+              console.log(`✅ [Meta Webhook] Rule "${rule.name}" matched keyword with style "${ruleStyle}": "${commentText}"`);
             } else {
-              console.log(`⏩ [Meta Webhook] Keyword mismatch for comment "${commentText}" against keywords:`, keywords);
+              console.log(`⏩ [Meta Webhook] Keyword mismatch for comment "${commentText}" against keywords:`, keywords, `(style: ${ruleStyle})`);
             }
-            return matched;
+            return isMatched;
           });
 
           if (!matchedRule) {
@@ -932,23 +983,10 @@ export async function POST(req: NextRequest) {
             const triggerTypeSetting = ruleConfig.triggerCommentType || (matchedRule as any).triggerCommentType;
             if (triggerTypeSetting === "KEYWORDS") {
               const rawKeywords = matchedRule.keywords;
-              const ruleKeywords = Array.isArray(rawKeywords)
-                ? rawKeywords.map((k: string) => k.trim().toLowerCase()).filter(Boolean)
-                : (typeof rawKeywords === "string" ? rawKeywords.split(",") : [])
-                    .map((k: string) => k.trim().toLowerCase())
-                    .filter(Boolean);
-              const userText = msgText.toLowerCase();
-              const ruleStyle = (ruleConfig.keywordRule || "Contains").toLowerCase();
-
-              if (ruleKeywords.length > 0 && userText.length > 0) {
-                if (ruleStyle === "match") {
-                  isTriggerMatched = ruleKeywords.some((kw: string) => userText === kw);
-                } else if (ruleStyle === "starts with") {
-                  isTriggerMatched = ruleKeywords.some((kw: string) => userText.startsWith(kw));
-                } else {
-                  // Contains (default)
-                  isTriggerMatched = ruleKeywords.some((kw: string) => userText.includes(kw));
-                }
+              const ruleStyle = ruleConfig.keywordRule || "Contains";
+              // Jika user mengetik teks pada story, evaluasi dengan checkKeywordMatch (Contains, Match, Starts with)
+              if (msgText && msgText.trim().length > 0) {
+                isTriggerMatched = checkKeywordMatch(msgText, rawKeywords, ruleStyle);
               }
             }
 
