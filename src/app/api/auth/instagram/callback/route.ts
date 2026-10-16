@@ -152,9 +152,10 @@ export async function GET(request: NextRequest) {
       console.warn("Could not exchange for long-lived Instagram token:", llErr);
     }
 
-    // 3. Fetch User Profile from Instagram Graph API
+    // 3. Fetch User Profile from Instagram Graph API (termasuk user_id untuk ID Webhook Meta)
     let targetIgAccount: {
       id: string;
+      pageId?: string;
       username: string;
       name?: string;
       profile_picture_url?: string;
@@ -162,17 +163,25 @@ export async function GET(request: NextRequest) {
     let targetAccessToken = userToken;
 
     try {
-      const directIgRes = await fetch(
-        `https://graph.instagram.com/me?fields=id,username,name,profile_picture_url,account_type&access_token=${userToken}`
+      let directIgRes = await fetch(
+        `https://graph.instagram.com/v22.0/me?fields=id,user_id,username,name,profile_picture_url,account_type&access_token=${userToken}`
       );
+      if (!directIgRes.ok) {
+        directIgRes = await fetch(
+          `https://graph.instagram.com/me?fields=id,username,name,profile_picture_url,account_type&access_token=${userToken}`
+        );
+      }
       if (directIgRes.ok) {
         const directData = await directIgRes.json();
-        if (directData.id || directData.username) {
+        if (directData.user_id || directData.id || directData.username) {
+          const resolvedBusinessId = String(directData.user_id || directData.id || fallbackIgUserId || Date.now());
+          const resolvedScopedId = String(directData.id || fallbackIgUserId || resolvedBusinessId);
           targetIgAccount = {
-            id: String(directData.id || fallbackIgUserId || Date.now()),
+            id: resolvedBusinessId,
+            pageId: resolvedScopedId,
             username: directData.username || "instagram_user",
             name: directData.name || (directData.username ? `@${directData.username}` : "Instagram Creator"),
-            profile_picture_url: directData.profile_picture_url || null,
+            profile_picture_url: directData.profile_picture_url || undefined,
           };
         }
       }
@@ -184,16 +193,19 @@ export async function GET(request: NextRequest) {
     if ((!targetIgAccount || !targetIgAccount.username) && fallbackIgUserId) {
       try {
         const userRes = await fetch(
-          `https://graph.instagram.com/v21.0/${fallbackIgUserId}?fields=id,username,name,profile_picture_url&access_token=${userToken}`
+          `https://graph.instagram.com/v22.0/${fallbackIgUserId}?fields=id,user_id,username,name,profile_picture_url&access_token=${userToken}`
         );
         if (userRes.ok) {
           const userData = await userRes.json();
-          if (userData.id || userData.username) {
+          if (userData.user_id || userData.id || userData.username) {
+            const resolvedBusinessId = String(userData.user_id || userData.id || fallbackIgUserId);
+            const resolvedScopedId = String(userData.id || fallbackIgUserId);
             targetIgAccount = {
-              id: String(userData.id || fallbackIgUserId),
+              id: resolvedBusinessId,
+              pageId: resolvedScopedId,
               username: userData.username || targetIgAccount?.username || "instagram_user",
               name: userData.name || userData.username || targetIgAccount?.name || "Instagram Creator",
-              profile_picture_url: userData.profile_picture_url || targetIgAccount?.profile_picture_url || null,
+              profile_picture_url: userData.profile_picture_url || targetIgAccount?.profile_picture_url || undefined,
             };
           }
         }
@@ -211,7 +223,13 @@ export async function GET(request: NextRequest) {
         if (Array.isArray(accountsData.data)) {
           for (const page of accountsData.data) {
             if (page.instagram_business_account) {
-              targetIgAccount = page.instagram_business_account;
+              targetIgAccount = {
+                id: String(page.instagram_business_account.id),
+                pageId: String(page.id),
+                username: page.instagram_business_account.username || "instagram_user",
+                name: page.instagram_business_account.name,
+                profile_picture_url: page.instagram_business_account.profile_picture_url,
+              };
               if (page.access_token) {
                 targetAccessToken = page.access_token;
               }
@@ -235,6 +253,7 @@ export async function GET(request: NextRequest) {
     const db = getDb();
     const userId = session.user.id;
     const instagramId = targetIgAccount.id;
+    const pageId = targetIgAccount.pageId || targetIgAccount.id;
     const username = targetIgAccount.username;
     const name = targetIgAccount.name || (username ? `@${username}` : "Instagram Creator");
     const profilePicUrl = targetIgAccount.profile_picture_url || null;
@@ -268,13 +287,14 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // 2. Jika tidak ditemukan atau tidak ada cookie, cek apakah ada agen milik user yang cocok dengan instagramId ini
+    // 2. Jika tidak ditemukan atau tidak ada cookie, cek apakah ada agen milik user yang cocok dengan instagramId atau pageId ini
     if (!existingAgent) {
       existingAgent = await (db as any).instagramAccount.findFirst({
         where: {
           ...userMatchCondition,
           OR: [
             { instagramId },
+            { pageId },
             { instagramId: { startsWith: `unlinked_${targetAgentId || ""}` } },
           ],
         },
@@ -295,6 +315,25 @@ export async function GET(request: NextRequest) {
       });
     }
 
+    // Pastikan tidak ada record agen lain yang masih memegang instagramId yang sama (menghindari bentrok @unique)
+    const conflictingAccounts = await (db as any).instagramAccount.findMany({
+      where: {
+        instagramId,
+        ...(existingAgent ? { id: { not: existingAgent.id } } : {}),
+      },
+    });
+    for (const conflict of conflictingAccounts) {
+      await (db as any).instagramAccount.update({
+        where: { id: conflict.id },
+        data: {
+          instagramId: `unlinked_${conflict.id}_${Date.now()}`,
+          pageId: null,
+          accessToken: "",
+          isActive: false,
+        },
+      });
+    }
+
     if (existingAgent) {
       // Perbarui agen yang sudah ada: pertahankan nama agen kustom, simpan kredensial Meta baru, aktifkan kembali
       await (db as any).instagramAccount.update({
@@ -302,6 +341,7 @@ export async function GET(request: NextRequest) {
         data: {
           userId, // pastikan userId sesuai dengan session saat ini
           instagramId,
+          pageId,
           username,
           name: existingAgent.name && !existingAgent.name.startsWith("Agen @") ? existingAgent.name : name,
           profilePicUrl,
@@ -316,6 +356,7 @@ export async function GET(request: NextRequest) {
         data: {
           userId,
           instagramId,
+          pageId,
           username,
           name: name || `Agen @${username}`,
           profilePicUrl,

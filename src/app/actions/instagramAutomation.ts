@@ -264,6 +264,29 @@ export async function deleteInstagramAgentAction(agentId: string) {
     const userId = session.user.id;
     const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
 
+    const existing = await (db as any).instagramAccount.findFirst({
+      where: isAdmin
+        ? { id: agentId }
+        : {
+            id: agentId,
+            OR: [
+              { userId },
+              { user: { email: session.user.email || "" } }
+            ]
+          }
+    });
+
+    if (existing?.accessToken) {
+      await fetch(
+        `https://graph.instagram.com/v22.0/me/subscribed_apps?access_token=${existing.accessToken}`,
+        { method: "DELETE" }
+      ).catch(() => null);
+      await fetch(
+        `https://graph.facebook.com/v22.0/me/subscribed_apps?access_token=${existing.accessToken}`,
+        { method: "DELETE" }
+      ).catch(() => null);
+    }
+
     if (isAdmin) {
       await (db as any).instagramAccount.deleteMany({
         where: { id: agentId }
@@ -291,7 +314,7 @@ export async function deleteInstagramAgentAction(agentId: string) {
 }
 
 /**
- * Server Action: Menghubungkan akun Instagram
+ * Server Action: Menghubungkan / Sinkronisasi Ulang akun Instagram
  */
 export async function connectInstagramAccountAction(tokenInput?: string, agentId?: string) {
   try {
@@ -301,13 +324,22 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
     }
 
     const userId = session.user.id;
+    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
     const db = getDb();
 
     // 1. Dapatkan akun target jika agentId diberikan (misal saat Sinkronkan Ulang)
     let existingAccount: any = null;
     if (agentId) {
       existingAccount = await (db as any).instagramAccount.findFirst({
-        where: { id: agentId, userId },
+        where: isAdmin
+          ? { id: agentId }
+          : {
+              id: agentId,
+              OR: [
+                { userId },
+                { user: { email: session.user.email || "" } }
+              ]
+            },
       });
     }
 
@@ -321,9 +353,14 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
       return { success: false, error: "Token Akses Instagram tidak ditemukan" };
     }
 
-    const res = await fetch(
-      `https://graph.instagram.com/me?fields=id,username,name,profile_picture_url,account_type&access_token=${token}`
+    let res = await fetch(
+      `https://graph.instagram.com/v22.0/me?fields=id,user_id,username,name,profile_picture_url,account_type&access_token=${token}`
     );
+    if (!res.ok) {
+      res = await fetch(
+        `https://graph.instagram.com/me?fields=id,username,name,profile_picture_url,account_type&access_token=${token}`
+      );
+    }
     if (!res.ok) {
       const errText = await res.text();
       console.error("Meta Graph API error:", res.status, errText);
@@ -331,9 +368,12 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
     }
 
     const data = await res.json();
-    if (!data.id) {
+    if (!data.id && !data.user_id) {
       return { success: false, error: "Gagal mengambil data Akun Instagram dari Meta" };
     }
+
+    const resolvedBusinessId = String(data.user_id || data.id);
+    const resolvedScopedId = String(data.id || data.user_id);
 
     // 3. Pastikan webhook disubscribe ke Meta untuk akun ini (comments, messages, messaging_postbacks)
     await fetch(
@@ -341,20 +381,37 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
       { method: "POST" }
     ).catch(() => null);
 
+    // Pastikan tidak ada record agen lain yang memegang instagramId yang sama (menghindari bentrok @unique)
+    const conflictingAccounts = await (db as any).instagramAccount.findMany({
+      where: {
+        instagramId: resolvedBusinessId,
+        ...(existingAccount ? { id: { not: existingAccount.id } } : {}),
+      },
+    });
+    for (const conflict of conflictingAccounts) {
+      await (db as any).instagramAccount.update({
+        where: { id: conflict.id },
+        data: {
+          instagramId: `unlinked_${conflict.id}_${Date.now()}`,
+          pageId: null,
+          accessToken: "",
+          isActive: false,
+        },
+      });
+    }
+
     let account: any = null;
 
     if (agentId && existingAccount) {
-      // Pertahankan Business ID Meta jika sudah ada, simpan Scoped ID di pageId
-      const isBusinessId = existingAccount.instagramId && existingAccount.instagramId.startsWith("1784");
-      const targetInstagramId = isBusinessId ? existingAccount.instagramId : (data.id || existingAccount.instagramId);
-
       account = await (db as any).instagramAccount.update({
         where: { id: agentId },
         data: {
-          instagramId: targetInstagramId,
-          pageId: data.id,
+          instagramId: resolvedBusinessId,
+          pageId: resolvedScopedId,
           username: data.username || existingAccount.username,
-          name: data.name || (data.username ? `@${data.username}` : existingAccount.name),
+          name: existingAccount.name && !existingAccount.name.startsWith("Agen @")
+            ? existingAccount.name
+            : (data.name || (data.username ? `@${data.username}` : existingAccount.name)),
           profilePicUrl: data.profile_picture_url || existingAccount.profilePicUrl || null,
           accessToken: token,
           isActive: true,
@@ -362,10 +419,10 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
       });
     } else {
       account = await (db as any).instagramAccount.upsert({
-        where: { instagramId: data.id },
+        where: { instagramId: resolvedBusinessId },
         update: {
           userId,
-          pageId: data.id,
+          pageId: resolvedScopedId,
           username: data.username || "",
           name: data.name || (data.username ? `@${data.username}` : "Akun Instagram"),
           profilePicUrl: data.profile_picture_url || null,
@@ -374,8 +431,8 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
         },
         create: {
           userId,
-          instagramId: data.id,
-          pageId: data.id,
+          instagramId: resolvedBusinessId,
+          pageId: resolvedScopedId,
           username: data.username || "",
           name: data.name || (data.username ? `@${data.username}` : "Akun Instagram"),
           profilePicUrl: data.profile_picture_url || null,
@@ -426,12 +483,25 @@ export async function disconnectInstagramAccountAction(accountId: string) {
       return { success: false, error: "Akun tidak ditemukan atau tidak memiliki izin" };
     }
 
+    // Cabut langganan webhook dari Meta agar akun yang sudah diputus tidak lagi mengirim event webhook
+    if (targetAccount.accessToken) {
+      await fetch(
+        `https://graph.instagram.com/v22.0/me/subscribed_apps?access_token=${targetAccount.accessToken}`,
+        { method: "DELETE" }
+      ).catch(() => null);
+      await fetch(
+        `https://graph.facebook.com/v22.0/me/subscribed_apps?access_token=${targetAccount.accessToken}`,
+        { method: "DELETE" }
+      ).catch(() => null);
+    }
+
     const unlinkedId = `unlinked_${accountId}_${Date.now()}`;
     await (db as any).instagramAccount.update({
       where: { id: accountId },
       data: {
         accessToken: "",
         instagramId: unlinkedId,
+        pageId: null,
         username: "",
         profilePicUrl: null,
         isActive: false

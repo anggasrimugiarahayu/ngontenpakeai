@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
 
     // Proses setiap entry secara asinkron (background pipeline)
     for (const entry of entries) {
-      const igAccountId = entry.id;
+      const igAccountId = String(entry.id || "");
       console.log(`📡 [Meta Webhook] Received entry for account ID: ${igAccountId}`);
 
       // 1. Cari akun Instagram terdaftar di database kita
@@ -122,7 +122,8 @@ export async function POST(req: NextRequest) {
         },
       });
 
-      // Fallback: Jika belum cocok persis dengan ID di query awal
+      // Fallback Dinamis: Jika belum cocok di query awal, verifikasi token tiap agen aktif ke Meta Graph API (/me?fields=id,user_id,username)
+      // Tidak pernah menebak/menimpa instagramId tanpa verifikasi resmi dari Meta API
       if (!account) {
         const activeAccounts = await (prisma as any).instagramAccount.findMany({
           where: {
@@ -131,19 +132,39 @@ export async function POST(req: NextRequest) {
           },
         });
 
-        if (activeAccounts.length === 1) {
-          account = activeAccounts[0];
-          console.log(`🔄 [Meta Webhook] Matched single active account @${account.username} for Meta ID: ${igAccountId}`);
-          if (account.instagramId !== igAccountId && !account.instagramId?.startsWith("1784")) {
-            await (prisma as any).instagramAccount.update({
-              where: { id: account.id },
-              data: { instagramId: igAccountId },
-            }).catch(() => null);
+        for (const candidate of activeAccounts) {
+          try {
+            const verifyRes = await fetch(
+              `https://graph.instagram.com/v22.0/me?fields=id,user_id,username&access_token=${candidate.accessToken}`
+            );
+            if (!verifyRes.ok) continue;
+            const meData = await verifyRes.json();
+            const trueBusinessId = String(meData.user_id || meData.id || "");
+            const trueScopedId = String(meData.id || meData.user_id || "");
+
+            // Sinkronkan instagramId & pageId agen ini jika di DB belum sesuai dengan user_id asli dari Meta
+            if (trueBusinessId && (candidate.instagramId !== trueBusinessId || candidate.pageId !== trueScopedId)) {
+              await (prisma as any).instagramAccount.update({
+                where: { id: candidate.id },
+                data: {
+                  instagramId: trueBusinessId,
+                  pageId: trueScopedId,
+                  ...(meData.username ? { username: meData.username } : {}),
+                },
+              }).catch(() => null);
+              candidate.instagramId = trueBusinessId;
+              candidate.pageId = trueScopedId;
+            }
+
+            // Hanya cocokkan jika ID webhook (entry.id) benar-benar milik akun kandidat ini
+            if (trueBusinessId === igAccountId || trueScopedId === igAccountId) {
+              account = candidate;
+              console.log(`✅ [Meta Webhook] Verified & matched account @${account.username} for Meta ID: ${igAccountId}`);
+              break;
+            }
+          } catch (verifyErr) {
+            console.warn(`⚠️ [Meta Webhook] Failed to verify candidate account ${candidate.id}:`, verifyErr);
           }
-        } else if (activeAccounts.length > 1) {
-          account = activeAccounts.find(
-            (a: any) => a.instagramId === igAccountId || a.pageId === igAccountId || a.id === igAccountId
-          );
         }
       }
 
@@ -162,7 +183,7 @@ export async function POST(req: NextRequest) {
           const commentId = comment.id;
           const commentText = (comment.text || "").trim();
           const fromUser = comment.from || {};
-          const fromId = fromUser.id;
+          const fromId = String(fromUser.id || "");
           const fromUsername = fromUser.username || "pengguna";
           const mediaId = comment.media?.id;
 
@@ -170,11 +191,40 @@ export async function POST(req: NextRequest) {
 
           if (!commentId || !commentText) continue;
 
+          // Jika dari username berbeda namun fromId sama dengan account.instagramId (indikasi ID akun di DB belum tersinkron dengan user_id asli),
+          // lakukan verifikasi dinamis ke Meta API
+          if (
+            fromId &&
+            fromId === account.instagramId &&
+            fromUsername &&
+            account.username &&
+            fromUsername.toLowerCase() !== account.username.toLowerCase()
+          ) {
+            try {
+              const checkMeRes = await fetch(
+                `https://graph.instagram.com/v22.0/me?fields=id,user_id,username&access_token=${account.accessToken}`
+              );
+              if (checkMeRes.ok) {
+                const checkMe = await checkMeRes.json();
+                const realBusinessId = String(checkMe.user_id || checkMe.id || "");
+                const realScopedId = String(checkMe.id || checkMe.user_id || "");
+                if (realBusinessId && realBusinessId !== account.instagramId) {
+                  await (prisma as any).instagramAccount.update({
+                    where: { id: account.id },
+                    data: { instagramId: realBusinessId, pageId: realScopedId },
+                  }).catch(() => null);
+                  account.instagramId = realBusinessId;
+                  account.pageId = realScopedId;
+                }
+              }
+            } catch {}
+          }
+
           // Guardrail 1: Anti-Self Loop (Abaikan komentar dari akun bot sendiri)
           if (
             fromId === account.instagramId ||
             fromId === account.pageId ||
-            fromUsername.toLowerCase() === (account.username || "").toLowerCase()
+            (fromUsername && account.username && fromUsername.toLowerCase() === account.username.toLowerCase())
           ) {
             console.log(`⏩ [Meta Webhook] Ignoring self-comment from @${fromUsername}`);
             continue;
