@@ -190,7 +190,8 @@ export default function CarouselBuilderClient() {
       cpMode: cpMode,
       currentInput: currentInput,
       blueprint: blueprintData,
-      model: selectedModel
+      model: selectedModel,
+      isShortcut: typeof autoSubmitText === 'string' || currentInput.includes('[SYSTEM AUTO-SUBMIT]')
     });
     
     if (error) {

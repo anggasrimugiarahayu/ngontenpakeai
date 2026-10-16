@@ -4,20 +4,41 @@ import { useState, useRef, useCallback } from 'react';
 
 function isGibberish(text: string): boolean {
   if (!text) return false;
-  
-  const clean = text.toLowerCase().replace(/\s+/g, '');
-  
-  // Rule 1: No vowels at all (must have at least one a, i, u, e, o)
-  if (clean.length > 0 && !/[aiueo]/.test(clean)) return true;
-  
-  // Rule 2: Excessive consonants (5 or more in a row)
-  if (/[bcdfghjklmnpqrstvwxyz]{6,}/.test(clean)) return true;
-  
-  // Rule 3: Character repetition (4 or more of the same char)
-  if (/(.)\1{3,}/.test(clean)) return true;
-  
-  // Rule 4: Keyboard mashing patterns (much stricter now)
-  if (/(asd|qwe|zxc|fgh|jkl|das|dsa|ewq|cxz|dad|adad|sada){2,}/.test(clean)) return true;
+
+  // Extract only alphabetical words (ignore punctuation like "....", numbers like "100000", symbols, etc.)
+  const words = text.toLowerCase().match(/[a-z]+/g) || [];
+  if (words.length === 0) return true;
+
+  const allLetters = words.join('');
+
+  // Rule 1: Must have reasonable vowel presence overall (at least 12% vowels across all letters)
+  const vowelCount = (allLetters.match(/[aiueo]/g) || []).length;
+  if (allLetters.length > 0 && vowelCount / allLetters.length < 0.12) return true;
+
+  // Rule 2: Very low unique letter diversity (e.g. mashing only 1-4 keys like "dasda dasda dadad sadas")
+  const uniqueLetters = new Set(allLetters).size;
+  if (allLetters.length >= 12 && uniqueLetters <= 4) return true;
+
+  // Rule 3: Evaluate individual words so punctuation or word-joining across spaces never causes false positives
+  const isWordGibberish = (word: string): boolean => {
+    // Long word without any vowels
+    if (word.length >= 6 && !/[aiueo]/.test(word)) return true;
+    // 6 or more consecutive consonants inside a single word
+    if (/[bcdfghjklmnpqrstvwxyz]{6,}/.test(word)) return true;
+    // 4 or more identical characters in a row inside a word
+    if (/(.)\1{3,}/.test(word)) return true;
+    // Keyboard mashing inside a word
+    if (/(asd|qwe|zxc|fgh|jkl|das|dsa|ewq|cxz|dad|adad|sada){2,}/.test(word)) return true;
+    if (/^(asd|qwe|zxc|fgh|jkl|das|dsa|ewq|cxz|dad|adad|sada)+[a-z]?$/.test(word)) return true;
+    // Unnaturally long single word (> 30 letters)
+    if (word.length > 30) return true;
+    return false;
+  };
+
+  const gibberishWordCount = words.filter(isWordGibberish).length;
+
+  // Flag as gibberish only if at least half of the words are gibberish
+  if (gibberishWordCount / words.length >= 0.5) return true;
 
   return false;
 }

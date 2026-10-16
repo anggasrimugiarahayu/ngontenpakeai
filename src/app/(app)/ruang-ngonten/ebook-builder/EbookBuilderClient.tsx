@@ -64,7 +64,7 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
       history: historyCtx,
       blueprint: blueprintData,
       model: selectedModel,
-      isShortcut: promptText.includes('[SYSTEM AUTO-SUBMIT]')
+      isShortcut: Boolean(overridePrompt) || promptText.includes('[SYSTEM AUTO-SUBMIT]') || promptText.includes('[SYSTEM_OUTLINE]')
     });
 
     if (error) {
