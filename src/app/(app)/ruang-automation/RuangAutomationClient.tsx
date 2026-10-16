@@ -1892,8 +1892,8 @@ export default function RuangAutomationClient({
                   className="group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-300 cursor-pointer z-0 overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/5 hover:border-orange-500 dark:hover:border-orange-500/50 shadow-gray-200 dark:shadow-black/50 hover:shadow-xl hover:-translate-y-1.5"
                 >
                   {/* Card Header: Icon/Avatar, Name, Status Badge, & Three-dots Menu */}
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center transition-colors text-gray-600 dark:text-gray-400 group-hover:bg-orange-500/10 group-hover:text-orange-500 shrink-0 overflow-hidden">
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center transition-colors text-gray-600 dark:text-gray-400 group-hover:bg-orange-500/10 group-hover:text-orange-500 shrink-0 overflow-hidden mt-0.5">
                       {agent.isLinked && agent.profilePicUrl ? (
                         <img
                           src={agent.profilePicUrl}
@@ -1905,25 +1905,15 @@ export default function RuangAutomationClient({
                         <InstagramIcon className="w-5 h-5 text-orange-500" />
                       )}
                     </div>
-                    <div className="flex flex-col gap-0.5 w-full min-w-0">
+                    <div className="flex flex-col gap-1 w-full min-w-0">
                       <div className="flex items-center justify-between w-full gap-2">
-                        <h3 className="font-bold text-base leading-tight transition-colors text-gray-900 dark:text-white group-hover:text-orange-500 truncate">
+                        <h3 className="font-bold text-base leading-tight transition-colors text-gray-900 dark:text-white group-hover:text-orange-500 truncate" title={agent.name}>
                           {agent.name}
                         </h3>
-                        <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
-                          {agent.isLinked ? (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 uppercase tracking-wider">
-                              TERHUBUNG
-                            </span>
-                          ) : (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400 uppercase tracking-wider">
-                              OFFLINE
-                            </span>
-                          )}
 
-                          {/* Dropdown Menu Titik Tiga */}
-                          <div className="relative agent-dropdown-menu">
-                            <button
+                        {/* Dropdown Menu Titik Tiga */}
+                        <div className="relative agent-dropdown-menu shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <button
                               type="button"
                               onClick={(e) => {
                                 e.stopPropagation();
@@ -1980,18 +1970,30 @@ export default function RuangAutomationClient({
                             )}
                           </div>
                         </div>
+
+                      {/* Baris 2: Status Badge + Username IG */}
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        {agent.isLinked ? (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 uppercase tracking-wider shrink-0">
+                            TERHUBUNG
+                          </span>
+                        ) : (
+                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400 uppercase tracking-wider shrink-0">
+                            OFFLINE
+                          </span>
+                        )}
+                        <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400 truncate">
+                          {agent.isLinked && agent.username ? `@${agent.username}` : "Belum terhubung ke Instagram"}
+                        </span>
                       </div>
-                      <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400 truncate">
-                        {agent.isLinked && agent.username ? `@${agent.username}` : "Belum terhubung ke Instagram"}
-                      </span>
                     </div>
                   </div>
 
                   {/* Description */}
-                  <p className="text-[13px] leading-relaxed text-gray-500 dark:text-gray-400 mb-5 line-clamp-2">
+                  <p className="text-[13px] leading-relaxed text-gray-500 dark:text-gray-400 mb-5">
                     {agent.isLinked && agent.username
-                      ? `Asisten aktif untuk @${agent.username}. Mengotomasi balasan komentar dan kirim DM instan 24/7.`
-                      : "Agen siap dikoneksikan. Klik untuk menghubungkan akun Instagram Bisnis atau Kreator Anda."}
+                      ? "Otomatisasi komentar dan DM aktif 24/7."
+                      : "Klik untuk menghubungkan akun Instagram."}
                   </p>
 
                   {/* Timeline Points List (Persis seperti card di Mau Mulai Dari Mana) */}
