@@ -341,6 +341,7 @@ model InstagramAccount {
   instagramId     String   @unique @map("instagram_id")
   username        String
   name            String?
+  profileName     String?  @map("profile_name")
   profilePicUrl   String?  @map("profile_pic_url")
   accessToken     String   @db.Text @map("access_token")
   pageId          String?  @map("page_id")

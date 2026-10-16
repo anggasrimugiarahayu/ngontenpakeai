@@ -295,9 +295,12 @@ export default function RuangAutomationClient({
     id: account.id,
     name: account.name,
     username: account.username,
+    profileName: account.profileName,
     profilePicUrl: account.profilePicUrl,
     isLinked: account.isLinked,
     isActive: account.isActive,
+    updatedAt: account.updatedAt,
+    createdAt: account.createdAt,
   } : null);
   const displayAccount = currentAgent || account;
   const isAccountLinked = Boolean(displayAccount && displayAccount.isLinked);
@@ -2098,9 +2101,10 @@ export default function RuangAutomationClient({
 
               const agentDisplayName = currentAgent?.name || account?.name || "NAMA AGEN";
               const igUsername = displayAccount.username || "ruangcreativemuslim";
-              const igBioOrTitle = igUsername.toLowerCase().includes("ruangcreative")
+              const igProfileName = displayAccount.profileName || (displayAccount.name && !displayAccount.name.toUpperCase().startsWith("AGEN") ? displayAccount.name : null);
+              const igBioOrTitle = igProfileName || (igUsername.toLowerCase().includes("ruangcreative")
                 ? "Harits | Faceless Conten Preneur"
-                : (displayAccount.name || "Akun Profesional");
+                : "Akun Profesional");
 
               const avatarSrc = displayAccount.profilePicUrl && !avatarError
                 ? displayAccount.profilePicUrl
