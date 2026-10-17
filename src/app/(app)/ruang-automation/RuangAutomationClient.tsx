@@ -586,6 +586,9 @@ export default function RuangAutomationClient({
       if (!target.closest(".frequency-dropdown-container")) {
         setIsFrequencyDropdownOpen(false);
       }
+      if (!target.closest(".live-msg-type-dropdown-container")) {
+        setOpenLiveMsgTypeDropdownId(null);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -596,6 +599,9 @@ export default function RuangAutomationClient({
   const [editingRule, setEditingRule] = useState<any | null>(null);
   const [isTargetDropdownOpen, setIsTargetDropdownOpen] = useState(false);
   const [isFrequencyDropdownOpen, setIsFrequencyDropdownOpen] = useState(false);
+  const [openLiveMsgTypeDropdownId, setOpenLiveMsgTypeDropdownId] = useState<string | null>(null);
+  const [activeLiveContentIdx, setActiveLiveContentIdx] = useState<number>(0);
+  const [simulatedLiveQrId, setSimulatedLiveQrId] = useState<string | null>(null);
   const [isMsgTypeDropdownOpen, setIsMsgTypeDropdownOpen] = useState(false);
   const [isKeywordRuleDropdownOpen, setIsKeywordRuleDropdownOpen] = useState(false);
   const [isCommentLimitDropdownOpen, setIsCommentLimitDropdownOpen] = useState(false);
@@ -631,6 +637,25 @@ export default function RuangAutomationClient({
       | "3 bulan sekali"
       | "6 bulan sekali"
       | "Hanya sekali",
+    liveContents: [] as {
+      id: string;
+      keywords: string;
+      messageType: "PLAIN_TEXT" | "BUTTON_TEMPLATE";
+      message: string;
+      buttons: {
+        id: string;
+        labelType: "Klik Disini" | "Kustom";
+        label: string;
+        action: "Buka Website" | "Kirim Teks" | "";
+        url: string;
+        text?: string;
+      }[];
+      quickReplies: {
+        id: string;
+        label: string;
+        text: string;
+      }[];
+    }[],
     triggerCommentType: "KEYWORDS" as "KEYWORDS" | "ALL",
     keywords: "mau",
     keywordRule: "Contains" as "Contains" | "Match" | "Starts with",
@@ -810,14 +835,27 @@ export default function RuangAutomationClient({
     const defaultPost = feedPosts.length > 0 ? feedPosts[0] : null;
     setSelectedPost(defaultPost);
     const initialReply = "{Halo|Hai|Kak} @username, cek DM ya kak sudah kami kirimkan link detailnya! 😊";
-    setActivePreviewTab("COMMENT");
     const isCreatingStory = automationTab === "STORY";
+    const isCreatingLive = automationTab === "LIVE";
+    setActivePreviewTab(isCreatingLive ? "DM" : "COMMENT");
+    setActiveLiveContentIdx(0);
+    setSimulatedLiveQrId(null);
+    setOpenLiveMsgTypeDropdownId(null);
     setRuleFormData({
       name: "",
-      targetOtomasi: isCreatingStory ? "Semua Story" : "Postingan Tertentu",
-      postType: isCreatingStory ? "ALL_STORIES" : "SPECIFIC",
-      postId: isCreatingStory ? "" : (defaultPost?.id || ""),
+      targetOtomasi: isCreatingLive
+        ? "Live Instagram"
+        : isCreatingStory
+        ? "Semua Story"
+        : "Postingan Tertentu",
+      postType: isCreatingLive
+        ? "LIVE"
+        : isCreatingStory
+        ? "ALL_STORIES"
+        : "SPECIFIC",
+      postId: isCreatingStory || isCreatingLive ? "" : (defaultPost?.id || ""),
       storyMentionFrequency: "24 jam sekali",
+      liveContents: [],
       triggerCommentType: "KEYWORDS",
       keywords: isCreatingStory ? "coba" : "mau",
       keywordRule: "Contains",
@@ -988,6 +1026,8 @@ export default function RuangAutomationClient({
         ? "Story Tertentu"
         : rule.triggerType === "STORY_MENTION" || config.targetOtomasi === "Story Mention"
         ? "Story Mention"
+        : rule.triggerType === "LIVE" || rule.triggerType === "INSTAGRAM_LIVE" || config.targetOtomasi === "Live Instagram"
+        ? "Live Instagram"
         : "Semua Postingan";
 
     const hasButtons = Boolean(rule.buttonText || rule.buttonUrl);
@@ -1009,7 +1049,25 @@ export default function RuangAutomationClient({
           text: "Terima kasih sudah tertarik! Ini info detail balasan dari kami.",
         }];
 
-    setActivePreviewTab(target === "Story Mention" ? "DM" : "COMMENT");
+    const initialLiveContents = Array.isArray(config.liveContents) && config.liveContents.length > 0
+      ? config.liveContents
+      : target === "Live Instagram"
+      ? [
+          {
+            id: `live_content_${Date.now()}`,
+            keywords: keywordsStr || "mau",
+            messageType: (hasButtons ? "BUTTON_TEMPLATE" : "PLAIN_TEXT") as "PLAIN_TEXT" | "BUTTON_TEMPLATE",
+            message: dmTemplateStr || "",
+            buttons: initialButtons,
+            quickReplies: [],
+          },
+        ]
+      : [];
+
+    setActiveLiveContentIdx(0);
+    setSimulatedLiveQrId(null);
+    setOpenLiveMsgTypeDropdownId(null);
+    setActivePreviewTab(target === "Story Mention" || target === "Live Instagram" ? "DM" : "COMMENT");
     setRuleFormData({
       name: rule.name || "",
       targetOtomasi: target,
@@ -1024,9 +1082,12 @@ export default function RuangAutomationClient({
           ? "SPECIFIC_STORY"
           : rule.triggerType === "STORY_MENTION" || config.targetOtomasi === "Story Mention"
           ? "STORY_MENTION"
+          : rule.triggerType === "LIVE" || rule.triggerType === "INSTAGRAM_LIVE" || config.targetOtomasi === "Live Instagram"
+          ? "LIVE"
           : "ALL",
       postId: rule.specificPostId || matched?.id || "",
       storyMentionFrequency: config.storyMentionFrequency || "24 jam sekali",
+      liveContents: initialLiveContents,
       triggerCommentType: (config.triggerCommentType as "KEYWORDS" | "ALL") || (keywordsStr.trim() ? "KEYWORDS" : "ALL"),
       keywords: keywordsStr || "mau, harga, info, spill",
       keywordRule:
@@ -1092,6 +1153,9 @@ export default function RuangAutomationClient({
     setIsTargetDropdownOpen(false);
     setIsFrequencyDropdownOpen(false);
     setIsMsgTypeDropdownOpen(false);
+    setOpenLiveMsgTypeDropdownId(null);
+    setActiveLiveContentIdx(0);
+    setSimulatedLiveQrId(null);
     setIsKeywordRuleOpen(false);
     setIsKeywordRuleDropdownOpen(false);
     setIsCommentLimitDropdownOpen(false);
@@ -1227,13 +1291,30 @@ export default function RuangAutomationClient({
       ruleFormData.targetOtomasi === "Story Mention" ||
       ruleFormData.postType === "STORY_MENTION";
 
-    const keywordArray =
-      isStoryMentionRule || ruleFormData.triggerCommentType === "ALL"
-        ? []
-        : (ruleFormData.keywords || "mau, harga, info, spill")
-            .split(",")
-            .map((k) => k.trim())
-            .filter(Boolean);
+    const isLiveRulePayload =
+      ruleFormData.targetOtomasi === "Live Instagram" ||
+      ruleFormData.postType === "LIVE";
+
+    if (isLiveRulePayload && (!ruleFormData.liveContents || ruleFormData.liveContents.length === 0)) {
+      showToast("error", "Minimal tambahkan 1 konten untuk Live Instagram");
+      return;
+    }
+
+    const keywordArray = isLiveRulePayload
+      ? Array.from(
+          new Set(
+            ruleFormData.liveContents
+              .flatMap((c) => (c.keywords || "").split(","))
+              .map((k) => k.trim())
+              .filter(Boolean)
+          )
+        )
+      : isStoryMentionRule || ruleFormData.triggerCommentType === "ALL"
+      ? []
+      : (ruleFormData.keywords || "mau, harga, info, spill")
+          .split(",")
+          .map((k) => k.trim())
+          .filter(Boolean);
 
     const chosenPostId = ruleFormData.targetOtomasi === "Postingan Tertentu"
       ? (selectedPost?.id || ruleFormData.postId || (feedPosts[0]?.id) || "post_1")
@@ -1252,12 +1333,23 @@ export default function RuangAutomationClient({
       setCachedCoverUrl(chosenPostId, postCoverUrl);
     }
 
-    const primaryButton = ruleFormData.buttons && ruleFormData.buttons.length > 0 ? ruleFormData.buttons[0] : null;
-    const buttonText = ruleFormData.messageType === "BUTTON_TEMPLATE" && primaryButton?.label ? primaryButton.label.trim() : null;
-    const buttonUrl = ruleFormData.messageType === "BUTTON_TEMPLATE" && primaryButton?.url ? primaryButton.url.trim() : null;
+    const firstLiveContent = isLiveRulePayload && ruleFormData.liveContents.length > 0 ? ruleFormData.liveContents[0] : null;
+    const primaryButton = isLiveRulePayload
+      ? (firstLiveContent?.buttons && firstLiveContent.buttons.length > 0 ? firstLiveContent.buttons[0] : null)
+      : (ruleFormData.buttons && ruleFormData.buttons.length > 0 ? ruleFormData.buttons[0] : null);
+    const effectiveMsgType = isLiveRulePayload ? (firstLiveContent?.messageType || "PLAIN_TEXT") : ruleFormData.messageType;
+    const buttonText = effectiveMsgType === "BUTTON_TEMPLATE" && primaryButton?.label ? primaryButton.label.trim() : null;
+    const buttonUrl = effectiveMsgType === "BUTTON_TEMPLATE" && primaryButton?.url ? primaryButton.url.trim() : null;
 
     const extendedConfig = {
-      mainMessage: ruleFormData.dmMessage || "Halo @username! Terima kasih sudah tertarik.",
+      mainMessage: isLiveRulePayload
+        ? (firstLiveContent?.message || "Halo {first_name}! Terima kasih sudah berkomentar di Live kami.")
+        : (ruleFormData.dmMessage || "Halo @username! Terima kasih sudah tertarik."),
+      messageType: effectiveMsgType,
+      buttons: ruleFormData.buttons,
+      quickReplies: ruleFormData.quickReplies,
+      carouselSlides: ruleFormData.carouselSlides,
+      liveContents: isLiveRulePayload ? ruleFormData.liveContents : undefined,
       featureWelcomeMessage: ruleFormData.featureWelcomeMessage,
       welcomeMessageType: ruleFormData.welcomeMessageType,
       welcomeMessage: ruleFormData.welcomeMessage,
@@ -1285,7 +1377,7 @@ export default function RuangAutomationClient({
       targetOtomasi: ruleFormData.targetOtomasi,
       storyMentionFrequency: ruleFormData.storyMentionFrequency || "24 jam sekali",
       keywordRule: ruleFormData.keywordRule,
-      triggerCommentType: isStoryMentionRule ? "ALL" : ruleFormData.triggerCommentType,
+      triggerCommentType: isStoryMentionRule ? "ALL" : isLiveRulePayload ? "KEYWORDS" : ruleFormData.triggerCommentType,
       postPermalink: selectedPost?.permalink || existingRuleConfig.postPermalink || null,
       postCoverUrl: postCoverUrl || null,
     };
@@ -1305,6 +1397,8 @@ export default function RuangAutomationClient({
         ? "SPECIFIC_STORY"
         : ruleFormData.targetOtomasi === "Story Mention"
         ? "STORY_MENTION"
+        : ruleFormData.targetOtomasi === "Live Instagram"
+        ? "LIVE"
         : "ALL";
 
     const triggerType =
@@ -1318,6 +1412,8 @@ export default function RuangAutomationClient({
         ? "SPECIFIC_STORY"
         : postType === "STORY_MENTION"
         ? "STORY_MENTION"
+        : postType === "LIVE"
+        ? "LIVE"
         : "ALL_POSTS";
 
     const payload = {
@@ -1330,7 +1426,7 @@ export default function RuangAutomationClient({
       buttonUrl: buttonUrl || undefined,
       buttonText: buttonText || undefined,
       keywords: keywordArray,
-      commentReplies: (!isStoryTarget && ruleFormData.featureReplyComment)
+      commentReplies: (!isStoryTarget && !isLiveRulePayload && ruleFormData.featureReplyComment)
         ? (ruleFormData.commentReplyVariations.filter((v) => v.trim().length > 0).length > 0
             ? ruleFormData.commentReplyVariations.filter((v) => v.trim().length > 0)
             : ["Pesan terkirim! 🚀"])
@@ -1370,9 +1466,11 @@ export default function RuangAutomationClient({
     );
 
     // Otomatis arahkan tab aktif ke jenis automasi yang baru dibuat agar kartu langsung terlihat seketika (0ms)!
-    if (isStoryTarget && automationTab !== "STORY") {
+    if (isLiveRulePayload && automationTab !== "LIVE") {
+      setAutomationTab("LIVE");
+    } else if (isStoryTarget && automationTab !== "STORY") {
       setAutomationTab("STORY");
-    } else if (!isStoryTarget && automationTab !== "POST") {
+    } else if (!isStoryTarget && !isLiveRulePayload && automationTab !== "POST") {
       setAutomationTab("POST");
     }
 
@@ -1495,13 +1593,18 @@ export default function RuangAutomationClient({
     ["ALL_STORIES", "SPECIFIC_STORY", "STORY_MENTION"].includes(r.triggerType) ||
     ["Semua Story", "Story Tertentu", "Story Mention"].includes(parseClientRuleConfig(r.dmMessage)?.targetOtomasi);
 
-  const isPostRule = (r: any) => !isStoryRule(r) && r.triggerType !== "LIVE" && r.triggerType !== "DM";
+  const isLiveRule = (r: any) =>
+    r.triggerType === "LIVE" ||
+    r.triggerType === "INSTAGRAM_LIVE" ||
+    parseClientRuleConfig(r.dmMessage)?.targetOtomasi === "Live Instagram";
+
+  const isPostRule = (r: any) => !isStoryRule(r) && !isLiveRule(r) && r.triggerType !== "DM";
 
   // Filtered rules according to tab and filter dropdown
   const filteredRules = rules.filter((rule: any) => {
     if (automationTab === "POST" && !isPostRule(rule)) return false;
     if (automationTab === "STORY" && !isStoryRule(rule)) return false;
-    if (automationTab === "LIVE" && rule.triggerType !== "LIVE") return false;
+    if (automationTab === "LIVE" && !isLiveRule(rule)) return false;
     if (automationTab === "DM" && rule.triggerType !== "DM") return false;
     if (filterStatus === "ACTIVE") return rule.isActive;
     if (filterStatus === "INACTIVE") return !rule.isActive;
@@ -1513,6 +1616,16 @@ export default function RuangAutomationClient({
   const isStoryTarget = ["Semua Story", "Story Tertentu", "Story Mention"].includes(ruleFormData.targetOtomasi);
   const isStoryMentionTarget =
     ruleFormData.targetOtomasi === "Story Mention" || ruleFormData.postType === "STORY_MENTION";
+  const isLiveTarget =
+    ruleFormData.targetOtomasi === "Live Instagram" || ruleFormData.postType === "LIVE";
+
+  const activeLiveContent =
+    ruleFormData.liveContents[activeLiveContentIdx] || ruleFormData.liveContents[0] || null;
+
+  const activeSimulatedLiveQr =
+    activeLiveContent?.quickReplies?.find((q) => q.id === simulatedLiveQrId) ||
+    activeLiveContent?.quickReplies?.[0] ||
+    null;
 
   // Active simulated button for DM interactive preview
   const activeSimulatedButton =
@@ -1842,7 +1955,22 @@ export default function RuangAutomationClient({
                   />
                 )}
 
-                {automationTab === "LIVE" && <LiveAutomationSection />}
+                {automationTab === "LIVE" && (
+                  <LiveAutomationSection
+                    filteredRules={filteredRules}
+                    filterStatus={filterStatus}
+                    isAccountLinked={isAccountLinked}
+                    logs={logs}
+                    activeDropdownRuleId={activeDropdownRuleId}
+                    setActiveDropdownRuleId={setActiveDropdownRuleId}
+                    handleToggleRule={handleToggleRule}
+                    handleDuplicateRule={handleDuplicateRule}
+                    handleOpenEditRuleModal={handleOpenEditRuleModal}
+                    handleDeleteRule={handleDeleteRule}
+                    setDetailRuleId={setDetailRuleId}
+                    handleOpenAddRuleModal={handleOpenAddRuleModal}
+                  />
+                )}
 
                 {automationTab === "DM" && <DmAutomationSection />}
               </div>
@@ -2120,9 +2248,11 @@ export default function RuangAutomationClient({
                                           ? "SPECIFIC_STORY"
                                           : item === "Story Mention"
                                           ? "STORY_MENTION"
+                                          : item === "Live Instagram"
+                                          ? "LIVE"
                                           : "ALL",
                                     });
-                                    if (item === "Story Mention") {
+                                    if (item === "Story Mention" || item === "Live Instagram") {
                                       setActivePreviewTab("DM");
                                     }
                                     setIsTargetDropdownOpen(false);
@@ -2428,8 +2558,515 @@ export default function RuangAutomationClient({
                   {/* Sections 4, 5, 6: Revealed after Nama & Target are filled */}
                   {(isBasicInfoFilled || editingRule) && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                      {/* 4. Trigger Komentar / Pemicu Pesan (Disembunyikan untuk Story Mention karena memakai Frekuensi) */}
-                      {!isStoryMentionTarget && (
+                      {/* 4A. KONTEN MULTI-ITEM BUILDER (Khusus Live Instagram) */}
+                      {isLiveTarget && (
+                        <div className="space-y-3 pt-1 animate-in fade-in duration-200">
+                          <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                            Konten <span className="text-rose-500">*</span>
+                          </label>
+
+                          {ruleFormData.liveContents.length > 0 && (
+                            <div className="space-y-4">
+                              {ruleFormData.liveContents.map((content, cIdx) => {
+                                const isActiveCard = activeLiveContentIdx === cIdx;
+                                return (
+                                  <div
+                                    key={content.id}
+                                    onClick={() => {
+                                      setActiveLiveContentIdx(cIdx);
+                                      setActivePreviewTab("DM");
+                                    }}
+                                    className={`p-4 rounded-xl border transition-all space-y-4 shadow-xs ${
+                                      isActiveCard
+                                        ? "border-gray-300 dark:border-white/20 bg-white dark:bg-[#18181b]"
+                                        : "border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] hover:border-gray-300 dark:hover:border-white/15"
+                                    }`}
+                                  >
+                                    {/* Card Header: Content N + Delete Icon */}
+                                    <div className="flex items-center justify-between">
+                                      <h4 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">
+                                        Content {cIdx + 1}
+                                      </h4>
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          const nextContents = ruleFormData.liveContents.filter((c) => c.id !== content.id);
+                                          setRuleFormData({ ...ruleFormData, liveContents: nextContents });
+                                          if (activeLiveContentIdx >= nextContents.length) {
+                                            setActiveLiveContentIdx(Math.max(0, nextContents.length - 1));
+                                          }
+                                        }}
+                                        className="w-7 h-7 rounded-lg flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
+                                        title="Hapus Content"
+                                      >
+                                        <Trash2 className="w-4 h-4" />
+                                      </button>
+                                    </div>
+
+                                    {/* Kata Pemicu * */}
+                                    <div className="space-y-1.5">
+                                      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                                        Kata Pemicu <span className="text-rose-500">*</span>
+                                      </label>
+                                      <div className="relative">
+                                        <input
+                                          type="text"
+                                          maxLength={200}
+                                          value={content.keywords}
+                                          onChange={(e) => {
+                                            const next = [...ruleFormData.liveContents];
+                                            next[cIdx] = { ...next[cIdx], keywords: e.target.value };
+                                            setRuleFormData({ ...ruleFormData, liveContents: next });
+                                          }}
+                                          placeholder="Masukkan kata"
+                                          className="w-full px-3.5 py-2.5 pr-14 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+                                        />
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-400 font-mono">
+                                          {content.keywords.length}/200
+                                        </span>
+                                      </div>
+                                      {!content.keywords.trim() && (
+                                        <p className="text-[11px] text-rose-500 font-medium">
+                                          Silakan masukkan kata
+                                        </p>
+                                      )}
+                                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                        Use comma to separate multiple words.
+                                      </p>
+                                    </div>
+
+                                    {/* Jenis Pesan * */}
+                                    <div className="space-y-1.5 relative">
+                                      <div className="flex items-center gap-1.5">
+                                        <label className="text-xs font-bold text-gray-800 dark:text-gray-200">
+                                          Jenis Pesan <span className="text-rose-500">*</span>
+                                        </label>
+                                        <div className="group relative cursor-pointer">
+                                          <HelpCircle className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200" />
+                                          <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-1 hidden group-hover:block w-52 p-2 bg-gray-900 text-white text-[10px] rounded-lg shadow-xl z-50 text-center pointer-events-none">
+                                            Pilih format pesan DM untuk kata pemicu ini: Teks atau Template Tombol.
+                                          </div>
+                                        </div>
+                                      </div>
+
+                                      <button
+                                        type="button"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          setOpenLiveMsgTypeDropdownId(
+                                            openLiveMsgTypeDropdownId === content.id ? null : content.id
+                                          );
+                                        }}
+                                        className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+                                      >
+                                        <span className="font-medium">
+                                          {content.messageType === "BUTTON_TEMPLATE" ? "Template Tombol" : "Teks"}
+                                        </span>
+                                        <ChevronDown
+                                          className={`w-4 h-4 text-gray-400 transition-transform ${
+                                            openLiveMsgTypeDropdownId === content.id ? "rotate-180" : ""
+                                          }`}
+                                        />
+                                      </button>
+
+                                      {openLiveMsgTypeDropdownId === content.id && (
+                                        <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
+                                          {[
+                                            { value: "PLAIN_TEXT", label: "Teks" },
+                                            { value: "BUTTON_TEMPLATE", label: "Template Tombol" },
+                                          ].map((opt) => {
+                                            const isSelected = content.messageType === opt.value;
+                                            return (
+                                              <button
+                                                key={opt.value}
+                                                type="button"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  const next = [...ruleFormData.liveContents];
+                                                  next[cIdx] = {
+                                                    ...next[cIdx],
+                                                    messageType: opt.value as "PLAIN_TEXT" | "BUTTON_TEMPLATE",
+                                                  };
+                                                  setRuleFormData({ ...ruleFormData, liveContents: next });
+                                                  setOpenLiveMsgTypeDropdownId(null);
+                                                }}
+                                                className={`w-full px-4 py-2 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                                                  isSelected
+                                                    ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
+                                                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                                                }`}
+                                              >
+                                                <span>{opt.label}</span>
+                                                {isSelected && (
+                                                  <Check className="w-4 h-4 text-gray-900 dark:text-white stroke-[2.5]" />
+                                                )}
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      )}
+                                    </div>
+
+                                    {/* Pesan & Variabel Chips */}
+                                    <div className="space-y-2">
+                                      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                                        Pesan
+                                      </label>
+                                      <div className="relative">
+                                        <textarea
+                                          rows={4}
+                                          maxLength={content.messageType === "BUTTON_TEMPLATE" ? 640 : 1000}
+                                          value={content.dmMessage}
+                                          onChange={(e) => {
+                                            const next = [...ruleFormData.liveContents];
+                                            next[cIdx] = { ...next[cIdx], dmMessage: e.target.value };
+                                            setRuleFormData({ ...ruleFormData, liveContents: next });
+                                          }}
+                                          placeholder="Pesan"
+                                          className="w-full px-3.5 py-2.5 pb-7 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 transition-all font-sans leading-relaxed"
+                                        />
+                                        <div className="absolute right-3 bottom-2 text-[10px] text-gray-400 font-mono">
+                                          {content.dmMessage.length}/{content.messageType === "BUTTON_TEMPLATE" ? 640 : 1000}
+                                        </div>
+                                      </div>
+
+                                      {/* Variabel Buttons */}
+                                      <div className="flex items-center gap-2 overflow-x-auto scrollbar-none flex-nowrap py-1">
+                                        <span className="text-xs font-semibold text-gray-600 dark:text-gray-400 shrink-0">
+                                          Variabel:
+                                        </span>
+                                        {[
+                                          { label: "Nama Depan", token: "{first_name}" },
+                                          { label: "Nama Belakang", token: "{last_name}" },
+                                          { label: "Nama Lengkap", token: "{full_name}" },
+                                          { label: "Nama Pengguna", token: "{username}" },
+                                        ].map((v) => (
+                                          <button
+                                            key={v.token}
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              const next = [...ruleFormData.liveContents];
+                                              const curMsg = next[cIdx].dmMessage;
+                                              next[cIdx] = {
+                                                ...next[cIdx],
+                                                dmMessage: curMsg ? `${curMsg} ${v.token} ` : `${v.token} `,
+                                              };
+                                              setRuleFormData({ ...ruleFormData, liveContents: next });
+                                            }}
+                                            className="px-2.5 py-1 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-medium text-gray-700 dark:text-gray-300 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+                                          >
+                                            {v.label}
+                                          </button>
+                                        ))}
+                                      </div>
+
+                                      {!content.dmMessage.trim() && (
+                                        <p className="text-[11px] text-rose-500 font-medium">
+                                          Silakan masukkan pesan
+                                        </p>
+                                      )}
+                                    </div>
+
+                                    {/* Quick Replies (When Teks / PLAIN_TEXT) */}
+                                    {content.messageType === "PLAIN_TEXT" && (
+                                      <div className="space-y-3 pt-1">
+                                        <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                                          Quick Replies
+                                        </label>
+
+                                        {content.quickReplies.length > 0 && (
+                                          <div className="space-y-3">
+                                            {content.quickReplies.map((qr, qIdx) => (
+                                              <div
+                                                key={qr.id}
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  setActiveLiveContentIdx(cIdx);
+                                                  setSimulatedLiveQrId(qr.id);
+                                                }}
+                                                className="p-3.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3 shadow-2xs"
+                                              >
+                                                <div className="flex items-center justify-between">
+                                                  <h5 className="text-xs font-bold text-gray-900 dark:text-white">
+                                                    Quick Reply {qIdx + 1}
+                                                  </h5>
+                                                  <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      const next = [...ruleFormData.liveContents];
+                                                      next[cIdx] = {
+                                                        ...next[cIdx],
+                                                        quickReplies: next[cIdx].quickReplies.filter(
+                                                          (item) => item.id !== qr.id
+                                                        ),
+                                                      };
+                                                      setRuleFormData({ ...ruleFormData, liveContents: next });
+                                                    }}
+                                                    className="w-6 h-6 rounded-md flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
+                                                    title="Hapus Quick Reply"
+                                                  >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                  </button>
+                                                </div>
+
+                                                {/* Label Quick Reply */}
+                                                <div className="space-y-1">
+                                                  <div className="relative">
+                                                    <input
+                                                      type="text"
+                                                      maxLength={80}
+                                                      value={qr.label}
+                                                      onChange={(e) => {
+                                                        const next = [...ruleFormData.liveContents];
+                                                        const nextQrs = [...next[cIdx].quickReplies];
+                                                        nextQrs[qIdx] = { ...nextQrs[qIdx], label: e.target.value };
+                                                        next[cIdx] = { ...next[cIdx], quickReplies: nextQrs };
+                                                        setRuleFormData({ ...ruleFormData, liveContents: next });
+                                                      }}
+                                                      placeholder="Masukkan label quick reply"
+                                                      className="w-full px-3 py-2 pr-12 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+                                                    />
+                                                    <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-mono">
+                                                      {qr.label.length}/80
+                                                    </span>
+                                                  </div>
+                                                  {!qr.label.trim() && (
+                                                    <p className="text-[11px] text-rose-500 font-medium">
+                                                      Silakan masukkan label
+                                                    </p>
+                                                  )}
+                                                </div>
+
+                                                {/* Masukkan teks (Auto-response) */}
+                                                <div className="space-y-1">
+                                                  <div className="relative">
+                                                    <textarea
+                                                      rows={3}
+                                                      maxLength={1000}
+                                                      value={qr.text}
+                                                      onChange={(e) => {
+                                                        const next = [...ruleFormData.liveContents];
+                                                        const nextQrs = [...next[cIdx].quickReplies];
+                                                        nextQrs[qIdx] = { ...nextQrs[qIdx], text: e.target.value };
+                                                        next[cIdx] = { ...next[cIdx], quickReplies: nextQrs };
+                                                        setRuleFormData({ ...ruleFormData, liveContents: next });
+                                                      }}
+                                                      placeholder="Masukkan teks"
+                                                      className="w-full px-3 py-2 pb-6 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium leading-relaxed resize-none"
+                                                    />
+                                                    <span className="absolute right-2.5 bottom-1.5 text-[10px] text-gray-400 font-mono">
+                                                      {qr.text.length}/1000
+                                                    </span>
+                                                  </div>
+                                                  {!qr.text.trim() && (
+                                                    <p className="text-[11px] text-rose-500 font-medium">
+                                                      Silakan masukkan teks
+                                                    </p>
+                                                  )}
+                                                </div>
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
+
+                                        {content.quickReplies.length < 13 && (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              const newQrId = `lqr_${Date.now()}`;
+                                              const next = [...ruleFormData.liveContents];
+                                              next[cIdx] = {
+                                                ...next[cIdx],
+                                                quickReplies: [
+                                                  ...next[cIdx].quickReplies,
+                                                  { id: newQrId, label: "", text: "" },
+                                                ],
+                                              };
+                                              setRuleFormData({ ...ruleFormData, liveContents: next });
+                                              setActiveLiveContentIdx(cIdx);
+                                              setSimulatedLiveQrId(newQrId);
+                                            }}
+                                            className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-white/15 hover:border-gray-300 dark:hover:border-white/25 bg-white dark:bg-[#18181b] text-xs font-bold text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                                          >
+                                            <Plus className="w-4 h-4" />
+                                            <span>Tambah Quick Reply</span>
+                                          </button>
+                                        )}
+                                      </div>
+                                    )}
+
+                                    {/* Tombol (When Template Tombol / BUTTON_TEMPLATE) */}
+                                    {content.messageType === "BUTTON_TEMPLATE" && (
+                                      <div className="space-y-3 pt-1">
+                                        <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                                          Tombol
+                                        </label>
+
+                                        {content.buttons.map((btn, bIdx) => (
+                                          <div
+                                            key={btn.id}
+                                            className="p-3.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3 shadow-2xs"
+                                          >
+                                            <div className="flex items-center justify-between">
+                                              <h5 className="text-xs font-bold text-gray-900 dark:text-white">
+                                                Tombol {bIdx + 1}
+                                              </h5>
+                                              {content.buttons.length > 1 && (
+                                                <button
+                                                  type="button"
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    const next = [...ruleFormData.liveContents];
+                                                    next[cIdx] = {
+                                                      ...next[cIdx],
+                                                      buttons: next[cIdx].buttons.filter((b) => b.id !== btn.id),
+                                                    };
+                                                    setRuleFormData({ ...ruleFormData, liveContents: next });
+                                                  }}
+                                                  className="w-6 h-6 rounded-md flex items-center justify-center text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 cursor-pointer"
+                                                >
+                                                  <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                              )}
+                                            </div>
+
+                                            {/* Label Tombol */}
+                                            <div className="space-y-1">
+                                              <div className="flex items-center justify-between">
+                                                <label className="text-[11px] font-semibold text-gray-600 dark:text-gray-400">
+                                                  Label Tombol
+                                                </label>
+                                                <span className="text-[10px] text-gray-400 font-mono">
+                                                  {btn.label.length}/80
+                                                </span>
+                                              </div>
+                                              <input
+                                                type="text"
+                                                maxLength={80}
+                                                value={btn.label}
+                                                onChange={(e) => {
+                                                  const next = [...ruleFormData.liveContents];
+                                                  const nextBtns = [...next[cIdx].buttons];
+                                                  nextBtns[bIdx] = { ...nextBtns[bIdx], label: e.target.value };
+                                                  next[cIdx] = { ...next[cIdx], buttons: nextBtns };
+                                                  setRuleFormData({ ...ruleFormData, liveContents: next });
+                                                }}
+                                                placeholder="Button 1"
+                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+                                              />
+                                              {!btn.label.trim() && (
+                                                <p className="text-[10px] text-rose-500 font-medium">
+                                                  Silakan masukkan label
+                                                </p>
+                                              )}
+                                            </div>
+
+                                            {/* URL Tombol */}
+                                            <div className="space-y-1">
+                                              <label className="text-[11px] font-semibold text-gray-600 dark:text-gray-400 block">
+                                                Masukkan URL
+                                              </label>
+                                              <input
+                                                type="text"
+                                                value={btn.url}
+                                                onChange={(e) => {
+                                                  const next = [...ruleFormData.liveContents];
+                                                  const nextBtns = [...next[cIdx].buttons];
+                                                  nextBtns[bIdx] = { ...nextBtns[bIdx], url: e.target.value };
+                                                  next[cIdx] = { ...next[cIdx], buttons: nextBtns };
+                                                  setRuleFormData({ ...ruleFormData, liveContents: next });
+                                                }}
+                                                placeholder="https://ruangcreativemuslim.com"
+                                                className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono"
+                                              />
+                                              {!btn.url.trim() && (
+                                                <p className="text-[10px] text-rose-500 font-medium">
+                                                  Silakan masukkan URL
+                                                </p>
+                                              )}
+                                            </div>
+                                          </div>
+                                        ))}
+
+                                        {content.buttons.length < 3 && (
+                                          <button
+                                            type="button"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              const next = [...ruleFormData.liveContents];
+                                              next[cIdx] = {
+                                                ...next[cIdx],
+                                                buttons: [
+                                                  ...next[cIdx].buttons,
+                                                  {
+                                                    id: `lbtn_${Date.now()}`,
+                                                    labelType: "Kustom",
+                                                    label: `Button ${next[cIdx].buttons.length + 1}`,
+                                                    action: "Buka Website",
+                                                    url: "https://ruangcreativemuslim.com",
+                                                    text: "",
+                                                  },
+                                                ],
+                                              };
+                                              setRuleFormData({ ...ruleFormData, liveContents: next });
+                                            }}
+                                            className="w-full py-2.5 rounded-xl border border-dashed border-gray-300 dark:border-white/20 hover:border-gray-400 dark:hover:border-white/30 text-xs font-bold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                                          >
+                                            <Plus className="w-4 h-4" />
+                                            <span>Tambah Tombol Lagi</span>
+                                          </button>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
+
+                          {ruleFormData.liveContents.length === 0 && (
+                            <p className="text-[11px] text-rose-500 font-medium">Minimal 1 content</p>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const newContent = {
+                                id: `live_content_${Date.now()}`,
+                                keywords: "",
+                                messageType: "PLAIN_TEXT" as const,
+                                dmMessage: "",
+                                buttons: [
+                                  {
+                                    id: `lbtn_${Date.now()}`,
+                                    labelType: "Kustom" as const,
+                                    label: "Lihat Produk",
+                                    action: "Buka Website" as const,
+                                    url: "https://ruangcreativemuslim.com",
+                                    text: "",
+                                  },
+                                ],
+                                quickReplies: [],
+                              };
+                              const nextContents = [...ruleFormData.liveContents, newContent];
+                              setRuleFormData({ ...ruleFormData, liveContents: nextContents });
+                              setActiveLiveContentIdx(nextContents.length - 1);
+                              setActivePreviewTab("DM");
+                            }}
+                            className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-white/15 hover:border-gray-300 dark:hover:border-white/25 bg-white dark:bg-[#18181b] text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                          >
+                            <Plus className="w-4 h-4" />
+                            <span>Tambah Konten</span>
+                          </button>
+                        </div>
+                      )}
+
+                      {/* 4. Trigger Komentar / Pemicu Pesan (Disembunyikan untuk Story Mention dan Live Instagram) */}
+                      {!isStoryMentionTarget && !isLiveTarget && (
                       <div
                         onClick={() => setActivePreviewTab("COMMENT")}
                         className="space-y-3 pt-2"
@@ -2641,7 +3278,8 @@ export default function RuangAutomationClient({
                     </div>
                   )}
 
-                  {/* 5. Pesan yang Dikirim Setelah Komentar */}
+                  {/* 5. Pesan yang Dikirim Setelah Komentar (Disembunyikan untuk Live Instagram karena menggunakan Konten *) */}
+                  {!isLiveTarget && (
                   <div
                     onClick={() => setActivePreviewTab("DM")}
                     className="space-y-4 pt-4 border-t border-gray-200 dark:border-white/10"
@@ -3343,6 +3981,7 @@ export default function RuangAutomationClient({
                       </div>
                     )}
                   </div>
+                  )}
 
                   {/* 6. Fitur Tambahan (6 Switch Cards) */}
                   <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-white/10">
@@ -3555,8 +4194,8 @@ export default function RuangAutomationClient({
                         )}
                       </div>
 
-                      {/* 2. Balasan Komentar (Hanya untuk Post / Reels, sembunyikan untuk Story) */}
-                      {!isStoryTarget && (
+                      {/* 2. Balasan Komentar (Hanya untuk Post / Reels, sembunyikan untuk Story & Live Instagram) */}
+                      {!isStoryTarget && !isLiveTarget && (
                         <div
                           onClick={() => setActivePreviewTab("COMMENT")}
                           className="p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3"
@@ -4263,8 +4902,8 @@ export default function RuangAutomationClient({
                   </div>
                 </div>
 
-                {/* Switcher Tab Pratinjau: Postingan & Komentar vs Pesan DM (Disembunyikan untuk Story Mention) */}
-                {!isStoryMentionTarget && (
+                {/* Switcher Tab Pratinjau: Postingan & Komentar vs Pesan DM (Disembunyikan untuk Story Mention & Live Instagram) */}
+                {!isStoryMentionTarget && !isLiveTarget && (
                   <div className="flex items-center justify-center pt-2 pb-1">
                     <div className="p-1 rounded-xl bg-gray-200/80 dark:bg-white/10 flex items-center gap-1 text-xs font-semibold">
                         <button
@@ -4289,6 +4928,28 @@ export default function RuangAutomationClient({
                       >
                         Pesan DM
                       </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Switcher Pratinjau Multi-Konten khusus Live Instagram (jika ada > 1 Konten) */}
+                {isLiveTarget && ruleFormData.liveContents.length > 1 && (
+                  <div className="flex items-center justify-center pt-2 pb-1">
+                    <div className="p-1 rounded-xl bg-gray-200/80 dark:bg-white/10 flex items-center gap-1 text-xs font-semibold overflow-x-auto max-w-full scrollbar-none">
+                      {ruleFormData.liveContents.map((c, idx) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          onClick={() => setActiveLiveContentIdx(idx)}
+                          className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer shrink-0 ${
+                            activeLiveContentIdx === idx
+                              ? "bg-white dark:bg-[#18181b] text-gray-900 dark:text-white shadow-xs"
+                              : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                          }`}
+                        >
+                          Content {idx + 1}
+                        </button>
+                      ))}
                     </div>
                   </div>
                 )}
@@ -4321,7 +4982,7 @@ export default function RuangAutomationClient({
                         </div>
                       </div>
 
-                      {activePreviewTab === "DM" || isStoryMentionTarget ? (
+                      {activePreviewTab === "DM" || isStoryMentionTarget || isLiveTarget ? (
                         /* INSTAGRAM DM CHAT VIEW */
                         <div className="flex-1 flex flex-col overflow-hidden pt-2 relative bg-white dark:bg-black">
                           {/* Instagram DM Top Header */}
@@ -4330,7 +4991,7 @@ export default function RuangAutomationClient({
                               <button
                                 type="button"
                                 onClick={() => {
-                                  if (!isStoryMentionTarget) setActivePreviewTab("COMMENT");
+                                  if (!isStoryMentionTarget && !isLiveTarget) setActivePreviewTab("COMMENT");
                                 }}
                                 className="text-gray-800 dark:text-gray-200 hover:opacity-70 transition-opacity cursor-pointer p-0.5"
                                 title="Lihat Postingan"
@@ -4629,134 +5290,116 @@ export default function RuangAutomationClient({
                                   </>
                                 )}
 
-                                <div className="flex items-start gap-2 pt-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
-                                  {/* Small Avatar on left */}
-                                  <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
-                                    <img
-                                      src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
-                                      alt="Profile"
-                                      className="w-full h-full object-cover"
-                                      onError={(e) => {
-                                        (e.currentTarget as HTMLImageElement).src = "/images/instagram/rcm-avatar.png";
-                                      }}
-                                    />
-                                  </div>
-
-                                  {/* Message Content Bubble */}
-                                  <div className="flex-1 max-w-[85%] space-y-2">
-                                    {/* 1. BUTTON TEMPLATE VIEW */}
-                                    {ruleFormData.messageType === "BUTTON_TEMPLATE" && (
-                                      <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 p-3 space-y-2.5 shadow-2xs max-w-[85%]">
-                                        <div className="text-xs leading-relaxed text-gray-900 dark:text-white whitespace-pre-wrap break-words font-medium">
-                                          {resolvePreviewVariables(ruleFormData.dmMessage || "Halo {first_name}! Terima kasih sudah tertarik.")}
+                                {isLiveTarget ? (
+                                  /* LIVE INSTAGRAM MULTI-CONTENT PREVIEW */
+                                  activeLiveContent ? (
+                                    <>
+                                      <div className="flex items-start gap-2 pt-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                                        <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
+                                          <img
+                                            src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
+                                            alt="Profile"
+                                            className="w-full h-full object-cover"
+                                            onError={(e) => {
+                                              (e.currentTarget as HTMLImageElement).src = "/images/instagram/rcm-avatar.png";
+                                            }}
+                                          />
                                         </div>
 
-                                        {ruleFormData.buttons && ruleFormData.buttons.length > 0 && (
-                                          <div className="space-y-1.5 pt-0.5">
-                                            {ruleFormData.buttons.map((btn, bIdx) => {
-                                              const isBtnActive = activeSimulatedButton?.id === btn.id;
-                                              return (
-                                                <button
-                                                  key={btn.id || bIdx}
-                                                  type="button"
-                                                  onClick={() => setSimulatedButtonId(btn.id)}
-                                                  className={`w-full py-2 px-3 rounded-xl border shadow-2xs text-center text-xs font-semibold transition-all cursor-pointer truncate ${
-                                                    isBtnActive
-                                                      ? "bg-white dark:bg-[#2a2a2e] border-purple-500/50 ring-1 ring-purple-500/30 text-purple-700 dark:text-purple-300"
-                                                      : "bg-white dark:bg-[#2a2a2e] border-gray-200/80 dark:border-white/10 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/5"
-                                                  }`}
-                                                >
-                                                  {btn.labelType === "Klik Disini" ? "Klik Disini" : btn.label || `Button ${bIdx + 1}`}
-                                                </button>
-                                              );
-                                            })}
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-
-                                    {/* 2. PLAIN TEXT VIEW */}
-                                    {ruleFormData.messageType === "PLAIN_TEXT" && (
-                                      <div className="space-y-2">
-                                        <div className="p-3 rounded-2xl rounded-tl-xs bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-600 text-white text-xs leading-relaxed shadow-xs whitespace-pre-wrap break-words">
-                                          {resolvePreviewVariables(ruleFormData.dmMessage || "Halo {first_name}! Terima kasih sudah tertarik.")}
-                                        </div>
-
-                                        {/* Quick Replies chips */}
-                                        {ruleFormData.quickReplies && ruleFormData.quickReplies.length > 0 && (
-                                          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 scrollbar-none">
-                                            {ruleFormData.quickReplies.map((qr) => (
-                                              <span
-                                                key={qr.id}
-                                                className="px-2.5 py-1 rounded-full border border-blue-500/40 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-500/10 shrink-0 shadow-2xs"
-                                              >
-                                                {qr.text || "Quick Reply"}
-                                              </span>
-                                            ))}
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-
-                                    {/* 3. CAROUSEL VIEW */}
-                                    {ruleFormData.messageType === "CAROUSEL" && (
-                                      <div className="flex items-stretch gap-2.5 overflow-x-auto pb-2 scrollbar-none -mr-2 pr-2">
-                                        {ruleFormData.carouselSlides.map((slide, sIdx) => (
-                                          <div
-                                            key={slide.id || sIdx}
-                                            className="w-44 shrink-0 rounded-2xl bg-white dark:bg-[#202024] border border-gray-200 dark:border-white/10 shadow-xs overflow-hidden flex flex-col"
-                                          >
-                                            <div className="w-full aspect-square bg-gray-100 dark:bg-white/5 overflow-hidden">
-                                              {slide.image || selectedPost?.image ? (
-                                                <img
-                                                  src={slide.image || selectedPost?.image}
-                                                  alt={slide.title || "Slide"}
-                                                  className="w-full h-full object-cover"
-                                                />
-                                              ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100 dark:bg-white/5">
-                                                  <ImageIcon className="w-6 h-6 opacity-40" />
+                                        <div className="flex-1 max-w-[85%] space-y-2">
+                                          {activeLiveContent.messageType === "BUTTON_TEMPLATE" ? (
+                                            <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 p-3 space-y-2.5 shadow-2xs">
+                                              <div className="text-xs leading-relaxed text-gray-900 dark:text-white whitespace-pre-wrap break-words font-medium">
+                                                {resolvePreviewVariables(
+                                                  activeLiveContent.dmMessage || "Halo {first_name}! Terima kasih sudah berkomentar di Live kami."
+                                                )}
+                                              </div>
+                                              {activeLiveContent.buttons && activeLiveContent.buttons.length > 0 && (
+                                                <div className="space-y-1.5 pt-0.5">
+                                                  {activeLiveContent.buttons.map((btn, bIdx) => (
+                                                    <div
+                                                      key={btn.id || bIdx}
+                                                      className="w-full py-2 px-3 rounded-xl bg-white dark:bg-[#2a2a2e] border border-gray-200/80 dark:border-white/10 shadow-2xs text-center text-xs font-semibold text-gray-900 dark:text-white truncate"
+                                                    >
+                                                      {btn.label || `Button ${bIdx + 1}`}
+                                                    </div>
+                                                  ))}
                                                 </div>
                                               )}
                                             </div>
-                                            <div className="p-2.5 space-y-0.5 flex-1">
-                                              <h5 className="font-bold text-xs text-gray-900 dark:text-white truncate">
-                                                {slide.title || "Judul Slide"}
-                                              </h5>
-                                              <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-tight">
-                                                {slide.subtitle || "Subjudul slide"}
-                                              </p>
-                                            </div>
-                                            {slide.buttons && slide.buttons.length > 0 && (
-                                              <div className="border-t border-gray-200 dark:border-white/10 divide-y divide-gray-200 dark:divide-white/10 bg-gray-50/60 dark:bg-white/[0.02]">
-                                                {slide.buttons.map((sBtn, sbIdx) => (
-                                                  <div
-                                                    key={sBtn.id || sbIdx}
-                                                    className="py-1.5 px-2 text-center text-[11px] font-semibold text-blue-600 dark:text-blue-400 truncate"
-                                                  >
-                                                    {sBtn.label || `Button ${sbIdx + 1}`}
-                                                  </div>
-                                                ))}
+                                          ) : (
+                                            <div className="space-y-2">
+                                              <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 p-3 shadow-2xs">
+                                                <div className="text-xs leading-relaxed text-gray-900 dark:text-white whitespace-pre-wrap break-words font-medium">
+                                                  {resolvePreviewVariables(
+                                                    activeLiveContent.dmMessage || "Halo {first_name}! Terima kasih sudah berkomentar di Live kami."
+                                                  )}
+                                                </div>
                                               </div>
-                                            )}
-                                          </div>
-                                        ))}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
 
-                                {/* User Simulated Response Bubble (Right - Balon Ungu) */}
-                                {ruleFormData.messageType === "BUTTON_TEMPLATE" && activeSimulatedButton && activeSimulatedButton.action === "Kirim Teks" && (
+                                              {/* Quick Replies Chips */}
+                                              {activeLiveContent.quickReplies && activeLiveContent.quickReplies.length > 0 && (
+                                                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 scrollbar-none">
+                                                  {activeLiveContent.quickReplies.map((qr, qIdx) => {
+                                                    const isSelectedQr = activeSimulatedLiveQr?.id === qr.id;
+                                                    return (
+                                                      <button
+                                                        key={qr.id || qIdx}
+                                                        type="button"
+                                                        onClick={() => setSimulatedLiveQrId(qr.id)}
+                                                        className={`px-2.5 py-1 rounded-full border text-[10px] font-semibold shrink-0 shadow-2xs transition-colors cursor-pointer ${
+                                                          isSelectedQr
+                                                            ? "border-purple-500 bg-purple-500/15 text-purple-600 dark:text-purple-300"
+                                                            : "border-blue-500/40 text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-500/10"
+                                                        }`}
+                                                      >
+                                                        {qr.label || `Quick Reply ${qIdx + 1}`}
+                                                      </button>
+                                                    );
+                                                  })}
+                                                </div>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Simulated Quick Reply Auto-Response (Label -> Text) */}
+                                      {activeLiveContent.messageType === "PLAIN_TEXT" &&
+                                        activeSimulatedLiveQr &&
+                                        (activeSimulatedLiveQr.label.trim() || activeSimulatedLiveQr.text.trim()) && (
+                                          <>
+                                            <div className="flex justify-end pt-0.5 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                                              <div className="px-3.5 py-1.5 rounded-2xl rounded-tr-xs bg-[#7048e8] text-white text-xs font-semibold shadow-xs max-w-[75%] break-words">
+                                                {activeSimulatedLiveQr.label || "Quick Reply"}
+                                              </div>
+                                            </div>
+
+                                            <div className="flex items-start gap-2 pt-0.5 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                                              <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
+                                                <img
+                                                  src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
+                                                  alt="Profile"
+                                                  className="w-full h-full object-cover"
+                                                  onError={(e) => {
+                                                    (e.currentTarget as HTMLImageElement).src = "/images/instagram/rcm-avatar.png";
+                                                  }}
+                                                />
+                                              </div>
+                                              <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 px-3.5 py-2 text-xs leading-relaxed text-gray-900 dark:text-white shadow-xs max-w-[80%] whitespace-pre-wrap break-words font-medium">
+                                                {resolvePreviewVariables(
+                                                  activeSimulatedLiveQr.text || "Teks balasan otomatis untuk quick reply ini..."
+                                                )}
+                                              </div>
+                                            </div>
+                                          </>
+                                        )}
+                                    </>
+                                  ) : null
+                                ) : (
                                   <>
-                                    <div className="flex justify-end pt-0.5 animate-in fade-in slide-in-from-bottom-1 duration-200">
-                                      <div className="px-3.5 py-1.5 rounded-2xl rounded-tr-xs bg-[#7048e8] text-white text-xs font-semibold shadow-xs max-w-[75%] break-words">
-                                        {activeSimulatedButton.labelType === "Klik Disini" ? "Klik Disini" : (activeSimulatedButton.label || "Klik")}
-                                      </div>
-                                    </div>
-
-                                    {/* Bot Follow-up Message Bubble (Left, with Avatar) */}
-                                    <div className="flex items-start gap-2 pt-0.5 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                                    <div className="flex items-start gap-2 pt-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                                      {/* Small Avatar on left */}
                                       <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
                                         <img
                                           src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
@@ -4767,10 +5410,138 @@ export default function RuangAutomationClient({
                                           }}
                                         />
                                       </div>
-                                      <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 px-3.5 py-2 text-xs leading-relaxed text-gray-900 dark:text-white shadow-xs max-w-[80%] whitespace-pre-wrap break-words font-medium">
-                                        {resolvePreviewVariables(activeSimulatedButton.text || "Terima kasih sudah tertarik! Ini info detail balasan dari kami.")}
+
+                                      {/* Message Content Bubble */}
+                                      <div className="flex-1 max-w-[85%] space-y-2">
+                                        {/* 1. BUTTON TEMPLATE VIEW */}
+                                        {ruleFormData.messageType === "BUTTON_TEMPLATE" && (
+                                          <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 p-3 space-y-2.5 shadow-2xs max-w-[85%]">
+                                            <div className="text-xs leading-relaxed text-gray-900 dark:text-white whitespace-pre-wrap break-words font-medium">
+                                              {resolvePreviewVariables(ruleFormData.dmMessage || "Halo {first_name}! Terima kasih sudah tertarik.")}
+                                            </div>
+
+                                            {ruleFormData.buttons && ruleFormData.buttons.length > 0 && (
+                                              <div className="space-y-1.5 pt-0.5">
+                                                {ruleFormData.buttons.map((btn, bIdx) => {
+                                                  const isBtnActive = activeSimulatedButton?.id === btn.id;
+                                                  return (
+                                                    <button
+                                                      key={btn.id || bIdx}
+                                                      type="button"
+                                                      onClick={() => setSimulatedButtonId(btn.id)}
+                                                      className={`w-full py-2 px-3 rounded-xl border shadow-2xs text-center text-xs font-semibold transition-all cursor-pointer truncate ${
+                                                        isBtnActive
+                                                          ? "bg-white dark:bg-[#2a2a2e] border-purple-500/50 ring-1 ring-purple-500/30 text-purple-700 dark:text-purple-300"
+                                                          : "bg-white dark:bg-[#2a2a2e] border-gray-200/80 dark:border-white/10 text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/5"
+                                                      }`}
+                                                    >
+                                                      {btn.labelType === "Klik Disini" ? "Klik Disini" : btn.label || `Button ${bIdx + 1}`}
+                                                    </button>
+                                                  );
+                                                })}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+
+                                        {/* 2. PLAIN TEXT VIEW */}
+                                        {ruleFormData.messageType === "PLAIN_TEXT" && (
+                                          <div className="space-y-2">
+                                            <div className="p-3 rounded-2xl rounded-tl-xs bg-gradient-to-tr from-purple-600 via-indigo-600 to-blue-600 text-white text-xs leading-relaxed shadow-xs whitespace-pre-wrap break-words">
+                                              {resolvePreviewVariables(ruleFormData.dmMessage || "Halo {first_name}! Terima kasih sudah tertarik.")}
+                                            </div>
+
+                                            {/* Quick Replies chips */}
+                                            {ruleFormData.quickReplies && ruleFormData.quickReplies.length > 0 && (
+                                              <div className="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 scrollbar-none">
+                                                {ruleFormData.quickReplies.map((qr) => (
+                                                  <span
+                                                    key={qr.id}
+                                                    className="px-2.5 py-1 rounded-full border border-blue-500/40 text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-500/10 shrink-0 shadow-2xs"
+                                                  >
+                                                    {qr.text || "Quick Reply"}
+                                                  </span>
+                                                ))}
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+
+                                        {/* 3. CAROUSEL VIEW */}
+                                        {ruleFormData.messageType === "CAROUSEL" && (
+                                          <div className="flex items-stretch gap-2.5 overflow-x-auto pb-2 scrollbar-none -mr-2 pr-2">
+                                            {ruleFormData.carouselSlides.map((slide, sIdx) => (
+                                              <div
+                                                key={slide.id || sIdx}
+                                                className="w-44 shrink-0 rounded-2xl bg-white dark:bg-[#202024] border border-gray-200 dark:border-white/10 shadow-xs overflow-hidden flex flex-col"
+                                              >
+                                                <div className="w-full aspect-square bg-gray-100 dark:bg-white/5 overflow-hidden">
+                                                  {slide.image || selectedPost?.image ? (
+                                                    <img
+                                                      src={slide.image || selectedPost?.image}
+                                                      alt={slide.title || "Slide"}
+                                                      className="w-full h-full object-cover"
+                                                    />
+                                                  ) : (
+                                                    <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-100 dark:bg-white/5">
+                                                      <ImageIcon className="w-6 h-6 opacity-40" />
+                                                    </div>
+                                                  )}
+                                                </div>
+                                                <div className="p-2.5 space-y-0.5 flex-1">
+                                                  <h5 className="font-bold text-xs text-gray-900 dark:text-white truncate">
+                                                    {slide.title || "Judul Slide"}
+                                                  </h5>
+                                                  <p className="text-[10px] text-gray-500 dark:text-gray-400 line-clamp-2 leading-tight">
+                                                    {slide.subtitle || "Subjudul slide"}
+                                                  </p>
+                                                </div>
+                                                {slide.buttons && slide.buttons.length > 0 && (
+                                                  <div className="border-t border-gray-200 dark:border-white/10 divide-y divide-gray-200 dark:divide-white/10 bg-gray-50/60 dark:bg-white/[0.02]">
+                                                    {slide.buttons.map((sBtn, sbIdx) => (
+                                                      <div
+                                                        key={sBtn.id || sbIdx}
+                                                        className="py-1.5 px-2 text-center text-[11px] font-semibold text-blue-600 dark:text-blue-400 truncate"
+                                                      >
+                                                        {sBtn.label || `Button ${sbIdx + 1}`}
+                                                      </div>
+                                                    ))}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            ))}
+                                          </div>
+                                        )}
                                       </div>
                                     </div>
+
+                                    {/* User Simulated Response Bubble (Right - Balon Ungu) */}
+                                    {ruleFormData.messageType === "BUTTON_TEMPLATE" && activeSimulatedButton && activeSimulatedButton.action === "Kirim Teks" && (
+                                      <>
+                                        <div className="flex justify-end pt-0.5 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                                          <div className="px-3.5 py-1.5 rounded-2xl rounded-tr-xs bg-[#7048e8] text-white text-xs font-semibold shadow-xs max-w-[75%] break-words">
+                                            {activeSimulatedButton.labelType === "Klik Disini" ? "Klik Disini" : (activeSimulatedButton.label || "Klik")}
+                                          </div>
+                                        </div>
+
+                                        {/* Bot Follow-up Message Bubble (Left, with Avatar) */}
+                                        <div className="flex items-start gap-2 pt-0.5 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                                          <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
+                                            <img
+                                              src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
+                                              alt="Profile"
+                                              className="w-full h-full object-cover"
+                                              onError={(e) => {
+                                                (e.currentTarget as HTMLImageElement).src = "/images/instagram/rcm-avatar.png";
+                                              }}
+                                            />
+                                          </div>
+                                          <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 px-3.5 py-2 text-xs leading-relaxed text-gray-900 dark:text-white shadow-xs max-w-[80%] whitespace-pre-wrap break-words font-medium">
+                                            {resolvePreviewVariables(activeSimulatedButton.text || "Terima kasih sudah tertarik! Ini info detail balasan dari kami.")}
+                                          </div>
+                                        </div>
+                                      </>
+                                    )}
                                   </>
                                 )}
 

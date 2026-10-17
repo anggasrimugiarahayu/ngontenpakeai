@@ -397,11 +397,11 @@ export async function POST(req: NextRequest) {
       }
 
       // =========================================================================
-      // A. EVENT: KOMENTAR MASUK (field === "comments")
+      // A. EVENT: KOMENTAR MASUK (field === "comments" atau "live_comments")
       // =========================================================================
       const changes = entry.changes || [];
       for (const change of changes) {
-        if (change.field === "comments" && change.value) {
+        if ((change.field === "comments" || change.field === "live_comments") && change.value) {
           const comment = change.value;
           const commentId = comment.id;
           const commentText = (comment.text || "").trim();
@@ -409,8 +409,13 @@ export async function POST(req: NextRequest) {
           const fromId = String(fromUser.id || "");
           const fromUsername = fromUser.username || "pengguna";
           const mediaId = comment.media?.id;
+          const isLiveCommentEvent =
+            change.field === "live_comments" ||
+            String(comment.media?.media_product_type || "").toUpperCase() === "LIVE";
 
-          console.log(`💬 [Meta Webhook] New comment on media ${mediaId} from @${fromUsername} (${fromId}): "${commentText}"`);
+          console.log(
+            `💬 [Meta Webhook] New ${isLiveCommentEvent ? "LIVE comment" : "comment"} on media ${mediaId} from @${fromUsername} (${fromId}): "${commentText}"`
+          );
 
           if (!commentId || !commentText) continue;
 
@@ -470,53 +475,66 @@ export async function POST(req: NextRequest) {
             orderBy: { createdAt: "desc" },
           });
 
-          // Rule Isolation & Priority Hierarchy
-          // 1. Cek apakah mediaId ini memiliki aturan khusus (SPECIFIC_POST atau NEXT_POST yang sudah terikat)
-          const specificRules = rules.filter((r: any) => 
-            (r.triggerType === "SPECIFIC_POST" && r.specificPostId === mediaId) ||
-            (r.triggerType === "NEXT_POST" && r.specificPostId === mediaId)
-          );
-
-          // 2. Cek apakah ada aturan NEXT_POST yang belum terikat (unbound)
-          const unboundNextPostRules = rules.filter((r: any) => 
-            r.triggerType === "NEXT_POST" && !r.specificPostId
-          );
-
-          // Jika mediaId ini belum punya specificRule, tapi ada unboundNextPostRule:
-          if (specificRules.length === 0 && unboundNextPostRules.length > 0) {
-            const nextRule = unboundNextPostRules[0];
-            console.log(`🎯 [Meta Webhook] Next post detected! Binding NEXT_POST rule "${nextRule.name}" to media ID: ${mediaId}`);
-            (prisma as any).instagramAutomationRule.update({
-              where: { id: nextRule.id },
-              data: { specificPostId: mediaId },
-            }).catch(() => null);
-            nextRule.specificPostId = mediaId;
-            specificRules.push(nextRule);
-          }
-
-          // 3. SELEKSI CANDIDATE RULES DENGAN ATURAN ISOLASI:
           let candidateRules: any[] = [];
-          if (specificRules.length > 0) {
-            // Postingan ini adalah POSTINGAN KHUSUS!
-            // Aturan "ALL_POSTS" DIBLOKIR TOTAL dari postingan ini agar tidak tumpang tindih / saling serobot.
-            console.log(`🔒 [Meta Webhook] Media ${mediaId} is a DEDICATED post with ${specificRules.length} specific rule(s). ALL_POSTS rules are strictly excluded.`);
-            candidateRules = specificRules;
-          } else {
-            // Postingan ini adalah POSTINGAN UMUM (tidak punya aturan khusus).
-            // Hanya aturan ALL_POSTS yang boleh berjalan!
-            console.log(`🌐 [Meta Webhook] Media ${mediaId} is a GENERAL post without dedicated rules. Evaluating ALL_POSTS rules.`);
-            candidateRules = rules.filter((r: any) => r.triggerType === "ALL_POSTS");
-          }
+          let matchedLiveContent: any = null;
 
-          // 4. SORTING PRIORITAS KATA KUNCI:
-          // Aturan dengan kata kunci spesifik lebih diutamakan daripada aturan "Semua Kata" (wildcard)
-          candidateRules.sort((a: any, b: any) => {
-            const aKeywords = Array.isArray(a.keywords) ? a.keywords.length : 0;
-            const bKeywords = Array.isArray(b.keywords) ? b.keywords.length : 0;
-            if (aKeywords > 0 && bKeywords === 0) return -1;
-            if (aKeywords === 0 && bKeywords > 0) return 1;
-            return 0;
-          });
+          if (isLiveCommentEvent) {
+            // Khusus Komentar Live Instagram: hanya evaluasi aturan LIVE / INSTAGRAM_LIVE
+            candidateRules = rules.filter(
+              (r: any) => r.triggerType === "LIVE" || r.triggerType === "INSTAGRAM_LIVE"
+            );
+          } else {
+            // Rule Isolation & Priority Hierarchy untuk Post / Reels
+            // 1. Cek apakah mediaId ini memiliki aturan khusus (SPECIFIC_POST atau NEXT_POST yang sudah terikat)
+            const specificRules = rules.filter(
+              (r: any) =>
+                (r.triggerType === "SPECIFIC_POST" && r.specificPostId === mediaId) ||
+                (r.triggerType === "NEXT_POST" && r.specificPostId === mediaId)
+            );
+
+            // 2. Cek apakah ada aturan NEXT_POST yang belum terikat (unbound)
+            const unboundNextPostRules = rules.filter(
+              (r: any) => r.triggerType === "NEXT_POST" && !r.specificPostId
+            );
+
+            // Jika mediaId ini belum punya specificRule, tapi ada unboundNextPostRule:
+            if (specificRules.length === 0 && unboundNextPostRules.length > 0) {
+              const nextRule = unboundNextPostRules[0];
+              console.log(
+                `🎯 [Meta Webhook] Next post detected! Binding NEXT_POST rule "${nextRule.name}" to media ID: ${mediaId}`
+              );
+              (prisma as any).instagramAutomationRule
+                .update({
+                  where: { id: nextRule.id },
+                  data: { specificPostId: mediaId },
+                })
+                .catch(() => null);
+              nextRule.specificPostId = mediaId;
+              specificRules.push(nextRule);
+            }
+
+            // 3. SELEKSI CANDIDATE RULES DENGAN ATURAN ISOLASI:
+            if (specificRules.length > 0) {
+              console.log(
+                `🔒 [Meta Webhook] Media ${mediaId} is a DEDICATED post with ${specificRules.length} specific rule(s). ALL_POSTS rules are strictly excluded.`
+              );
+              candidateRules = specificRules;
+            } else {
+              console.log(
+                `🌐 [Meta Webhook] Media ${mediaId} is a GENERAL post without dedicated rules. Evaluating ALL_POSTS rules.`
+              );
+              candidateRules = rules.filter((r: any) => r.triggerType === "ALL_POSTS");
+            }
+
+            // 4. SORTING PRIORITAS KATA KUNCI:
+            candidateRules.sort((a: any, b: any) => {
+              const aKeywords = Array.isArray(a.keywords) ? a.keywords.length : 0;
+              const bKeywords = Array.isArray(b.keywords) ? b.keywords.length : 0;
+              if (aKeywords > 0 && bKeywords === 0) return -1;
+              if (aKeywords === 0 && bKeywords > 0) return 1;
+              return 0;
+            });
+          }
 
           // Filter aturan yang cocok kata kuncinya (Single Winner Rule)
           const matchedRule = candidateRules.find((rule: any) => {
@@ -529,6 +547,23 @@ export async function POST(req: NextRequest) {
                 cfg = JSON.parse(rule.dmMessage);
               }
             } catch (e) {}
+
+            const ruleStyle = cfg.keywordRule || "Contains";
+
+            // Jika aturan Live Instagram memiliki multi-content (liveContents), cari item Content yang kata pemicunya cocok
+            if (isLiveCommentEvent && Array.isArray(cfg.liveContents) && cfg.liveContents.length > 0) {
+              const foundContent = cfg.liveContents.find((c: any) =>
+                checkKeywordMatch(commentText, c.keywords || "", ruleStyle)
+              );
+              if (foundContent) {
+                matchedLiveContent = foundContent;
+                console.log(
+                  `✅ [Meta Webhook] Live Rule "${rule.name}" matched content keywords "${foundContent.keywords}"`
+                );
+                return true;
+              }
+              return false;
+            }
 
             // Cek jika triggerCommentType === "ALL" (Semua Komentar)
             if (cfg.triggerCommentType === "ALL") {
@@ -543,7 +578,6 @@ export async function POST(req: NextRequest) {
               return true;
             }
 
-            const ruleStyle = cfg.keywordRule || "Contains";
             const isMatched = checkKeywordMatch(commentText, keywords, ruleStyle);
             if (isMatched) {
               console.log(`✅ [Meta Webhook] Rule "${rule.name}" matched keyword with style "${ruleStyle}": "${commentText}"`);
@@ -567,6 +601,7 @@ export async function POST(req: NextRequest) {
           } catch (e) {}
 
           const mainDmText =
+            matchedLiveContent?.message ||
             ruleConfig.mainMessage ||
             matchedRule.dmMessage ||
             "Halo @{username}! Terima kasih sudah tertarik. Ini link akses yang kamu minta:\nhttps://ruangcreativemuslim.com";
@@ -576,9 +611,10 @@ export async function POST(req: NextRequest) {
           let failureReason = null;
 
           // =====================================================================
-          // 3. EKSEKUSI: BALAS KOMENTAR PUBLIK (Spintax Acak)
+          // 3. EKSEKUSI: BALAS KOMENTAR PUBLIK (Spintax Acak - khusus Post/Reels)
           // =====================================================================
           const shouldReplyComment =
+            !isLiveCommentEvent &&
             ruleConfig.featureReplyComment !== false &&
             ((Array.isArray(matchedRule.commentReplies) && matchedRule.commentReplies.length > 0) ||
               ruleConfig.replyCommentTemplates);
@@ -636,6 +672,9 @@ export async function POST(req: NextRequest) {
               ? new Date(Number(comment.created_time) * 1000 || comment.created_time).toISOString()
               : new Date().toISOString(),
             mediaId: mediaId || null,
+            ...(fromId ? { senderId: fromId } : {}),
+            ...(isLiveCommentEvent ? { isLive: true } : {}),
+            ...(matchedLiveContent?.id ? { liveContentId: matchedLiveContent.id } : {}),
           };
 
           try {
@@ -678,7 +717,37 @@ export async function POST(req: NextRequest) {
               const deliveredText = resolveVariables(mainDmText, fromUsername);
               initialMeta.mainSentAt = new Date().toISOString();
 
-              if (matchedRule.buttonText && matchedRule.buttonUrl) {
+              const activeButtons = Array.isArray(matchedLiveContent?.buttons)
+                ? matchedLiveContent.buttons.filter((b: any) => b.label?.trim() && b.url?.trim())
+                : [];
+              const activeQuickReplies = Array.isArray(matchedLiveContent?.quickReplies)
+                ? matchedLiveContent.quickReplies.filter((q: any) => q.label?.trim())
+                : [];
+
+              if (matchedLiveContent && matchedLiveContent.messageType === "BUTTON_TEMPLATE" && activeButtons.length > 0) {
+                dmPayloadMessage = buildButtonTemplateMessage(
+                  deliveredText,
+                  activeButtons.slice(0, 3).map((b: any) => ({
+                    type: "web_url",
+                    url: buildTrackedUrl(
+                      origin,
+                      b.url,
+                      matchedRule.id,
+                      ruleConfig.featureLinkTracking !== false
+                    ),
+                    title: b.label.slice(0, 20),
+                  }))
+                );
+              } else if (matchedLiveContent && activeQuickReplies.length > 0) {
+                dmPayloadMessage = {
+                  text: deliveredText,
+                  quick_replies: activeQuickReplies.slice(0, 13).map((q: any) => ({
+                    content_type: "text",
+                    title: q.label.slice(0, 20),
+                    payload: `LIVE_QR::${matchedRule.id}::${q.id}`,
+                  })),
+                };
+              } else if (matchedRule.buttonText && matchedRule.buttonUrl) {
                 const trackedUrl = buildTrackedUrl(
                   origin,
                   matchedRule.buttonUrl,
@@ -742,7 +811,9 @@ export async function POST(req: NextRequest) {
               accountId: account.id,
               ruleId: matchedRule.id,
               fromUsername: fromUsername || "pengguna",
-              commentText: commentText.slice(0, 500),
+              commentText: isLiveCommentEvent
+                ? `[Live] ${commentText}`.slice(0, 500)
+                : commentText.slice(0, 500),
               commentId: commentId,
               replyCommentStatus: replyCommentStatus,
               dmStatus: dmStatus,
@@ -768,8 +839,55 @@ export async function POST(req: NextRequest) {
 
         if (!senderId || senderId === account.instagramId || senderId === account.pageId) continue;
 
-        // 1. Cek apakah ada postback (contoh: user klik tombol di Pesan Pembuka atau "Sudah mengikuti 🙌")
+        // 1. Cek apakah ada postback (contoh: user klik tombol di Pesan Pembuka, "Sudah mengikuti 🙌", atau Quick Reply Live)
         if (postbackPayload) {
+          if (postbackPayload.startsWith("LIVE_QR::")) {
+            const parts = postbackPayload.split("::");
+            const qrRuleId = parts[1];
+            const qrId = parts[2];
+            const qrRule = await (prisma as any).instagramAutomationRule.findFirst({
+              where: { id: qrRuleId },
+            });
+            if (qrRule) {
+              let qrRuleConfig: any = {};
+              try {
+                if (qrRule.dmMessage && (qrRule.dmMessage.startsWith("{") || qrRule.dmMessage.includes('"mainMessage"'))) {
+                  qrRuleConfig = JSON.parse(qrRule.dmMessage);
+                }
+              } catch {}
+
+              let foundQr: any = null;
+              if (Array.isArray(qrRuleConfig.liveContents)) {
+                for (const c of qrRuleConfig.liveContents) {
+                  if (Array.isArray(c.quickReplies)) {
+                    const match = c.quickReplies.find(
+                      (q: any) => String(q.id) === String(qrId) || (msgText && q.label?.trim().toLowerCase() === msgText.toLowerCase())
+                    );
+                    if (match) {
+                      foundQr = match;
+                      break;
+                    }
+                  }
+                }
+              }
+
+              if (foundQr?.text) {
+                const userProfile = await getIgUserProfile(senderId, account.accessToken);
+                const senderUsername = userProfile.username || "kak";
+                const replyText = resolveVariables(foundQr.text, senderUsername);
+                await postToMetaGraph(
+                  `/me/messages`,
+                  {
+                    recipient: { id: senderId },
+                    message: { text: replyText },
+                  },
+                  account.accessToken
+                ).catch(() => {});
+              }
+            }
+            continue;
+          }
+
           const ruleId = postbackPayload.split("_").pop();
           const targetRule = await (prisma as any).instagramAutomationRule.findFirst({
             where: { id: ruleId },
@@ -786,7 +904,6 @@ export async function POST(req: NextRequest) {
             // Ambil profil & status follow real-time (is_user_follow_business) dari Meta Graph API
             const userProfile = await getIgUserProfile(senderId, account.accessToken);
             const senderUsername = userProfile.username || "kak";
-            const mainText = resolveVariables(ruleConfig.mainMessage || targetRule.dmMessage || "", senderUsername);
 
             // Cari log terbaru untuk user & rule ini agar bisa diupdate status read / newFollower / awaitingContact
             const recentLogs = await (prisma as any).instagramAutomationLog.findMany({
@@ -810,6 +927,16 @@ export async function POST(req: NextRequest) {
               senderId,
             };
 
+            const matchedLiveContentItem =
+              updatedMeta.liveContentId && Array.isArray(ruleConfig.liveContents)
+                ? ruleConfig.liveContents.find((c: any) => c.id === updatedMeta.liveContentId)
+                : null;
+
+            const mainText = resolveVariables(
+              matchedLiveContentItem?.message || ruleConfig.mainMessage || targetRule.dmMessage || "",
+              senderUsername
+            );
+
             // Helper untuk membangun pesan tahap akhir (Ask for Contact atau Pesan Utama)
             const buildFinalOrContactStep = () => {
               if (ruleConfig.featureAskForContact && ruleConfig.askContactMessage && !updatedMeta.contact) {
@@ -819,6 +946,43 @@ export async function POST(req: NextRequest) {
               }
               updatedMeta.awaitingContact = false;
               updatedMeta.mainSentAt = new Date().toISOString();
+
+              if (matchedLiveContentItem) {
+                const liveBtns = Array.isArray(matchedLiveContentItem.buttons)
+                  ? matchedLiveContentItem.buttons.filter((b: any) => b.label?.trim() && b.url?.trim())
+                  : [];
+                const liveQrs = Array.isArray(matchedLiveContentItem.quickReplies)
+                  ? matchedLiveContentItem.quickReplies.filter((q: any) => q.label?.trim())
+                  : [];
+                if (matchedLiveContentItem.messageType === "BUTTON_TEMPLATE" && liveBtns.length > 0) {
+                  return buildButtonTemplateMessage(
+                    mainText,
+                    liveBtns.slice(0, 3).map((b: any) => ({
+                      type: "web_url",
+                      url: buildTrackedUrl(
+                        origin,
+                        b.url,
+                        targetRule.id,
+                        ruleConfig.featureLinkTracking !== false,
+                        userLog?.id,
+                        senderId
+                      ),
+                      title: b.label.slice(0, 20),
+                    }))
+                  );
+                }
+                if (liveQrs.length > 0) {
+                  return {
+                    text: mainText,
+                    quick_replies: liveQrs.slice(0, 13).map((q: any) => ({
+                      content_type: "text",
+                      title: q.label.slice(0, 20),
+                      payload: `LIVE_QR::${targetRule.id}::${q.id}`,
+                    })),
+                  };
+                }
+              }
+
               if (targetRule.buttonText && targetRule.buttonUrl) {
                 const trackedUrl = buildTrackedUrl(
                   origin,

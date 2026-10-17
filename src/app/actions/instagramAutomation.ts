@@ -426,9 +426,9 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
     const resolvedBusinessId = String(data.user_id || data.id);
     const resolvedScopedId = String(data.id || data.user_id);
 
-    // 3. Pastikan webhook disubscribe ke Meta untuk akun ini (comments, messages, messaging_postbacks)
+    // 3. Pastikan webhook disubscribe ke Meta untuk akun ini (comments, live_comments, messages, messaging_postbacks)
     await fetch(
-      `https://graph.instagram.com/v22.0/me/subscribed_apps?subscribed_fields=comments,messages,messaging_postbacks&access_token=${token}`,
+      `https://graph.instagram.com/v22.0/me/subscribed_apps?subscribed_fields=comments,live_comments,messages,messaging_postbacks&access_token=${token}`,
       { method: "POST" }
     ).catch(() => null);
 
@@ -916,6 +916,8 @@ export async function saveAutomationRuleAction(payload: {
           ? "SPECIFIC_STORY"
           : payload.postType === "STORY_MENTION" || payload.postType === "Story Mention"
           ? "STORY_MENTION"
+          : payload.postType === "LIVE" || payload.postType === "INSTAGRAM_LIVE" || payload.postType === "Live Instagram"
+          ? "LIVE"
           : "ALL_POSTS"
       );
 
