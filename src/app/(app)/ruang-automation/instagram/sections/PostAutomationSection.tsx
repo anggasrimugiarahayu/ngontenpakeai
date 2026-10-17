@@ -14,6 +14,7 @@ import {
   ChevronRight,
   AlertTriangle,
   Link2,
+  Unlink,
 } from "lucide-react";
 import { InstagramIcon } from "../../components/AutomationIcons";
 import {
@@ -148,7 +149,16 @@ export function PostRuleCard({
       {/* Sisi Kiri: Cover 3:4 (selalu tampil agar konsisten/senada) */}
       <div className="w-[105px] sm:w-[125px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
         <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
-          {rule.triggerType === "SPECIFIC_POST" ? (
+          {!isAccountLinked ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gray-100 dark:bg-[#1f1f23] text-gray-400">
+              <div className="w-8 h-8 rounded-full bg-gray-200/80 dark:bg-white/10 flex items-center justify-center mb-1.5 text-gray-500 dark:text-gray-400">
+                <Unlink className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] sm:text-[11px] font-bold text-gray-600 dark:text-gray-300 leading-tight">
+                Tidak<br />Terhubung
+              </span>
+            </div>
+          ) : rule.triggerType === "SPECIFIC_POST" ? (
             stableCoverSrc && !imgFailed ? (
               <>
                 <img
@@ -332,13 +342,6 @@ export function PostRuleCard({
               Detail <ChevronRight className="w-3.5 h-3.5" />
             </button>
           </div>
-
-          {!isAccountLinked && (
-            <div className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-200/80 dark:border-amber-500/20 flex items-center gap-1.5 mb-2">
-              <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-500" />
-              <span>Koneksi akun terputus — automasi ini dijeda otomatis.</span>
-            </div>
-          )}
 
           {/* Baris 4: Kata Pemicu */}
           <div className="mb-2.5">
