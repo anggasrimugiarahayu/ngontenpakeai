@@ -65,12 +65,12 @@ export function InstagramConnectionTab({
               : null;
 
           return (
-            <div className="rounded-2xl border border-gray-200 dark:border-white/5 p-6 bg-white dark:bg-[#121214] shadow-sm">
-              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                <div className="flex items-start md:items-center gap-4 sm:gap-5">
+            <div className="rounded-2xl border border-gray-200 dark:border-white/5 p-5 sm:p-6 bg-white dark:bg-[#121214] shadow-sm">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6">
+                <div className="flex items-start md:items-center gap-3.5 sm:gap-5">
                   {/* Avatar / Profile Picture */}
                   <div className="relative shrink-0">
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 overflow-hidden shadow-2xs">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-full border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 overflow-hidden shadow-2xs">
                       {avatarSrc ? (
                         <img
                           src={avatarSrc}
@@ -108,28 +108,28 @@ export function InstagramConnectionTab({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex items-center gap-3 self-start lg:self-center flex-wrap shrink-0">
+                <div className="flex items-center gap-2.5 w-full sm:w-auto self-stretch sm:self-auto pt-3 sm:pt-0 border-t border-gray-100 dark:border-white/5 sm:border-t-0 shrink-0">
                   <button
                     onClick={onResyncAccount}
                     disabled={isPending}
-                    className="px-4 py-2 rounded-xl border border-gray-300 dark:border-white/20 bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/5 text-gray-800 dark:text-gray-200 text-xs font-medium flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
+                    className="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-white/20 bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/5 text-gray-800 dark:text-gray-200 text-xs font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs active:scale-[0.99]"
                     title="Sinkronkan ulang data profil dari Meta API"
                   >
                     <RefreshCw
-                      className={`w-3.5 h-3.5 text-gray-600 dark:text-gray-400 ${
+                      className={`w-3.5 h-3.5 text-gray-600 dark:text-gray-400 shrink-0 ${
                         isPending ? "animate-spin" : ""
                       }`}
                     />
-                    <span>Singkronkan ulang</span>
+                    <span className="truncate">Singkronkan ulang</span>
                   </button>
                   <button
                     onClick={onDisconnect}
                     disabled={isPending}
-                    className="px-4 py-2 rounded-xl border border-gray-300 dark:border-white/20 bg-white dark:bg-transparent hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-medium flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
+                    className="flex-1 sm:flex-initial px-3.5 py-2.5 rounded-xl border border-rose-200 dark:border-rose-500/20 bg-white dark:bg-transparent hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs active:scale-[0.99]"
                     title="Putuskan koneksi akun ini"
                   >
-                    <Unlink className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                    <span>Putuskan Koneksi</span>
+                    <Unlink className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400 shrink-0" />
+                    <span className="truncate">Putuskan Akun</span>
                   </button>
                 </div>
               </div>
@@ -138,23 +138,23 @@ export function InstagramConnectionTab({
         })()
       ) : (
         /* DISCONNECTED STATE */
-        <div className="rounded-2xl border-2 border-dashed border-gray-300 dark:border-white/10 p-6 md:p-8 bg-gray-50/50 dark:bg-white/[0.02] shadow-sm">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-            <div className="flex items-start sm:items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-gray-200 dark:bg-white/10 flex items-center justify-center shrink-0">
-                <InstagramIcon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
+        <div className="rounded-2xl border-2 border-dashed border-gray-300 dark:border-white/10 p-5 sm:p-7 md:p-8 bg-gray-50/50 dark:bg-white/[0.02] shadow-sm">
+          <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 sm:gap-6">
+            <div className="flex items-start sm:items-center gap-3.5 sm:gap-4 flex-1 min-w-0">
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-gray-100 dark:bg-white/10 flex items-center justify-center shrink-0 border border-gray-200/60 dark:border-white/5 shadow-2xs">
+                <InstagramIcon className="w-6 h-6 sm:w-8 sm:h-8 text-gray-400 dark:text-gray-500" />
               </div>
-              <div className="space-y-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-xl font-bold font-heading text-gray-900 dark:text-white">
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                  <h2 className="text-base sm:text-lg font-bold font-heading text-gray-900 dark:text-white leading-snug">
                     Belum Ada Akun Instagram Terhubung
                   </h2>
-                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center gap-1">
+                  <span className="self-start px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 inline-flex items-center gap-1 shrink-0">
                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
                     Terputus / Belum Aktif
                   </span>
                 </div>
-                <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xl">
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-xl">
                   Hubungkan akun Instagram Bisnis atau Kreator Anda untuk mulai mengaktifkan auto-reply komentar postingan/Reels dan pengiriman DM privat otomatis 24/7.
                 </p>
               </div>
@@ -163,11 +163,11 @@ export function InstagramConnectionTab({
             <button
               onClick={() => onStartMetaOAuth(displayAccount?.id || selectedAgentId || account?.id)}
               disabled={isPending}
-              className="px-5 py-2.5 rounded-xl bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all self-start sm:self-auto shrink-0 cursor-pointer"
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all shrink-0 cursor-pointer shadow-sm active:scale-[0.99] disabled:opacity-50"
               title="Hubungkan akun Instagram Anda secara resmi via Meta"
             >
-              <InstagramIcon className="w-4 h-4" />
-              Hubungkan Akun Instagram
+              <InstagramIcon className="w-4 h-4 shrink-0" />
+              <span>Hubungkan Akun Instagram</span>
             </button>
           </div>
         </div>

@@ -145,62 +145,62 @@ export function PostRuleCard({
           : "opacity-75 bg-gray-50/70 dark:bg-[#141417]"
       }`}
     >
-      {/* Sisi Kiri: Cover 3:4 (hanya tampil jika akun terhubung) */}
-      {isAccountLinked && (
-        <div className="w-[105px] sm:w-[125px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
-          <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
-            {rule.triggerType === "SPECIFIC_POST" ? (
-              stableCoverSrc && !imgFailed ? (
-                <>
-                  <img
-                    src={stableCoverSrc}
-                    alt={rule.name}
-                    referrerPolicy="no-referrer"
-                    className="absolute inset-0 w-full h-full object-cover"
-                    onError={() => {
-                      const fallback = matchedPost?.thumb || matchedPost?.image || null;
-                      if (fallback && fallback !== stableCoverSrc) {
-                        setStableCoverSrc(fallback);
-                      } else {
-                        setImgFailed(true);
-                      }
-                    }}
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                  <div className="absolute bottom-1.5 left-2 right-2 text-[10px] font-bold text-white truncate drop-shadow">
-                    {matchedPost?.title || rule.name}
-                  </div>
-                </>
-              ) : (
-                <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gray-100 dark:bg-white/5 text-gray-400">
-                  <InstagramIcon className="w-5 h-5 mb-1 opacity-60 text-gray-500" />
-                  <span className="text-[10px] font-semibold text-gray-500 truncate max-w-full px-1">
-                    Postingan
-                  </span>
+      {/* Sisi Kiri: Cover 3:4 (selalu tampil agar konsisten/senada) */}
+      <div className="w-[105px] sm:w-[125px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
+        <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
+          {rule.triggerType === "SPECIFIC_POST" ? (
+            stableCoverSrc && !imgFailed ? (
+              <>
+                <img
+                  src={stableCoverSrc}
+                  alt={rule.name}
+                  referrerPolicy="no-referrer"
+                  className="absolute inset-0 w-full h-full object-cover"
+                  onError={() => {
+                    const fallback = matchedPost?.thumb || matchedPost?.image || null;
+                    if (fallback && fallback !== stableCoverSrc) {
+                      setStableCoverSrc(fallback);
+                    } else {
+                      setImgFailed(true);
+                    }
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-1.5 left-2 right-2 text-[10px] font-bold text-white truncate drop-shadow">
+                  {matchedPost?.title || rule.name}
                 </div>
-              )
-            ) : rule.triggerType === "NEXT_POST" ? (
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-purple-500/15 via-indigo-500/10 to-pink-500/15 dark:bg-white/5">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white mb-1.5 shadow-sm">
-                  <Sparkles className="w-4 h-4" />
-                </div>
-                <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 leading-tight">
-                  Menunggu<br />Post Baru
-                </span>
-              </div>
+              </>
             ) : (
-              <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-orange-500/10 dark:bg-white/5">
-                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
+              <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gray-100 dark:bg-white/5 text-gray-400">
+                <div className="w-8 h-8 rounded-full bg-gray-200/80 dark:bg-white/10 flex items-center justify-center mb-1 text-gray-500">
                   <InstagramIcon className="w-4 h-4" />
                 </div>
-                <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
-                  Semua<br />Postingan
+                <span className="text-[10px] font-semibold text-gray-500 dark:text-gray-400 truncate max-w-full px-1">
+                  Postingan
                 </span>
               </div>
-            )}
-          </div>
+            )
+          ) : rule.triggerType === "NEXT_POST" ? (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-purple-500/15 via-indigo-500/10 to-pink-500/15 dark:bg-white/5">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white mb-1.5 shadow-sm">
+                <Sparkles className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 leading-tight">
+                Menunggu<br />Post Baru
+              </span>
+            </div>
+          ) : (
+            <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-orange-500/10 dark:bg-white/5">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
+                <InstagramIcon className="w-4 h-4" />
+              </div>
+              <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
+                Semua<br />Postingan
+              </span>
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* Sisi Kanan: Konten Informasi */}
       <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5">

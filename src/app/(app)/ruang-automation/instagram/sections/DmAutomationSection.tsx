@@ -92,26 +92,24 @@ export function DmRuleCard({
           : "opacity-75 bg-gray-50/70 dark:bg-[#141417]"
       }`}
     >
-      {/* Sisi Kiri: Cover 3:4 Pesan Instagram (DM) */}
-      {isAccountLinked && (
-        <div className="w-[105px] sm:w-[125px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
-          <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-indigo-500/20 via-purple-500/15 to-blue-500/20 dark:bg-white/5">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-blue-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
-                <Send className="w-3.5 h-3.5" />
-              </div>
-              <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
-                Pesan
-                <br />
-                Instagram
-              </span>
-              <span className="mt-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
-                {keywordRuleLabel}
-              </span>
+      {/* Sisi Kiri: Cover 3:4 Pesan Instagram (DM) (selalu tampil agar konsisten/senada) */}
+      <div className="w-[105px] sm:w-[125px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
+        <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-indigo-500/20 via-purple-500/15 to-blue-500/20 dark:bg-white/5">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 via-purple-500 to-blue-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
+              <Send className="w-3.5 h-3.5" />
             </div>
+            <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
+              Pesan
+              <br />
+              Instagram
+            </span>
+            <span className="mt-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-indigo-500/15 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20">
+              {keywordRuleLabel}
+            </span>
           </div>
         </div>
-      )}
+      </div>
 
       {/* Sisi Kanan: Konten Informasi */}
       <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5">

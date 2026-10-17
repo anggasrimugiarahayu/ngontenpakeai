@@ -97,28 +97,26 @@ export function LiveRuleCard({
           : "opacity-75 bg-gray-50/70 dark:bg-[#141417]"
       }`}
     >
-      {/* Sisi Kiri: Cover 3:4 Live Instagram */}
-      {isAccountLinked && (
-        <div className="w-[105px] sm:w-[125px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
-          <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-rose-500/20 via-fuchsia-500/15 to-orange-500/20 dark:bg-white/5">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500 via-pink-500 to-fuchsia-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
-                <Radio className="w-4 h-4" />
-              </div>
-              <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
-                Live
-                <br />
-                Instagram
-              </span>
-              {liveContents.length > 0 && (
-                <span className="mt-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-                  {liveContents.length} Konten
-                </span>
-              )}
+      {/* Sisi Kiri: Cover 3:4 Live Instagram (selalu tampil agar konsisten/senada) */}
+      <div className="w-[105px] sm:w-[125px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
+        <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
+          <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-rose-500/20 via-fuchsia-500/15 to-orange-500/20 dark:bg-white/5">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500 via-pink-500 to-fuchsia-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
+              <Radio className="w-4 h-4" />
             </div>
+            <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
+              Live
+              <br />
+              Instagram
+            </span>
+            {liveContents.length > 0 && (
+              <span className="mt-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20">
+                {liveContents.length} Konten
+              </span>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
       {/* Sisi Kanan: Konten Informasi */}
       <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5">
