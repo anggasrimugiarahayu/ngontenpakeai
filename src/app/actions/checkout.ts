@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { verifyPayment } from "@/app/actions/payment";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { attachLightweightCovers } from "@/lib/ebook-covers";
 
 export async function revalidateAfterPurchaseAction() {
   try {
@@ -28,13 +29,16 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
   if (!type) return { badRequest: true };
 
   // Run independent queries concurrently
-  const [user, product, pendingDbOrder, availableAddons] = await Promise.all([
+  const [user, rawProduct, pendingDbOrder, rawAvailableAddons] = await Promise.all([
     prisma.user.findUnique({
       where: { id: session.user.id }
     }).catch(() => null),
     
     (type === "EBOOK" && productId) 
-      ? prisma.digitalProduct.findUnique({ where: { id: productId } }).catch(() => null)
+      ? prisma.digitalProduct.findUnique({
+          where: { id: productId },
+          select: { id: true, title: true, slug: true, price: true, description: true, updatedAt: true }
+        }).catch(() => null)
       : Promise.resolve(null),
       
     prisma.order.findFirst({
@@ -49,11 +53,17 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     
     prisma.digitalProduct.findMany({
       where: { isActive: true, id: { not: productId || undefined } },
-      select: { id: true, title: true, coverUrl: true, price: true }
+      select: { id: true, title: true, price: true, updatedAt: true }
     }).catch(() => [])
   ]);
 
   if (!user) return { notAuthorized: true };
+
+  const [productList, availableAddons] = await Promise.all([
+    rawProduct ? attachLightweightCovers([rawProduct], false) : Promise.resolve([]),
+    attachLightweightCovers(rawAvailableAddons, false),
+  ]);
+  const product = productList[0] || null;
 
   let baseAmount = 0;
   let bundledIds: string[] = [];
@@ -68,7 +78,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     baseAmount = product.price;
     itemName = product.title;
     itemDescription = product.description || "Akses selamanya untuk produk ini.";
-    productImage = product.coverUrl || "";
+    productImage = (product as any).coverUrl || "";
   } else if (type === "PRO_BOOK" || type === "PRO_TOOLS" || type === "PRO_PLUS") {
     const setting = await prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
     const pricingConfig = setting?.value ? JSON.parse(setting.value) : null;
@@ -113,8 +123,8 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
   const includedAddonsPromise = (type.startsWith("PRO_") && bundledIds && bundledIds.length > 0)
     ? prisma.digitalProduct.findMany({
         where: { id: { in: bundledIds } },
-        select: { id: true, title: true, coverUrl: true, price: true }
-      }).catch(() => [])
+        select: { id: true, title: true, price: true, updatedAt: true }
+      }).then((rows) => attachLightweightCovers(rows, false)).catch(() => [])
     : Promise.resolve([]);
 
   const [verifyRes, includedAddons] = await Promise.all([

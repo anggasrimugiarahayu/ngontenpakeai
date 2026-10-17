@@ -246,10 +246,12 @@ export default function RuangAutomationClient({
   // Handle click on Instagram Automation Card
   const handleSelectInstagram = () => {
     if (!isLoggedIn) {
+      window.dispatchEvent(new Event("app-loading-start"));
       router.push("/login?redirect=/ruang-automation?platform=instagram");
       return;
     }
     if (!isPro && !isAdmin) {
+      window.dispatchEvent(new Event("app-loading-start"));
       router.push("/?pricing=true");
       return;
     }
@@ -1651,6 +1653,7 @@ export default function RuangAutomationClient({
             const newUrl = new URL(window.location.href);
             newUrl.searchParams.set("agentId", agentId);
             window.history.pushState({}, "", newUrl.toString());
+            window.dispatchEvent(new Event("app-shallow-navigate"));
           }}
           onOpenEditAgentModal={handleOpenEditAgentModal}
           onDisconnectAgent={handleDisconnectAgent}
@@ -1670,6 +1673,7 @@ export default function RuangAutomationClient({
                 const newUrl = new URL(window.location.href);
                 newUrl.searchParams.delete("agentId");
                 window.history.pushState({}, "", newUrl.toString());
+                window.dispatchEvent(new Event("app-shallow-navigate"));
               }}
               className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 bg-gray-100 dark:bg-white/5 hover:bg-orange-500/10 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-white/10 transition-colors w-fit cursor-pointer"
             >

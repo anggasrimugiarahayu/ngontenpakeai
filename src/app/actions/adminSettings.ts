@@ -3,6 +3,7 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { attachComputedBuyerCounts } from "@/lib/product-buyers";
+import { attachLightweightCovers } from "@/lib/ebook-covers";
 
 function revalidateAdminConfig() {
   try {
@@ -114,7 +115,25 @@ export async function createCategory(data: any) {
 export async function getProducts() {
   const [rawProducts, sortSetting] = await Promise.all([
     prisma.digitalProduct.findMany({
-      include: {
+      select: {
+        id: true,
+        categoryId: true,
+        title: true,
+        price: true,
+        originalPrice: true,
+        pageCount: true,
+        description: true,
+        slug: true,
+        fileUrl: true,
+        language: true,
+        formatType: true,
+        author: true,
+        isProOnly: true,
+        accessLevel: true,
+        isDownloadable: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
         category: true,
         vouchers: true,
         reviews: { select: { rating: true } },
@@ -125,7 +144,8 @@ export async function getProducts() {
     prisma.appSetting.findUnique({ where: { key: "EBOOK_SORT_ORDER" } }).catch(() => null),
   ]);
 
-  const products = await attachComputedBuyerCounts(rawProducts);
+  const withBuyers = await attachComputedBuyerCounts(rawProducts);
+  const products = await attachLightweightCovers(withBuyers, true);
 
   if (sortSetting?.value) {
     try {
@@ -189,11 +209,13 @@ export async function createProduct(data: any) {
   try {
     revalidateTag("ebook-catalog", "default");
   } catch (e) {}
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 
 export async function deleteCategory(id: string) {
   await prisma.digitalCategory.delete({ where: { id } });
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 
@@ -202,6 +224,7 @@ export async function deleteProduct(id: string) {
   try {
     revalidateTag("ebook-catalog", "default");
   } catch (e) {}
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 
@@ -213,6 +236,15 @@ export async function updateProduct(id: string, data: any) {
     }
   }
   const { categoryId, ...restData } = data;
+  if (typeof restData.coverUrl === "string" && restData.coverUrl.startsWith("/api/ebook-cover/")) {
+    delete restData.coverUrl;
+  }
+  if (typeof restData.coverUrl2 === "string" && restData.coverUrl2.startsWith("/api/ebook-cover/")) {
+    delete restData.coverUrl2;
+  }
+  if (typeof restData.coverUrl3 === "string" && restData.coverUrl3.startsWith("/api/ebook-cover/")) {
+    delete restData.coverUrl3;
+  }
   await prisma.digitalProduct.update({
     where: { id },
     data: {
@@ -223,6 +255,7 @@ export async function updateProduct(id: string, data: any) {
   try {
     revalidateTag("ebook-catalog", "default");
   } catch (e) {}
+  revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 

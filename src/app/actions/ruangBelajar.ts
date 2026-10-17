@@ -1,9 +1,43 @@
 "use server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { unstable_cache, revalidatePath, revalidateTag } from "next/cache";
+import { unstable_cache, revalidatePath, revalidateTag as nextRevalidateTag } from "next/cache";
 import { attachComputedBuyerCounts } from "@/lib/product-buyers";
-import { getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
+import { attachLightweightCovers } from "@/lib/ebook-covers";
+import { getCachedAppUser, getCachedUserOrders, getCachedUserOwnedProducts } from "@/lib/cache";
+
+function safeRevalidateTag(tag: string) {
+  try {
+    (nextRevalidateTag as any)(tag, "default");
+  } catch {
+    try {
+      (nextRevalidateTag as any)(tag);
+    } catch {}
+  }
+}
+
+const CATALOG_PRODUCT_SELECT = {
+  id: true,
+  categoryId: true,
+  title: true,
+  price: true,
+  originalPrice: true,
+  pageCount: true,
+  description: true,
+  slug: true,
+  language: true,
+  formatType: true,
+  author: true,
+  isProOnly: true,
+  accessLevel: true,
+  isDownloadable: true,
+  isActive: true,
+  createdAt: true,
+  updatedAt: true,
+  category: true,
+  reviews: { select: { rating: true } },
+  _count: { select: { owners: true, favorites: true } },
+} as const;
 
 export const getCachedDigitalProductsList = unstable_cache(
   async () => {
@@ -11,13 +45,14 @@ export const getCachedDigitalProductsList = unstable_cache(
       prisma.digitalProduct.findMany({
         where: { isActive: true },
         take: 100,
-        include: { category: true, reviews: { select: { rating: true } }, _count: { select: { owners: true, favorites: true } } },
-        orderBy: { createdAt: 'desc' }
+        select: CATALOG_PRODUCT_SELECT,
+        orderBy: { createdAt: "desc" },
       }),
-      prisma.appSetting.findUnique({ where: { key: "EBOOK_SORT_ORDER" } }).catch(() => null)
+      prisma.appSetting.findUnique({ where: { key: "EBOOK_SORT_ORDER" } }).catch(() => null),
     ]);
 
-    const products = await attachComputedBuyerCounts(rawProducts);
+    const withBuyers = await attachComputedBuyerCounts(rawProducts);
+    const products = await attachLightweightCovers(withBuyers, false);
 
     if (sortSetting?.value) {
       try {
@@ -31,52 +66,51 @@ export const getCachedDigitalProductsList = unstable_cache(
           if (orderA !== orderB) return orderA - orderB;
           return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
         });
-      } catch (e) {}
+      } catch {}
     }
 
     return products;
   },
-  ['digital-products-list'],
-  { revalidate: 3600, tags: ['ebook-catalog'] }
+  ["digital-products-list-v2"],
+  { revalidate: 3600, tags: ["ebook-catalog"] }
 );
 
 export const getCachedEbookBySlug = unstable_cache(
   async (slug: string) => {
     const rawEbook = await prisma.digitalProduct.findFirst({
       where: { slug: slug, isActive: true },
-      include: { 
-        category: true,
-        _count: { select: { owners: true, favorites: true } },
-        reviews: { 
+      select: {
+        ...CATALOG_PRODUCT_SELECT,
+        fileUrl: true,
+        reviews: {
           take: 20,
           include: { user: { select: { name: true, image: true } } },
-          orderBy: { createdAt: 'desc' }
-        }
-      }
+          orderBy: { createdAt: "desc" },
+        },
+      },
     });
 
     if (!rawEbook) return null;
-    const [computedEbook] = await attachComputedBuyerCounts([rawEbook]);
+    const [withBuyers] = await attachComputedBuyerCounts([rawEbook]);
+    const [computedEbook] = await attachLightweightCovers([withBuyers], true);
     return computedEbook;
   },
-  ['digital-product-by-slug'],
-  { revalidate: 3600, tags: ['ebook-catalog'] }
+  ["digital-product-by-slug-v2"],
+  { revalidate: 3600, tags: ["ebook-catalog"] }
 );
 
 export async function getRuangBelajarDataAction() {
   const session = await auth();
-  
+
   let isPro = false;
   let ownedProductIds: string[] = [];
   let isAdmin = false;
 
   const [userObj, userProducts, cachedProducts, userOrders] = await Promise.all([
     session?.user?.id ? getCachedAppUser(session.user.id) : Promise.resolve(null),
-    session?.user?.id 
-      ? prisma.userOwnedProduct.findMany({ where: { userId: session.user.id }, select: { digitalProductId: true } }).catch(() => [])
-      : Promise.resolve([]),
+    session?.user?.id ? getCachedUserOwnedProducts(session.user.id).catch(() => []) : Promise.resolve([]),
     getCachedDigitalProductsList().catch(() => []),
-    session?.user?.id ? getCachedUserOrders(session.user.id).catch(() => []) : Promise.resolve([])
+    session?.user?.id ? getCachedUserOrders(session.user.id).catch(() => []) : Promise.resolve([]),
   ]);
 
   let products = cachedProducts;
@@ -85,10 +119,11 @@ export async function getRuangBelajarDataAction() {
       const rawFallback = await prisma.digitalProduct.findMany({
         where: { isActive: true },
         take: 100,
-        include: { category: true, reviews: { select: { rating: true } }, _count: { select: { owners: true, favorites: true } } },
-        orderBy: { createdAt: 'desc' }
+        select: CATALOG_PRODUCT_SELECT,
+        orderBy: { createdAt: "desc" },
       });
-      products = await attachComputedBuyerCounts(rawFallback);
+      const withBuyers = await attachComputedBuyerCounts(rawFallback);
+      products = await attachLightweightCovers(withBuyers, false);
     } catch (e) {
       console.error("Fallback fetch products error:", e);
       products = [];
@@ -108,24 +143,24 @@ export async function getRuangBelajarDataAction() {
     isPro,
     isAdmin,
     ownedProductIds,
-    products: JSON.parse(JSON.stringify(products))
+    products: JSON.parse(JSON.stringify(products)),
   };
 }
 
 export async function getEbookDetailAction(slug: string) {
   const session = await auth();
-  if (!session?.user?.id) return { notFound: true, reason: 'unauthorized' };
+  if (!session?.user?.id) return { notFound: true, reason: "unauthorized" };
   const userId = session.user.id;
 
-  const [userObj, cachedEbook, userProducts, userOrders] = await Promise.all([
+  const [, cachedEbook, userProducts, userOrders] = await Promise.all([
     getCachedAppUser(userId),
     getCachedEbookBySlug(slug),
-    prisma.userOwnedProduct.findMany({ where: { userId }, select: { digitalProductId: true } }).catch(() => []),
-    getCachedUserOrders(userId).catch(() => [])
+    getCachedUserOwnedProducts(userId).catch(() => []),
+    getCachedUserOrders(userId).catch(() => []),
   ]);
 
   if (!cachedEbook) {
-    return { notFound: true, reason: 'not-found' };
+    return { notFound: true, reason: "not-found" };
   }
 
   let isFavorite = false;
@@ -133,14 +168,14 @@ export async function getEbookDetailAction(slug: string) {
   try {
     const [fav, freshCount] = await Promise.all([
       prisma.favorite.findUnique({
-        where: { userId_digitalProductId: { userId, digitalProductId: cachedEbook.id } }
+        where: { userId_digitalProductId: { userId, digitalProductId: cachedEbook.id } },
       }),
       prisma.favorite.count({
-        where: { digitalProductId: cachedEbook.id }
-      })
+        where: { digitalProductId: cachedEbook.id },
+      }),
     ]);
     isFavorite = !!fav;
-    if (typeof freshCount === 'number') {
+    if (typeof freshCount === "number") {
       favoriteCount = freshCount;
     }
   } catch (e) {
@@ -149,8 +184,8 @@ export async function getEbookDetailAction(slug: string) {
 
   const ebook = {
     ...cachedEbook,
-    favorites: isFavorite ? [{ id: 'fav', userId }] : [],
-    favoriteCount
+    favorites: isFavorite ? [{ id: "fav", userId }] : [],
+    favoriteCount,
   };
 
   const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
@@ -158,14 +193,14 @@ export async function getEbookDetailAction(slug: string) {
     (o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS"
   );
   const isPro = hasBookPackage || isAdmin;
-  const ownedProductIds = userProducts.map(up => up.digitalProductId);
+  const ownedProductIds = userProducts.map((up: any) => up.digitalProductId);
 
   return {
     ebook: JSON.parse(JSON.stringify(ebook)),
     isPro,
     isAdmin,
     ownedProductIds,
-    userId
+    userId,
   };
 }
 
@@ -174,9 +209,9 @@ export async function toggleFavorite(productId: string) {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const userId = session.user.id;
-  
+
   const existing = await prisma.favorite.findUnique({
-    where: { userId_digitalProductId: { userId, digitalProductId: productId } }
+    where: { userId_digitalProductId: { userId, digitalProductId: productId } },
   });
 
   let isFavorite = false;
@@ -185,19 +220,16 @@ export async function toggleFavorite(productId: string) {
     isFavorite = false;
   } else {
     await prisma.favorite.create({
-      data: { userId, digitalProductId: productId }
+      data: { userId, digitalProductId: productId },
     });
     isFavorite = true;
   }
 
   const count = await prisma.favorite.count({
-    where: { digitalProductId: productId }
+    where: { digitalProductId: productId },
   });
 
-  try {
-    revalidateTag("ebook-catalog", "default");
-  } catch (e) {}
-
+  safeRevalidateTag("ebook-catalog");
   revalidatePath(`/ruang-belajar`);
   revalidatePath(`/ruang-belajar/[slug]`);
 
@@ -213,13 +245,10 @@ export async function addReview(productId: string, rating: number, comment: stri
   await prisma.review.upsert({
     where: { userId_digitalProductId: { userId, digitalProductId: productId } },
     update: { rating, comment },
-    create: { userId, digitalProductId: productId, rating, comment }
+    create: { userId, digitalProductId: productId, rating, comment },
   });
 
-  try {
-    revalidateTag("ebook-catalog", "default");
-  } catch (e) {}
-
+  safeRevalidateTag("ebook-catalog");
   revalidatePath(`/ruang-belajar`);
   revalidatePath(`/ruang-belajar/[slug]`);
 }
@@ -230,42 +259,43 @@ export async function claimFreeEbook(productId: string) {
 
   const userId = session.user.id;
   const user = await prisma.user.findUnique({ where: { id: userId } });
-  
+
   if (!user) throw new Error("User not found");
 
-  const product = await prisma.digitalProduct.findUnique({ where: { id: productId } });
+  const product = await prisma.digitalProduct.findUnique({
+    where: { id: productId },
+    select: { id: true, accessLevel: true },
+  });
   if (!product) throw new Error("Product not found");
 
   const isFree = product.accessLevel === "FREE";
   const isProEbook = product.accessLevel === "PRO";
-  
+
   const isAdmin = user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com" || user.role === "ADMIN";
 
   const hasBookPackage = await prisma.order.findFirst({
     where: {
       userId,
       status: "SUCCESS",
-      orderType: { in: ["PRO_BOOK", "PRO_PLUS"] }
-    }
+      orderType: { in: ["PRO_BOOK", "PRO_PLUS"] },
+    },
   });
 
   const canClaimProEbook = isAdmin || !!hasBookPackage;
 
   if (!isFree && !(isProEbook && canClaimProEbook)) {
-    throw new Error("Produk ini tidak bisa diklaim gratis. Anda harus berlangganan Paket E-Book atau membelinya secara satuan.");
+    throw new Error(
+      "Produk ini tidak bisa diklaim gratis. Anda harus berlangganan Paket E-Book atau membelinya secara satuan."
+    );
   }
 
   await prisma.userOwnedProduct.upsert({
     where: { userId_digitalProductId: { userId, digitalProductId: productId } },
     update: {},
-    create: { userId, digitalProductId: productId }
+    create: { userId, digitalProductId: productId },
   });
 
-  try {
-    revalidateTag("user-ownership", "default");
-  } catch (e) {}
-
+  safeRevalidateTag("user-ownership");
   revalidatePath(`/ruang-belajar`);
   revalidatePath(`/ruang-belajar/[slug]`);
 }
-

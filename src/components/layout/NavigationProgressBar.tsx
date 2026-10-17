@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 
 export function NavigationProgressBar() {
@@ -9,33 +9,85 @@ export function NavigationProgressBar() {
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const finishTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const clearTimers = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    if (finishTimeoutRef.current) {
+      clearTimeout(finishTimeoutRef.current);
+      finishTimeoutRef.current = null;
+    }
+  }, []);
+
+  const completeProgress = useCallback(() => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setProgress(100);
+    if (finishTimeoutRef.current) clearTimeout(finishTimeoutRef.current);
+    finishTimeoutRef.current = setTimeout(() => {
+      setLoading(false);
+      setProgress(0);
+    }, 320);
+  }, []);
+
+  const startProgress = useCallback(
+    (isShallow = false) => {
+      clearTimers();
+      setLoading(true);
+      setProgress(1);
+
+      let current = 1;
+      if (isShallow) {
+        // Fast smooth 1% -> 100% animation for instant shallow card navigations
+        timerRef.current = setInterval(() => {
+          current += Math.floor(Math.random() * 18) + 16;
+          if (current >= 100) {
+            completeProgress();
+          } else {
+            setProgress(current);
+          }
+        }, 45);
+      } else {
+        // Real route transition: smooth 1% -> 95% progression while waiting for route commit
+        timerRef.current = setInterval(() => {
+          if (current < 35) {
+            current += Math.floor(Math.random() * 12) + 6;
+          } else if (current < 70) {
+            current += Math.floor(Math.random() * 8) + 4;
+          } else if (current < 90) {
+            current += Math.floor(Math.random() * 3) + 1;
+          } else if (current < 96) {
+            current += 1;
+          }
+          setProgress(Math.min(96, current));
+        }, 90);
+      }
+    },
+    [clearTimers, completeProgress]
+  );
 
   // When pathname or searchParams change, route change is complete!
   useEffect(() => {
     if (loading) {
-      if (timerRef.current) clearInterval(timerRef.current);
-      setProgress(100);
-      const finishTimer = setTimeout(() => {
-        setLoading(false);
-        setProgress(0);
-      }, 300);
-      return () => clearTimeout(finishTimer);
+      completeProgress();
     }
-  }, [pathname, searchParams]);
+  }, [pathname, searchParams, completeProgress]);
 
   useEffect(() => {
     const handleDocumentClick = (e: MouseEvent) => {
-      // Ignore clicks that were prevented by components (e.g. modals, disabled links, custom logic)
       if (e.defaultPrevented) return;
 
-      // Find nearest link
       const target = (e.target as HTMLElement).closest("a");
       if (!target) return;
 
       const href = target.getAttribute("href");
       if (!href) return;
 
-      // Ignore external, anchors, downloads, new tabs, modifier keys
       if (
         href.startsWith("http") ||
         href.startsWith("//") ||
@@ -52,55 +104,31 @@ export function NavigationProgressBar() {
         return;
       }
 
-      // Check if href is different from current page
       const currentUrl = window.location.pathname + window.location.search;
       if (href === currentUrl || href === window.location.pathname) {
         return;
       }
 
-      startProgress();
+      startProgress(false);
     };
 
-    const handleCustomStart = () => startProgress();
-    const handleCustomStop = () => {
-      if (timerRef.current) clearInterval(timerRef.current);
-      setProgress(100);
-      setTimeout(() => {
-        setLoading(false);
-        setProgress(0);
-      }, 300);
-    };
+    const handleCustomStart = () => startProgress(false);
+    const handleShallowNavigate = () => startProgress(true);
+    const handleCustomStop = () => completeProgress();
 
     document.addEventListener("click", handleDocumentClick);
     window.addEventListener("app-loading-start", handleCustomStart);
+    window.addEventListener("app-shallow-navigate", handleShallowNavigate);
     window.addEventListener("app-loading-stop", handleCustomStop);
 
     return () => {
       document.removeEventListener("click", handleDocumentClick);
       window.removeEventListener("app-loading-start", handleCustomStart);
+      window.removeEventListener("app-shallow-navigate", handleShallowNavigate);
       window.removeEventListener("app-loading-stop", handleCustomStop);
-      if (timerRef.current) clearInterval(timerRef.current);
+      clearTimers();
     };
-  }, []);
-
-  const startProgress = () => {
-    if (timerRef.current) clearInterval(timerRef.current);
-    setLoading(true);
-    setProgress(15);
-
-    let current = 15;
-    timerRef.current = setInterval(() => {
-      // Step incrementally towards 90%
-      if (current < 45) {
-        current += Math.floor(Math.random() * 15) + 8;
-      } else if (current < 75) {
-        current += Math.floor(Math.random() * 8) + 4;
-      } else if (current < 92) {
-        current += Math.floor(Math.random() * 3) + 1;
-      }
-      setProgress(current);
-    }, 120);
-  };
+  }, [startProgress, completeProgress, clearTimers]);
 
   if (!loading && progress === 0) return null;
 

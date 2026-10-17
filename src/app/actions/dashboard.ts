@@ -2,23 +2,29 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { unstable_cache, revalidatePath, revalidateTag } from "next/cache";
+import { attachLightweightCovers } from "@/lib/ebook-covers";
 
 async function populateOrderAddons(orders: any[]) {
   if (!orders || orders.length === 0) return orders;
   const allAddonIds = Array.from(new Set(orders.flatMap((o: any) => o.addonIds || []))).filter(Boolean) as string[];
-  if (allAddonIds.length === 0) {
+  const mainProductIds = Array.from(new Set(orders.map((o: any) => o.product?.id).filter(Boolean))) as string[];
+  const combinedIds = Array.from(new Set([...allAddonIds, ...mainProductIds]));
+
+  if (combinedIds.length === 0) {
     return orders.map((o: any) => ({ ...o, addons: [] }));
   }
 
-  const addonProducts = await prisma.digitalProduct.findMany({
-    where: { id: { in: allAddonIds } },
-    select: { id: true, title: true, coverUrl: true, price: true }
+  const rawAddonProducts = await prisma.digitalProduct.findMany({
+    where: { id: { in: combinedIds } },
+    select: { id: true, title: true, price: true, updatedAt: true }
   }).catch(() => []);
+  const addonProducts = await attachLightweightCovers(rawAddonProducts, false);
 
   const addonMap = new Map(addonProducts.map((p: any) => [p.id, p]));
 
   return orders.map((o: any) => ({
     ...o,
+    product: o.product ? { ...o.product, coverUrl: (addonMap.get(o.product.id) as any)?.coverUrl || null } : null,
     addons: (o.addonIds || []).map((id: string) => addonMap.get(id)).filter(Boolean)
   }));
 }
@@ -69,7 +75,7 @@ export async function calculateDashboardStats() {
       take: 50,
       include: {
         user: { select: { name: true, email: true, phone: true } },
-        product: { select: { id: true, title: true, coverUrl: true, price: true, isProOnly: true } }
+        product: { select: { id: true, title: true, price: true, isProOnly: true } }
       },
       orderBy: { createdAt: 'desc' }
     }).catch(() => []),
@@ -137,10 +143,11 @@ export async function calculateDashboardStats() {
   const lifetimeOrders = successfulOrders._count?.id || 0;
 
   const productIds = topProducts.map(p => p.digitalProductId).filter(Boolean) as string[];
-  const products = await prisma.digitalProduct.findMany({
+  const rawProducts = await prisma.digitalProduct.findMany({
     where: { id: { in: productIds } },
-    select: { id: true, title: true, coverUrl: true, slug: true }
+    select: { id: true, title: true, slug: true, updatedAt: true }
   }).catch(() => []);
+  const products = await attachLightweightCovers(rawProducts, false);
 
   // -- CALCULATIONS --
   const val30 = salesLast30._sum.amount || 0;
@@ -324,7 +331,7 @@ export async function getDashboardOrdersAction(page = 1, limit = 20, search = ''
       skip: (page - 1) * limit,
       include: {
         user: { select: { name: true, email: true, phone: true } },
-        product: { select: { id: true, title: true, coverUrl: true, price: true, isProOnly: true } }
+        product: { select: { id: true, title: true, price: true, isProOnly: true } }
       },
       orderBy: { createdAt: 'desc' }
     }).catch(() => []),

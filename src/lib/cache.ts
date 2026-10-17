@@ -94,7 +94,18 @@ export const getCachedUserOrders = unstable_cache(
     try {
       return await prisma.order.findMany({
         where: { userId, status: "SUCCESS" },
-        include: { product: true },
+        include: {
+          product: {
+            select: {
+              id: true,
+              title: true,
+              slug: true,
+              price: true,
+              accessLevel: true,
+              isProOnly: true,
+            },
+          },
+        },
         orderBy: { createdAt: "desc" }
       });
     } catch (e) {
@@ -102,7 +113,7 @@ export const getCachedUserOrders = unstable_cache(
       return [];
     }
   },
-  ['user-success-orders'],
+  ['user-success-orders-v2'],
   { revalidate: 86400, tags: ['user-orders'] }
 );
 

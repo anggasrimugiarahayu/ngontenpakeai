@@ -30,6 +30,7 @@ export default function ToolCard({
   const handleClick = (e: React.MouseEvent) => {
     if (!isLoggedIn) {
       e.preventDefault();
+      window.dispatchEvent(new Event("app-loading-start"));
       router.push(`/login?redirect=${feature.href}`);
       return;
     }
@@ -42,6 +43,7 @@ export default function ToolCard({
         setTimeout(() => setShowError(false), 3000);
       } else if (isProOnly && !isPro) {
         // User Free atau User PRO BOOK: arahkan ke halaman langganan paket tools
+        window.dispatchEvent(new Event("app-loading-start"));
         router.push("/?pricing=true");
       } else if (isBlueprintLocked) {
         // User PRO TOOLS / PRO PLUS yang belum isi blueprint: munculkan modal
