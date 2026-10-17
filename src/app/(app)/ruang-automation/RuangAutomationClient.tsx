@@ -74,159 +74,27 @@ import {
   rewindAutomationCommentsAction
 } from "@/app/actions/instagramAutomation";
 
-// Helper parse metadata log dari kolom errorMessage (__META__:{...})
-function parseClientLogMeta(errorMessage?: string | null): Record<string, any> {
-  if (!errorMessage || typeof errorMessage !== "string") return {};
-  if (errorMessage.startsWith("__META__:")) {
-    try {
-      return JSON.parse(errorMessage.slice("__META__:".length));
-    } catch {
-      return {};
-    }
-  }
-  return {};
-}
+import {
+  parseClientLogMeta,
+  parseClientRuleConfig,
+  parseSpintax,
+  resolvePreviewVariables,
+  SAMPLE_INSTAGRAM_POSTS,
+  getCachedCoverUrl,
+  setCachedCoverUrl,
+  syncMediaListToCoverCache,
+} from "./utils/automationHelpers";
+import { InstagramIcon, TikTokIcon, WhatsAppIcon } from "./components/AutomationIcons";
+import { PlatformHubSection } from "./components/PlatformHubSection";
+import { InstagramAgentListSection } from "./instagram/InstagramAgentListSection";
+import { InstagramConnectionTab } from "./instagram/InstagramConnectionTab";
+import { InstagramDashboardTab } from "./instagram/InstagramDashboardTab";
+import { PostAutomationSection } from "./instagram/sections/PostAutomationSection";
+import { StoryAutomationSection } from "./instagram/sections/StoryAutomationSection";
+import { LiveAutomationSection } from "./instagram/sections/LiveAutomationSection";
+import { DmAutomationSection } from "./instagram/sections/DmAutomationSection";
+import { InstagramRuleDetailModal } from "./instagram/InstagramRuleDetailModal";
 
-// Helper parse extendedConfig dari rule.dmMessage
-function parseClientRuleConfig(dmMessage?: string | null): Record<string, any> {
-  if (!dmMessage || typeof dmMessage !== "string") return {};
-  try {
-    if (dmMessage.trim().startsWith("{") || dmMessage.includes('"mainMessage"')) {
-      return JSON.parse(dmMessage);
-    }
-  } catch {
-    return {};
-  }
-  return {};
-}
-
-// Helper Spintax Randomizer
-function parseSpintax(text: string): string {
-  if (!text) return "";
-  return text.replace(/\{([^{}]+)\}/g, (_, choices) => {
-    const parts = choices.split("|");
-    return parts[Math.floor(Math.random() * parts.length)];
-  });
-}
-
-// Helper Variable Resolver for Instagram DM & Comment Live Preview
-function resolvePreviewVariables(text: string): string {
-  if (!text) return "";
-  let resolved = text
-    .replace(/@\{username\}/g, "@ruangcreativemuslim")
-    .replace(/\{username\}/g, "@ruangcreativemuslim")
-    .replace(/\[Nama Pengguna\]/g, "@ruangcreativemuslim")
-    .replace(/\{first_name\}/g, "Kak Harits")
-    .replace(/\[Nama Depan\]/g, "Kak Harits")
-    .replace(/\{last_name\}/g, "Creative")
-    .replace(/\[Nama Belakang\]/g, "Creative")
-    .replace(/\{full_name\}/g, "Kak Harits Creative")
-    .replace(/\[Nama Lengkap\]/g, "Kak Harits Creative");
-  try {
-    resolved = parseSpintax(resolved);
-  } catch (e) {
-    // ignore
-  }
-  return resolved;
-}
-
-// Sample Instagram Posts for feed selection & preview matching uploaded screenshot
-const SAMPLE_INSTAGRAM_POSTS = [
-  {
-    id: "post_1",
-    title: "Kalau besok saya nggak punya penghasilan tetap lagi...",
-    image: "/images/instagram/post-1-full.png",
-    thumb: "/images/instagram/thumb-1-clean.png",
-    caption: "Kehilangan penghasilan tetap bukan akhir segalanya kalau kamu punya sistem yang...",
-    likes: 127,
-    comments: 124,
-    date: "14 Oct, 2026",
-  },
-  {
-    id: "post_2",
-    title: "Pak kalo kamu serius ngejalaninnya..",
-    image: "/images/instagram/thumb-2-clean.png",
-    thumb: "/images/instagram/thumb-2-clean.png",
-    caption: "1 dari 10 niche ini mulai bisa gantiin gaji kantormu dalam 6 bulan ke depan. Luangkan 1 menit buat baca ini.",
-    likes: 98,
-    comments: 86,
-    date: "12 Oct, 2026",
-  },
-  {
-    id: "post_3",
-    title: "Gini cara bapak-bapak usia 38+...",
-    image: "/images/instagram/thumb-3-clean.png",
-    thumb: "/images/instagram/thumb-3-clean.png",
-    caption: "Ngonten tanpa nunjukin wajah, tapi bisa ngasilin 2-3x lipat gaji UMR dalam 30 hari. Aku bocorin di slide ini...",
-    likes: 215,
-    comments: 142,
-    date: "10 Oct, 2026",
-  },
-  {
-    id: "post_4",
-    title: "Jangan resign...",
-    image: "/images/instagram/thumb-4-clean.png",
-    thumb: "/images/instagram/thumb-4-clean.png",
-    caption: "Bikin IG baru, jangan kasih tahu orang lain, dan kejar 2 digit pakai cara ini.",
-    likes: 310,
-    comments: 198,
-    date: "08 Oct, 2026",
-  },
-];
-
-// Custom SVGs for platforms
-function InstagramIcon({ className = "w-6 h-6" }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <rect width="20" height="20" x="2" y="2" rx="5" ry="5" />
-      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-      <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-    </svg>
-  );
-}
-
-function TikTokIcon({ className = "w-6 h-6" }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5" />
-    </svg>
-  );
-}
-
-function WhatsAppIcon({ className = "w-6 h-6" }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-    </svg>
-  );
-}
 
 export default function RuangAutomationClient({
   initialData,
@@ -880,6 +748,32 @@ export default function RuangAutomationClient({
     : [];
   const isStoriesLive = !!storiesData?.isLive;
 
+  // Sinkronkan URL cover dari Feed, Story, dan Rules yang sudah ada ke cache lokal (memori + localStorage)
+  // agar kartu Postingan Tertentu & Story Tertentu selalu memiliki cover instan 0ms tanpa reload.
+  useEffect(() => {
+    if (feedPosts.length > 0) {
+      syncMediaListToCoverCache(feedPosts);
+    }
+  }, [feedPosts]);
+
+  useEffect(() => {
+    if (activeStories.length > 0) {
+      syncMediaListToCoverCache(activeStories);
+    }
+  }, [activeStories]);
+
+  useEffect(() => {
+    const allRules = data?.rules || [];
+    for (const r of allRules) {
+      if (r?.specificPostId) {
+        const cfg = parseClientRuleConfig(r.dmMessage);
+        if (cfg.postCoverUrl) {
+          setCachedCoverUrl(r.specificPostId, cfg.postCoverUrl);
+        }
+      }
+    }
+  }, [data?.rules]);
+
   // Manual resync stories trigger
   const handleRefreshStories = async () => {
     try {
@@ -996,30 +890,39 @@ export default function RuangAutomationClient({
 
   const handleOpenEditRuleModal = (rule: any) => {
     setEditingRule(rule);
-    let matched = feedPosts.find((p) => p.id === rule.specificPostId);
+    const config = parseClientRuleConfig(rule.dmMessage);
+
+    const isDirectImg =
+      typeof rule.buttonUrl === "string" &&
+      (rule.buttonUrl.startsWith("/images/") ||
+        Boolean(rule.buttonUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i)));
+
+    const savedCover =
+      config.postCoverUrl ||
+      getCachedCoverUrl(rule.specificPostId) ||
+      (isDirectImg ? rule.buttonUrl : null);
+
+    let matched = feedPosts.find((p) => String(p.id) === String(rule.specificPostId));
     if (!matched && rule.specificPostId) {
-      const isDirectImg =
-        typeof rule.buttonUrl === "string" &&
-        (rule.buttonUrl.startsWith("/images/") ||
-          rule.buttonUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i));
       matched = {
         id: rule.specificPostId,
         title: rule.name || "Postingan Terpilih",
-        image: isDirectImg ? rule.buttonUrl : null,
-        thumb: isDirectImg ? rule.buttonUrl : null,
+        image: savedCover,
+        thumb: savedCover,
+        permalink: config.postPermalink || null,
       };
     } else if (!matched) {
       matched = feedPosts[0] || null;
     }
     setSelectedPost(matched);
 
-    let matchedStory = activeStories.find((s) => s.id === rule.specificPostId);
+    let matchedStory = activeStories.find((s) => String(s.id) === String(rule.specificPostId));
     if (!matchedStory && rule.specificPostId) {
       matchedStory = {
         id: rule.specificPostId,
         title: rule.name || "Story Terpilih",
-        image: null,
-        thumb: null,
+        image: savedCover,
+        thumb: savedCover,
         date: "Story",
       };
     } else if (!matchedStory) {
@@ -1053,13 +956,6 @@ export default function RuangAutomationClient({
               "Halo @{username}, cek DMnya ya! 📬",
               "{kak|bro|sis}, linknya udah dikirim ke DM ya! 💌",
             ]);
-
-    let config: any = {};
-    try {
-      if (rule.dmMessage && (rule.dmMessage.startsWith("{") || rule.dmMessage.includes('"mainMessage"'))) {
-        config = JSON.parse(rule.dmMessage);
-      }
-    } catch (e) {}
 
     const dmTemplateStr =
       config.mainMessage ||
@@ -1114,7 +1010,7 @@ export default function RuangAutomationClient({
           : rule.triggerType === "STORY_MENTION" || config.targetOtomasi === "Story Mention"
           ? "STORY_MENTION"
           : "ALL",
-      postId: rule.specificPostId || matched.id,
+      postId: rule.specificPostId || matched?.id || "",
       triggerCommentType: (config.triggerCommentType as "KEYWORDS" | "ALL") || (keywordsStr.trim() ? "KEYWORDS" : "ALL"),
       keywords: keywordsStr || "mau, harga, info, spill",
       keywordRule:
@@ -1317,17 +1213,22 @@ export default function RuangAutomationClient({
           .map((k) => k.trim())
           .filter(Boolean);
 
-    const postCoverUrl = ruleFormData.targetOtomasi === "Postingan Tertentu"
-      ? (selectedPost?.image || selectedPost?.thumb || null)
-      : ruleFormData.targetOtomasi === "Story Tertentu"
-      ? (selectedStory?.image || selectedStory?.thumb || null)
-      : null;
-
     const chosenPostId = ruleFormData.targetOtomasi === "Postingan Tertentu"
       ? (selectedPost?.id || ruleFormData.postId || (feedPosts[0]?.id) || "post_1")
       : ruleFormData.targetOtomasi === "Story Tertentu"
       ? (selectedStory?.id || ruleFormData.postId || (activeStories[0]?.id) || "story_1")
       : undefined;
+
+    const existingRuleConfig = editingRule ? parseClientRuleConfig(editingRule.dmMessage) : {};
+    const postCoverUrl = ruleFormData.targetOtomasi === "Postingan Tertentu"
+      ? (selectedPost?.image || selectedPost?.thumb || getCachedCoverUrl(chosenPostId) || existingRuleConfig.postCoverUrl || null)
+      : ruleFormData.targetOtomasi === "Story Tertentu"
+      ? (selectedStory?.image || selectedStory?.thumb || getCachedCoverUrl(chosenPostId) || existingRuleConfig.postCoverUrl || null)
+      : null;
+
+    if (chosenPostId && postCoverUrl) {
+      setCachedCoverUrl(chosenPostId, postCoverUrl);
+    }
 
     const primaryButton = ruleFormData.buttons && ruleFormData.buttons.length > 0 ? ruleFormData.buttons[0] : null;
     const buttonText = ruleFormData.messageType === "BUTTON_TEMPLATE" && primaryButton?.label ? primaryButton.label.trim() : null;
@@ -1362,7 +1263,7 @@ export default function RuangAutomationClient({
       targetOtomasi: ruleFormData.targetOtomasi,
       keywordRule: ruleFormData.keywordRule,
       triggerCommentType: ruleFormData.triggerCommentType,
-      postPermalink: selectedPost?.permalink || null,
+      postPermalink: selectedPost?.permalink || existingRuleConfig.postPermalink || null,
       postCoverUrl: postCoverUrl || null,
     };
     const serializedDm = JSON.stringify(extendedConfig);
@@ -1662,530 +1563,46 @@ export default function RuangAutomationClient({
       )}
 
       {/* ========================================================================= */}
-      {/* LEVEL 1: PLATFORM HUB SELECTION */}
+      {/* LEVEL 1: PLATFORM HUB SELECTION (MODULAR PER PLATFORM) */}
       {/* ========================================================================= */}
       {selectedPlatform === null ? (
-        <div className="space-y-8">
-          {/* Header - EXACT SAME STYLE & CENTER ALIGNED AS RUANG NGONTEN */}
-          <div className="flex flex-col items-center justify-center text-center gap-2 mb-6 md:mb-10">
-            <div className="space-y-3 flex flex-col items-center">
-              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-                Mau mulai dari mana?
-              </h1>
-              <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 max-w-xl mx-auto text-balance leading-relaxed">
-                Pilih platform media sosial di bawah ini untuk mengaktifkan automasi balasan komentar pintar, kirim pesan DM privat otomatis, dan perluas jangkauan audiens Anda 24/7.
-              </p>
-            </div>
-          </div>
-
-          {/* Platform Cards Grid - EXACT SAME STYLE & SIZE AS RUANG NGONTEN TOOLCARD */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-5 max-w-5xl mx-auto">
-            {/* 1. INSTAGRAM AUTOMATION */}
-            {(() => {
-              const canAccess = isLoggedIn && (isPro || isAdmin);
-              const igPoints = [
-                "Koneksikan Akun Meta",
-                "Atur Template Balasan",
-                "Auto DM & Komentar 24/7"
-              ];
-
-              return (
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={handleSelectInstagram}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") handleSelectInstagram();
-                  }}
-                  className={`group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-300 cursor-pointer z-0 overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/5 hover:border-rn-accent dark:hover:border-rn-accent/50 shadow-gray-200 dark:shadow-black/50 hover:shadow-xl hover:-translate-y-1.5`}
-                >
-                  {/* Card Header */}
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center transition-colors text-gray-600 dark:text-gray-400 group-hover:bg-rn-accent/10 group-hover:text-rn-accent shrink-0">
-                      <InstagramIcon className="w-5 h-5" />
-                    </div>
-                    <div className="flex flex-col gap-1 w-full">
-                      <div className="flex items-start justify-between w-full">
-                        <h3 className="font-bold text-base leading-tight transition-colors text-gray-900 dark:text-white group-hover:text-rn-accent">
-                          Instagram Automation
-                        </h3>
-                        <div className="flex items-center gap-1 shrink-0">
-                          {canAccess ? (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 uppercase tracking-wider">
-                              AKTIF
-                            </span>
-                          ) : (
-                            <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400 uppercase tracking-wider">
-                              PRO
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-[13px] leading-relaxed text-gray-500 dark:text-gray-400 mb-5 line-clamp-2">
-                    Balas komentar postingan & Reels otomatis serta kirim link/DM instan ke followers secara otomatis.
-                  </p>
-
-                  {/* Timeline Points List */}
-                  <div className="relative ml-1.5 space-y-3">
-                    <div className="absolute left-[3px] top-1.5 bottom-1.5 w-[2px] bg-gray-200 dark:bg-white/5" />
-
-                    {igPoints.map((point, pIdx) => (
-                      <div key={pIdx} className="relative flex items-center gap-3">
-                        <div
-                          className={`w-2 h-2 rounded-full z-10 transition-colors ${
-                            pIdx === 0
-                              ? "bg-rn-accent ring-4 ring-rn-accent/20"
-                              : "bg-gray-300 dark:bg-gray-600 group-hover:bg-rn-accent/50"
-                          }`}
-                        />
-                        <span
-                          className={`text-[11px] font-medium transition-colors ${
-                            pIdx === 0
-                              ? "text-gray-900 dark:text-white"
-                              : "text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300"
-                          }`}
-                        >
-                          {point}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* 2. TIKTOK AUTOMATION (COMING SOON) */}
-            {(() => {
-              const ttPoints = [
-                "Tautkan Akun TikTok",
-                "Filter Kata Kunci",
-                "Auto Respon Video VT"
-              ];
-
-              return (
-                <div
-                  className="group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-300 cursor-not-allowed z-0 overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/5 opacity-75"
-                  title="TikTok Automation sedang dalam tahap riset & pengembangan"
-                >
-                  {/* Card Header */}
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 dark:text-gray-500 shrink-0">
-                      <TikTokIcon className="w-5 h-5" />
-                    </div>
-                    <div className="flex flex-col gap-1 w-full">
-                      <div className="flex items-start justify-between w-full">
-                        <h3 className="font-bold text-base leading-tight text-gray-800 dark:text-gray-200">
-                          TikTok Automation
-                        </h3>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400 uppercase tracking-wider">
-                            COMING SOON
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-[13px] leading-relaxed text-gray-500 dark:text-gray-400 mb-5 line-clamp-2">
-                    Otomasi interaksi video VT, respon komentar audiens, dan pesan instan pengikut TikTok secara otomatis.
-                  </p>
-
-                  {/* Timeline Points List */}
-                  <div className="relative ml-1.5 space-y-3">
-                    <div className="absolute left-[3px] top-1.5 bottom-1.5 w-[2px] bg-gray-200 dark:bg-white/5" />
-
-                    {ttPoints.map((point, pIdx) => (
-                      <div key={pIdx} className="relative flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full z-10 bg-gray-300 dark:bg-gray-600" />
-                        <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500">
-                          {point}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-
-            {/* 3. WHATSAPP AUTOMATION (COMING SOON) */}
-            {(() => {
-              const waPoints = [
-                "Scan QR WhatsApp",
-                "Sambutan CS Otomatis",
-                "Broadcast Pesan Terjadwal"
-              ];
-
-              return (
-                <div
-                  className="group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-300 cursor-not-allowed z-0 overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/5 opacity-75"
-                  title="WhatsApp Automation sedang dalam tahap riset & pengembangan"
-                >
-                  {/* Card Header */}
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 dark:text-gray-500 shrink-0">
-                      <WhatsAppIcon className="w-5 h-5" />
-                    </div>
-                    <div className="flex flex-col gap-1 w-full">
-                      <div className="flex items-start justify-between w-full">
-                        <h3 className="font-bold text-base leading-tight text-gray-800 dark:text-gray-200">
-                          WhatsApp Automation
-                        </h3>
-                        <div className="flex items-center gap-1 shrink-0">
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400 uppercase tracking-wider">
-                            COMING SOON
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-[13px] leading-relaxed text-gray-500 dark:text-gray-400 mb-5 line-clamp-2">
-                    Kirim pesan broadcast, sambutan pelanggan otomatis, dan CS chatbot resmi WhatsApp Business API.
-                  </p>
-
-                  {/* Timeline Points List */}
-                  <div className="relative ml-1.5 space-y-3">
-                    <div className="absolute left-[3px] top-1.5 bottom-1.5 w-[2px] bg-gray-200 dark:bg-white/5" />
-
-                    {waPoints.map((point, pIdx) => (
-                      <div key={pIdx} className="relative flex items-center gap-3">
-                        <div className="w-2 h-2 rounded-full z-10 bg-gray-300 dark:bg-gray-600" />
-                        <span className="text-[11px] font-medium text-gray-400 dark:text-gray-500">
-                          {point}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
-          </div>
-        </div>
+        <PlatformHubSection
+          isLoggedIn={isLoggedIn}
+          isPro={isPro}
+          isAdmin={isAdmin}
+          onSelectInstagram={handleSelectInstagram}
+        />
       ) : selectedAgentId === null ? (
         /* ========================================================================= */
-        /* LEVEL 2: DAFTAR AGEN OTOMASI INSTAGRAM (AGENT CARDS GRID) */
+        /* LEVEL 2: DAFTAR AGEN OTOMASI INSTAGRAM (MODULAR) */
         /* ========================================================================= */
-        <div className="animate-in fade-in duration-200 space-y-6">
-          {/* Header & Actions Card (Meniru Persis Style Komentar IG ke DM / Pengaturan Ruang Belajar) */}
-          <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214] shadow-sm">
-            <div className="mb-2 md:mb-0">
-              <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-1">
-                IG Automation
-              </h1>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Kelola asisten agen otomasi untuk akun Instagram Anda. 1 Agen mewakili 1 akun Instagram yang terhubung.
-              </p>
-            </div>
-
-            <div className="flex items-center gap-2 mt-2 md:mt-0 w-full md:w-auto self-start sm:self-auto shrink-0">
-              {/* Filter Dropdown */}
-              <div className="relative agent-filter-dropdown-container">
-                <button
-                  type="button"
-                  onClick={() => setIsAgentFilterOpen(!isAgentFilterOpen)}
-                  className={`px-3.5 py-2.5 rounded-lg border text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors cursor-pointer ${
-                    agentFilterStatus !== "ALL"
-                      ? "border-gray-900 dark:border-white bg-gray-900 text-white dark:bg-white dark:text-gray-900"
-                      : "border-gray-200 dark:border-white/10 bg-white dark:bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
-                  }`}
-                >
-                  <Filter className="w-4 h-4" />
-                  <span>Filter</span>
-                  {agentFilterStatus !== "ALL" && (
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                  )}
-                </button>
-
-                {isAgentFilterOpen && (
-                  <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
-                    <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                      Status Koneksi
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAgentFilterStatus("ALL");
-                        setIsAgentFilterOpen(false);
-                      }}
-                      className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between cursor-pointer ${
-                        agentFilterStatus === "ALL"
-                          ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
-                      }`}
-                    >
-                      Semua Status
-                      {agentFilterStatus === "ALL" && <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white" />}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAgentFilterStatus("LINKED");
-                        setIsAgentFilterOpen(false);
-                      }}
-                      className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between cursor-pointer ${
-                        agentFilterStatus === "LINKED"
-                          ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
-                      }`}
-                    >
-                      Terhubung Meta
-                      {agentFilterStatus === "LINKED" && <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white" />}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAgentFilterStatus("UNLINKED");
-                        setIsAgentFilterOpen(false);
-                      }}
-                      className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between cursor-pointer ${
-                        agentFilterStatus === "UNLINKED"
-                          ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
-                          : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
-                      }`}
-                    >
-                      Belum Terhubung
-                      {agentFilterStatus === "UNLINKED" && <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white" />}
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Tombol Buat Agen Baru */}
-              <button
-                type="button"
-                onClick={() => {
-                  setNewAgentName("");
-                  setIsCreateAgentModalOpen(true);
-                }}
-                className="px-4 py-2.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-500/20 hover:shadow-orange-500/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Buat Agen Baru</span>
-              </button>
-            </div>
-          </div>
-
-          {/* List Agen: Empty State vs Cards Grid */}
-          {agents.length === 0 ? (
-            <div className="rounded-[24px] border-2 border-dashed border-gray-200 dark:border-white/10 p-8 sm:p-12 text-center bg-gray-50/50 dark:bg-white/[0.02] flex flex-col items-center justify-center max-w-xl mx-auto my-8">
-              <div className="w-16 h-16 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center mb-4 shadow-sm">
-                <Bot className="w-8 h-8" />
-              </div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2">
-                Belum Ada Agen Otomasi
-              </h3>
-              <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6 leading-relaxed">
-                Buat agen pertama Anda untuk menghubungkan akun Instagram dan mengotomasi balasan komentar serta DM secara cerdas dan efisien.
-              </p>
-              <button
-                type="button"
-                onClick={() => {
-                  setNewAgentName("");
-                  setIsCreateAgentModalOpen(true);
-                }}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm shadow-lg shadow-orange-500/25 transition-all cursor-pointer"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Buat Agen Pertama</span>
-              </button>
-            </div>
-          ) : filteredAgents.length === 0 ? (
-            <div className="rounded-[20px] border border-gray-200 dark:border-white/10 p-8 text-center bg-white dark:bg-[#18181b] max-w-md mx-auto my-8 shadow-sm">
-              <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                Tidak ada agen dengan status filter yang dipilih.
-              </p>
-              <button
-                type="button"
-                onClick={() => setAgentFilterStatus("ALL")}
-                className="text-xs font-bold text-orange-500 hover:underline cursor-pointer"
-              >
-                Reset Filter
-              </button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-              {filteredAgents.map((agent: any) => (
-                <div
-                  key={agent.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => {
-                    setSelectedAgentId(agent.id);
-                    setActiveIgTab("koneksi");
-                    const newUrl = new URL(window.location.href);
-                    newUrl.searchParams.set("agentId", agent.id);
-                    window.history.pushState({}, "", newUrl.toString());
-                  }}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") {
-                      setSelectedAgentId(agent.id);
-                      setActiveIgTab("koneksi");
-                      const newUrl = new URL(window.location.href);
-                      newUrl.searchParams.set("agentId", agent.id);
-                      window.history.pushState({}, "", newUrl.toString());
-                    }
-                  }}
-                  className="group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-300 cursor-pointer z-0 overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/5 hover:border-orange-500 dark:hover:border-orange-500/50 shadow-gray-200 dark:shadow-black/50 hover:shadow-xl hover:-translate-y-1.5"
-                >
-                  {/* Card Header: Icon/Avatar, Name, Status Badge, & Three-dots Menu */}
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center transition-colors text-gray-600 dark:text-gray-400 group-hover:bg-orange-500/10 group-hover:text-orange-500 shrink-0 overflow-hidden mt-0.5">
-                      {agent.isLinked && agent.profilePicUrl ? (
-                        <img
-                          src={agent.profilePicUrl}
-                          alt={agent.username || agent.name}
-                          referrerPolicy="no-referrer"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <InstagramIcon className="w-5 h-5 text-orange-500" />
-                      )}
-                    </div>
-                    <div className="flex flex-col gap-1 w-full min-w-0">
-                      <div className="flex items-center justify-between w-full gap-2">
-                        <h3 className="font-bold text-base leading-tight transition-colors text-gray-900 dark:text-white group-hover:text-orange-500 truncate" title={agent.name}>
-                          {agent.name}
-                        </h3>
-
-                        {/* Dropdown Menu Titik Tiga */}
-                        <div className="relative agent-dropdown-menu shrink-0" onClick={(e) => e.stopPropagation()}>
-                          <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setActiveDropdownAgentId(activeDropdownAgentId === agent.id ? null : agent.id);
-                              }}
-                              className="p-1 rounded-md text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                            >
-                              <MoreVertical className="w-3.5 h-3.5" />
-                            </button>
-
-                            {activeDropdownAgentId === agent.id && (
-                              <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-[#202024] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95">
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActiveDropdownAgentId(null);
-                                    handleOpenEditAgentModal(agent);
-                                  }}
-                                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer text-left"
-                                >
-                                  <Pencil className="w-3.5 h-3.5 text-gray-500" />
-                                  <span>Ubah Nama Agen</span>
-                                </button>
-
-                                {agent.isLinked && (
-                                  <button
-                                    type="button"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setActiveDropdownAgentId(null);
-                                      handleDisconnectAgent(agent.id, agent.name);
-                                    }}
-                                    className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-500/10 cursor-pointer text-left"
-                                  >
-                                    <Unlink className="w-3.5 h-3.5" />
-                                    <span>Putuskan Koneksi IG</span>
-                                  </button>
-                                )}
-
-                                <button
-                                  type="button"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setActiveDropdownAgentId(null);
-                                    handleDeleteAgent(agent.id, agent.name);
-                                  }}
-                                  className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 border-t border-gray-100 dark:border-white/5 cursor-pointer text-left"
-                                >
-                                  <Trash2 className="w-3.5 h-3.5" />
-                                  <span>Hapus Agen</span>
-                                </button>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                      {/* Baris 2: Status Badge + Username IG */}
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        {agent.isLinked ? (
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 uppercase tracking-wider shrink-0">
-                            TERHUBUNG
-                          </span>
-                        ) : (
-                          <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400 uppercase tracking-wider shrink-0">
-                            OFFLINE
-                          </span>
-                        )}
-                        <span className="text-[12px] font-medium text-gray-500 dark:text-gray-400 truncate">
-                          {agent.isLinked && agent.username ? `@${agent.username}` : "Belum terhubung ke Instagram"}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Description */}
-                  <p className="text-[13px] leading-relaxed text-gray-500 dark:text-gray-400 mb-5">
-                    {agent.isLinked && agent.username
-                      ? "Otomatisasi komentar dan DM aktif 24/7."
-                      : "Klik untuk menghubungkan akun Instagram."}
-                  </p>
-
-                  {/* Timeline Points List (Persis seperti card di Mau Mulai Dari Mana) */}
-                  <div className="relative ml-1.5 space-y-3">
-                    <div className="absolute left-[3px] top-1.5 bottom-1.5 w-[2px] bg-gray-200 dark:bg-white/5" />
-
-                    {/* Point 1: Instagram Account */}
-                    <div className="relative flex items-center gap-3">
-                      <div
-                        className={`w-2 h-2 rounded-full z-10 transition-colors ${
-                          agent.isLinked
-                            ? "bg-emerald-500 ring-4 ring-emerald-500/20"
-                            : "bg-orange-500 ring-4 ring-orange-500/20"
-                        }`}
-                      />
-                      <span
-                        className={`text-[11px] font-medium transition-colors ${
-                          agent.isLinked
-                            ? "text-gray-900 dark:text-white"
-                            : "text-gray-500 dark:text-gray-400"
-                        }`}
-                      >
-                        {agent.isLinked && agent.username ? `Akun: @${agent.username}` : "Koneksi Akun Instagram"}
-                      </span>
-                    </div>
-
-                    {/* Point 2: Rules Count */}
-                    <div className="relative flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full z-10 bg-gray-300 dark:bg-gray-600 group-hover:bg-orange-500/50 transition-colors" />
-                      <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
-                        {agent.rulesCount || 0} Aturan Otomasi Aktif
-                      </span>
-                    </div>
-
-                    {/* Point 3: Sent Responses */}
-                    <div className="relative flex items-center gap-3">
-                      <div className="w-2 h-2 rounded-full z-10 bg-gray-300 dark:bg-gray-600 group-hover:bg-orange-500/50 transition-colors" />
-                      <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors">
-                        {agent.logsCount || 0} Pesan & Respon Terkirim
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <InstagramAgentListSection
+          agents={agents}
+          filteredAgents={filteredAgents}
+          agentFilterStatus={agentFilterStatus}
+          setAgentFilterStatus={setAgentFilterStatus}
+          isAgentFilterOpen={isAgentFilterOpen}
+          setIsAgentFilterOpen={setIsAgentFilterOpen}
+          activeDropdownAgentId={activeDropdownAgentId}
+          setActiveDropdownAgentId={setActiveDropdownAgentId}
+          onOpenCreateAgentModal={() => {
+            setNewAgentName("");
+            setIsCreateAgentModalOpen(true);
+          }}
+          onSelectAgent={(agentId) => {
+            setSelectedAgentId(agentId);
+            setActiveIgTab("koneksi");
+            const newUrl = new URL(window.location.href);
+            newUrl.searchParams.set("agentId", agentId);
+            window.history.pushState({}, "", newUrl.toString());
+          }}
+          onOpenEditAgentModal={handleOpenEditAgentModal}
+          onDisconnectAgent={handleDisconnectAgent}
+          onDeleteAgent={handleDeleteAgent}
+        />
       ) : (
         /* ========================================================================= */
-        /* LEVEL 3: WORKSPACE AGEN AKTIF (TAMPILAN SCREENSHOT) */
+        /* LEVEL 3: WORKSPACE AGEN AKTIF (MODULAR PER FITUR INSTAGRAM) */
         /* ========================================================================= */
         <div className="animate-in fade-in duration-200">
           {/* Top Navigation & Active Agent Header */}
@@ -2205,13 +1622,13 @@ export default function RuangAutomationClient({
             </button>
           </div>
 
-          {/* Header Title - EXACT SAME STYLE & MARGIN AS PENGATURAN */}
+          {/* Header Title */}
           <h1 className="text-2xl md:text-3xl font-bold font-heading mb-8 md:mb-10 text-gray-900 dark:text-white">
             IG Automation
           </h1>
 
           <div className="space-y-6">
-            {/* Horizontal Tabs Navigation (Pengaturan style) */}
+            {/* Horizontal Tabs Navigation */}
             <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide">
               {igTabs.map((tab) => (
                 <button
@@ -2228,795 +1645,188 @@ export default function RuangAutomationClient({
               ))}
             </div>
 
-          {/* ========================================================================= */}
-          {/* TAB 1: KONEKSI AKUN */}
-          {/* ========================================================================= */}
-          {activeIgTab === "koneksi" && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-          {displayAccount && displayAccount.isLinked ? (
-            (() => {
-              const d = displayAccount.updatedAt || displayAccount.createdAt ? new Date(displayAccount.updatedAt || displayAccount.createdAt) : new Date();
-              const yyyy = d.getFullYear();
-              const mm = String(d.getMonth() + 1).padStart(2, "0");
-              const dd = String(d.getDate()).padStart(2, "0");
-              const hh = String(d.getHours()).padStart(2, "0");
-              const min = String(d.getMinutes()).padStart(2, "0");
-              const formattedUpdated = `${yyyy}-${mm}-${dd} ${hh}:${min}`;
-
-              const agentDisplayName = currentAgent?.name || account?.name || "NAMA AGEN";
-              const igUsername = displayAccount.username || "ruangcreativemuslim";
-              const igProfileName = displayAccount.profileName || (displayAccount.name && !displayAccount.name.toUpperCase().startsWith("AGEN") ? displayAccount.name : null);
-              const igBioOrTitle = igProfileName || (igUsername.toLowerCase().includes("ruangcreative")
-                ? "Harits | Faceless Conten Preneur"
-                : "Akun Profesional");
-
-              const avatarSrc = displayAccount.profilePicUrl && !avatarError
-                ? displayAccount.profilePicUrl
-                : (igUsername.toLowerCase().includes("ruangcreative") ? "/images/instagram/rcm-avatar.png" : null);
-
-              return (
-                <div className="rounded-2xl border border-gray-200 dark:border-white/5 p-6 bg-white dark:bg-[#121214] shadow-sm">
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-                    <div className="flex items-start md:items-center gap-4 sm:gap-5">
-                      {/* Avatar / Profile Picture (Lingkaran Bulat) */}
-                      <div className="relative shrink-0">
-                        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 overflow-hidden shadow-2xs">
-                          {avatarSrc ? (
-                            <img
-                              src={avatarSrc}
-                              alt={igUsername}
-                              referrerPolicy="no-referrer"
-                              onError={() => setAvatarError(true)}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center">
-                              <InstagramIcon className="w-8 h-8 text-gray-600 dark:text-gray-400" />
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Detail Akun & Status */}
-                      <div className="space-y-0.5 sm:space-y-1">
-                        <h2 className="text-sm sm:text-base font-extrabold uppercase tracking-tight text-gray-900 dark:text-white leading-tight">
-                          {agentDisplayName}
-                        </h2>
-                        <div className="text-sm sm:text-base font-bold text-gray-900 dark:text-white leading-tight">
-                          @{igUsername}
-                        </div>
-                        <p className="text-xs text-gray-700 dark:text-gray-300 font-normal leading-normal">
-                          {igBioOrTitle}
-                        </p>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 font-normal leading-normal">
-                          Status Koneksi: Terhubung
-                        </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400 font-normal leading-normal">
-                          Terakhir Diperbaharui: {formattedUpdated}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons: Singkronkan ulang & Putuskan Koneksi */}
-                    <div className="flex items-center gap-3 self-start lg:self-center flex-wrap shrink-0">
-                      <button
-                        onClick={handleResyncAccount}
-                        disabled={isPending}
-                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-white/20 bg-white dark:bg-transparent hover:bg-gray-50 dark:hover:bg-white/5 text-gray-800 dark:text-gray-200 text-xs font-medium flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
-                        title="Sinkronkan ulang data profil dari Meta API"
-                      >
-                        <RefreshCw className={`w-3.5 h-3.5 text-gray-600 dark:text-gray-400 ${isPending ? "animate-spin" : ""}`} />
-                        <span>Singkronkan ulang</span>
-                      </button>
-                      <button
-                        onClick={handleDisconnect}
-                        disabled={isPending}
-                        className="px-4 py-2 rounded-xl border border-gray-300 dark:border-white/20 bg-white dark:bg-transparent hover:bg-rose-50 dark:hover:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-medium flex items-center gap-2 transition-colors disabled:opacity-50 cursor-pointer shadow-2xs"
-                        title="Putuskan koneksi akun ini"
-                      >
-                        <Unlink className="w-3.5 h-3.5 text-rose-600 dark:text-rose-400" />
-                        <span>Putuskan Koneksi</span>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()
-          ) : (
-            /* DISCONNECTED STATE */
-            <div className="rounded-2xl border-2 border-dashed border-gray-300 dark:border-white/10 p-6 md:p-8 bg-gray-50/50 dark:bg-white/[0.02] shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-                <div className="flex items-start sm:items-center gap-4">
-                  <div className="w-16 h-16 rounded-2xl bg-gray-200 dark:bg-white/10 flex items-center justify-center shrink-0">
-                    <InstagramIcon className="w-8 h-8 text-gray-400 dark:text-gray-500" />
-                  </div>
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <h2 className="text-xl font-bold font-heading text-gray-900 dark:text-white">
-                        Belum Ada Akun Instagram Terhubung
-                      </h2>
-                      <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
-                        Terputus / Belum Aktif
-                      </span>
-                    </div>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xl">
-                      Hubungkan akun Instagram Bisnis atau Kreator Anda untuk mulai mengaktifkan auto-reply komentar postingan/Reels dan pengiriman DM privat otomatis 24/7.
-                    </p>
-                  </div>
-                </div>
-
-                <button
-                  onClick={() => handleStartMetaOAuth(displayAccount?.id || selectedAgentId || account?.id)}
-                  disabled={isPending}
-                  className="px-5 py-2.5 rounded-xl bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 text-xs md:text-sm font-bold flex items-center justify-center gap-2 transition-all self-start sm:self-auto shrink-0 cursor-pointer"
-                  title="Hubungkan akun Instagram Anda secara resmi via Meta"
-                >
-                  <InstagramIcon className="w-4 h-4" />
-                  Hubungkan Akun Instagram
-                </button>
-              </div>
-            </div>
-          )}
-            </div>
-          )}
-
-          {/* ========================================================================= */}
-          {/* TAB 2: KOMENTAR IG KE DM */}
-          {/* ========================================================================= */}
-          {activeIgTab === "komentar" && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              {/* Header & Actions Card (Identical to Pengaturan Ruang Belajar style) */}
-              <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214] shadow-sm">
-                <div className="mb-2 md:mb-0">
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                    Komentar IG ke DM
-                  </h2>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Secara otomatis mengirim pesan langsung ke pengguna yang berkomentar pada postingan Instagram Anda.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 mt-2 md:mt-0 w-full md:w-auto self-start sm:self-auto shrink-0">
-                  {/* Filter Dropdown */}
-                  <div className="relative filter-dropdown-container">
-                    <button
-                      type="button"
-                      onClick={() => setIsFilterOpen(!isFilterOpen)}
-                      className={`px-3.5 py-2.5 rounded-lg border text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors ${
-                        filterStatus !== "ALL"
-                          ? "border-gray-900 dark:border-white bg-gray-900 text-white dark:bg-white dark:text-gray-900"
-                          : "border-gray-200 dark:border-white/10 bg-white dark:bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
-                      }`}
-                    >
-                      <Filter className="w-4 h-4" />
-                      <span>Filter</span>
-                      {filterStatus !== "ALL" && (
-                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                      )}
-                    </button>
-
-                    {isFilterOpen && (
-                      <div className="absolute right-0 mt-2 w-44 rounded-xl bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
-                        <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
-                          Status Aturan
-                        </div>
-                        <button
-                          onClick={() => {
-                            setFilterStatus("ALL");
-                            setIsFilterOpen(false);
-                          }}
-                          className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between ${
-                            filterStatus === "ALL"
-                              ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
-                              : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
-                          }`}
-                        >
-                          Semua Status
-                          {filterStatus === "ALL" && <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white" />}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setFilterStatus("ACTIVE");
-                            setIsFilterOpen(false);
-                          }}
-                          className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between ${
-                            filterStatus === "ACTIVE"
-                              ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
-                              : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
-                          }`}
-                        >
-                          Berjalan (Aktif)
-                          {filterStatus === "ACTIVE" && <Check className="w-3.5 h-3.5 text-emerald-500" />}
-                        </button>
-                        <button
-                          onClick={() => {
-                            setFilterStatus("INACTIVE");
-                            setIsFilterOpen(false);
-                          }}
-                          className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between ${
-                            filterStatus === "INACTIVE"
-                              ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
-                              : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
-                          }`}
-                        >
-                          Nonaktif
-                          {filterStatus === "INACTIVE" && <Check className="w-3.5 h-3.5 text-gray-400" />}
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Buat Automation Button (Orange Style like Tambah E-Book) */}
-                  <button
-                    onClick={handleOpenAddRuleModal}
-                    className="justify-center bg-rn-accent hover:opacity-90 text-white px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold shadow-sm transition-opacity flex items-center gap-1.5 whitespace-nowrap"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Buat Automation
-                  </button>
-                </div>
-              </div>
-
-              {/* Sub-Navigation Pill Tabs (Placed outside card) */}
-              <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-                <div className="inline-flex items-center p-1 bg-gray-100 dark:bg-white/5 rounded-xl border border-gray-200/60 dark:border-white/5 overflow-x-auto max-w-full">
-                  {[
-                    { id: "POST", label: "Post Automations" },
-                    { id: "STORY", label: "Story Automations" },
-                    { id: "LIVE", label: "Live Automations" },
-                    { id: "DM", label: "DM Automations" },
-                  ].map((tab) => (
-                    <button
-                      key={tab.id}
-                      onClick={() => setAutomationTab(tab.id as any)}
-                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
-                        automationTab === tab.id
-                          ? "bg-white dark:bg-[#18181b] text-gray-900 dark:text-white shadow-sm border border-gray-200/50 dark:border-white/10"
-                          : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-                      }`}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-            {/* Grid of Automation Cards */}
-            {filteredRules.length === 0 ? (
-              <div className="text-center py-16 px-4 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl space-y-4 bg-white dark:bg-[#18181b]">
-                <div className="w-14 h-14 mx-auto rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 flex items-center justify-center">
-                  {automationTab === "STORY" ? <Camera className="w-7 h-7 text-pink-500" /> : <Bot className="w-7 h-7" />}
-                </div>
-                <div className="space-y-1">
-                  <h4 className="font-bold text-gray-900 dark:text-white">
-                    {automationTab === "POST" 
-                      ? filterStatus !== "ALL" 
-                        ? "Tidak ada aturan yang sesuai filter" 
-                        : "Belum Ada Post Automation" 
-                      : automationTab === "STORY"
-                      ? filterStatus !== "ALL"
-                        ? "Tidak ada aturan yang sesuai filter"
-                        : "Belum Ada Story Automation"
-                      : `${automationTab === "LIVE" ? "Live" : "DM"} Automations Segera Hadir`}
-                  </h4>
-                  <p className="text-sm text-gray-500 max-w-md mx-auto">
-                    {automationTab === "POST"
-                      ? "Buat aturan automasi postingan pertama Anda agar sistem membalas komentar dan mengirim link ke DM followers secara instan."
-                      : automationTab === "STORY"
-                      ? "Buat aturan automasi Story pertama Anda untuk membalas reaksi/reply story dan kirim DM instan 24/7."
-                      : "Fitur automasi ini sedang dalam pengembangan dan akan segera aktif via pembaruan Meta Graph API."}
-                  </p>
-                </div>
-                {automationTab === "STORY" && isAccountLinked && (
-                  <button
-                    onClick={handleOpenAddRuleModal}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rn-accent text-white font-bold text-xs shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
-                  >
-                    <Plus className="w-4 h-4" />
-                    Buat Story Automation
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                {filteredRules.map((rule: any) => {
-                  const keywordList = Array.isArray(rule.keywords)
-                    ? rule.keywords
-                    : typeof rule.keywords === "string"
-                    ? JSON.parse(rule.keywords || "[]")
-                    : [];
-
-                  const ruleConfig = parseClientRuleConfig(rule.dmMessage);
-                  const matchedPost = rule.specificPostId
-                    ? feedPosts.find((p) => String(p.id) === String(rule.specificPostId))
-                    : null;
-                  const matchedStory = rule.specificPostId
-                    ? activeStories.find((s) => String(s.id) === String(rule.specificPostId))
-                    : null;
-
-                  // Real metrics dari log rule ini (tanpa angka dummy/hardcode)
-                  const ruleLogs = (logs || []).filter((l: any) => l.ruleId === rule.id);
-                  const sentLogsCount = ruleLogs.filter((l: any) => l.dmStatus === "SENT").length;
-                  const sentCount = sentLogsCount > 0 ? sentLogsCount : (rule._count?.logs || 0);
-
-                  let clickCount = 0;
-                  let followerCount = 0;
-                  for (const l of ruleLogs) {
-                    const m = parseClientLogMeta(l.errorMessage);
-                    if (m.clicked) clickCount += 1;
-                    if (m.newFollower) followerCount += 1;
-                  }
-                  const ctrRate = sentCount > 0 ? ((clickCount / sentCount) * 100).toFixed(1).replace(/\.0$/, "") + "%" : "0%";
-
-                  const postPermalink =
-                    matchedPost?.permalink ||
-                    ruleConfig.postPermalink ||
-                    (account?.username ? `https://www.instagram.com/${account.username}/` : "https://www.instagram.com/");
-
-                  return (
-                    <div
-                      key={rule.id}
-                      className={`flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-[16px] sm:rounded-[20px] relative p-3 sm:p-4 gap-3 sm:gap-4 ${
-                        !isAccountLinked
-                          ? "border-amber-200/60 dark:border-amber-500/20 bg-amber-500/[0.02]"
-                          : rule.isActive
-                          ? ""
-                          : "opacity-75 bg-gray-50/70 dark:bg-[#141417]"
-                      }`}
-                    >
-                      {/* Sisi Kiri: Cover 3:4 (hanya tampil jika akun terhubung) */}
-                      {isAccountLinked && (
-                        <div className="w-[105px] sm:w-[125px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
-                          <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
-                            {rule.triggerType === "ALL_STORIES" || ruleConfig.targetOtomasi === "Semua Story" ? (
-                              <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-fuchsia-600/20 via-pink-500/20 to-amber-500/20 dark:bg-white/5">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-fuchsia-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
-                                  <Camera className="w-4 h-4" />
-                                </div>
-                                <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
-                                  Semua<br />Story IG
-                                </span>
-                              </div>
-                            ) : rule.triggerType === "SPECIFIC_STORY" || ruleConfig.targetOtomasi === "Story Tertentu" ? (
-                              (() => {
-                                const isDirectImg =
-                                  typeof rule.buttonUrl === "string" &&
-                                  (rule.buttonUrl.startsWith("/images/") ||
-                                    rule.buttonUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i));
-                                const storyCover =
-                                  matchedStory?.image ||
-                                  matchedStory?.thumb ||
-                                  ruleConfig.postCoverUrl ||
-                                  (isDirectImg ? rule.buttonUrl : null);
-
-                                if (storyCover) {
-                                  return (
-                                    <div className="relative w-full h-full">
-                                      <img
-                                        src={storyCover}
-                                        alt={rule.name}
-                                        referrerPolicy="no-referrer"
-                                        className="absolute inset-0 w-full h-full object-cover"
-                                        onError={(e) => {
-                                          (e.currentTarget as HTMLElement).style.display = "none";
-                                        }}
-                                      />
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                                    </div>
-                                  );
-                                }
-
-                                return (
-                                  <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-pink-500/20 via-rose-500/15 to-purple-500/20 dark:bg-white/5">
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
-                                      <Camera className="w-4 h-4" />
-                                    </div>
-                                    <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
-                                      Story<br />Tertentu
-                                    </span>
-                                  </div>
-                                );
-                              })()
-                            ) : rule.triggerType === "STORY_MENTION" || ruleConfig.targetOtomasi === "Story Mention" ? (
-                              <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-indigo-500/20 via-purple-500/15 to-pink-500/20 dark:bg-white/5">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
-                                  <Sparkles className="w-4 h-4" />
-                                </div>
-                                <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
-                                  Story<br />Mention
-                                </span>
-                              </div>
-                            ) : rule.triggerType === "SPECIFIC_POST" ? (
-                              (() => {
-                                const isDirectImg =
-                                  typeof rule.buttonUrl === "string" &&
-                                  (rule.buttonUrl.startsWith("/images/") ||
-                                    rule.buttonUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i));
-                                const coverImg =
-                                  matchedPost?.thumb ||
-                                  matchedPost?.image ||
-                                  ruleConfig.postCoverUrl ||
-                                  (isDirectImg ? rule.buttonUrl : null);
-
-                                if (!coverImg) {
-                                  return (
-                                    <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gray-100 dark:bg-white/5 text-gray-400">
-                                      <InstagramIcon className="w-5 h-5 mb-1 opacity-60 text-gray-500" />
-                                      <span className="text-[10px] font-semibold text-gray-500 truncate max-w-full px-1">
-                                        Postingan
-                                      </span>
-                                    </div>
-                                  );
-                                }
-
-                                return (
-                                  <>
-                                    <img
-                                      src={coverImg}
-                                      alt={rule.name}
-                                      referrerPolicy="no-referrer"
-                                      className="absolute inset-0 w-full h-full object-cover"
-                                      onError={(e) => {
-                                        (e.currentTarget as HTMLElement).style.display = "none";
-                                      }}
-                                    />
-                                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
-                                    <div className="absolute bottom-1.5 left-2 right-2 text-[10px] font-bold text-white truncate drop-shadow">
-                                      {matchedPost?.title || rule.name}
-                                    </div>
-                                  </>
-                                );
-                              })()
-                            ) : rule.triggerType === "NEXT_POST" ? (
-                              <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-purple-500/15 via-indigo-500/10 to-pink-500/15 dark:bg-white/5">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white mb-1.5 shadow-sm">
-                                  <Sparkles className="w-4 h-4" />
-                                </div>
-                                <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 leading-tight">
-                                  Menunggu<br />Post Baru
-                                </span>
-                              </div>
-                            ) : (
-                              <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-orange-500/10 dark:bg-white/5">
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
-                                  <InstagramIcon className="w-4 h-4" />
-                                </div>
-                                <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
-                                  Semua<br />Postingan
-                                </span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Sisi Kanan: Konten Informasi */}
-                      <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5">
-                        <div>
-                          {/* Baris 1: Judul & Menu Titik Tiga */}
-                          <div className="flex items-start justify-between gap-2 mb-0.5">
-                            <h3
-                              className="text-[15px] sm:text-[17px] font-bold leading-tight tracking-tight text-gray-900 dark:text-white line-clamp-1 flex-1"
-                              title={rule.name}
-                            >
-                              {rule.name}
-                            </h3>
-
-                            {/* Menu Titik Tiga Vertikal */}
-                            <div className="relative rule-dropdown-menu shrink-0 ml-1">
-                              <button
-                                type="button"
-                                onClick={() => setActiveDropdownRuleId(activeDropdownRuleId === rule.id ? null : rule.id)}
-                                className="w-7 h-7 rounded-lg border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
-                                title="Opsi Aturan"
-                              >
-                                <MoreVertical className="w-4 h-4" />
-                              </button>
-
-                              {activeDropdownRuleId === rule.id && (
-                                <div className="absolute right-0 mt-1 w-40 rounded-xl bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
-                                  {/* 1. Jeda / Lanjutkan */}
-                                  <button
-                                    onClick={() => {
-                                      setActiveDropdownRuleId(null);
-                                      handleToggleRule(rule.id, rule.isActive);
-                                    }}
-                                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2.5 transition-colors"
-                                  >
-                                    {rule.isActive ? (
-                                      <>
-                                        <Pause className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                                        <span>Jeda</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Play className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-                                        <span>Lanjutkan</span>
-                                      </>
-                                    )}
-                                  </button>
-
-                                  {/* 2. Buat Salinan */}
-                                  <button
-                                    onClick={() => {
-                                      setActiveDropdownRuleId(null);
-                                      handleDuplicateRule(rule.id);
-                                    }}
-                                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2.5 transition-colors"
-                                  >
-                                    <Copy className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                                    <span>Buat Salinan</span>
-                                  </button>
-
-                                  {/* 3. Edit */}
-                                  <button
-                                    onClick={() => {
-                                      setActiveDropdownRuleId(null);
-                                      handleOpenEditRuleModal(rule);
-                                    }}
-                                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2.5 transition-colors"
-                                  >
-                                    <Pencil className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
-                                    <span>Edit</span>
-                                  </button>
-
-                                  {/* 4. Hapus */}
-                                  <button
-                                    onClick={() => {
-                                      setActiveDropdownRuleId(null);
-                                      handleDeleteRule(rule.id, rule.name);
-                                    }}
-                                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2.5 transition-colors border-t border-gray-100 dark:border-white/5"
-                                  >
-                                    <Trash2 className="w-3.5 h-3.5 text-rose-500" />
-                                    <span>Hapus</span>
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-
-                          {/* Baris 2: Status (Tanpa Icon Dot, Dekat dengan Judul) */}
-                          <div className="mb-1 leading-none">
-                            {!isAccountLinked ? (
-                              <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
-                                Terputus
-                              </span>
-                            ) : (
-                              <span className={`text-[11px] font-semibold ${rule.isActive ? "text-emerald-600 dark:text-emerald-400" : "text-gray-400"}`}>
-                                {rule.isActive ? "Berjalan" : "Nonaktif"}
-                              </span>
-                            )}
-                          </div>
-
-                          {/* Baris 3: Lihat Post & Detail (Dekat dengan Status, Seragam Warna Orange) */}
-                          <div className="flex items-center gap-1.5 text-xs mb-2.5 flex-wrap">
-                            {isAccountLinked && rule.triggerType === "SPECIFIC_POST" && rule.specificPostId && (
-                              <>
-                                <a
-                                  href={postPermalink}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 inline-flex items-center gap-1 font-semibold transition-colors"
-                                >
-                                  Lihat Post <ExternalLink className="w-3 h-3" />
-                                </a>
-                                <span className="text-gray-300 dark:text-gray-600">•</span>
-                              </>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => setDetailRuleId(rule.id)}
-                              className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 inline-flex items-center gap-0.5 font-semibold transition-colors cursor-pointer"
-                            >
-                              Detail <ChevronRight className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-
-                          {!isAccountLinked && (
-                            <div className="text-[11px] font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 px-2.5 py-1.5 rounded-lg border border-amber-200/80 dark:border-amber-500/20 flex items-center gap-1.5 mb-2">
-                              <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-500" />
-                              <span>Koneksi akun terputus — automasi ini dijeda otomatis.</span>
-                            </div>
-                          )}
-
-                          {/* Baris 4: Kata Pemicu (Clean, Proporsional) */}
-                          <div className="mb-2.5">
-                            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 block mb-1">
-                              Kata Pemicu
-                            </span>
-                            <div className="flex items-center gap-1.5 flex-wrap">
-                              {keywordList.length === 0 ? (
-                                <span className="font-semibold rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 inline-flex items-center gap-1">
-                                  <Link2 className="w-3 h-3" /> Semua Kata
-                                </span>
-                              ) : (
-                                <>
-                                  {ruleConfig.keywordRule && ruleConfig.keywordRule !== "Contains" && (
-                                    <span className="font-extrabold rounded-md px-1.5 py-0.5 text-[9px] sm:text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 uppercase tracking-wider">
-                                      {ruleConfig.keywordRule}
-                                    </span>
-                                  )}
-                                  {keywordList.map((kw: string, idx: number) => (
-                                    <span
-                                      key={idx}
-                                      className="font-medium rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-white/5"
-                                    >
-                                      {kw}
-                                    </span>
-                                  ))}
-                                </>
-                              )}
-                              {ruleConfig.replyHeartReaction && (
-                                <span className="font-semibold rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 inline-flex items-center gap-1">
-                                  ❤️ Balas Reaksi
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Baris 5 (Bawah): 4 Metrics Columns Lengkap (Terkirim, Klik, Follower, CTR) */}
-                        <div className="pt-2 border-t border-gray-100 dark:border-white/5 grid grid-cols-4 gap-1.5 text-center sm:text-left">
-                          <div>
-                            <span className="text-[10px] text-gray-400 block font-medium leading-none">Terkirim</span>
-                            <span className="text-sm sm:text-base font-black text-orange-600 dark:text-orange-400 block mt-1 leading-none">
-                              {sentCount}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-gray-400 block font-medium leading-none">Klik</span>
-                            <span className="text-sm sm:text-base font-black text-orange-600 dark:text-orange-400 block mt-1 leading-none">
-                              {clickCount}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-gray-400 block font-medium leading-none">Follower</span>
-                            <span className="text-sm sm:text-base font-black text-orange-600 dark:text-orange-400 block mt-1 leading-none">
-                              {followerCount}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-[10px] text-gray-400 block font-medium leading-none">CTR</span>
-                            <span className="text-sm sm:text-base font-black text-orange-600 dark:text-orange-400 block mt-1 leading-none">
-                              {ctrRate}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
+            {/* TAB 1: KONEKSI AKUN */}
+            {activeIgTab === "koneksi" && (
+              <InstagramConnectionTab
+                displayAccount={displayAccount}
+                currentAgent={currentAgent}
+                account={account}
+                selectedAgentId={selectedAgentId}
+                avatarError={avatarError}
+                setAvatarError={setAvatarError}
+                isPending={isPending}
+                onResyncAccount={handleResyncAccount}
+                onDisconnect={handleDisconnect}
+                onStartMetaOAuth={handleStartMetaOAuth}
+              />
             )}
-            </div>
-          )}
 
-          {/* ========================================================================= */}
-          {/* TAB 3: DASHBOARD */}
-          {/* ========================================================================= */}
-          {activeIgTab === "dashboard" && (
-            <div className="space-y-6 animate-in fade-in duration-200">
-              {/* Summary Metric Cards */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-[#18181b] space-y-2">
-                  <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                    <span className="text-xs font-semibold uppercase tracking-wider">Komentar Terjawab</span>
-                    <div className="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center">
-                      <MessageSquare className="w-4 h-4" />
-                    </div>
-                  </div>
-                  <div className="text-2xl sm:text-3xl font-black font-heading text-gray-900 dark:text-white">
-                    {stats.totalComments || 0}
-                  </div>
-                  <p className="text-[11px] text-gray-400">Total balasan komentar otomatis</p>
-                </div>
-
-                <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-[#18181b] space-y-2">
-                  <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                    <span className="text-xs font-semibold uppercase tracking-wider">DM Terkirim</span>
-                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
-                      <Send className="w-4 h-4" />
-                    </div>
-                  </div>
-                  <div className="text-2xl sm:text-3xl font-black font-heading text-gray-900 dark:text-white">
-                    {stats.totalDms || 0}
-                  </div>
-                  <p className="text-[11px] text-gray-400">Total pesan privat terkirim</p>
-                </div>
-
-                <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-[#18181b] space-y-2">
-                  <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                    <span className="text-xs font-semibold uppercase tracking-wider">Aturan Otomasi</span>
-                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center">
-                      <Bot className="w-4 h-4" />
-                    </div>
-                  </div>
-                  <div className="text-2xl sm:text-3xl font-black font-heading text-gray-900 dark:text-white">
-                    {rules.length}
-                  </div>
-                  <p className="text-[11px] text-emerald-500 font-semibold">
-                    {rules.filter((r: any) => r.isActive).length} Aktif berjalan
-                  </p>
-                </div>
-
-                <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-[#18181b] space-y-2">
-                  <div className="flex items-center justify-between text-gray-500 dark:text-gray-400">
-                    <span className="text-xs font-semibold uppercase tracking-wider">Tingkat Sukses</span>
-                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center">
-                      <TrendingUp className="w-4 h-4" />
-                    </div>
-                  </div>
-                  <div className="text-2xl sm:text-3xl font-black font-heading text-gray-900 dark:text-white">
-                    100%
-                  </div>
-                  <p className="text-[11px] text-gray-400">Eksekusi webhook realtime</p>
-                </div>
-              </div>
-
-              {/* RIWAYAT LOG AKTIVITAS AUTOMASI */}
-              <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-6 bg-white dark:bg-[#18181b] space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h4 className="font-bold text-base text-gray-900 dark:text-white flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-500" /> Riwayat Log Automasi Terkini
-                    </h4>
-                    <p className="text-xs text-gray-500">
-                      Memantau eksekusi balasan komentar dan pengiriman DM secara realtime.
+            {/* TAB 2: KOMENTAR IG KE DM */}
+            {activeIgTab === "komentar" && (
+              <div className="space-y-6 animate-in fade-in duration-200">
+                {/* Header & Actions Card */}
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214] shadow-sm">
+                  <div className="mb-2 md:mb-0">
+                    <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+                      Komentar IG ke DM
+                    </h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Secara otomatis mengirim pesan langsung ke pengguna yang berkomentar pada postingan Instagram Anda.
                     </p>
                   </div>
-                  <span className="text-xs text-gray-400">{logs.length} Log Terakhir</span>
+
+                  <div className="flex items-center gap-2 mt-2 md:mt-0 w-full md:w-auto self-start sm:self-auto shrink-0">
+                    {/* Filter Dropdown */}
+                    <div className="relative filter-dropdown-container">
+                      <button
+                        type="button"
+                        onClick={() => setIsFilterOpen(!isFilterOpen)}
+                        className={`px-3.5 py-2.5 rounded-lg border text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors ${
+                          filterStatus !== "ALL"
+                            ? "border-gray-900 dark:border-white bg-gray-900 text-white dark:bg-white dark:text-gray-900"
+                            : "border-gray-200 dark:border-white/10 bg-white dark:bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                        }`}
+                      >
+                        <Filter className="w-4 h-4" />
+                        <span>Filter</span>
+                        {filterStatus !== "ALL" && (
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        )}
+                      </button>
+
+                      {isFilterOpen && (
+                        <div className="absolute right-0 mt-2 w-44 rounded-xl bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
+                          <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+                            Status Aturan
+                          </div>
+                          <button
+                            onClick={() => {
+                              setFilterStatus("ALL");
+                              setIsFilterOpen(false);
+                            }}
+                            className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between ${
+                              filterStatus === "ALL"
+                                ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
+                                : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                            }`}
+                          >
+                            Semua Status
+                            {filterStatus === "ALL" && <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white" />}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setFilterStatus("ACTIVE");
+                              setIsFilterOpen(false);
+                            }}
+                            className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between ${
+                              filterStatus === "ACTIVE"
+                                ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
+                                : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                            }`}
+                          >
+                            Berjalan (Aktif)
+                            {filterStatus === "ACTIVE" && <Check className="w-3.5 h-3.5 text-emerald-500" />}
+                          </button>
+                          <button
+                            onClick={() => {
+                              setFilterStatus("INACTIVE");
+                              setIsFilterOpen(false);
+                            }}
+                            className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between ${
+                              filterStatus === "INACTIVE"
+                                ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
+                                : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                            }`}
+                          >
+                            Nonaktif
+                            {filterStatus === "INACTIVE" && <Check className="w-3.5 h-3.5 text-gray-400" />}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Buat Automation Button */}
+                    <button
+                      onClick={handleOpenAddRuleModal}
+                      className="justify-center bg-rn-accent hover:opacity-90 text-white px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold shadow-sm transition-opacity flex items-center gap-1.5 whitespace-nowrap"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Buat Automation
+                    </button>
+                  </div>
                 </div>
 
-                {logs.length === 0 ? (
-                  <div className="py-8 text-center text-xs text-gray-400">
-                    Belum ada aktivitas automasi yang tercatat. Log akan muncul otomatis saat ada user yang berkomentar di Instagram Anda.
-                  </div>
-                ) : (
-                  <div className="divide-y divide-gray-100 dark:divide-white/5 max-h-72 overflow-y-auto">
-                    {logs.map((log: any) => (
-                      <div key={log.id} className="py-2.5 flex items-center justify-between text-xs gap-4">
-                        <div className="flex items-center gap-3">
-                          <span className="font-semibold text-gray-900 dark:text-white">
-                            @{log.fromUsername || log.commenterUsername || "user"}
-                          </span>
-                          <span className="text-gray-400">•</span>
-                          <span className="text-gray-500">
-                            Komentar: <span className="text-gray-700 dark:text-gray-300 font-medium">"{log.commentText || "-"}"</span>
-                          </span>
-                        </div>
-
-                        <div className="flex items-center gap-3">
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              log.replyCommentStatus === "SENT"
-                                ? "bg-emerald-500/10 text-emerald-600"
-                                : "bg-gray-100 text-gray-500"
-                            }`}
-                          >
-                            Komentar: {log.replyCommentStatus || "N/A"}
-                          </span>
-                          <span
-                            className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                              log.dmStatus === "SENT"
-                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                                : "bg-gray-100 dark:bg-white/5 text-gray-500"
-                            }`}
-                          >
-                            DM: {log.dmStatus || "N/A"}
-                          </span>
-                          <span className="text-gray-400 text-[10px]">
-                            {new Date(log.createdAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
-                          </span>
-                        </div>
-                      </div>
+                {/* Sub-Navigation Pill Tabs */}
+                <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+                  <div className="inline-flex items-center p-1 bg-gray-100 dark:bg-white/5 rounded-xl border border-gray-200/60 dark:border-white/5 overflow-x-auto max-w-full">
+                    {[
+                      { id: "POST", label: "Post Automations" },
+                      { id: "STORY", label: "Story Automations" },
+                      { id: "LIVE", label: "Live Automations" },
+                      { id: "DM", label: "DM Automations" },
+                    ].map((tab) => (
+                      <button
+                        key={tab.id}
+                        onClick={() => setAutomationTab(tab.id as any)}
+                        className={`px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
+                          automationTab === tab.id
+                            ? "bg-white dark:bg-[#18181b] text-gray-900 dark:text-white shadow-sm border border-gray-200/50 dark:border-white/10"
+                            : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                        }`}
+                      >
+                        {tab.label}
+                      </button>
                     ))}
                   </div>
+                </div>
+
+                {/* Isolated Sub-Feature Sections */}
+                {automationTab === "POST" && (
+                  <PostAutomationSection
+                    filteredRules={filteredRules}
+                    filterStatus={filterStatus}
+                    isAccountLinked={isAccountLinked}
+                    accountUsername={displayAccount?.username || account?.username}
+                    feedPosts={feedPosts}
+                    logs={logs}
+                    activeDropdownRuleId={activeDropdownRuleId}
+                    setActiveDropdownRuleId={setActiveDropdownRuleId}
+                    handleToggleRule={handleToggleRule}
+                    handleDuplicateRule={handleDuplicateRule}
+                    handleOpenEditRuleModal={handleOpenEditRuleModal}
+                    handleDeleteRule={handleDeleteRule}
+                    setDetailRuleId={setDetailRuleId}
+                  />
                 )}
+
+                {automationTab === "STORY" && (
+                  <StoryAutomationSection
+                    filteredRules={filteredRules}
+                    filterStatus={filterStatus}
+                    isAccountLinked={isAccountLinked}
+                    activeStories={activeStories}
+                    logs={logs}
+                    activeDropdownRuleId={activeDropdownRuleId}
+                    setActiveDropdownRuleId={setActiveDropdownRuleId}
+                    handleToggleRule={handleToggleRule}
+                    handleDuplicateRule={handleDuplicateRule}
+                    handleOpenEditRuleModal={handleOpenEditRuleModal}
+                    handleDeleteRule={handleDeleteRule}
+                    setDetailRuleId={setDetailRuleId}
+                    handleOpenAddRuleModal={handleOpenAddRuleModal}
+                  />
+                )}
+
+                {automationTab === "LIVE" && <LiveAutomationSection />}
+
+                {automationTab === "DM" && <DmAutomationSection />}
               </div>
-            </div>
-          )}
+            )}
+
+            {/* TAB 3: DASHBOARD */}
+            {activeIgTab === "dashboard" && (
+              <InstagramDashboardTab stats={stats} rules={rules} logs={logs} />
+            )}
           </div>
         </div>
       )}
@@ -6337,683 +5147,26 @@ export default function RuangAutomationClient({
       )}
 
       {/* ========================================================================= */}
-      {/* MODAL POPUP: DETAIL OTOMASI (KPI, GRAFIK PERFORMA, KONFIGURASI, KONTEN, LOG 14 HARI) */}
+      {/* MODAL POPUP: DETAIL OTOMASI (MODULAR) */}
       {/* ========================================================================= */}
-      {detailRuleId && (() => {
-        const detailRule = (rules || []).find((r: any) => r.id === detailRuleId);
-        if (!detailRule) return null;
-
-        const detailConfig = parseClientRuleConfig(detailRule.dmMessage);
-        const detailMatchedPost = detailRule.specificPostId
-          ? feedPosts.find((p) => String(p.id) === String(detailRule.specificPostId))
-          : null;
-
-        const detailPostPermalink =
-          detailMatchedPost?.permalink ||
-          detailConfig.postPermalink ||
-          (account?.username ? `https://www.instagram.com/${account.username}/` : "https://www.instagram.com/");
-
-        const fourteenDaysAgoMs = Date.now() - 14 * 24 * 60 * 60 * 1000;
-        const allRuleLogs = (logs || []).filter((l: any) => l.ruleId === detailRule.id);
-        const recent14dLogs = allRuleLogs.filter((l: any) => {
-          const ts = l.createdAt ? new Date(l.createdAt).getTime() : Date.now();
-          return ts >= fourteenDaysAgoMs;
-        });
-
-        // Hitung 7 KPI Metrics secara akurat dari database log
-        const sentLogs = allRuleLogs.filter((l: any) => l.dmStatus === "SENT");
-        const kpiSend = sentLogs.length > 0 ? sentLogs.length : (detailRule._count?.logs || 0);
-        let kpiRead = 0;
-        let kpiClicked = 0;
-        let kpiNewFollower = 0;
-        let kpiPaid = 0;
-        let kpiTotalEarning = 0;
-
-        for (const l of allRuleLogs) {
-          const m = parseClientLogMeta(l.errorMessage);
-          if (m.read || m.clicked || m.newFollower || m.contact) kpiRead += 1;
-          if (m.clicked) kpiClicked += 1;
-          if (m.newFollower) kpiNewFollower += 1;
-          if (m.paid) kpiPaid += 1;
-          if (typeof m.earning === "number") kpiTotalEarning += m.earning;
-        }
-
-        const kpiCtr = kpiSend > 0 ? ((kpiClicked / kpiSend) * 100).toFixed(1).replace(/\.0$/, "") + "%" : "0%";
-
-        // Bangun data grafik 14 hari terakhir (harian)
-        const dailyBuckets: {
-          dateKey: string;
-          label: string;
-          send: number;
-          read: number;
-          clicked: number;
-          follower: number;
-        }[] = [];
-
-        for (let i = 13; i >= 0; i--) {
-          const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
-          const yyyy = d.getFullYear();
-          const mm = String(d.getMonth() + 1).padStart(2, "0");
-          const dd = String(d.getDate()).padStart(2, "0");
-          const dateKey = `${yyyy}-${mm}-${dd}`;
-          const label = d.toLocaleDateString("id-ID", { day: "2-digit", month: "short" });
-          dailyBuckets.push({ dateKey, label, send: 0, read: 0, clicked: 0, follower: 0 });
-        }
-
-        for (const l of recent14dLogs) {
-          const d = l.createdAt ? new Date(l.createdAt) : new Date();
-          const yyyy = d.getFullYear();
-          const mm = String(d.getMonth() + 1).padStart(2, "0");
-          const dd = String(d.getDate()).padStart(2, "0");
-          const key = `${yyyy}-${mm}-${dd}`;
-          const bucket = dailyBuckets.find((b) => b.dateKey === key);
-          if (bucket) {
-            if (l.dmStatus === "SENT") bucket.send += 1;
-            const m = parseClientLogMeta(l.errorMessage);
-            if (m.read || m.clicked || m.newFollower || m.contact) bucket.read += 1;
-            if (m.clicked) bucket.clicked += 1;
-            if (m.newFollower) bucket.follower += 1;
-          }
-        }
-
-        const maxPerfValue = Math.max(1, ...dailyBuckets.map((b) => Math.max(b.send, b.read, b.follower)));
-        const maxClickValue = Math.max(1, ...dailyBuckets.map((b) => b.clicked));
-
-        // Konfigurasi fitur Aktif / Nonaktif
-        const hasReplyComment =
-          detailConfig.featureReplyComment !== false &&
-          Array.isArray(detailRule.commentReplies) &&
-          detailRule.commentReplies.length > 0;
-        const hasWelcomeMsg = Boolean(detailConfig.featureWelcomeMessage);
-        const hasAskFollow = Boolean(detailConfig.featureAskForFollow);
-        const hasAskContact = Boolean(detailConfig.featureAskForContact);
-        const hasFollowUp = Boolean(detailConfig.featureFollowUp);
-        const hasAskPayment = Boolean(detailConfig.featureAskForPayment);
-
-        const configItems = [
-          { label: "Balas Komentar", active: hasReplyComment },
-          { label: "Pesan Pembuka", active: hasWelcomeMsg },
-          { label: "Ask For Follow", active: hasAskFollow },
-          { label: "Ask for Contact", active: hasAskContact },
-          { label: "Follow Up", active: hasFollowUp },
-          { label: "Ask For Payment", active: hasAskPayment },
-        ];
-
-        const detailKeywords = Array.isArray(detailRule.keywords)
-          ? detailRule.keywords
-          : typeof detailRule.keywords === "string"
-          ? JSON.parse(detailRule.keywords || "[]")
-          : [];
-
-        const detailCommentReplies = Array.isArray(detailRule.commentReplies)
-          ? detailRule.commentReplies
-          : [];
-
-        const mainDmContent = detailConfig.mainMessage || detailRule.dmMessage || "-";
-        const failedLogsCount = recent14dLogs.filter(
-          (l: any) => l.dmStatus === "FAILED" || l.replyCommentStatus === "FAILED"
-        ).length;
-
-        const formatDateTimeId = (isoStr?: string | null) => {
-          if (!isoStr) return "-";
-          try {
-            const dt = new Date(isoStr);
-            return dt.toLocaleDateString("id-ID", {
-              day: "2-digit",
-              month: "short",
-              year: "numeric",
-              hour: "2-digit",
-              minute: "2-digit",
-            });
-          } catch {
-            return "-";
-          }
-        };
-
-        return (
-          <div className="fixed inset-0 z-[145] flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white dark:bg-[#141417] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-              {/* HEADER MODAL DETAIL */}
-              <div className="px-5 sm:px-7 py-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-4 bg-white dark:bg-[#18181b] shrink-0">
-                <div className="min-w-0">
-                  <div className="flex items-center gap-2.5 flex-wrap">
-                    <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white truncate">
-                      {detailRule.name}
-                    </h3>
-                    <span
-                      className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                        detailRule.isActive
-                          ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                          : "bg-gray-100 dark:bg-white/10 text-gray-500"
-                      }`}
-                    >
-                      <span className={`w-1.5 h-1.5 rounded-full ${detailRule.isActive ? "bg-emerald-500" : "bg-gray-400"}`} />
-                      {detailRule.isActive ? "Berjalan" : "Nonaktif"}
-                    </span>
-                    {detailRule.triggerType === "SPECIFIC_POST" && detailRule.specificPostId && (
-                      <a
-                        href={detailPostPermalink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline inline-flex items-center gap-1"
-                      >
-                        Lihat Post <ExternalLink className="w-3 h-3" />
-                      </a>
-                    )}
-                  </div>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-                    Analitik performa realtime, status konfigurasi funnel, dan riwayat log komentar 14 hari terakhir.
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const targetRule = detailRule;
-                      setDetailRuleId(null);
-                      handleOpenEditRuleModal(targetRule);
-                    }}
-                    className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-                  >
-                    <Pencil className="w-3.5 h-3.5" /> Edit Otomasi
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDetailRuleId(null)}
-                    className="w-8 h-8 rounded-xl border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                  >
-                    <X className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-
-              {/* BODY MODAL DETAIL (SCROLLABLE) */}
-              <div className="p-5 sm:p-7 overflow-y-auto space-y-6 flex-1">
-                {/* 1. 7 KPI METRIC CARDS */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-                  <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">Send</span>
-                    <span className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white mt-1 block">
-                      {kpiSend}
-                    </span>
-                    <span className="text-[10px] text-gray-400">Pesan terkirim</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">Read</span>
-                    <span className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400 mt-1 block">
-                      {kpiRead}
-                    </span>
-                    <span className="text-[10px] text-gray-400">Direspon / dibaca</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">Clicked</span>
-                    <span className="text-xl sm:text-2xl font-black text-orange-600 dark:text-orange-400 mt-1 block">
-                      {kpiClicked}
-                    </span>
-                    <span className="text-[10px] text-gray-400">Total klik link</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">New Follower</span>
-                    <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block">
-                      {kpiNewFollower}
-                    </span>
-                    <span className="text-[10px] text-gray-400">Dari Ask Follow</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">CTR</span>
-                    <span className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 mt-1 block">
-                      {kpiCtr}
-                    </span>
-                    <span className="text-[10px] text-gray-400">Rasio klik / kirim</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">Paid</span>
-                    <span className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white mt-1 block">
-                      {kpiPaid}
-                    </span>
-                    <span className="text-[10px] text-gray-400">Transaksi lunas</span>
-                  </div>
-
-                  <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5 col-span-2 sm:col-span-1">
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">Total Earning</span>
-                    <span className="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block truncate">
-                      Rp {kpiTotalEarning.toLocaleString("id-ID")}
-                    </span>
-                    <span className="text-[10px] text-gray-400">Pendapatan</span>
-                  </div>
-                </div>
-
-                {/* 2. DUA GRAFIK: PERFORMA OTOMASI & PERFORMA TOMBOL (KLIK) */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-                  {/* Grafik 1: Performa Otomasi */}
-                  <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] p-5 space-y-4">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                          <TrendingUp className="w-4 h-4 text-orange-500" /> Performa Otomasi (14 Hari Terakhir)
-                        </h4>
-                        <p className="text-[11px] text-gray-500">
-                          Grafik perbandingan pesan terkirim (Send), direspon (Read), dan New Follower harian
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-3 text-[10px] font-bold">
-                        <span className="inline-flex items-center gap-1 text-orange-500">
-                          <span className="w-2.5 h-2.5 rounded-sm bg-orange-500 inline-block" /> Send
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-blue-500">
-                          <span className="w-2.5 h-2.5 rounded-sm bg-blue-500 inline-block" /> Read
-                        </span>
-                        <span className="inline-flex items-center gap-1 text-emerald-500">
-                          <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" /> Follower
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="h-44 flex items-end gap-1.5 pt-6 pb-1 px-1 border-b border-gray-100 dark:border-white/5">
-                      {dailyBuckets.map((b) => {
-                        const sendH = Math.max(4, Math.round((b.send / maxPerfValue) * 120));
-                        const readH = Math.max(b.read > 0 ? 4 : 0, Math.round((b.read / maxPerfValue) * 120));
-                        const folH = Math.max(b.follower > 0 ? 4 : 0, Math.round((b.follower / maxPerfValue) * 120));
-                        return (
-                          <div
-                            key={b.dateKey}
-                            className="flex-1 flex flex-col items-center group relative"
-                            title={`${b.label}: Send ${b.send}, Read ${b.read}, New Follower ${b.follower}`}
-                          >
-                            <div className="w-full flex items-end justify-center gap-0.5 h-[124px]">
-                              <div
-                                style={{ height: `${sendH}px` }}
-                                className={`w-2 rounded-t transition-all ${
-                                  b.send > 0 ? "bg-orange-500" : "bg-gray-200 dark:bg-white/10"
-                                }`}
-                              />
-                              {readH > 0 && (
-                                <div
-                                  style={{ height: `${readH}px` }}
-                                  className="w-1.5 rounded-t bg-blue-500 transition-all"
-                                />
-                              )}
-                              {folH > 0 && (
-                                <div
-                                  style={{ height: `${folH}px` }}
-                                  className="w-1.5 rounded-t bg-emerald-500 transition-all"
-                                />
-                              )}
-                            </div>
-                            <span className="text-[9px] text-gray-400 mt-1.5 rotate-0 truncate max-w-full">
-                              {b.label.split(" ")[0]}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Grafik 2: Performa Tombol (Klik) */}
-                  <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] p-5 space-y-4">
-                    <div className="flex items-center justify-between gap-2 flex-wrap">
-                      <div>
-                        <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                          <Link2 className="w-4 h-4 text-purple-500" /> Performa Tombol (Klik)
-                        </h4>
-                        <p className="text-[11px] text-gray-500">
-                          Tren klik tombol tautan dalam 14 hari terakhir (Link Tracking Aktif)
-                        </p>
-                      </div>
-                      <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-extrabold">
-                        Total {kpiClicked} Klik ({kpiCtr})
-                      </span>
-                    </div>
-
-                    <div className="h-32 flex items-end gap-1.5 pt-4 pb-1 px-1 border-b border-gray-100 dark:border-white/5">
-                      {dailyBuckets.map((b) => {
-                        const clickH = Math.max(4, Math.round((b.clicked / maxClickValue) * 90));
-                        return (
-                          <div
-                            key={b.dateKey}
-                            className="flex-1 flex flex-col items-center"
-                            title={`${b.label}: ${b.clicked} Klik`}
-                          >
-                            <div className="w-full flex items-end justify-center h-[94px]">
-                              <div
-                                style={{ height: `${clickH}px` }}
-                                className={`w-full max-w-[14px] rounded-t transition-all ${
-                                  b.clicked > 0
-                                    ? "bg-gradient-to-t from-purple-600 to-orange-500"
-                                    : "bg-gray-200 dark:bg-white/10"
-                                }`}
-                              />
-                            </div>
-                            <span className="text-[9px] text-gray-400 mt-1.5 truncate max-w-full">
-                              {b.label.split(" ")[0]}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    {/* Ringkasan Tombol Aktif */}
-                    <div className="flex items-center justify-between text-xs bg-gray-50 dark:bg-white/5 px-3.5 py-2.5 rounded-xl border border-gray-200/70 dark:border-white/5">
-                      <div className="min-w-0 pr-2">
-                        <span className="font-bold text-gray-900 dark:text-white block truncate">
-                          Tombol: {detailRule.buttonText || "Buka Tautan"}
-                        </span>
-                        <span className="text-[11px] text-gray-400 block truncate">
-                          {detailRule.buttonUrl || "Tidak ada URL tombol"}
-                        </span>
-                      </div>
-                      <span className="font-black text-orange-600 dark:text-orange-400 shrink-0">
-                        {kpiClicked} Klik
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. KONFIGURASI & KONTEN */}
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-                  {/* Konfigurasi Status (6 Fitur) */}
-                  <div className="lg:col-span-5 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] p-5 space-y-3.5">
-                    <div>
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">
-                        Konfigurasi Otomasi
-                      </h4>
-                      <p className="text-[11px] text-gray-500">
-                        Status modul fitur yang diterapkan pada aturan ini
-                      </p>
-                    </div>
-
-                    <div className="divide-y divide-gray-100 dark:divide-white/5">
-                      {configItems.map((item) => (
-                        <div key={item.label} className="py-2.5 flex items-center justify-between text-xs">
-                          <span className="font-semibold text-gray-700 dark:text-gray-300">
-                            {item.label}
-                          </span>
-                          <span
-                            className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold inline-flex items-center gap-1 ${
-                              item.active
-                                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                                : "bg-gray-100 dark:bg-white/5 text-gray-400"
-                            }`}
-                          >
-                            {item.active ? (
-                              <>
-                                <CheckCircle2 className="w-3 h-3" /> Aktif
-                              </>
-                            ) : (
-                              "Nonaktif"
-                            )}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Konten Otomasi */}
-                  <div className="lg:col-span-7 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] p-5 space-y-4">
-                    <div>
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white">
-                        Konten Otomasi
-                      </h4>
-                      <p className="text-[11px] text-gray-500">
-                        Detail kata kunci pemicu, variasi balasan komentar, dan isi pesan DM utama
-                      </p>
-                    </div>
-
-                    <div className="space-y-3 text-xs">
-                      <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1.5">
-                          Kata Kunci Pemicu
-                        </span>
-                        <div className="flex items-center gap-1.5 flex-wrap">
-                          {detailKeywords.length === 0 ? (
-                            <span className="px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold text-[11px]">
-                              Semua Komentar (Semua Kata)
-                            </span>
-                          ) : (
-                            detailKeywords.map((kw: string, i: number) => (
-                              <span
-                                key={i}
-                                className="px-2.5 py-0.5 rounded-md bg-white dark:bg-white/10 border border-gray-200 dark:border-white/10 font-bold text-gray-800 dark:text-gray-200"
-                              >
-                                {kw}
-                              </span>
-                            ))
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-                          Variasi Balasan Komentar ({detailCommentReplies.length})
-                        </span>
-                        {detailCommentReplies.length === 0 ? (
-                          <span className="text-gray-400 italic">Balas komentar publik dinonaktifkan</span>
-                        ) : (
-                          <ul className="list-disc list-inside space-y-1 text-gray-700 dark:text-gray-300">
-                            {detailCommentReplies.map((rep: string, i: number) => (
-                              <li key={i} className="truncate">{rep}</li>
-                            ))}
-                          </ul>
-                        )}
-                      </div>
-
-                      <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
-                        <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
-                          Pesan DM Utama & Tautan
-                        </span>
-                        <p className="text-gray-800 dark:text-gray-200 whitespace-pre-line leading-relaxed">
-                          {mainDmContent}
-                        </p>
-                        {detailRule.buttonUrl && (
-                          <div className="mt-2 pt-2 border-t border-gray-200/60 dark:border-white/10 flex items-center justify-between text-[11px]">
-                            <span className="font-bold text-orange-600 dark:text-orange-400">
-                              [{detailRule.buttonText || "Buka Tautan"}]
-                            </span>
-                            <a
-                              href={detailRule.buttonUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 dark:text-blue-400 hover:underline truncate max-w-[260px]"
-                            >
-                              {detailRule.buttonUrl}
-                            </a>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* 4. LOG KOMENTAR (14 HARI TERAKHIR) + TOMBOL COBA LAGI & REWIND */}
-                <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] p-5 space-y-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div>
-                      <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                        <MessageSquare className="w-4 h-4 text-orange-500" /> Log Komentar
-                      </h4>
-                      <p className="text-xs text-gray-500">
-                        Log ini menampilkan komentar dari 14 hari terakhir yang memicu otomatisasi
-                      </p>
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <button
-                        type="button"
-                        disabled={isRetryingFailed || failedLogsCount === 0}
-                        onClick={async () => {
-                          try {
-                            setIsRetryingFailed(true);
-                            showToast("info", "Mencoba ulang semua pengiriman yang gagal...");
-                            const res = await retryFailedAutomationLogsAction(detailRule.id);
-                            if (res.success) {
-                              showToast("success", res.message || "Berhasil mencoba ulang log yang gagal!");
-                              await mutateData();
-                            } else {
-                              showToast("error", (res as any).error || "Gagal mencoba ulang log.");
-                            }
-                          } catch (err: any) {
-                            showToast("error", err.message || "Terjadi kesalahan saat mencoba ulang.");
-                          } finally {
-                            setIsRetryingFailed(false);
-                          }
-                        }}
-                        className="px-3 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50 text-xs font-bold text-gray-700 dark:text-gray-200 inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:cursor-not-allowed"
-                      >
-                        {isRetryingFailed ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
-                        ) : (
-                          <RefreshCw className="w-3.5 h-3.5 text-orange-500" />
-                        )}
-                        <span>Coba Lagi Semua yang Gagal {failedLogsCount > 0 ? `(${failedLogsCount})` : ""}</span>
-                      </button>
-
-                      <button
-                        type="button"
-                        disabled={isRewindingComments}
-                        onClick={async () => {
-                          try {
-                            setIsRewindingComments(true);
-                            showToast("info", "Memindai komentar terlewat dari 14 hari terakhir di Instagram...");
-                            const res = await rewindAutomationCommentsAction(detailRule.id);
-                            if (res.success) {
-                              showToast("success", res.message || "Rewind komentar selesai!");
-                              await mutateData();
-                            } else {
-                              showToast("error", (res as any).error || "Gagal melakukan Rewind Komentar.");
-                            }
-                          } catch (err: any) {
-                            showToast("error", err.message || "Terjadi kesalahan saat Rewind Komentar.");
-                          } finally {
-                            setIsRewindingComments(false);
-                          }
-                        }}
-                        className="px-3.5 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 disabled:opacity-50 text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-sm transition-colors cursor-pointer"
-                      >
-                        {isRewindingComments ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        ) : (
-                          <Clock className="w-3.5 h-3.5" />
-                        )}
-                        <span>Rewind Komentar</span>
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Tabel Log 14 Hari Terakhir */}
-                  <div className="overflow-x-auto border border-gray-200 dark:border-white/10 rounded-xl">
-                    <table className="w-full text-left border-collapse text-xs">
-                      <thead>
-                        <tr className="bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-white/10 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                          <th className="py-3 px-4">Komentar</th>
-                          <th className="py-3 px-4">Pesan</th>
-                          <th className="py-3 px-4">Balasan Komentar</th>
-                          <th className="py-3 px-4">Dikomentari pada</th>
-                          <th className="py-3 px-4">Diproses pada</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                        {recent14dLogs.length === 0 ? (
-                          <tr>
-                            <td colSpan={5} className="py-10 text-center text-gray-400">
-                              Belum ada komentar dalam 14 hari terakhir untuk aturan otomasi ini.
-                            </td>
-                          </tr>
-                        ) : (
-                          recent14dLogs.map((log: any) => {
-                            const meta = parseClientLogMeta(log.errorMessage);
-                            const isDmSent = log.dmStatus === "SENT";
-                            const isReplySent = log.replyCommentStatus === "SENT";
-                            const commentedAtStr = formatDateTimeId(meta.commentedAt || log.createdAt);
-                            const processedAtStr = formatDateTimeId(log.createdAt);
-
-                            return (
-                              <tr
-                                key={log.id}
-                                className="hover:bg-gray-50/70 dark:hover:bg-white/[0.02] transition-colors"
-                              >
-                                <td className="py-3 px-4">
-                                  <div className="font-bold text-gray-900 dark:text-white">
-                                    @{log.commenterUsername || "user"}
-                                  </div>
-                                  <div className="text-gray-600 dark:text-gray-300 mt-0.5">
-                                    "{log.commentText || "-"}"
-                                  </div>
-                                  {meta.contact && (
-                                    <span className="mt-1 inline-block px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-semibold">
-                                      Kontak: {meta.contact}
-                                    </span>
-                                  )}
-                                  {meta.clicked && (
-                                    <span className="mt-1 ml-1 inline-block px-2 py-0.5 rounded bg-orange-500/10 text-orange-600 dark:text-orange-400 text-[10px] font-semibold">
-                                      Klik Link ({meta.clickCount || 1}x)
-                                    </span>
-                                  )}
-                                </td>
-
-                                <td className="py-3 px-4">
-                                  <span
-                                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                                      isDmSent
-                                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                                        : "bg-rose-500/10 text-rose-600 dark:text-rose-400"
-                                    }`}
-                                  >
-                                    {isDmSent ? (
-                                      <>
-                                        <CheckCircle2 className="w-3 h-3" /> Terkirim
-                                      </>
-                                    ) : (
-                                      <>
-                                        <XCircle className="w-3 h-3" /> Tidak
-                                      </>
-                                    )}
-                                  </span>
-                                </td>
-
-                                <td className="py-3 px-4">
-                                  <span
-                                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
-                                      isReplySent
-                                        ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
-                                        : "bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400"
-                                    }`}
-                                  >
-                                    {isReplySent ? (
-                                      <>
-                                        <CheckCircle2 className="w-3 h-3" /> Terkirim
-                                      </>
-                                    ) : (
-                                      "Tidak"
-                                    )}
-                                  </span>
-                                </td>
-
-                                <td className="py-3 px-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                  {commentedAtStr}
-                                </td>
-
-                                <td className="py-3 px-4 text-gray-500 dark:text-gray-400 whitespace-nowrap">
-                                  {processedAtStr}
-                                </td>
-                              </tr>
-                            );
-                          })
-                        )}
-                      </tbody>
-                    </table>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      })()}
+      <InstagramRuleDetailModal
+        detailRuleId={detailRuleId}
+        setDetailRuleId={setDetailRuleId}
+        rules={rules}
+        feedPosts={feedPosts}
+        accountUsername={displayAccount?.username || account?.username}
+        logs={logs}
+        handleOpenEditRuleModal={handleOpenEditRuleModal}
+        isRetryingFailed={isRetryingFailed}
+        setIsRetryingFailed={setIsRetryingFailed}
+        isRewindingComments={isRewindingComments}
+        setIsRewindingComments={setIsRewindingComments}
+        retryFailedAutomationLogsAction={retryFailedAutomationLogsAction}
+        rewindAutomationCommentsAction={rewindAutomationCommentsAction}
+        showToast={showToast}
+        mutateData={mutateData}
+      />
     </div>
   );
 }
+

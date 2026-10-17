@@ -99,6 +99,50 @@ export async function fetchFreshInstagramData(userId: string, isAdmin: boolean, 
       }).catch(() => [])
     ]);
 
+    // Auto-backfill postCoverUrl jika ada rule SPECIFIC_POST / SPECIFIC_STORY yang kehilangan postCoverUrl saat di-edit sebelumnya
+    if (Array.isArray(rules) && rules.length > 0) {
+      await Promise.all(
+        rules.map(async (rule: any) => {
+          if (!rule.specificPostId) return;
+          if (rule.triggerType !== "SPECIFIC_POST" && rule.triggerType !== "SPECIFIC_STORY") return;
+          let cfg: any = {};
+          try {
+            if (typeof rule.dmMessage === "string" && rule.dmMessage.trim().startsWith("{")) {
+              cfg = JSON.parse(rule.dmMessage);
+            }
+          } catch {}
+          if (cfg.postCoverUrl) return;
+
+          const ownerAcc = allAccounts.find((a: any) => a.id === rule.accountId) || activeAccount;
+          const token = ownerAcc?.accessToken || process.env.INSTAGRAM_ACCESS_TOKEN;
+          if (!token) return;
+
+          try {
+            const mediaRes = await fetch(
+              `https://graph.instagram.com/${rule.specificPostId}?fields=id,media_url,thumbnail_url,caption,permalink&access_token=${token}`,
+              { next: { revalidate: 300 } }
+            );
+            if (mediaRes.ok) {
+              const mediaJson = await mediaRes.json();
+              const resolvedCover = mediaJson.thumbnail_url || mediaJson.media_url || null;
+              if (resolvedCover) {
+                cfg.postCoverUrl = resolvedCover;
+                if (mediaJson.permalink && !cfg.postPermalink) {
+                  cfg.postPermalink = mediaJson.permalink;
+                }
+                const updatedDm = JSON.stringify(cfg);
+                rule.dmMessage = updatedDm;
+                await (db as any).instagramAutomationRule.update({
+                  where: { id: rule.id },
+                  data: { dmMessage: updatedDm }
+                }).catch(() => {});
+              }
+            }
+          } catch {}
+        })
+      );
+    }
+
     const isLinked = Boolean(
       activeAccount.accessToken &&
       !activeAccount.instagramId?.startsWith("pending_") &&
