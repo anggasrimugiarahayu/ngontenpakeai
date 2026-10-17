@@ -315,41 +315,56 @@ export function StoryRuleCard({
             </div>
           )}
 
-          {/* Baris 4: Kata Pemicu */}
-          <div className="mb-2.5">
-            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 block mb-1">
-              Kata Pemicu
-            </span>
-            <div className="flex items-center gap-1.5 flex-wrap">
-              {keywordList.length === 0 ? (
-                <span className="font-semibold rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 inline-flex items-center gap-1">
-                  <Link2 className="w-3 h-3" /> Semua Kata
+          {/* Baris 4: Kata Pemicu / Frekuensi (khusus Story Mention) */}
+          {rule.triggerType === "STORY_MENTION" ||
+          ruleConfig.targetOtomasi === "Story Mention" ? (
+            <div className="mb-2.5">
+              <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 block mb-1">
+                Frekuensi
+              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                <span className="font-semibold rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20 inline-flex items-center gap-1">
+                  <Sparkles className="w-3 h-3" />{" "}
+                  {ruleConfig.storyMentionFrequency || "24 jam sekali"}
                 </span>
-              ) : (
-                <>
-                  {ruleConfig.keywordRule &&
-                    ruleConfig.keywordRule !== "Contains" && (
-                      <span className="font-extrabold rounded-md px-1.5 py-0.5 text-[9px] sm:text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 uppercase tracking-wider">
-                        {ruleConfig.keywordRule}
-                      </span>
-                    )}
-                  {keywordList.map((kw: string, idx: number) => (
-                    <span
-                      key={idx}
-                      className="font-medium rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-white/5"
-                    >
-                      {kw}
-                    </span>
-                  ))}
-                </>
-              )}
-              {ruleConfig.replyHeartReaction && (
-                <span className="font-semibold rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 inline-flex items-center gap-1">
-                  ❤️ Balas Reaksi
-                </span>
-              )}
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="mb-2.5">
+              <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 block mb-1">
+                Kata Pemicu
+              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {keywordList.length === 0 ? (
+                  <span className="font-semibold rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 inline-flex items-center gap-1">
+                    <Link2 className="w-3 h-3" /> Semua Kata
+                  </span>
+                ) : (
+                  <>
+                    {ruleConfig.keywordRule &&
+                      ruleConfig.keywordRule !== "Contains" && (
+                        <span className="font-extrabold rounded-md px-1.5 py-0.5 text-[9px] sm:text-[10px] bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20 uppercase tracking-wider">
+                          {ruleConfig.keywordRule}
+                        </span>
+                      )}
+                    {keywordList.map((kw: string, idx: number) => (
+                      <span
+                        key={idx}
+                        className="font-medium rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-white/5"
+                      >
+                        {kw}
+                      </span>
+                    ))}
+                  </>
+                )}
+                {ruleConfig.replyHeartReaction && (
+                  <span className="font-semibold rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20 inline-flex items-center gap-1">
+                    ❤️ Balas Reaksi
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Baris 5: 4 Metrics Columns */}

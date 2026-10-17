@@ -951,46 +951,139 @@ export async function POST(req: NextRequest) {
             orderBy: { createdAt: "desc" },
           });
 
-          // Filter aturan Story yang sesuai dengan tipe pemicunya
-          let matchedRule: any = null;
+          // Filter aturan Story yang sesuai dengan tipe pemicunya (dengan Rule Isolation)
+          let candidateRules: any[] = [];
 
           if (isStoryReply) {
-            // Prioritas 1: SPECIFIC_STORY yang cocok dengan storyId
-            if (storyId) {
-              matchedRule = activeRules.find(
-                (r: any) => r.triggerType === "SPECIFIC_STORY" && r.specificPostId === storyId
+            const specificStoryRules = storyId
+              ? activeRules.filter(
+                  (r: any) =>
+                    r.triggerType === "SPECIFIC_STORY" &&
+                    String(r.specificPostId) === String(storyId)
+                )
+              : [];
+
+            // Rule Isolation: Jika story ini punya aturan SPECIFIC_STORY aktif,
+            // hanya evaluasi aturan SPECIFIC_STORY tersebut (jangan bocor ke ALL_STORIES).
+            if (specificStoryRules.length > 0) {
+              candidateRules = specificStoryRules;
+            } else {
+              candidateRules = activeRules.filter(
+                (r: any) => r.triggerType === "ALL_STORIES"
               );
             }
-            // Prioritas 2: ALL_STORIES (semua story)
-            if (!matchedRule) {
-              matchedRule = activeRules.find((r: any) => r.triggerType === "ALL_STORIES");
-            }
           } else if (isStoryMention) {
-            // Prioritas 1: STORY_MENTION
-            matchedRule = activeRules.find((r: any) => r.triggerType === "STORY_MENTION");
+            candidateRules = activeRules.filter(
+              (r: any) => r.triggerType === "STORY_MENTION"
+            );
           }
 
-          if (matchedRule) {
-            let ruleConfig: any = {};
+          let matchedRule: any = null;
+          let ruleConfig: any = {};
+
+          for (const rule of candidateRules) {
+            let cfg: any = {};
             try {
-              if (matchedRule.dmMessage && (matchedRule.dmMessage.startsWith("{") || matchedRule.dmMessage.includes('"mainMessage"'))) {
-                ruleConfig = JSON.parse(matchedRule.dmMessage);
+              if (
+                rule.dmMessage &&
+                (rule.dmMessage.startsWith("{") ||
+                  rule.dmMessage.includes('"mainMessage"'))
+              ) {
+                cfg = JSON.parse(rule.dmMessage);
               }
             } catch (e) {}
 
-            // Cek kecocokan kata kunci (keywords) jika triggerCommentType === "KEYWORDS"
-            let isTriggerMatched = true;
-            const triggerTypeSetting = ruleConfig.triggerCommentType || (matchedRule as any).triggerCommentType;
+            // Story Mention tidak menggunakan filter keyword (selalu cocok)
+            if (isStoryMention) {
+              matchedRule = rule;
+              ruleConfig = cfg;
+              break;
+            }
+
+            // Untuk Story Reply: Cek kecocokan kata kunci jika triggerCommentType === "KEYWORDS"
+            const triggerTypeSetting =
+              cfg.triggerCommentType || (rule as any).triggerCommentType;
             if (triggerTypeSetting === "KEYWORDS") {
-              const rawKeywords = matchedRule.keywords;
-              const ruleStyle = ruleConfig.keywordRule || "Contains";
-              // Jika user mengetik teks pada story, evaluasi dengan checkKeywordMatch (Contains, Match, Starts with)
-              if (msgText && msgText.trim().length > 0) {
-                isTriggerMatched = checkKeywordMatch(msgText, rawKeywords, ruleStyle);
+              const rawKeywords = rule.keywords;
+              const ruleStyle = cfg.keywordRule || "Contains";
+              if (
+                msgText &&
+                msgText.trim().length > 0 &&
+                checkKeywordMatch(msgText, rawKeywords, ruleStyle)
+              ) {
+                matchedRule = rule;
+                ruleConfig = cfg;
+                break;
+              }
+            } else {
+              matchedRule = rule;
+              ruleConfig = cfg;
+              break;
+            }
+          }
+
+          if (matchedRule) {
+            // Cek Cooldown Frekuensi khusus untuk Story Mention
+            let isCooldownPassed = true;
+            if (isStoryMention && senderId) {
+              const freqLabel: string =
+                ruleConfig.storyMentionFrequency || "24 jam sekali";
+              const freqHoursMap: Record<string, number> = {
+                "24 jam sekali": 24,
+                "48 jam sekali": 48,
+                Mingguan: 24 * 7,
+                Bulanan: 24 * 30,
+                "3 bulan sekali": 24 * 90,
+                "6 bulan sekali": 24 * 180,
+                "Hanya sekali": Number.POSITIVE_INFINITY,
+              };
+              const cooldownHours = freqHoursMap[freqLabel] ?? 24;
+
+              try {
+                const lastSentLog = await (
+                  prisma as any
+                ).instagramAutomationLog.findFirst({
+                  where: {
+                    ruleId: matchedRule.id,
+                    dmStatus: "SENT",
+                    errorMessage: {
+                      contains: `"senderId":"${senderId}"`,
+                    },
+                  },
+                  orderBy: { createdAt: "desc" },
+                });
+
+                if (lastSentLog) {
+                  if (!Number.isFinite(cooldownHours)) {
+                    isCooldownPassed = false;
+                    console.log(
+                      `⏳ [Meta Webhook] Story Mention skipped for sender ${senderId}: frequency is "Hanya sekali" and already sent at ${lastSentLog.createdAt}`
+                    );
+                  } else {
+                    const elapsedMs =
+                      Date.now() - new Date(lastSentLog.createdAt).getTime();
+                    const requiredMs = cooldownHours * 60 * 60 * 1000;
+                    if (elapsedMs < requiredMs) {
+                      isCooldownPassed = false;
+                      const remainingHours = (
+                        (requiredMs - elapsedMs) /
+                        (1000 * 60 * 60)
+                      ).toFixed(1);
+                      console.log(
+                        `⏳ [Meta Webhook] Story Mention skipped for sender ${senderId}: cooldown "${freqLabel}" active (${remainingHours}h remaining)`
+                      );
+                    }
+                  }
+                }
+              } catch (cooldownErr) {
+                console.warn(
+                  "⚠️ [Meta Webhook] Failed checking Story Mention frequency cooldown:",
+                  cooldownErr
+                );
               }
             }
 
-            if (isTriggerMatched) {
+            if (isCooldownPassed) {
               console.log(`🎯 [Meta Webhook] Story Rule "${matchedRule.name}" matched for sender ${senderId}!`);
 
               // A. Balas Reaksi Love (❤️) jika diaktifkan di konfigurasi aturan

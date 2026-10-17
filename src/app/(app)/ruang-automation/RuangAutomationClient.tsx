@@ -55,7 +55,8 @@ import {
   ArrowDown,
   Image as ImageIcon,
   Camera,
-  Mic
+  Mic,
+  CornerUpLeft
 } from "lucide-react";
 import {
   getInstagramAutomationDataAction,
@@ -582,6 +583,9 @@ export default function RuangAutomationClient({
       if (!target.closest(".ask-contact-type-dropdown-container")) {
         setIsAskContactTypeDropdownOpen(false);
       }
+      if (!target.closest(".frequency-dropdown-container")) {
+        setIsFrequencyDropdownOpen(false);
+      }
     };
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
@@ -591,6 +595,7 @@ export default function RuangAutomationClient({
   const [isRuleModalOpen, setIsRuleModalOpen] = useState(false);
   const [editingRule, setEditingRule] = useState<any | null>(null);
   const [isTargetDropdownOpen, setIsTargetDropdownOpen] = useState(false);
+  const [isFrequencyDropdownOpen, setIsFrequencyDropdownOpen] = useState(false);
   const [isMsgTypeDropdownOpen, setIsMsgTypeDropdownOpen] = useState(false);
   const [isKeywordRuleDropdownOpen, setIsKeywordRuleDropdownOpen] = useState(false);
   const [isCommentLimitDropdownOpen, setIsCommentLimitDropdownOpen] = useState(false);
@@ -618,6 +623,14 @@ export default function RuangAutomationClient({
     targetOtomasi: "Postingan Tertentu",
     postType: "SPECIFIC",
     postId: "",
+    storyMentionFrequency: "24 jam sekali" as
+      | "24 jam sekali"
+      | "48 jam sekali"
+      | "Mingguan"
+      | "Bulanan"
+      | "3 bulan sekali"
+      | "6 bulan sekali"
+      | "Hanya sekali",
     triggerCommentType: "KEYWORDS" as "KEYWORDS" | "ALL",
     keywords: "mau",
     keywordRule: "Contains" as "Contains" | "Match" | "Starts with",
@@ -804,6 +817,7 @@ export default function RuangAutomationClient({
       targetOtomasi: isCreatingStory ? "Semua Story" : "Postingan Tertentu",
       postType: isCreatingStory ? "ALL_STORIES" : "SPECIFIC",
       postId: isCreatingStory ? "" : (defaultPost?.id || ""),
+      storyMentionFrequency: "24 jam sekali",
       triggerCommentType: "KEYWORDS",
       keywords: isCreatingStory ? "coba" : "mau",
       keywordRule: "Contains",
@@ -872,6 +886,7 @@ export default function RuangAutomationClient({
     });
     setSpintaxPreview(parseSpintax(initialReply));
     setIsTargetDropdownOpen(false);
+    setIsFrequencyDropdownOpen(false);
     setIsMsgTypeDropdownOpen(false);
     setIsKeywordRuleOpen(false);
     setIsKeywordRuleDropdownOpen(false);
@@ -994,7 +1009,7 @@ export default function RuangAutomationClient({
           text: "Terima kasih sudah tertarik! Ini info detail balasan dari kami.",
         }];
 
-    setActivePreviewTab("COMMENT");
+    setActivePreviewTab(target === "Story Mention" ? "DM" : "COMMENT");
     setRuleFormData({
       name: rule.name || "",
       targetOtomasi: target,
@@ -1011,6 +1026,7 @@ export default function RuangAutomationClient({
           ? "STORY_MENTION"
           : "ALL",
       postId: rule.specificPostId || matched?.id || "",
+      storyMentionFrequency: config.storyMentionFrequency || "24 jam sekali",
       triggerCommentType: (config.triggerCommentType as "KEYWORDS" | "ALL") || (keywordsStr.trim() ? "KEYWORDS" : "ALL"),
       keywords: keywordsStr || "mau, harga, info, spill",
       keywordRule:
@@ -1074,6 +1090,7 @@ export default function RuangAutomationClient({
     });
     setSpintaxPreview(parseSpintax(replyTemplateStr || commentRepliesArray[0] || "Pesan terkirim! 🚀"));
     setIsTargetDropdownOpen(false);
+    setIsFrequencyDropdownOpen(false);
     setIsMsgTypeDropdownOpen(false);
     setIsKeywordRuleOpen(false);
     setIsKeywordRuleDropdownOpen(false);
@@ -1206,12 +1223,17 @@ export default function RuangAutomationClient({
       return;
     }
 
-    const keywordArray = ruleFormData.triggerCommentType === "ALL"
-      ? []
-      : (ruleFormData.keywords || "mau, harga, info, spill")
-          .split(",")
-          .map((k) => k.trim())
-          .filter(Boolean);
+    const isStoryMentionRule =
+      ruleFormData.targetOtomasi === "Story Mention" ||
+      ruleFormData.postType === "STORY_MENTION";
+
+    const keywordArray =
+      isStoryMentionRule || ruleFormData.triggerCommentType === "ALL"
+        ? []
+        : (ruleFormData.keywords || "mau, harga, info, spill")
+            .split(",")
+            .map((k) => k.trim())
+            .filter(Boolean);
 
     const chosenPostId = ruleFormData.targetOtomasi === "Postingan Tertentu"
       ? (selectedPost?.id || ruleFormData.postId || (feedPosts[0]?.id) || "post_1")
@@ -1261,8 +1283,9 @@ export default function RuangAutomationClient({
       featureLinkTracking: ruleFormData.featureLinkTracking,
       replyHeartReaction: ruleFormData.replyHeartReaction,
       targetOtomasi: ruleFormData.targetOtomasi,
+      storyMentionFrequency: ruleFormData.storyMentionFrequency || "24 jam sekali",
       keywordRule: ruleFormData.keywordRule,
-      triggerCommentType: ruleFormData.triggerCommentType,
+      triggerCommentType: isStoryMentionRule ? "ALL" : ruleFormData.triggerCommentType,
       postPermalink: selectedPost?.permalink || existingRuleConfig.postPermalink || null,
       postCoverUrl: postCoverUrl || null,
     };
@@ -1488,6 +1511,8 @@ export default function RuangAutomationClient({
   // Progressive disclosure check for rule creation studio
   const isBasicInfoFilled = Boolean(ruleFormData.name.trim()) && Boolean(ruleFormData.targetOtomasi);
   const isStoryTarget = ["Semua Story", "Story Tertentu", "Story Mention"].includes(ruleFormData.targetOtomasi);
+  const isStoryMentionTarget =
+    ruleFormData.targetOtomasi === "Story Mention" || ruleFormData.postType === "STORY_MENTION";
 
   // Active simulated button for DM interactive preview
   const activeSimulatedButton =
@@ -2097,6 +2122,9 @@ export default function RuangAutomationClient({
                                           ? "STORY_MENTION"
                                           : "ALL",
                                     });
+                                    if (item === "Story Mention") {
+                                      setActivePreviewTab("DM");
+                                    }
                                     setIsTargetDropdownOpen(false);
                                   }}
                                   className={`w-full px-4 py-2 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors ${
@@ -2320,6 +2348,71 @@ export default function RuangAutomationClient({
                     </div>
                   )}
 
+                  {/* 3c. Frekuensi (untuk Story Mention) */}
+                  {isStoryMentionTarget && (
+                    <div className="relative frequency-dropdown-container space-y-1.5 animate-in fade-in duration-200">
+                      <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                        Frekuensi
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setIsFrequencyDropdownOpen(!isFrequencyDropdownOpen)}
+                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+                      >
+                        <span className="font-medium">
+                          {ruleFormData.storyMentionFrequency || "Atur frekuensi"}
+                        </span>
+                        <ChevronDown
+                          className={`w-4 h-4 text-gray-400 transition-transform ${
+                            isFrequencyDropdownOpen ? "rotate-180" : ""
+                          }`}
+                        />
+                      </button>
+
+                      {isFrequencyDropdownOpen && (
+                        <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                          {(
+                            [
+                              "24 jam sekali",
+                              "48 jam sekali",
+                              "Mingguan",
+                              "Bulanan",
+                              "3 bulan sekali",
+                              "6 bulan sekali",
+                              "Hanya sekali",
+                            ] as const
+                          ).map((freqOpt) => {
+                            const isSelected =
+                              (ruleFormData.storyMentionFrequency || "24 jam sekali") === freqOpt;
+                            return (
+                              <button
+                                key={freqOpt}
+                                type="button"
+                                onClick={() => {
+                                  setRuleFormData({
+                                    ...ruleFormData,
+                                    storyMentionFrequency: freqOpt,
+                                  });
+                                  setIsFrequencyDropdownOpen(false);
+                                }}
+                                className={`w-full px-4 py-2.5 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                                  isSelected
+                                    ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
+                                    : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                                }`}
+                              >
+                                <span>{freqOpt}</span>
+                                {isSelected && (
+                                  <Check className="w-4 h-4 text-gray-900 dark:text-white stroke-[2.5]" />
+                                )}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Progressive Disclosure Guide when basic info is not yet filled */}
                   {!isBasicInfoFilled && !editingRule && (
                     <div className="p-4 rounded-xl border border-dashed border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02] text-center space-y-1 animate-in fade-in duration-200">
@@ -2335,7 +2428,8 @@ export default function RuangAutomationClient({
                   {/* Sections 4, 5, 6: Revealed after Nama & Target are filled */}
                   {(isBasicInfoFilled || editingRule) && (
                     <div className="space-y-6 animate-in fade-in slide-in-from-top-2 duration-300">
-                      {/* 4. Trigger Komentar */}
+                      {/* 4. Trigger Komentar / Pemicu Pesan (Disembunyikan untuk Story Mention karena memakai Frekuensi) */}
+                      {!isStoryMentionTarget && (
                       <div
                         onClick={() => setActivePreviewTab("COMMENT")}
                         className="space-y-3 pt-2"
@@ -2521,9 +2615,10 @@ export default function RuangAutomationClient({
                       </div>
                     </div>
                   </div>
+                  )}
 
-                  {/* Balas Reaksi Card (Hanya untuk Story Automation) */}
-                  {isStoryTarget && (
+                  {/* Balas Reaksi Card (Hanya untuk Semua Story & Story Tertentu) */}
+                  {isStoryTarget && !isStoryMentionTarget && (
                     <div className="p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] flex items-center justify-between gap-3 animate-in fade-in duration-200">
                       <div className="space-y-0.5">
                         <div className="flex items-center gap-1.5">
@@ -4168,33 +4263,35 @@ export default function RuangAutomationClient({
                   </div>
                 </div>
 
-                {/* Switcher Tab Pratinjau: Postingan & Komentar vs Pesan DM */}
-                <div className="flex items-center justify-center pt-2 pb-1">
-                  <div className="p-1 rounded-xl bg-gray-200/80 dark:bg-white/10 flex items-center gap-1 text-xs font-semibold">
+                {/* Switcher Tab Pratinjau: Postingan & Komentar vs Pesan DM (Disembunyikan untuk Story Mention) */}
+                {!isStoryMentionTarget && (
+                  <div className="flex items-center justify-center pt-2 pb-1">
+                    <div className="p-1 rounded-xl bg-gray-200/80 dark:bg-white/10 flex items-center gap-1 text-xs font-semibold">
+                        <button
+                          type="button"
+                          onClick={() => setActivePreviewTab("COMMENT")}
+                          className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                            activePreviewTab === "COMMENT"
+                              ? "bg-white dark:bg-[#18181b] text-gray-900 dark:text-white shadow-xs"
+                              : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                          }`}
+                        >
+                          {isStoryTarget ? "Story Instagram" : "Postingan & Komentar"}
+                        </button>
                       <button
                         type="button"
-                        onClick={() => setActivePreviewTab("COMMENT")}
+                        onClick={() => setActivePreviewTab("DM")}
                         className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                          activePreviewTab === "COMMENT"
+                          activePreviewTab === "DM"
                             ? "bg-white dark:bg-[#18181b] text-gray-900 dark:text-white shadow-xs"
                             : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
                         }`}
                       >
-                        {isStoryTarget ? "Story Instagram" : "Postingan & Komentar"}
+                        Pesan DM
                       </button>
-                    <button
-                      type="button"
-                      onClick={() => setActivePreviewTab("DM")}
-                      className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
-                        activePreviewTab === "DM"
-                          ? "bg-white dark:bg-[#18181b] text-gray-900 dark:text-white shadow-xs"
-                          : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
-                      }`}
-                    >
-                      Pesan DM
-                    </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {/* iPhone 16 Pro Mockup Chassis */}
                 <div className="my-auto py-3">
@@ -4224,7 +4321,7 @@ export default function RuangAutomationClient({
                         </div>
                       </div>
 
-                      {activePreviewTab === "DM" ? (
+                      {activePreviewTab === "DM" || isStoryMentionTarget ? (
                         /* INSTAGRAM DM CHAT VIEW */
                         <div className="flex-1 flex flex-col overflow-hidden pt-2 relative bg-white dark:bg-black">
                           {/* Instagram DM Top Header */}
@@ -4232,7 +4329,9 @@ export default function RuangAutomationClient({
                             <div className="flex items-center gap-2 min-w-0">
                               <button
                                 type="button"
-                                onClick={() => setActivePreviewTab("COMMENT")}
+                                onClick={() => {
+                                  if (!isStoryMentionTarget) setActivePreviewTab("COMMENT");
+                                }}
                                 className="text-gray-800 dark:text-gray-200 hover:opacity-70 transition-opacity cursor-pointer p-0.5"
                                 title="Lihat Postingan"
                               >
@@ -4265,54 +4364,65 @@ export default function RuangAutomationClient({
 
                           {/* Scrollable Chat Area */}
                           <div className="flex-1 overflow-y-auto p-3 space-y-3 text-xs bg-gray-50/50 dark:bg-[#121214]">
-                            {/* Centered Trigger Notification Badge */}
-                            <div className="flex justify-center pt-1">
-                              <span className="px-3 py-1 rounded-full bg-gray-200/90 dark:bg-white/10 text-[10px] font-medium text-gray-600 dark:text-gray-300 shadow-2xs text-center">
-                                {isStoryTarget ? "User replied to your story" : "User commented on your post"}
-                              </span>
-                            </div>
+                            {isStoryMentionTarget ? (
+                              /* Story Mention Native Indicator (sesuai referensi: "↩ Mentioned in your story |") */
+                              <div className="flex justify-end items-center gap-1.5 pt-2 pr-1 animate-in fade-in duration-200">
+                                <CornerUpLeft className="w-3.5 h-3.5 text-gray-400 stroke-[2]" />
+                                <span className="text-[11px] font-medium text-gray-400 dark:text-gray-400">
+                                  Mentioned in your story
+                                </span>
+                                <div className="w-[2px] h-6 rounded-full bg-gray-200 dark:bg-white/20 ml-1" />
+                              </div>
+                            ) : (
+                              <>
+                                {/* Centered Trigger Notification Badge */}
+                                <div className="flex justify-center pt-1">
+                                  <span className="px-3 py-1 rounded-full bg-gray-200/90 dark:bg-white/10 text-[10px] font-medium text-gray-600 dark:text-gray-300 shadow-2xs text-center">
+                                    {isStoryTarget ? "User replied to your story" : "User commented on your post"}
+                                  </span>
+                                </div>
 
-                            {/* Story Quoted User Bubble (when isStoryTarget) */}
-                            {isStoryTarget && (
-                              <div className="flex justify-end pt-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
-                                <div className="relative group max-w-[78%]">
-                                  {/* User Bubble with quoted story preview */}
-                                  <div className="rounded-2xl rounded-tr-xs bg-[#7048e8] text-white p-2.5 shadow-xs space-y-1.5">
-                                    {/* Quoted Story Card Header */}
-                                    <div className="flex items-center gap-2 p-1.5 rounded-xl bg-white/15 border border-white/20 text-[10px]">
-                                      <div className="w-4 h-6 rounded bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 shrink-0 flex items-center justify-center shadow-2xs">
-                                        <InstagramIcon className="w-2.5 h-2.5 text-white" />
-                                      </div>
-                                      <div className="min-w-0 flex-1">
-                                        <span className="font-semibold block truncate text-white/95">
-                                          {ruleFormData.targetOtomasi === "Semua Story"
-                                            ? "All Stories"
-                                            : ruleFormData.targetOtomasi === "Story Mention"
-                                            ? "Story Mention"
-                                            : "Story"}
-                                        </span>
-                                        <span className="text-[9px] text-white/70 block truncate">
-                                          Balasan Cerita
-                                        </span>
-                                      </div>
-                                    </div>
+                                {/* Story Quoted User Bubble (when Semua Story / Story Tertentu) */}
+                                {isStoryTarget && (
+                                  <div className="flex justify-end pt-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                                    <div className="relative group max-w-[78%]">
+                                      {/* User Bubble with quoted story preview */}
+                                      <div className="rounded-2xl rounded-tr-xs bg-[#7048e8] text-white p-2.5 shadow-xs space-y-1.5">
+                                        {/* Quoted Story Card Header */}
+                                        <div className="flex items-center gap-2 p-1.5 rounded-xl bg-white/15 border border-white/20 text-[10px]">
+                                          <div className="w-4 h-6 rounded bg-gradient-to-tr from-amber-400 via-rose-500 to-purple-600 shrink-0 flex items-center justify-center shadow-2xs">
+                                            <InstagramIcon className="w-2.5 h-2.5 text-white" />
+                                          </div>
+                                          <div className="min-w-0 flex-1">
+                                            <span className="font-semibold block truncate text-white/95">
+                                              {ruleFormData.targetOtomasi === "Semua Story"
+                                                ? "All Stories"
+                                                : "Story"}
+                                            </span>
+                                            <span className="text-[9px] text-white/70 block truncate">
+                                              Balasan Cerita
+                                            </span>
+                                          </div>
+                                        </div>
 
-                                    {/* User Text or Reaction */}
-                                    <div className="text-xs font-semibold pl-1 pr-1 break-words">
-                                      {ruleFormData.triggerCommentType === "ALL"
-                                        ? "🔥"
-                                        : (ruleFormData.keywords.split(",")[0]?.trim() || ruleFormData.keywords.trim() || "🔥")}
+                                        {/* User Text or Reaction */}
+                                        <div className="text-xs font-semibold pl-1 pr-1 break-words">
+                                          {ruleFormData.triggerCommentType === "ALL"
+                                            ? "🔥"
+                                            : (ruleFormData.keywords.split(",")[0]?.trim() || ruleFormData.keywords.trim() || "🔥")}
+                                        </div>
+                                      </div>
+
+                                      {/* Small Heart Badge on User Message if Balas Reaksi is active */}
+                                      {ruleFormData.replyHeartReaction && (
+                                        <div className="absolute -bottom-2 -right-1 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/15 rounded-full px-1.5 py-0.5 shadow-md flex items-center justify-center animate-in zoom-in-75 duration-200">
+                                          <span className="text-xs leading-none">❤️</span>
+                                        </div>
+                                      )}
                                     </div>
                                   </div>
-
-                                  {/* Small Heart Badge on User Message if Balas Reaksi is active */}
-                                  {ruleFormData.replyHeartReaction && (
-                                    <div className="absolute -bottom-2 -right-1 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/15 rounded-full px-1.5 py-0.5 shadow-md flex items-center justify-center animate-in zoom-in-75 duration-200">
-                                      <span className="text-xs leading-none">❤️</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
+                                )}
+                              </>
                             )}
 
                             {/* 0. PESAN PEMBUKA (Icebreaker / Welcome Message) */}
