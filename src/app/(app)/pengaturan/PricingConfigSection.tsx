@@ -2,7 +2,7 @@
 
 import toast from "react-hot-toast";
 import { useState } from "react";
-import { saveAppSetting } from "./admin-actions";
+import { saveAppSetting } from "@/app/actions/adminSettings";
 import { Save, CheckCircle2, Edit, Package, Wrench, Gem, Check, X, Plus, BookOpen } from "lucide-react";
 
 export function PricingConfigSection({ products, settings }: { products: any[], settings: any[] }) {

@@ -3,7 +3,7 @@
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { Star } from "lucide-react";
-import { addReview } from "../actions";
+import { addReview } from "@/app/actions/ruangBelajar";
 
 export default function ReviewSection({ 
   productId, 

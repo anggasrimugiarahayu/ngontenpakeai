@@ -3,7 +3,7 @@
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { Heart, Share2, Star, X, Download } from "lucide-react";
-import { toggleFavorite, addReview } from "../actions";
+import { toggleFavorite, addReview } from "@/app/actions/ruangBelajar";
 
 
 function getDirectDownloadUrl(url: string | null | undefined) {

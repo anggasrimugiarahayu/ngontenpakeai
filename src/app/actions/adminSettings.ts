@@ -12,7 +12,7 @@ function revalidateAdminConfig() {
 
 // 1. Models AI
 export async function getAiModels() {
-  return await prisma.aiModel.findMany({ orderBy: { createdAt: 'desc' } });
+  return await prisma.aiModel.findMany({ orderBy: { createdAt: "desc" } });
 }
 export async function createAiModel(data: any) {
   await prisma.aiModel.create({ data });
@@ -52,7 +52,7 @@ export async function saveAppSetting(key: string, value: string) {
   await prisma.appSetting.upsert({
     where: { key },
     update: { value },
-    create: { key, value }
+    create: { key, value },
   });
   if (key === "PRICING_PACKAGES") {
     try {
@@ -68,7 +68,7 @@ export async function saveAppSetting(key: string, value: string) {
 export async function deleteAppSetting(key: string) {
   try {
     await prisma.appSetting.delete({
-      where: { key }
+      where: { key },
     });
     if (key === "PRICING_PACKAGES") {
       revalidateTag("pricing-packages", "default");
@@ -82,7 +82,7 @@ export async function deleteAppSetting(key: string) {
 
 // 3. Features (Ruang Ngonten)
 export async function getFeatures() {
-  return await prisma.feature.findMany({ orderBy: { name: 'asc' } });
+  return await prisma.feature.findMany({ orderBy: { name: "asc" } });
 }
 export async function toggleFeatureStatus(id: string, isActive: boolean) {
   await prisma.feature.update({ where: { id }, data: { isActive } });
@@ -97,7 +97,7 @@ export async function toggleFeaturePro(id: string, isProOnly: boolean) {
 
 // 4. Digital Categories & Products
 export async function getCategories() {
-  return await prisma.digitalCategory.findMany({ orderBy: { createdAt: 'desc' } });
+  return await prisma.digitalCategory.findMany({ orderBy: { createdAt: "desc" } });
 }
 export async function createCategory(data: any) {
   if (data.slug) {
@@ -113,16 +113,16 @@ export async function createCategory(data: any) {
 
 export async function getProducts() {
   const [rawProducts, sortSetting] = await Promise.all([
-    prisma.digitalProduct.findMany({ 
-      include: { 
-        category: true, 
-        vouchers: true, 
-        reviews: { select: { rating: true } }, 
-        _count: { select: { owners: true, favorites: true } } 
-      }, 
-      orderBy: { createdAt: 'desc' } 
+    prisma.digitalProduct.findMany({
+      include: {
+        category: true,
+        vouchers: true,
+        reviews: { select: { rating: true } },
+        _count: { select: { owners: true, favorites: true } },
+      },
+      orderBy: { createdAt: "desc" },
     }),
-    prisma.appSetting.findUnique({ where: { key: "EBOOK_SORT_ORDER" } }).catch(() => null)
+    prisma.appSetting.findUnique({ where: { key: "EBOOK_SORT_ORDER" } }).catch(() => null),
   ]);
 
   const products = await attachComputedBuyerCounts(rawProducts);
@@ -148,7 +148,7 @@ export async function getProducts() {
 export async function toggleProductStatus(id: string, isActive: boolean) {
   await prisma.digitalProduct.update({
     where: { id },
-    data: { isActive }
+    data: { isActive },
   });
   try {
     revalidateTag("ebook-catalog", "default");
@@ -162,7 +162,7 @@ export async function reorderProducts(orderedIds: string[]) {
   await prisma.appSetting.upsert({
     where: { key: "EBOOK_SORT_ORDER" },
     update: { value: JSON.stringify(orderedIds) },
-    create: { key: "EBOOK_SORT_ORDER", value: JSON.stringify(orderedIds) }
+    create: { key: "EBOOK_SORT_ORDER", value: JSON.stringify(orderedIds) },
   });
   try {
     revalidateTag("ebook-catalog", "default");
@@ -171,6 +171,7 @@ export async function reorderProducts(orderedIds: string[]) {
   revalidatePath("/pengaturan");
   revalidatePath("/ruang-belajar");
 }
+
 export async function createProduct(data: any) {
   if (data.slug) {
     const existing = await prisma.digitalProduct.findUnique({ where: { slug: data.slug } });
@@ -179,11 +180,11 @@ export async function createProduct(data: any) {
     }
   }
   const { categoryId, ...restData } = data;
-  await prisma.digitalProduct.create({ 
+  await prisma.digitalProduct.create({
     data: {
       ...restData,
-      category: categoryId ? { connect: { id: categoryId } } : undefined
-    } 
+      category: categoryId ? { connect: { id: categoryId } } : undefined,
+    },
   });
   try {
     revalidateTag("ebook-catalog", "default");
@@ -204,7 +205,6 @@ export async function deleteProduct(id: string) {
   revalidatePath("/pengaturan");
 }
 
-
 export async function updateProduct(id: string, data: any) {
   if (data.slug) {
     const existing = await prisma.digitalProduct.findFirst({ where: { slug: data.slug, id: { not: id } } });
@@ -217,8 +217,8 @@ export async function updateProduct(id: string, data: any) {
     where: { id },
     data: {
       ...restData,
-      category: categoryId ? { connect: { id: categoryId } } : undefined
-    }
+      category: categoryId ? { connect: { id: categoryId } } : undefined,
+    },
   });
   try {
     revalidateTag("ebook-catalog", "default");
@@ -226,8 +226,7 @@ export async function updateProduct(id: string, data: any) {
   revalidatePath("/pengaturan");
 }
 
-
-export async function createVoucher(data: { code: string, discountType: string, discountValue: number, digitalProductId: string }) {
+export async function createVoucher(data: { code: string; discountType: string; discountValue: number; digitalProductId: string }) {
   await prisma.voucher.create({ data });
 }
 export async function deleteVoucher(id: string) {

@@ -3,15 +3,13 @@
 import { useState, useEffect } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import useSWR, { preload } from "swr";
-import { getEbookDetailAction } from "@/app/actions/ruangBelajar";
+import { getEbookDetailAction, getRuangBelajarDataAction, claimFreeEbook } from "@/app/actions/ruangBelajar";
 import { getCheckoutDetailsAction } from "@/app/actions/checkout";
 import { trackProductViewAction, trackProductClickAction } from "@/app/actions/analytics";
 import { useRouter } from "next/navigation";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
 import { ArrowLeft, Lock, Crown, Star, BookOpen, Tag } from "lucide-react";
-import { claimFreeEbook } from "../actions";
 import { createCheckoutToken } from "@/app/actions/payment";
 import EbookActions from "./EbookActions";
 import EbookGallery from "./EbookGallery";

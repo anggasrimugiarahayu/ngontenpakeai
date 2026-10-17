@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { getCachedFeatures, getCachedHasBlueprint, getCachedAppUser } from "@/lib/cache";
-import ClientLayout from "./ruang-ngonten/ClientLayout";
+import AppShellLayout from "@/components/layout/AppShellLayout";
 import { redirect } from "next/navigation";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
@@ -45,5 +45,5 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const isPro = hasTools || isAdmin;
   const isLoggedIn = !!session?.user;
   
-  return <ClientLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isAdmin={isAdmin} isLoggedIn={isLoggedIn}>{children}</ClientLayout>;
+  return <AppShellLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isAdmin={isAdmin} isLoggedIn={isLoggedIn}>{children}</AppShellLayout>;
 }

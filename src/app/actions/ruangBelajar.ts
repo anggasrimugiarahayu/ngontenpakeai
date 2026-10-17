@@ -1,8 +1,9 @@
 "use server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { unstable_cache } from "next/cache";
+import { unstable_cache, revalidatePath, revalidateTag } from "next/cache";
 import { attachComputedBuyerCounts } from "@/lib/product-buyers";
+import { getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
 
 export const getCachedDigitalProductsList = unstable_cache(
   async () => {
@@ -61,8 +62,6 @@ export const getCachedEbookBySlug = unstable_cache(
   ['digital-product-by-slug'],
   { revalidate: 3600, tags: ['ebook-catalog'] }
 );
-
-import { getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
 
 export async function getRuangBelajarDataAction() {
   const session = await auth();
@@ -169,3 +168,104 @@ export async function getEbookDetailAction(slug: string) {
     userId
   };
 }
+
+export async function toggleFavorite(productId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const userId = session.user.id;
+  
+  const existing = await prisma.favorite.findUnique({
+    where: { userId_digitalProductId: { userId, digitalProductId: productId } }
+  });
+
+  let isFavorite = false;
+  if (existing) {
+    await prisma.favorite.delete({ where: { id: existing.id } });
+    isFavorite = false;
+  } else {
+    await prisma.favorite.create({
+      data: { userId, digitalProductId: productId }
+    });
+    isFavorite = true;
+  }
+
+  const count = await prisma.favorite.count({
+    where: { digitalProductId: productId }
+  });
+
+  try {
+    revalidateTag("ebook-catalog", "default");
+  } catch (e) {}
+
+  revalidatePath(`/ruang-belajar`);
+  revalidatePath(`/ruang-belajar/[slug]`);
+
+  return { success: true, isFavorite, count };
+}
+
+export async function addReview(productId: string, rating: number, comment: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const userId = session.user.id;
+
+  await prisma.review.upsert({
+    where: { userId_digitalProductId: { userId, digitalProductId: productId } },
+    update: { rating, comment },
+    create: { userId, digitalProductId: productId, rating, comment }
+  });
+
+  try {
+    revalidateTag("ebook-catalog", "default");
+  } catch (e) {}
+
+  revalidatePath(`/ruang-belajar`);
+  revalidatePath(`/ruang-belajar/[slug]`);
+}
+
+export async function claimFreeEbook(productId: string) {
+  const session = await auth();
+  if (!session?.user?.id) throw new Error("Unauthorized");
+
+  const userId = session.user.id;
+  const user = await prisma.user.findUnique({ where: { id: userId } });
+  
+  if (!user) throw new Error("User not found");
+
+  const product = await prisma.digitalProduct.findUnique({ where: { id: productId } });
+  if (!product) throw new Error("Product not found");
+
+  const isFree = product.accessLevel === "FREE";
+  const isProEbook = product.accessLevel === "PRO";
+  
+  const isAdmin = user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com" || user.role === "ADMIN";
+
+  const hasBookPackage = await prisma.order.findFirst({
+    where: {
+      userId,
+      status: "SUCCESS",
+      orderType: { in: ["PRO_BOOK", "PRO_PLUS"] }
+    }
+  });
+
+  const canClaimProEbook = isAdmin || !!hasBookPackage;
+
+  if (!isFree && !(isProEbook && canClaimProEbook)) {
+    throw new Error("Produk ini tidak bisa diklaim gratis. Anda harus berlangganan Paket E-Book atau membelinya secara satuan.");
+  }
+
+  await prisma.userOwnedProduct.upsert({
+    where: { userId_digitalProductId: { userId, digitalProductId: productId } },
+    update: {},
+    create: { userId, digitalProductId: productId }
+  });
+
+  try {
+    revalidateTag("user-ownership", "default");
+  } catch (e) {}
+
+  revalidatePath(`/ruang-belajar`);
+  revalidatePath(`/ruang-belajar/[slug]`);
+}
+

@@ -197,7 +197,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
     setIsSubmitting(true);
     try {
       const payload = { ...formData, id: blueprintId };
-      const res = await fetch("/api/ai/master-blueprint", {
+      const res = await fetch("/api/master-blueprint/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import { updateApiKey, deleteApiKey } from "./actions";
+import { updateApiKey, deleteApiKey } from "@/app/actions/pengaturan";
 import { Key, Trash2, ExternalLink } from "lucide-react";
 
 import Swal from 'sweetalert2';

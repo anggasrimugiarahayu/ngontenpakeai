@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { updateProfile } from "./actions";
+import { updateProfile } from "@/app/actions/pengaturan";
 
 interface ProfileFormProps {
   user: {

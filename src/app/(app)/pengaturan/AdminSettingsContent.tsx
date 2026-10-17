@@ -25,7 +25,7 @@ import {
   deleteVoucher,
   toggleProductStatus,
   reorderProducts
-} from "./admin-actions";
+} from "@/app/actions/adminSettings";
 import Swal from 'sweetalert2';
 const confirmSwal = async (text: string) => {
   const result = await Swal.fire({
