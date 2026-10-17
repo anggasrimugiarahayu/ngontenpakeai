@@ -103,6 +103,7 @@ import {
 } from "./components/MessagePayloadBuilder";
 import { AdditionalFeaturesBuilder } from "./components/AdditionalFeaturesBuilder";
 import { MessagePreviewRenderer } from "./components/MessagePreviewRenderer";
+import { TriggerKeywordBuilder } from "./components/TriggerKeywordBuilder";
 
 
 export default function RuangAutomationClient({
@@ -1039,6 +1040,8 @@ export default function RuangAutomationClient({
         ? "Story Mention"
         : rule.triggerType === "LIVE" || rule.triggerType === "INSTAGRAM_LIVE" || config.targetOtomasi === "Live Instagram"
         ? "Live Instagram"
+        : rule.triggerType === "DM" || config.targetOtomasi === "Pesan Instagram"
+        ? "Pesan Instagram"
         : "Semua Postingan";
 
     const hasButtons = Boolean(rule.buttonText || rule.buttonUrl);
@@ -1105,7 +1108,11 @@ export default function RuangAutomationClient({
     setActiveLiveContentIdx(0);
     setSimulatedLiveQrId(null);
     setOpenLiveMsgTypeDropdownId(null);
-    setActivePreviewTab(target === "Story Mention" || target === "Live Instagram" ? "DM" : "COMMENT");
+    setActivePreviewTab(
+      target === "Story Mention" || target === "Live Instagram" || target === "Pesan Instagram"
+        ? "DM"
+        : "COMMENT"
+    );
     setRuleFormData({
       name: rule.name || "",
       targetOtomasi: target,
@@ -1122,11 +1129,16 @@ export default function RuangAutomationClient({
           ? "STORY_MENTION"
           : rule.triggerType === "LIVE" || rule.triggerType === "INSTAGRAM_LIVE" || config.targetOtomasi === "Live Instagram"
           ? "LIVE"
+          : rule.triggerType === "DM" || config.targetOtomasi === "Pesan Instagram"
+          ? "DM"
           : "ALL",
       postId: rule.specificPostId || matched?.id || "",
       storyMentionFrequency: config.storyMentionFrequency || "24 jam sekali",
       liveContents: initialLiveContents,
-      triggerCommentType: (config.triggerCommentType as "KEYWORDS" | "ALL") || (keywordsStr.trim() ? "KEYWORDS" : "ALL"),
+      triggerCommentType:
+        target === "Pesan Instagram"
+          ? "KEYWORDS"
+          : (config.triggerCommentType as "KEYWORDS" | "ALL") || (keywordsStr.trim() ? "KEYWORDS" : "ALL"),
       keywords: keywordsStr || "mau, harga, info, spill",
       keywordRule:
         config.keywordRule === "Match" || config.keywordRule === "match"
@@ -1328,8 +1340,17 @@ export default function RuangAutomationClient({
       ruleFormData.targetOtomasi === "Live Instagram" ||
       ruleFormData.postType === "LIVE";
 
+    const isDmRulePayload =
+      ruleFormData.targetOtomasi === "Pesan Instagram" ||
+      ruleFormData.postType === "DM";
+
     if (isLiveRulePayload && (!ruleFormData.liveContents || ruleFormData.liveContents.length === 0)) {
       showToast("error", "Minimal tambahkan 1 konten untuk Live Instagram");
+      return;
+    }
+
+    if (isDmRulePayload && !ruleFormData.keywords.trim()) {
+      showToast("error", "Keyword pemicu pesan wajib diisi");
       return;
     }
 
@@ -1342,6 +1363,11 @@ export default function RuangAutomationClient({
               .filter(Boolean)
           )
         )
+      : isDmRulePayload
+      ? (ruleFormData.keywords || "mau")
+          .split(",")
+          .map((k) => k.trim())
+          .filter(Boolean)
       : isStoryMentionRule || ruleFormData.triggerCommentType === "ALL"
       ? []
       : (ruleFormData.keywords || "mau, harga, info, spill")
@@ -1410,7 +1436,7 @@ export default function RuangAutomationClient({
       targetOtomasi: ruleFormData.targetOtomasi,
       storyMentionFrequency: ruleFormData.storyMentionFrequency || "24 jam sekali",
       keywordRule: ruleFormData.keywordRule,
-      triggerCommentType: isStoryMentionRule ? "ALL" : isLiveRulePayload ? "KEYWORDS" : ruleFormData.triggerCommentType,
+      triggerCommentType: isStoryMentionRule ? "ALL" : (isLiveRulePayload || isDmRulePayload) ? "KEYWORDS" : ruleFormData.triggerCommentType,
       postPermalink: selectedPost?.permalink || existingRuleConfig.postPermalink || null,
       postCoverUrl: postCoverUrl || null,
     };
@@ -1432,6 +1458,8 @@ export default function RuangAutomationClient({
         ? "STORY_MENTION"
         : ruleFormData.targetOtomasi === "Live Instagram"
         ? "LIVE"
+        : ruleFormData.targetOtomasi === "Pesan Instagram"
+        ? "DM"
         : "ALL";
 
     const triggerType =
@@ -1447,6 +1475,8 @@ export default function RuangAutomationClient({
         ? "STORY_MENTION"
         : postType === "LIVE"
         ? "LIVE"
+        : postType === "DM"
+        ? "DM"
         : "ALL_POSTS";
 
     const payload = {
@@ -1459,7 +1489,7 @@ export default function RuangAutomationClient({
       buttonUrl: buttonUrl || undefined,
       buttonText: buttonText || undefined,
       keywords: keywordArray,
-      commentReplies: (!isStoryTarget && !isLiveRulePayload && ruleFormData.featureReplyComment)
+      commentReplies: (!isStoryTarget && !isLiveRulePayload && !isDmRulePayload && ruleFormData.featureReplyComment)
         ? (ruleFormData.commentReplyVariations.filter((v) => v.trim().length > 0).length > 0
             ? ruleFormData.commentReplyVariations.filter((v) => v.trim().length > 0)
             : ["Pesan terkirim! 🚀"])
@@ -1499,11 +1529,13 @@ export default function RuangAutomationClient({
     );
 
     // Otomatis arahkan tab aktif ke jenis automasi yang baru dibuat agar kartu langsung terlihat seketika (0ms)!
-    if (isLiveRulePayload && automationTab !== "LIVE") {
+    if (isDmRulePayload && automationTab !== "DM") {
+      setAutomationTab("DM");
+    } else if (isLiveRulePayload && automationTab !== "LIVE") {
       setAutomationTab("LIVE");
     } else if (isStoryTarget && automationTab !== "STORY") {
       setAutomationTab("STORY");
-    } else if (!isStoryTarget && !isLiveRulePayload && automationTab !== "POST") {
+    } else if (!isStoryTarget && !isLiveRulePayload && !isDmRulePayload && automationTab !== "POST") {
       setAutomationTab("POST");
     }
 
@@ -1631,14 +1663,18 @@ export default function RuangAutomationClient({
     r.triggerType === "INSTAGRAM_LIVE" ||
     parseClientRuleConfig(r.dmMessage)?.targetOtomasi === "Live Instagram";
 
-  const isPostRule = (r: any) => !isStoryRule(r) && !isLiveRule(r) && r.triggerType !== "DM";
+  const isDmRule = (r: any) =>
+    r.triggerType === "DM" ||
+    parseClientRuleConfig(r.dmMessage)?.targetOtomasi === "Pesan Instagram";
+
+  const isPostRule = (r: any) => !isStoryRule(r) && !isLiveRule(r) && !isDmRule(r);
 
   // Filtered rules according to tab and filter dropdown
   const filteredRules = rules.filter((rule: any) => {
     if (automationTab === "POST" && !isPostRule(rule)) return false;
     if (automationTab === "STORY" && !isStoryRule(rule)) return false;
     if (automationTab === "LIVE" && !isLiveRule(rule)) return false;
-    if (automationTab === "DM" && rule.triggerType !== "DM") return false;
+    if (automationTab === "DM" && !isDmRule(rule)) return false;
     if (filterStatus === "ACTIVE") return rule.isActive;
     if (filterStatus === "INACTIVE") return !rule.isActive;
     return true;
@@ -1651,6 +1687,8 @@ export default function RuangAutomationClient({
     ruleFormData.targetOtomasi === "Story Mention" || ruleFormData.postType === "STORY_MENTION";
   const isLiveTarget =
     ruleFormData.targetOtomasi === "Live Instagram" || ruleFormData.postType === "LIVE";
+  const isDmTarget =
+    ruleFormData.targetOtomasi === "Pesan Instagram" || ruleFormData.postType === "DM";
 
   const activeLiveContent =
     ruleFormData.liveContents[activeLiveContentIdx] || ruleFormData.liveContents[0] || null;
@@ -2010,7 +2048,22 @@ export default function RuangAutomationClient({
                   />
                 )}
 
-                {automationTab === "DM" && <DmAutomationSection />}
+                {automationTab === "DM" && (
+                  <DmAutomationSection
+                    filteredRules={filteredRules}
+                    filterStatus={filterStatus}
+                    isAccountLinked={isAccountLinked}
+                    logs={logs}
+                    activeDropdownRuleId={activeDropdownRuleId}
+                    setActiveDropdownRuleId={setActiveDropdownRuleId}
+                    handleToggleRule={handleToggleRule}
+                    handleDuplicateRule={handleDuplicateRule}
+                    handleOpenEditRuleModal={handleOpenEditRuleModal}
+                    handleDeleteRule={handleDeleteRule}
+                    setDetailRuleId={setDetailRuleId}
+                    handleOpenAddRuleModal={handleOpenAddRuleModal}
+                  />
+                )}
               </div>
             )}
 
@@ -2275,6 +2328,9 @@ export default function RuangAutomationClient({
                                     setRuleFormData({
                                       ...ruleFormData,
                                       targetOtomasi: item,
+                                      ...(item === "Pesan Instagram"
+                                        ? { triggerCommentType: "KEYWORDS" as const }
+                                        : {}),
                                       postType:
                                         item === "Postingan Tertentu"
                                           ? "SPECIFIC"
@@ -2288,9 +2344,15 @@ export default function RuangAutomationClient({
                                           ? "STORY_MENTION"
                                           : item === "Live Instagram"
                                           ? "LIVE"
+                                          : item === "Pesan Instagram"
+                                          ? "DM"
                                           : "ALL",
                                     });
-                                    if (item === "Story Mention" || item === "Live Instagram") {
+                                    if (
+                                      item === "Story Mention" ||
+                                      item === "Live Instagram" ||
+                                      item === "Pesan Instagram"
+                                    ) {
                                       setActivePreviewTab("DM");
                                     }
                                     setIsTargetDropdownOpen(false);
@@ -2774,194 +2836,24 @@ export default function RuangAutomationClient({
                         </div>
                       )}
 
-                      {/* 4. Trigger Komentar / Pemicu Pesan (Disembunyikan untuk Story Mention dan Live Instagram) */}
+                      {/* 4. Trigger Komentar / Pemicu Pesan (Komponen Terpusat Global) */}
                       {!isStoryMentionTarget && !isLiveTarget && (
-                      <div
-                        onClick={() => setActivePreviewTab("COMMENT")}
-                        className="space-y-3 pt-2"
-                      >
-                        <div>
-                          <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-                            {isStoryTarget ? "Pemicu Pesan" : "Trigger Komentar"}
-                          </h3>
-                          <p className="text-xs text-gray-500">
-                            {isStoryTarget ? "Pesan yang akan memicu otomasi" : "Komentar yang akan memicu otomasi"}
-                          </p>
-                        </div>
-
-                        <div className="space-y-2.5">
-                          {/* Radio Card 1: Kata tertentu */}
-                          <div
-                            onClick={() => setRuleFormData({ ...ruleFormData, triggerCommentType: "KEYWORDS" })}
-                            className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-                              ruleFormData.triggerCommentType === "KEYWORDS"
-                                ? "border-blue-500 bg-blue-50/40 dark:bg-blue-500/5 ring-1 ring-blue-500/20"
-                                : "border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] hover:bg-gray-50 dark:hover:bg-white/5"
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                                ruleFormData.triggerCommentType === "KEYWORDS"
-                                  ? "border-blue-600 bg-blue-600"
-                                  : "border-gray-300 dark:border-gray-600 bg-white dark:bg-black"
-                              }`}>
-                                {ruleFormData.triggerCommentType === "KEYWORDS" && (
-                                  <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                                )}
-                              </div>
-                              <span className="text-xs font-semibold text-gray-900 dark:text-white">
-                                Kata tertentu
-                              </span>
-                            </div>
-
-                            {ruleFormData.triggerCommentType === "KEYWORDS" && (
-                              <div
-                                onClick={(e) => e.stopPropagation()}
-                                className="mt-3 pl-7 space-y-2 animate-in fade-in duration-150"
-                              >
-                                {/* Input Keyword */}
-                                <div className="space-y-1">
-                                  <input
-                                    type="text"
-                                    value={ruleFormData.keywords}
-                                    onChange={(e) => setRuleFormData({ ...ruleFormData, keywords: e.target.value })}
-                                    placeholder="Masukkan kata"
-                                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
-                                  />
-                                  {!ruleFormData.keywords.trim() && (
-                                    <p className="text-[11px] text-rose-500 font-medium">Silakan masukkan kata</p>
-                                  )}
-                                  <p className="text-[10px] text-gray-400">
-                                    Gunakan koma untuk memisahkan beberapa kata
-                                  </p>
-
-                                  {/* Quick Reaction Emoji Bar untuk Story */}
-                                  {isStoryTarget && (
-                                    <div className="pt-1.5 space-y-1.5">
-                                      <div className="flex items-center gap-1.5 flex-wrap">
-                                        {["😂", "😮", "😍", "😢", "👏", "🔥"].map((emoji) => (
-                                          <button
-                                            key={emoji}
-                                            type="button"
-                                            onClick={() => {
-                                              const current = ruleFormData.keywords.trim();
-                                              if (!current) {
-                                                setRuleFormData({ ...ruleFormData, keywords: emoji });
-                                              } else {
-                                                const parts = current.split(",").map((p) => p.trim());
-                                                if (!parts.includes(emoji)) {
-                                                  setRuleFormData({ ...ruleFormData, keywords: `${current}, ${emoji}` });
-                                                }
-                                              }
-                                            }}
-                                            className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 flex items-center justify-center text-base transition-transform hover:scale-110 active:scale-95 cursor-pointer shadow-2xs"
-                                            title={`Tambahkan emoji ${emoji}`}
-                                          >
-                                            {emoji}
-                                          </button>
-                                        ))}
-                                      </div>
-                                      <p className="text-[10px] text-gray-400">
-                                        Klik emoji di atas untuk reaksi cepat story
-                                      </p>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Ubah aturan toggle */}
-                                <div className="pt-0.5">
-                                  <button
-                                    type="button"
-                                    onClick={() => setIsKeywordRuleOpen(!isKeywordRuleOpen)}
-                                    className="text-xs text-blue-600 dark:text-blue-400 font-semibold flex items-center gap-1 hover:underline cursor-pointer"
-                                  >
-                                    <span>Ubah aturan</span>
-                                    <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isKeywordRuleOpen ? "rotate-180" : ""}`} />
-                                  </button>
-
-                                  {isKeywordRuleOpen && (
-                                    <div className="mt-2 p-3 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-200/80 dark:border-white/10 space-y-1.5 animate-in fade-in duration-150">
-                                      <div className="flex items-center gap-1.5">
-                                        <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
-                                          Aturan
-                                        </label>
-                                        <div className="group relative inline-flex">
-                                          <HelpCircle className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 cursor-help" />
-                                          <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block w-48 p-2 rounded-lg bg-gray-900 text-white text-[10px] shadow-lg z-50 pointer-events-none">
-                                            Pilih logika pencocokan kata: Contains (mengandung kata), Match (persis sama), Starts with (diawali dengan).
-                                          </div>
-                                        </div>
-                                      </div>
-                                      <div className="relative keyword-rule-dropdown-container">
-                                        <button
-                                          type="button"
-                                          onClick={() => setIsKeywordRuleDropdownOpen(!isKeywordRuleDropdownOpen)}
-                                          className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
-                                        >
-                                          <span className="font-medium">{ruleFormData.keywordRule || "Contains"}</span>
-                                          <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${isKeywordRuleDropdownOpen ? "rotate-180" : ""}`} />
-                                        </button>
-
-                                        {isKeywordRuleDropdownOpen && (
-                                          <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150">
-                                            {(["Contains", "Match", "Starts with"] as const).map((ruleOpt) => {
-                                              const isSelected = ruleFormData.keywordRule === ruleOpt;
-                                              return (
-                                                <button
-                                                  key={ruleOpt}
-                                                  type="button"
-                                                  onClick={() => {
-                                                    setRuleFormData({ ...ruleFormData, keywordRule: ruleOpt });
-                                                    setIsKeywordRuleDropdownOpen(false);
-                                                  }}
-                                                  className={`w-full px-3.5 py-2 text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                                                    isSelected
-                                                      ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
-                                                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
-                                                  }`}
-                                                >
-                                                  <span>{ruleOpt}</span>
-                                                  {isSelected && <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white stroke-[2.5]" />}
-                                                </button>
-                                              );
-                                            })}
-                                          </div>
-                                        )}
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            )}
-                          </div>
-
-                      {/* Radio Card 2: Semua komentar */}
-                      <div
-                        onClick={() => setRuleFormData({ ...ruleFormData, triggerCommentType: "ALL" })}
-                        className={`p-3.5 rounded-xl border transition-all cursor-pointer ${
-                          ruleFormData.triggerCommentType === "ALL"
-                            ? "border-blue-500 bg-blue-50/40 dark:bg-blue-500/5 ring-1 ring-blue-500/20"
-                            : "border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] hover:bg-gray-50 dark:hover:bg-white/5"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center shrink-0 ${
-                            ruleFormData.triggerCommentType === "ALL"
-                              ? "border-blue-600 bg-blue-600"
-                              : "border-gray-300 dark:border-gray-600 bg-white dark:bg-black"
-                          }`}>
-                            {ruleFormData.triggerCommentType === "ALL" && (
-                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
-                            )}
-                          </div>
-                          <span className="text-xs font-semibold text-gray-900 dark:text-white">
-                            Semua komentar
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  )}
+                        <TriggerKeywordBuilder
+                          mode={isDmTarget ? "DM" : isStoryTarget ? "STORY" : "COMMENT"}
+                          triggerCommentType={ruleFormData.triggerCommentType}
+                          keywords={ruleFormData.keywords}
+                          keywordRule={ruleFormData.keywordRule}
+                          onChange={(nextVal) =>
+                            setRuleFormData({
+                              ...ruleFormData,
+                              ...nextVal,
+                            })
+                          }
+                          onFocusSection={() =>
+                            setActivePreviewTab(isDmTarget ? "DM" : "COMMENT")
+                          }
+                        />
+                      )}
 
                   {/* Balas Reaksi Card (Hanya untuk Semua Story & Story Tertentu) */}
                   {isStoryTarget && !isStoryMentionTarget && (
@@ -3031,6 +2923,7 @@ export default function RuangAutomationClient({
                     setRuleFormData={setRuleFormData}
                     isStoryTarget={isStoryTarget}
                     isLiveTarget={isLiveTarget}
+                    isDmTarget={isDmTarget}
                     setActivePreviewTab={setActivePreviewTab}
                     setSimulatedFollowStep={setSimulatedFollowStep}
                     showToast={showToast}
@@ -3067,8 +2960,8 @@ export default function RuangAutomationClient({
                   </div>
                 </div>
 
-                {/* Switcher Tab Pratinjau: Postingan & Komentar vs Pesan DM (Disembunyikan untuk Story Mention & Live Instagram) */}
-                {!isStoryMentionTarget && !isLiveTarget && (
+                {/* Switcher Tab Pratinjau: Postingan & Komentar vs Pesan DM (Disembunyikan untuk Story Mention, Live Instagram & Pesan Instagram) */}
+                {!isStoryMentionTarget && !isLiveTarget && !isDmTarget && (
                   <div className="flex items-center justify-center pt-2 pb-1">
                     <div className="p-1 rounded-xl bg-gray-200/80 dark:bg-white/10 flex items-center gap-1 text-xs font-semibold">
                         <button
@@ -3147,7 +3040,7 @@ export default function RuangAutomationClient({
                         </div>
                       </div>
 
-                      {activePreviewTab === "DM" || isStoryMentionTarget || isLiveTarget ? (
+                      {activePreviewTab === "DM" || isStoryMentionTarget || isLiveTarget || isDmTarget ? (
                         /* INSTAGRAM DM CHAT VIEW */
                         <div className="flex-1 flex flex-col overflow-hidden pt-2 relative bg-white dark:bg-black">
                           {/* Instagram DM Top Header */}
@@ -3156,7 +3049,7 @@ export default function RuangAutomationClient({
                               <button
                                 type="button"
                                 onClick={() => {
-                                  if (!isStoryMentionTarget && !isLiveTarget) setActivePreviewTab("COMMENT");
+                                  if (!isStoryMentionTarget && !isLiveTarget && !isDmTarget) setActivePreviewTab("COMMENT");
                                 }}
                                 className="text-gray-800 dark:text-gray-200 hover:opacity-70 transition-opacity cursor-pointer p-0.5"
                                 title="Lihat Postingan"
@@ -3190,7 +3083,14 @@ export default function RuangAutomationClient({
 
                           {/* Scrollable Chat Area */}
                           <div className="flex-1 overflow-y-auto p-3 space-y-3 text-xs bg-gray-50/50 dark:bg-[#121214]">
-                            {isStoryMentionTarget ? (
+                            {isDmTarget ? (
+                              /* Incoming Trigger DM Bubble from User (Pesan Instagram) */
+                              <div className="flex justify-end pt-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                                <div className="max-w-[78%] rounded-2xl rounded-tr-xs bg-[#7048e8] text-white px-3.5 py-2 shadow-xs text-xs font-semibold break-words">
+                                  {ruleFormData.keywords.split(",")[0]?.trim() || ruleFormData.keywords.trim() || "mau"}
+                                </div>
+                              </div>
+                            ) : isStoryMentionTarget ? (
                               /* Story Mention Native Indicator (sesuai referensi: "↩ Mentioned in your story |") */
                               <div className="flex justify-end items-center gap-1.5 pt-2 pr-1 animate-in fade-in duration-200">
                                 <CornerUpLeft className="w-3.5 h-3.5 text-gray-400 stroke-[2]" />

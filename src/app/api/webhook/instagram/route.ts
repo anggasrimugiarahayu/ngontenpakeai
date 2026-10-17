@@ -1562,51 +1562,213 @@ export async function POST(req: NextRequest) {
                 account.accessToken
               ).catch(() => {});
             }
-          } else if (emailMatch || phoneMatch) {
-            // Fallback jika ada aturan aktif yang meminta kontak namun belum tercatat awaitingContact
-            const latestRule = await (prisma as any).instagramAutomationRule.findFirst({
-              where: { accountId: account.id, isActive: true },
-              orderBy: { updatedAt: "desc" },
-            });
+          } else {
+            // 4. Cek Aturan Otomasi Pesan Instagram (triggerType === "DM")
+            let dmRuleHandled = false;
 
-            if (latestRule) {
-              let ruleConfig: any = {};
-              try {
-                if (latestRule.dmMessage && (latestRule.dmMessage.startsWith("{") || latestRule.dmMessage.includes('"mainMessage"'))) {
-                  ruleConfig = JSON.parse(latestRule.dmMessage);
-                }
-              } catch {}
-              const deliveredMain = resolveVariables(
-                ruleConfig.mainMessage || latestRule.dmMessage || "Sip, kontak kamu sudah tersimpan dengan aman! Ini link akses materinya ya:",
-                senderUsername
-              );
-              const trackedUrl = buildTrackedUrl(
-                origin,
-                latestRule.buttonUrl || "https://ruangcreativemuslim.com",
-                latestRule.id,
-                ruleConfig.featureLinkTracking !== false,
-                undefined,
-                senderId
-              );
-              const finalPayload =
-                latestRule.buttonText && latestRule.buttonUrl
-                  ? buildButtonTemplateMessage(deliveredMain, [
-                      {
-                        type: "web_url",
-                        url: trackedUrl,
-                        title: latestRule.buttonText.slice(0, 20),
-                      },
-                    ])
-                  : { text: deliveredMain };
+            // Deduplikasi Idempotency berdasarkan messageId
+            const alreadyProcessedDm =
+              messageId &&
+              recentAccountLogs.some((l: any) => l.commentId === messageId);
 
-              await postToMetaGraph(
-                `/me/messages`,
-                {
-                  recipient: { id: senderId },
-                  message: finalPayload,
+            if (!alreadyProcessedDm) {
+              const activeDmRules = await (prisma as any).instagramAutomationRule.findMany({
+                where: {
+                  accountId: account.id,
+                  isActive: true,
+                  triggerType: "DM",
                 },
-                account.accessToken
-              ).catch(() => {});
+                orderBy: { createdAt: "desc" },
+              });
+
+              let matchedDmRule: any = null;
+              let dmRuleConfig: any = {};
+
+              for (const rule of activeDmRules) {
+                let cfg: any = {};
+                try {
+                  if (
+                    rule.dmMessage &&
+                    (rule.dmMessage.startsWith("{") ||
+                      rule.dmMessage.includes('"mainMessage"'))
+                  ) {
+                    cfg = JSON.parse(rule.dmMessage);
+                  }
+                } catch {}
+
+                const triggerTypeSetting =
+                  cfg.triggerCommentType || (rule as any).triggerCommentType || "KEYWORDS";
+                const ruleStyle = cfg.keywordRule || "Contains";
+
+                if (triggerTypeSetting === "ALL") {
+                  matchedDmRule = rule;
+                  dmRuleConfig = cfg;
+                  break;
+                } else if (
+                  msgText.trim().length > 0 &&
+                  checkKeywordMatch(msgText, rule.keywords, ruleStyle)
+                ) {
+                  matchedDmRule = rule;
+                  dmRuleConfig = cfg;
+                  break;
+                }
+              }
+
+              if (matchedDmRule) {
+                dmRuleHandled = true;
+                console.log(
+                  `💬 [Meta Webhook] DM Automation Rule "${matchedDmRule.name}" matched for sender ${senderId} (msg: "${msgText}")`
+                );
+
+                const initialMeta: Record<string, any> = {
+                  senderId,
+                  read: false,
+                  sentAt: new Date().toISOString(),
+                  isDmTrigger: true,
+                };
+
+                let dmStatus = "SENT";
+                let failureReason = "";
+
+                try {
+                  let firstDmPayload: any = null;
+
+                  if (dmRuleConfig.featureWelcomeMessage && dmRuleConfig.welcomeMessage) {
+                    // 1. Pesan Pembuka
+                    initialMeta.awaitingWelcome = true;
+                    const welcomeText = resolveVariables(dmRuleConfig.welcomeMessage, senderUsername);
+                    const welcomeBtnLabel = dmRuleConfig.welcomeButtonLabel || "Ya, Saya Mau!";
+                    firstDmPayload =
+                      dmRuleConfig.welcomeMessageType === "Template Tombol"
+                        ? buildButtonTemplateMessage(welcomeText, [
+                            {
+                              type: "postback",
+                              title: welcomeBtnLabel.slice(0, 20),
+                              payload: `WELCOME_AGREE_${matchedDmRule.id}`,
+                            },
+                          ])
+                        : { text: welcomeText };
+                  } else if (dmRuleConfig.featureAskForFollow && dmRuleConfig.askForFollowMessage) {
+                    // 2. Ask For Follow
+                    if (userProfile.isFollowing === true) {
+                      initialMeta.awaitingWelcome = false;
+                    } else {
+                      initialMeta.wasUnfollowed = true;
+                      const followText = resolveVariables(dmRuleConfig.askForFollowMessage, senderUsername);
+                      const followBtnLabel = dmRuleConfig.askForFollowButtonLabel || "Sudah mengikuti 🙌";
+                      firstDmPayload = buildButtonTemplateMessage(followText, [
+                        {
+                          type: "postback",
+                          title: followBtnLabel.slice(0, 20),
+                          payload: `CHECK_FOLLOW_${matchedDmRule.id}`,
+                        },
+                      ]);
+                    }
+                  }
+
+                  // 3. Jika belum diisi oleh Welcome / Ask Follow -> Cek Ask For Contact atau Pesan Utama
+                  if (!firstDmPayload) {
+                    if (dmRuleConfig.featureAskForContact && dmRuleConfig.askContactMessage) {
+                      initialMeta.awaitingContact = true;
+                      initialMeta.askContactType = dmRuleConfig.askContactType || "Email Saja";
+                      firstDmPayload = {
+                        text: resolveVariables(dmRuleConfig.askContactMessage, senderUsername),
+                      };
+                    } else {
+                      initialMeta.mainSentAt = new Date().toISOString();
+                      firstDmPayload = buildMainDmPayload({
+                        rule: matchedDmRule,
+                        ruleConfig: dmRuleConfig,
+                        username: senderUsername,
+                        origin,
+                        senderId,
+                      });
+                    }
+                  }
+
+                  const dmRes = await postToMetaGraph(
+                    `/me/messages`,
+                    {
+                      recipient: { id: senderId },
+                      message: firstDmPayload,
+                    },
+                    account.accessToken
+                  );
+
+                  if (!dmRes.ok) {
+                    const errDm = await dmRes.json().catch(() => ({}));
+                    dmStatus = "FAILED";
+                    failureReason = errDm?.error?.message || "Gagal mengirim balasan DM Otomasi";
+                    console.error(`❌ [Meta Webhook] Failed to send DM automation reply:`, errDm);
+                  } else {
+                    console.log(`✅ [Meta Webhook] DM automation reply sent successfully to ${senderId}`);
+                  }
+                } catch (err: any) {
+                  dmStatus = "FAILED";
+                  failureReason = err.message || "Exception sending DM automation reply";
+                }
+
+                await (prisma as any).instagramAutomationLog.create({
+                  data: {
+                    accountId: account.id,
+                    ruleId: matchedDmRule.id,
+                    fromUsername: senderUsername || "pengguna",
+                    commentText: `[DM] ${msgText}`,
+                    commentId: messageId || `dm_${Date.now()}`,
+                    replyCommentStatus: "SKIPPED",
+                    dmStatus: dmStatus,
+                    errorMessage: failureReason ? failureReason : stringifyLogMeta(initialMeta),
+                  },
+                });
+              }
+            }
+
+            if (!dmRuleHandled && (emailMatch || phoneMatch)) {
+              // Fallback jika ada aturan aktif yang meminta kontak namun belum tercatat awaitingContact
+              const latestRule = await (prisma as any).instagramAutomationRule.findFirst({
+                where: { accountId: account.id, isActive: true },
+                orderBy: { updatedAt: "desc" },
+              });
+
+              if (latestRule) {
+                let ruleConfig: any = {};
+                try {
+                  if (latestRule.dmMessage && (latestRule.dmMessage.startsWith("{") || latestRule.dmMessage.includes('"mainMessage"'))) {
+                    ruleConfig = JSON.parse(latestRule.dmMessage);
+                  }
+                } catch {}
+                const deliveredMain = resolveVariables(
+                  ruleConfig.mainMessage || latestRule.dmMessage || "Sip, kontak kamu sudah tersimpan dengan aman! Ini link akses materinya ya:",
+                  senderUsername
+                );
+                const trackedUrl = buildTrackedUrl(
+                  origin,
+                  latestRule.buttonUrl || "https://ruangcreativemuslim.com",
+                  latestRule.id,
+                  ruleConfig.featureLinkTracking !== false,
+                  undefined,
+                  senderId
+                );
+                const finalPayload =
+                  latestRule.buttonText && latestRule.buttonUrl
+                    ? buildButtonTemplateMessage(deliveredMain, [
+                        {
+                          type: "web_url",
+                          url: trackedUrl,
+                          title: latestRule.buttonText.slice(0, 20),
+                        },
+                      ])
+                    : { text: deliveredMain };
+
+                await postToMetaGraph(
+                  `/me/messages`,
+                  {
+                    recipient: { id: senderId },
+                    message: finalPayload,
+                  },
+                  account.accessToken
+                ).catch(() => {});
+              }
             }
           }
         }

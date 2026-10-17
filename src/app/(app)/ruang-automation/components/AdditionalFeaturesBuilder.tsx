@@ -15,6 +15,7 @@ interface AdditionalFeaturesBuilderProps {
   setRuleFormData: React.Dispatch<React.SetStateAction<any>>;
   isStoryTarget: boolean;
   isLiveTarget: boolean;
+  isDmTarget?: boolean;
   setActivePreviewTab: (tab: "COMMENT" | "DM") => void;
   setSimulatedFollowStep: (step: "GATE" | "RETRY" | "VERIFIED") => void;
   showToast: (type: "success" | "error" | "info", message: string) => void;
@@ -25,6 +26,7 @@ export function AdditionalFeaturesBuilder({
   setRuleFormData,
   isStoryTarget,
   isLiveTarget,
+  isDmTarget = false,
   setActivePreviewTab,
   setSimulatedFollowStep,
   showToast,
@@ -378,8 +380,8 @@ export function AdditionalFeaturesBuilder({
           )}
         </div>
 
-        {/* 2. Balasan Komentar (Hanya untuk Post / Reels, sembunyikan untuk Story & Live Instagram) */}
-        {!isStoryTarget && !isLiveTarget && (
+        {/* 2. Balasan Komentar (Hanya untuk Post / Reels, sembunyikan untuk Story, Live Instagram & Pesan Instagram) */}
+        {!isStoryTarget && !isLiveTarget && !isDmTarget && (
           <div
             onClick={() => setActivePreviewTab("COMMENT")}
             className="p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3"

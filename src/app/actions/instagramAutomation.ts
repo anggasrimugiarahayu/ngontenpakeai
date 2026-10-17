@@ -918,6 +918,8 @@ export async function saveAutomationRuleAction(payload: {
           ? "STORY_MENTION"
           : payload.postType === "LIVE" || payload.postType === "INSTAGRAM_LIVE" || payload.postType === "Live Instagram"
           ? "LIVE"
+          : payload.postType === "DM" || payload.postType === "Pesan Instagram"
+          ? "DM"
           : "ALL_POSTS"
       );
 
