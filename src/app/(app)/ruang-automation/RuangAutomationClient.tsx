@@ -270,12 +270,15 @@ export default function RuangAutomationClient({
 
   const shouldFetch = isLoggedIn && (isPro || isAdmin);
 
-  // SWR Caching & Revalidating (Stale-While-Revalidate / STA pattern) with multi-agent support
+  // SWR Caching & Revalidating (Stale-While-Revalidate / STA pattern)
+  // Gunakan kunci tunggal "instagramAutomation" (selaras dengan preload di ClientLayout)
+  // sehingga saat klik agen & buka Komentar IG ke DM, card langsung tampil 0ms tanpa reset/delay!
   const { data: swrData, isLoading, mutate: mutateData } = useSWR(
-    shouldFetch ? ["instagramAutomation", selectedAgentId || "all"] : null,
-    ([, agentId]) => getInstagramAutomationDataAction(agentId === "all" ? undefined : agentId),
+    shouldFetch ? "instagramAutomation" : null,
+    () => getInstagramAutomationDataAction(selectedAgentId || undefined),
     {
       fallbackData: initialData,
+      keepPreviousData: true,
       revalidateOnFocus: false,
       revalidateIfStale: true,
       dedupingInterval: 5000,
@@ -814,6 +817,13 @@ export default function RuangAutomationClient({
     isActive: true,
   });
 
+  const preloadMediaAgentId = selectedAgentId || agents.find((a: any) => a.isLinked)?.id || (account?.isLinked ? account.id : null);
+  const isPreloadAgentLinked = Boolean(
+    selectedAgentId
+      ? isAccountLinked
+      : agents.some((a: any) => a.id === preloadMediaAgentId && a.isLinked) || account?.isLinked
+  );
+
   // Real Instagram Feed Media managed by SWR with Stale-While-Revalidate (STA) pattern
   const {
     data: feedData,
@@ -821,9 +831,10 @@ export default function RuangAutomationClient({
     isValidating: isValidatingFeed,
     mutate: mutateFeed,
   } = useSWR(
-    selectedAgentId && isAccountLinked ? ["instagramFeedMedia", selectedAgentId] : null,
+    preloadMediaAgentId && isPreloadAgentLinked ? ["instagramFeedMedia", preloadMediaAgentId] : null,
     ([, agentId]) => getInstagramFeedMediaAction(30, agentId),
     {
+      keepPreviousData: true,
       revalidateOnFocus: false,
       revalidateIfStale: false,
       dedupingInterval: 300000, // 5 menit cache STA di memori
@@ -854,9 +865,10 @@ export default function RuangAutomationClient({
     isValidating: isValidatingStories,
     mutate: mutateStories,
   } = useSWR(
-    selectedAgentId && isAccountLinked ? ["instagramStories", selectedAgentId] : null,
+    preloadMediaAgentId && isPreloadAgentLinked ? ["instagramStories", preloadMediaAgentId] : null,
     ([, agentId]) => getInstagramStoriesAction(20, agentId),
     {
+      keepPreviousData: true,
       revalidateOnFocus: false,
       revalidateIfStale: false,
       dedupingInterval: 60000,
@@ -1532,9 +1544,28 @@ export default function RuangAutomationClient({
     });
   };
 
-  const rules = data?.rules || [];
-  const stats = data?.stats || { totalComments: 0, totalDms: 0 };
-  const logs = data?.logs || [];
+  const activeAccountId = selectedAgentId || displayAccount?.id || account?.id;
+  const rules = useMemo(() => {
+    const allRules = data?.rules || [];
+    if (!activeAccountId) return allRules;
+    return allRules.filter((r: any) => !r.accountId || r.accountId === activeAccountId || r.accountId === "temp");
+  }, [data?.rules, activeAccountId]);
+  const logs = useMemo(() => {
+    const allLogs = data?.logs || [];
+    if (!activeAccountId) return allLogs;
+    return allLogs.filter((l: any) => !l.accountId || l.accountId === activeAccountId);
+  }, [data?.logs, activeAccountId]);
+  const stats = useMemo(() => {
+    if (!activeAccountId || !Array.isArray(data?.logs)) {
+      return data?.stats || { totalComments: 0, totalDms: 0 };
+    }
+    const sentComments = logs.filter((l: any) => l.replyCommentStatus === "SENT").length;
+    const sentDms = logs.filter((l: any) => l.dmStatus === "SENT").length;
+    return {
+      totalComments: Math.max(sentComments, (!selectedAgentId || selectedAgentId === account?.id) ? (data?.stats?.totalComments || 0) : sentComments),
+      totalDms: Math.max(sentDms, (!selectedAgentId || selectedAgentId === account?.id) ? (data?.stats?.totalDms || 0) : sentDms),
+    };
+  }, [data?.stats, data?.logs, logs, activeAccountId, selectedAgentId, account?.id]);
 
   const isStoryRule = (r: any) =>
     ["ALL_STORIES", "SPECIFIC_STORY", "STORY_MENTION"].includes(r.triggerType) ||
@@ -2540,12 +2571,7 @@ export default function RuangAutomationClient({
                           <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
                             {rule.triggerType === "ALL_STORIES" || ruleConfig.targetOtomasi === "Semua Story" ? (
                               <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-fuchsia-600/20 via-pink-500/20 to-amber-500/20 dark:bg-white/5">
-                                <div className="absolute top-2 left-1.5 right-1.5 flex justify-center">
-                                  <span className="px-2 py-0.5 rounded-md bg-gradient-to-r from-fuchsia-600 to-pink-500 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider shadow-sm truncate">
-                                    Semua Story
-                                  </span>
-                                </div>
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-fuchsia-600 flex items-center justify-center text-white mb-1 mt-3 shadow-sm">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-fuchsia-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
                                   <Camera className="w-4 h-4" />
                                 </div>
                                 <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
@@ -2576,24 +2602,14 @@ export default function RuangAutomationClient({
                                           (e.currentTarget as HTMLElement).style.display = "none";
                                         }}
                                       />
-                                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/30 pointer-events-none" />
-                                      <div className="absolute top-2 left-1.5 right-1.5 flex justify-center z-10">
-                                        <span className="px-2 py-0.5 rounded-md bg-pink-600 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider shadow-sm truncate">
-                                          Story Tertentu
-                                        </span>
-                                      </div>
+                                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
                                     </div>
                                   );
                                 }
 
                                 return (
                                   <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-pink-500/20 via-rose-500/15 to-purple-500/20 dark:bg-white/5">
-                                    <div className="absolute top-2 left-1.5 right-1.5 flex justify-center">
-                                      <span className="px-2 py-0.5 rounded-md bg-pink-600 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider shadow-sm truncate">
-                                        Story Tertentu
-                                      </span>
-                                    </div>
-                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center text-white mb-1 mt-3 shadow-sm">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-pink-500 to-rose-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
                                       <Camera className="w-4 h-4" />
                                     </div>
                                     <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
@@ -2604,12 +2620,7 @@ export default function RuangAutomationClient({
                               })()
                             ) : rule.triggerType === "STORY_MENTION" || ruleConfig.targetOtomasi === "Story Mention" ? (
                               <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-indigo-500/20 via-purple-500/15 to-pink-500/20 dark:bg-white/5">
-                                <div className="absolute top-2 left-1.5 right-1.5 flex justify-center">
-                                  <span className="px-2 py-0.5 rounded-md bg-indigo-600 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider shadow-sm truncate">
-                                    Story Mention
-                                  </span>
-                                </div>
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white mb-1 mt-3 shadow-sm">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
                                   <Sparkles className="w-4 h-4" />
                                 </div>
                                 <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
@@ -2659,13 +2670,7 @@ export default function RuangAutomationClient({
                               })()
                             ) : rule.triggerType === "NEXT_POST" ? (
                               <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-purple-500/15 via-indigo-500/10 to-pink-500/15 dark:bg-white/5">
-                                {/* Flag di bagian atas cover untuk Postingan Berikutnya */}
-                                <div className="absolute top-2 left-1.5 right-1.5 flex justify-center">
-                                  <span className="px-2 py-0.5 rounded-md bg-purple-600 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider shadow-sm truncate">
-                                    Post Berikutnya
-                                  </span>
-                                </div>
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white mb-1 mt-3 shadow-sm">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white mb-1.5 shadow-sm">
                                   <Sparkles className="w-4 h-4" />
                                 </div>
                                 <span className="text-[10px] font-bold text-gray-700 dark:text-gray-300 leading-tight">
@@ -2674,13 +2679,7 @@ export default function RuangAutomationClient({
                               </div>
                             ) : (
                               <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-pink-500/10 via-purple-500/10 to-orange-500/10 dark:bg-white/5">
-                                {/* Flag di bagian atas cover untuk Semua Postingan */}
-                                <div className="absolute top-2 left-1.5 right-1.5 flex justify-center">
-                                  <span className="px-2 py-0.5 rounded-md bg-orange-500 text-white text-[8px] sm:text-[9px] font-extrabold uppercase tracking-wider shadow-sm truncate">
-                                    Semua Post
-                                  </span>
-                                </div>
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center text-white mb-1 mt-3 shadow-sm">
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-yellow-400 via-pink-500 to-purple-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
                                   <InstagramIcon className="w-4 h-4" />
                                 </div>
                                 <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">

@@ -71,10 +71,13 @@ export async function fetchFreshInstagramData(userId: string, isAdmin: boolean, 
       };
     }
 
-    // 3. Hitung statistik dan ambil log aktivitas terbaru untuk agen aktif
+    const allAccountIds = allAccounts.map((a: any) => a.id);
+
+    // 3. Hitung statistik dan ambil seluruh rules & log untuk semua agen milik user sekaligus
+    // agar saat user klik agen & buka Komentar IG ke DM, card langsung tampil 0ms tanpa delay fetch ulang
     const [rules, totalComments, totalDms, recentLogs] = await Promise.all([
       (db as any).instagramAutomationRule.findMany({
-        where: { accountId: activeAccount.id },
+        where: { accountId: { in: allAccountIds } },
         orderBy: { createdAt: "desc" },
         include: {
           _count: {
@@ -89,8 +92,8 @@ export async function fetchFreshInstagramData(userId: string, isAdmin: boolean, 
         where: { accountId: activeAccount.id, dmStatus: "SENT" }
       }).catch(() => 0),
       (db as any).instagramAutomationLog.findMany({
-        where: { accountId: activeAccount.id },
-        take: 300,
+        where: { accountId: { in: allAccountIds } },
+        take: 500,
         orderBy: { createdAt: "desc" },
         include: { rule: { select: { name: true } } }
       }).catch(() => [])
