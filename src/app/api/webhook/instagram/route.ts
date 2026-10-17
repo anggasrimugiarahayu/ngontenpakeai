@@ -182,6 +182,156 @@ function buildTrackedUrl(
   return `${origin}/api/track/instagram?${params.toString()}`;
 }
 
+/**
+ * Helper: Membangun payload Pesan Utama DM (mendukung 3 Jenis Pesan: BUTTON_TEMPLATE, PLAIN_TEXT, dan CAROUSEL)
+ * Berlaku untuk semua tipe aturan termasuk multi-item Konten pada Live Instagram
+ */
+function buildMainDmPayload(params: {
+  rule: any;
+  ruleConfig: any;
+  liveContentItem?: any;
+  username: string;
+  origin: string;
+  logId?: string;
+  senderId?: string;
+}): any {
+  const { rule, ruleConfig, liveContentItem, username, origin, logId, senderId } = params;
+  const enableTracking = ruleConfig?.featureLinkTracking !== false;
+  const msgType: "BUTTON_TEMPLATE" | "PLAIN_TEXT" | "CAROUSEL" =
+    liveContentItem?.messageType ||
+    ruleConfig?.messageType ||
+    (rule?.buttonText && rule?.buttonUrl ? "BUTTON_TEMPLATE" : "PLAIN_TEXT");
+
+  const rawText =
+    liveContentItem?.message ||
+    liveContentItem?.dmMessage ||
+    ruleConfig?.mainMessage ||
+    rule?.dmMessage ||
+    "Halo @{username}! Terima kasih sudah tertarik.";
+  const deliveredText = resolveVariables(rawText, username);
+
+  // 1. CAROUSEL (Generic Template)
+  if (msgType === "CAROUSEL") {
+    const rawSlides =
+      Array.isArray(liveContentItem?.carouselSlides) && liveContentItem.carouselSlides.length > 0
+        ? liveContentItem.carouselSlides
+        : Array.isArray(ruleConfig?.carouselSlides)
+        ? ruleConfig.carouselSlides
+        : [];
+
+    const elements = rawSlides
+      .filter((s: any) => s && (s.title?.trim() || s.subtitle?.trim() || s.image?.trim()))
+      .slice(0, 10)
+      .map((s: any, idx: number) => {
+        const slideButtons = Array.isArray(s.buttons)
+          ? s.buttons
+              .filter((b: any) => b && b.label?.trim() && b.url?.trim())
+              .slice(0, 3)
+              .map((b: any) => ({
+                type: "web_url",
+                url: buildTrackedUrl(origin, b.url, rule.id, enableTracking, logId, senderId),
+                title: b.label.trim().slice(0, 20),
+              }))
+          : [];
+        const el: Record<string, any> = {
+          title: resolveVariables(s.title?.trim() || `Slide ${idx + 1}`, username).slice(0, 80),
+        };
+        if (s.subtitle?.trim()) {
+          el.subtitle = resolveVariables(s.subtitle.trim(), username).slice(0, 80);
+        }
+        const imgUrl = (s.image || ruleConfig?.postCoverUrl || "").trim();
+        if (imgUrl && /^https?:\/\//i.test(imgUrl)) {
+          el.image_url = imgUrl;
+        }
+        if (slideButtons.length > 0) {
+          el.buttons = slideButtons;
+        }
+        return el;
+      });
+
+    if (elements.length > 0) {
+      return {
+        attachment: {
+          type: "template",
+          payload: {
+            template_type: "generic",
+            elements,
+          },
+        },
+      };
+    }
+  }
+
+  // 2. BUTTON_TEMPLATE (Template Tombol: Buka Website & Kirim Teks)
+  if (msgType === "BUTTON_TEMPLATE") {
+    const rawButtons = Array.isArray(liveContentItem?.buttons)
+      ? liveContentItem.buttons
+      : Array.isArray(ruleConfig?.buttons)
+      ? ruleConfig.buttons
+      : [];
+
+    const validButtons = rawButtons
+      .filter((b: any) => {
+        const lbl = b?.labelType === "Klik Disini" ? "Klik Disini" : b?.label?.trim();
+        if (!lbl) return false;
+        if (b?.action === "Kirim Teks") return Boolean(b?.text?.trim());
+        return Boolean(b?.url?.trim());
+      })
+      .slice(0, 3)
+      .map((b: any) => {
+        const title = (b.labelType === "Klik Disini" ? "Klik Disini" : b.label.trim()).slice(0, 20);
+        if (b.action === "Kirim Teks") {
+          return {
+            type: "postback",
+            title,
+            payload: `BTN_TEXT::${rule.id}::${b.id}`,
+          };
+        }
+        return {
+          type: "web_url",
+          url: buildTrackedUrl(origin, b.url, rule.id, enableTracking, logId, senderId),
+          title,
+        };
+      });
+
+    if (validButtons.length > 0) {
+      return buildButtonTemplateMessage(deliveredText, validButtons);
+    }
+
+    if (rule?.buttonText && rule?.buttonUrl) {
+      const trackedUrl = buildTrackedUrl(origin, rule.buttonUrl, rule.id, enableTracking, logId, senderId);
+      return buildButtonTemplateMessage(deliveredText, [
+        {
+          type: "web_url",
+          url: trackedUrl,
+          title: rule.buttonText.slice(0, 20),
+        },
+      ]);
+    }
+  }
+
+  // 3. PLAIN_TEXT (Teks Biasa + Quick Replies)
+  const rawQuickReplies = Array.isArray(liveContentItem?.quickReplies)
+    ? liveContentItem.quickReplies
+    : Array.isArray(ruleConfig?.quickReplies)
+    ? ruleConfig.quickReplies
+    : [];
+
+  const activeQuickReplies = rawQuickReplies.filter((q: any) => (q?.label || q?.text || "").trim());
+  if (activeQuickReplies.length > 0) {
+    return {
+      text: deliveredText,
+      quick_replies: activeQuickReplies.slice(0, 13).map((q: any) => ({
+        content_type: "text",
+        title: (q.label || q.text || "Pilih").trim().slice(0, 20),
+        payload: `LIVE_QR::${rule.id}::${q.id}`,
+      })),
+    };
+  }
+
+  return { text: deliveredText };
+}
+
 function parseDelayToMs(delayStr?: string): number {
   if (!delayStr) return 60 * 60 * 1000;
   const lower = delayStr.toLowerCase();
@@ -713,59 +863,16 @@ export async function POST(req: NextRequest) {
               initialMeta.awaitingContact = true;
               initialMeta.askContactType = ruleConfig.askContactType || "Email Saja";
             } else {
-              // Step 4d: Pesan Utama (Delivery Akses/Materi Langsung)
-              const deliveredText = resolveVariables(mainDmText, fromUsername);
+              // Step 4d: Pesan Utama (Delivery Akses/Materi Langsung - mendukung BUTTON_TEMPLATE, PLAIN_TEXT, dan CAROUSEL)
               initialMeta.mainSentAt = new Date().toISOString();
-
-              const activeButtons = Array.isArray(matchedLiveContent?.buttons)
-                ? matchedLiveContent.buttons.filter((b: any) => b.label?.trim() && b.url?.trim())
-                : [];
-              const activeQuickReplies = Array.isArray(matchedLiveContent?.quickReplies)
-                ? matchedLiveContent.quickReplies.filter((q: any) => q.label?.trim())
-                : [];
-
-              if (matchedLiveContent && matchedLiveContent.messageType === "BUTTON_TEMPLATE" && activeButtons.length > 0) {
-                dmPayloadMessage = buildButtonTemplateMessage(
-                  deliveredText,
-                  activeButtons.slice(0, 3).map((b: any) => ({
-                    type: "web_url",
-                    url: buildTrackedUrl(
-                      origin,
-                      b.url,
-                      matchedRule.id,
-                      ruleConfig.featureLinkTracking !== false
-                    ),
-                    title: b.label.slice(0, 20),
-                  }))
-                );
-              } else if (matchedLiveContent && activeQuickReplies.length > 0) {
-                dmPayloadMessage = {
-                  text: deliveredText,
-                  quick_replies: activeQuickReplies.slice(0, 13).map((q: any) => ({
-                    content_type: "text",
-                    title: q.label.slice(0, 20),
-                    payload: `LIVE_QR::${matchedRule.id}::${q.id}`,
-                  })),
-                };
-              } else if (matchedRule.buttonText && matchedRule.buttonUrl) {
-                const trackedUrl = buildTrackedUrl(
-                  origin,
-                  matchedRule.buttonUrl,
-                  matchedRule.id,
-                  ruleConfig.featureLinkTracking !== false
-                );
-                // Template Tombol tanpa header aturan dan tanpa pemotongan 80 karakter
-                dmPayloadMessage = buildButtonTemplateMessage(deliveredText, [
-                  {
-                    type: "web_url",
-                    url: trackedUrl,
-                    title: matchedRule.buttonText.slice(0, 20),
-                  },
-                ]);
-              } else {
-                // Teks Biasa
-                dmPayloadMessage = { text: deliveredText };
-              }
+              dmPayloadMessage = buildMainDmPayload({
+                rule: matchedRule,
+                ruleConfig,
+                liveContentItem: matchedLiveContent,
+                username: fromUsername,
+                origin,
+                senderId: fromId || undefined,
+              });
             }
 
             // Panggil Meta Graph API Private Reply Endpoint
@@ -839,42 +946,55 @@ export async function POST(req: NextRequest) {
 
         if (!senderId || senderId === account.instagramId || senderId === account.pageId) continue;
 
-        // 1. Cek apakah ada postback (contoh: user klik tombol di Pesan Pembuka, "Sudah mengikuti 🙌", atau Quick Reply Live)
+        // 1. Cek apakah ada postback (contoh: user klik tombol di Pesan Pembuka, "Sudah mengikuti 🙌", Kirim Teks, atau Quick Reply)
         if (postbackPayload) {
-          if (postbackPayload.startsWith("LIVE_QR::")) {
+          if (postbackPayload.startsWith("LIVE_QR::") || postbackPayload.startsWith("BTN_TEXT::")) {
+            const isBtnText = postbackPayload.startsWith("BTN_TEXT::");
             const parts = postbackPayload.split("::");
-            const qrRuleId = parts[1];
-            const qrId = parts[2];
-            const qrRule = await (prisma as any).instagramAutomationRule.findFirst({
-              where: { id: qrRuleId },
+            const pbRuleId = parts[1];
+            const itemId = parts[2];
+            const pbRule = await (prisma as any).instagramAutomationRule.findFirst({
+              where: { id: pbRuleId },
             });
-            if (qrRule) {
-              let qrRuleConfig: any = {};
+            if (pbRule) {
+              let pbRuleConfig: any = {};
               try {
-                if (qrRule.dmMessage && (qrRule.dmMessage.startsWith("{") || qrRule.dmMessage.includes('"mainMessage"'))) {
-                  qrRuleConfig = JSON.parse(qrRule.dmMessage);
+                if (pbRule.dmMessage && (pbRule.dmMessage.startsWith("{") || pbRule.dmMessage.includes('"mainMessage"'))) {
+                  pbRuleConfig = JSON.parse(pbRule.dmMessage);
                 }
               } catch {}
 
-              let foundQr: any = null;
-              if (Array.isArray(qrRuleConfig.liveContents)) {
-                for (const c of qrRuleConfig.liveContents) {
-                  if (Array.isArray(c.quickReplies)) {
-                    const match = c.quickReplies.find(
-                      (q: any) => String(q.id) === String(qrId) || (msgText && q.label?.trim().toLowerCase() === msgText.toLowerCase())
-                    );
-                    if (match) {
-                      foundQr = match;
-                      break;
-                    }
-                  }
-                }
+              let foundReplyText = "";
+              if (isBtnText) {
+                // Cari di buttons utama atau di liveContents[].buttons
+                const allButtons: any[] = [
+                  ...(Array.isArray(pbRuleConfig.buttons) ? pbRuleConfig.buttons : []),
+                  ...(Array.isArray(pbRuleConfig.liveContents)
+                    ? pbRuleConfig.liveContents.flatMap((c: any) => (Array.isArray(c.buttons) ? c.buttons : []))
+                    : []),
+                ];
+                const matchedBtn = allButtons.find((b: any) => String(b?.id) === String(itemId));
+                foundReplyText = matchedBtn?.text || "";
+              } else {
+                // Cari di quickReplies utama atau di liveContents[].quickReplies
+                const allQrs: any[] = [
+                  ...(Array.isArray(pbRuleConfig.quickReplies) ? pbRuleConfig.quickReplies : []),
+                  ...(Array.isArray(pbRuleConfig.liveContents)
+                    ? pbRuleConfig.liveContents.flatMap((c: any) => (Array.isArray(c.quickReplies) ? c.quickReplies : []))
+                    : []),
+                ];
+                const matchedQr = allQrs.find(
+                  (q: any) =>
+                    String(q?.id) === String(itemId) ||
+                    (msgText && q?.label?.trim().toLowerCase() === msgText.toLowerCase())
+                );
+                foundReplyText = matchedQr?.text || "";
               }
 
-              if (foundQr?.text) {
+              if (foundReplyText) {
                 const userProfile = await getIgUserProfile(senderId, account.accessToken);
                 const senderUsername = userProfile.username || "kak";
-                const replyText = resolveVariables(foundQr.text, senderUsername);
+                const replyText = resolveVariables(foundReplyText, senderUsername);
                 await postToMetaGraph(
                   `/me/messages`,
                   {
@@ -932,11 +1052,6 @@ export async function POST(req: NextRequest) {
                 ? ruleConfig.liveContents.find((c: any) => c.id === updatedMeta.liveContentId)
                 : null;
 
-            const mainText = resolveVariables(
-              matchedLiveContentItem?.message || ruleConfig.mainMessage || targetRule.dmMessage || "",
-              senderUsername
-            );
-
             // Helper untuk membangun pesan tahap akhir (Ask for Contact atau Pesan Utama)
             const buildFinalOrContactStep = () => {
               if (ruleConfig.featureAskForContact && ruleConfig.askContactMessage && !updatedMeta.contact) {
@@ -947,60 +1062,15 @@ export async function POST(req: NextRequest) {
               updatedMeta.awaitingContact = false;
               updatedMeta.mainSentAt = new Date().toISOString();
 
-              if (matchedLiveContentItem) {
-                const liveBtns = Array.isArray(matchedLiveContentItem.buttons)
-                  ? matchedLiveContentItem.buttons.filter((b: any) => b.label?.trim() && b.url?.trim())
-                  : [];
-                const liveQrs = Array.isArray(matchedLiveContentItem.quickReplies)
-                  ? matchedLiveContentItem.quickReplies.filter((q: any) => q.label?.trim())
-                  : [];
-                if (matchedLiveContentItem.messageType === "BUTTON_TEMPLATE" && liveBtns.length > 0) {
-                  return buildButtonTemplateMessage(
-                    mainText,
-                    liveBtns.slice(0, 3).map((b: any) => ({
-                      type: "web_url",
-                      url: buildTrackedUrl(
-                        origin,
-                        b.url,
-                        targetRule.id,
-                        ruleConfig.featureLinkTracking !== false,
-                        userLog?.id,
-                        senderId
-                      ),
-                      title: b.label.slice(0, 20),
-                    }))
-                  );
-                }
-                if (liveQrs.length > 0) {
-                  return {
-                    text: mainText,
-                    quick_replies: liveQrs.slice(0, 13).map((q: any) => ({
-                      content_type: "text",
-                      title: q.label.slice(0, 20),
-                      payload: `LIVE_QR::${targetRule.id}::${q.id}`,
-                    })),
-                  };
-                }
-              }
-
-              if (targetRule.buttonText && targetRule.buttonUrl) {
-                const trackedUrl = buildTrackedUrl(
-                  origin,
-                  targetRule.buttonUrl,
-                  targetRule.id,
-                  ruleConfig.featureLinkTracking !== false,
-                  userLog?.id,
-                  senderId
-                );
-                return buildButtonTemplateMessage(mainText, [
-                  {
-                    type: "web_url",
-                    url: trackedUrl,
-                    title: targetRule.buttonText.slice(0, 20),
-                  },
-                ]);
-              }
-              return { text: mainText };
+              return buildMainDmPayload({
+                rule: targetRule,
+                ruleConfig,
+                liveContentItem: matchedLiveContentItem,
+                username: senderUsername,
+                origin,
+                logId: userLog?.id,
+                senderId,
+              });
             };
 
             let nextMsg: any = null;
@@ -1339,28 +1409,15 @@ export async function POST(req: NextRequest) {
                     initialMeta.askContactType = ruleConfig.askContactType || "Email Saja";
                     firstDmPayload = { text: resolveVariables(ruleConfig.askContactMessage, senderUsername) };
                   } else {
-                    // Pesan Utama Langsung
+                    // Pesan Utama Langsung (Mendukung BUTTON_TEMPLATE, PLAIN_TEXT, dan CAROUSEL)
                     initialMeta.mainSentAt = new Date().toISOString();
-                    const mainText = resolveVariables(ruleConfig.mainMessage || matchedRule.dmMessage || "", senderUsername);
-                    if (matchedRule.buttonText && matchedRule.buttonUrl) {
-                      const trackedUrl = buildTrackedUrl(
-                        origin,
-                        matchedRule.buttonUrl,
-                        matchedRule.id,
-                        ruleConfig.featureLinkTracking !== false,
-                        undefined,
-                        senderId
-                      );
-                      firstDmPayload = buildButtonTemplateMessage(mainText, [
-                        {
-                          type: "web_url",
-                          url: trackedUrl,
-                          title: matchedRule.buttonText.slice(0, 20),
-                        },
-                      ]);
-                    } else {
-                      firstDmPayload = { text: mainText };
-                    }
+                    firstDmPayload = buildMainDmPayload({
+                      rule: matchedRule,
+                      ruleConfig,
+                      username: senderUsername,
+                      origin,
+                      senderId,
+                    });
                   }
                 }
 
@@ -1467,7 +1524,7 @@ export async function POST(req: NextRequest) {
             } else {
               // Kontak valid! Simpan kontak ke metadata log dan kirim Pesan Utama
               const currentMeta = parseLogMeta(awaitingLog.errorMessage);
-              const updatedMeta = {
+              const updatedMeta: Record<string, any> = {
                 ...currentMeta,
                 read: true,
                 senderId,
@@ -1481,30 +1538,20 @@ export async function POST(req: NextRequest) {
                 data: { errorMessage: stringifyLogMeta(updatedMeta) },
               }).catch(() => {});
 
-              const deliveredMain = resolveVariables(
-                ruleConfig.mainMessage || targetRule.dmMessage || "Sip, kontak kamu sudah tersimpan dengan aman! Ini link akses materinya ya:",
-                senderUsername
-              );
+              const matchedLiveContentForContact =
+                updatedMeta.liveContentId && Array.isArray(ruleConfig.liveContents)
+                  ? ruleConfig.liveContents.find((c: any) => c.id === updatedMeta.liveContentId)
+                  : null;
 
-              const trackedUrl = buildTrackedUrl(
+              const finalPayload = buildMainDmPayload({
+                rule: targetRule,
+                ruleConfig,
+                liveContentItem: matchedLiveContentForContact,
+                username: senderUsername,
                 origin,
-                targetRule.buttonUrl || "https://ruangcreativemuslim.com",
-                targetRule.id,
-                ruleConfig.featureLinkTracking !== false,
-                awaitingLog.id,
-                senderId
-              );
-
-              const finalPayload =
-                targetRule.buttonText && targetRule.buttonUrl
-                  ? buildButtonTemplateMessage(deliveredMain, [
-                      {
-                        type: "web_url",
-                        url: trackedUrl,
-                        title: targetRule.buttonText.slice(0, 20),
-                      },
-                    ])
-                  : { text: deliveredMain };
+                logId: awaitingLog.id,
+                senderId,
+              });
 
               await postToMetaGraph(
                 `/me/messages`,
