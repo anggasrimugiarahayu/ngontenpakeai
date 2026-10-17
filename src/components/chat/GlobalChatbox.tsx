@@ -190,7 +190,7 @@ export default function GlobalChatbox({
                 <div className="fixed inset-0 z-[40]" onClick={(e) => { e.stopPropagation(); setIsModelMenuOpen(false); }}></div>
                 <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[180px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 cursor-default">
                   {models.map((model) => {
-                    const val = model.modelId || model.value || model.id;
+                    const val = model.modelId || model.value || model.id || "";
                     const name = model.name || model.label;
                     return (
                       <button 

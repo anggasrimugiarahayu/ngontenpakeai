@@ -273,7 +273,7 @@ export async function revalidateDashboardAction() {
       (revalidateTag as any)(tag, "default");
     } catch {
       try {
-        revalidateTag(tag);
+        (revalidateTag as any)(tag);
       } catch {}
     }
   }

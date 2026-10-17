@@ -104,17 +104,18 @@ PENTING: Format output WAJIB berupa JSON yang valid.
         
         try {
           // Upload to Gemini File API
-          const uploadResult = await ai.files.upload({
+          const uploadResult = await (ai.files.upload as any)({
              file: tempFilePath,
              mimeType: fileType,
           });
+          const uploadedFileName: string = uploadResult.name || "";
           
           // If video, we must wait for processing to complete
-          if (fileType.startsWith('video/')) {
-             let fileInfo = await ai.files.get({ name: uploadResult.name });
+          if (fileType.startsWith('video/') && uploadedFileName) {
+             let fileInfo = await ai.files.get({ name: uploadedFileName });
              while (fileInfo.state === 'PROCESSING') {
                 await new Promise(r => setTimeout(r, 2000));
-                fileInfo = await ai.files.get({ name: uploadResult.name });
+                fileInfo = await ai.files.get({ name: uploadedFileName });
              }
              if (fileInfo.state === 'FAILED') {
                 throw new Error("Video processing failed on Google Gemini servers.");
@@ -123,8 +124,8 @@ PENTING: Format output WAJIB berupa JSON yang valid.
           
           userParts.push({
             fileData: {
-              fileUri: uploadResult.uri,
-              mimeType: uploadResult.mimeType
+              fileUri: uploadResult.uri || "",
+              mimeType: uploadResult.mimeType || fileType
             }
           });
           userParts.push({ text: "\n\n[Tolong analisis referensi file video/audio di atas untuk di-ATM dengan mempertahankan Hook/Judul pembuka dan struktur aslinya]" });

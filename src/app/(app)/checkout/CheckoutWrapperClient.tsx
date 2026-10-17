@@ -45,17 +45,17 @@ export default function CheckoutWrapperClient() {
         <CheckoutClient 
           type={data.type as any} 
           productId={data.productId} 
-          itemName={data.itemName}
-          itemDescription={data.itemDescription}
-          baseAmount={data.baseAmount}
-          clientKey={data.clientKey!}
-          isProduction={data.isProduction}
-          initialName={data.initialName}
-          initialEmail={data.initialEmail}
-          initialPhone={data.initialPhone}
+          itemName={data.itemName || ""}
+          itemDescription={data.itemDescription || ""}
+          baseAmount={data.baseAmount || 0}
+          clientKey={data.clientKey || ""}
+          isProduction={Boolean(data.isProduction)}
+          initialName={data.initialName || ""}
+          initialEmail={data.initialEmail || ""}
+          initialPhone={data.initialPhone || ""}
           productImage={data.productImage}
           existingPendingOrder={data.existingPendingOrder}
-          availableAddons={data.availableAddons}
+          availableAddons={data.availableAddons || []}
           includedAddons={data.includedAddons || []}
         />
       </div>

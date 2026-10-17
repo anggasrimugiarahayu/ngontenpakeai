@@ -35,7 +35,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
       setCanvasData(initialData.aiResult);
       setBlueprintId(initialData.id);
       if (initialData.inputData && Object.keys(initialData.inputData).length > 0) {
-        setFormData(prev => ({ ...prev, ...initialData.inputData }));
+        setFormData((prev: any) => ({ ...prev, ...initialData.inputData }));
       }
     }
   }, [initialData]);

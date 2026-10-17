@@ -385,8 +385,8 @@ export async function GET(request: NextRequest) {
     }
 
     // 6. Invalidate caches
-    revalidateTag("instagram-automation");
-    revalidateTag(`instagram-automation-${userId}`);
+    try { (revalidateTag as any)("instagram-automation", "default"); } catch { try { (revalidateTag as any)("instagram-automation"); } catch {} }
+    try { (revalidateTag as any)(`instagram-automation-${userId}`, "default"); } catch { try { (revalidateTag as any)(`instagram-automation-${userId}`); } catch {} }
     revalidatePath("/ruang-automation");
 
     // 7. Redirect back to Ruang Automation with success flag

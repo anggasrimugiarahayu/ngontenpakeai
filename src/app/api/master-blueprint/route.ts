@@ -5,7 +5,7 @@ import { revalidateTag, revalidatePath } from "next/cache";
 
 function safeRevalidateBlueprint() {
   try { (revalidateTag as any)("blueprint", "default"); } catch {}
-  try { revalidateTag("blueprint"); } catch {}
+  try { (revalidateTag as any)("blueprint"); } catch {}
   try { revalidatePath("/ruang-ngonten", "layout"); } catch {}
 }
 

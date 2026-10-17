@@ -48,7 +48,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
   const isProEbook = ebook.accessLevel === "PRO";
   const isPremiumEbook = ebook.accessLevel === "PREMIUM";
   
-  const isOwned = ownedProductIds.includes(ebook.id) || isAdmin;
+  const isOwned = (ownedProductIds || []).includes(ebook.id) || isAdmin;
   let isLocked = !isOwned;
 
 
@@ -59,10 +59,10 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
   // Calculate average rating
   const totalReviews = ebook.reviews.length;
   const averageRating = totalReviews > 0 
-    ? (ebook.reviews.reduce((acc, rev) => acc + rev.rating, 0) / totalReviews).toFixed(1)
+    ? (ebook.reviews.reduce((acc: number, rev: any) => acc + rev.rating, 0) / totalReviews).toFixed(1)
     : "0.0";
     
-  const userReview = ebook.reviews.find(r => r.userId === userId);
+  const userReview = ebook.reviews.find((r: any) => r.userId === userId);
 
   // Convert Google Drive 'view' link to 'preview' to allow embedding
   let embedUrl = ebook.fileUrl || "";

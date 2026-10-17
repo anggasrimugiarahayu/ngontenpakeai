@@ -84,7 +84,7 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
       const timer = setTimeout(() => {
         preload("ruangBelajar", getRuangBelajarDataAction);
         preload("pengaturan", getPengaturanDataAction);
-        if (session.user.email === "anggasrimugiarahayu@gmail.com") {
+        if (session?.user?.email === "anggasrimugiarahayu@gmail.com") {
           preload("dashboard", getDashboardDataAction);
         }
       }, 1500);

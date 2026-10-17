@@ -3,7 +3,17 @@
 import prisma from "@/lib/prisma";
 import { PrismaClient } from "@prisma/client";
 import { auth } from "@/auth";
-import { revalidatePath, revalidateTag, unstable_cache } from "next/cache";
+import { revalidatePath, revalidateTag as nextRevalidateTag, unstable_cache } from "next/cache";
+
+function revalidateTag(tag: string) {
+  try {
+    (nextRevalidateTag as any)(tag, "default");
+  } catch {
+    try {
+      (nextRevalidateTag as any)(tag);
+    } catch {}
+  }
+}
 
 // Defensive Prisma accessor to guarantee fresh model definitions
 let fallbackPrisma: PrismaClient | null = null;
