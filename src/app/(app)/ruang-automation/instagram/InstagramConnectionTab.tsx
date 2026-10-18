@@ -103,8 +103,8 @@ export function InstagramConnectionTab({
                 </div>
 
                 {/* Right: Status (top right) & Action Buttons (bottom right) */}
-                <div className="flex flex-col items-start md:items-end justify-between gap-3.5 sm:gap-4 shrink-0 md:self-stretch pt-3 md:pt-0 border-t border-gray-100 dark:border-white/5 md:border-t-0">
-                  <div className="text-xs text-gray-400 dark:text-gray-500 font-normal md:text-right">
+                <div className="flex flex-col items-center md:items-end justify-between gap-3.5 sm:gap-4 shrink-0 md:self-stretch pt-3 md:pt-0 border-t border-gray-100 dark:border-white/5 md:border-t-0">
+                  <div className="w-full text-center md:text-right text-xs text-emerald-600 dark:text-emerald-400 font-medium">
                     Terhubung: {formattedUpdated}
                   </div>
                   <div className="flex items-center gap-2.5 w-full md:w-auto">
@@ -150,8 +150,8 @@ export function InstagramConnectionTab({
             </div>
 
             {/* Right: Status (top right) & Action Button (bottom right) */}
-            <div className="flex flex-col items-start md:items-end justify-between gap-3.5 sm:gap-4 shrink-0 md:self-stretch pt-3 md:pt-0 border-t border-gray-100 dark:border-white/5 md:border-t-0">
-              <div className="text-xs text-gray-400 dark:text-gray-500 font-normal md:text-right">
+            <div className="flex flex-col items-center md:items-end justify-between gap-3.5 sm:gap-4 shrink-0 md:self-stretch pt-3 md:pt-0 border-t border-gray-100 dark:border-white/5 md:border-t-0">
+              <div className="w-full text-center md:text-right text-xs text-gray-400 dark:text-gray-500 font-normal">
                 Belum Terhubung ke akun
               </div>
               <button
