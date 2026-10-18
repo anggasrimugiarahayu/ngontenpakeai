@@ -1864,6 +1864,7 @@ export default function RuangAutomationClient({
                     filteredRules={filteredRules}
                     filterStatus={filterStatus}
                     isAccountLinked={isAccountLinked}
+                    accountUsername={displayAccount?.username || account?.username}
                     activeStories={activeStories}
                     logs={logs}
                     activeDropdownRuleId={activeDropdownRuleId}
@@ -1882,6 +1883,7 @@ export default function RuangAutomationClient({
                     filteredRules={filteredRules}
                     filterStatus={filterStatus}
                     isAccountLinked={isAccountLinked}
+                    accountUsername={displayAccount?.username || account?.username}
                     logs={logs}
                     activeDropdownRuleId={activeDropdownRuleId}
                     setActiveDropdownRuleId={setActiveDropdownRuleId}
@@ -1899,6 +1901,7 @@ export default function RuangAutomationClient({
                     filteredRules={filteredRules}
                     filterStatus={filterStatus}
                     isAccountLinked={isAccountLinked}
+                    accountUsername={displayAccount?.username || account?.username}
                     logs={logs}
                     activeDropdownRuleId={activeDropdownRuleId}
                     setActiveDropdownRuleId={setActiveDropdownRuleId}

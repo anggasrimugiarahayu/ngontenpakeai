@@ -24,6 +24,7 @@ import {
 interface LiveRuleCardProps {
   rule: any;
   isAccountLinked: boolean;
+  accountUsername?: string | null;
   logs: any[];
   activeDropdownRuleId: string | null;
   setActiveDropdownRuleId: (id: string | null) => void;
@@ -37,6 +38,7 @@ interface LiveRuleCardProps {
 export function LiveRuleCard({
   rule,
   isAccountLinked,
+  accountUsername,
   logs,
   activeDropdownRuleId,
   setActiveDropdownRuleId,
@@ -90,53 +92,30 @@ export function LiveRuleCard({
 
   return (
     <div
-      className={`flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-[16px] sm:rounded-[20px] relative p-3 sm:p-4 gap-3 sm:gap-4 ${
-        !isAccountLinked
-          ? "border-amber-200/60 dark:border-amber-500/20 bg-amber-500/[0.02]"
-          : rule.isActive
-          ? ""
-          : "opacity-75 bg-gray-50/70 dark:bg-[#141417]"
-      }`}
+      className="flex flex-row items-stretch w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-2xl relative p-3 sm:p-5 gap-3.5 sm:gap-5"
     >
-      {/* Sisi Kiri: Cover 3:4 Live Instagram (selalu tampil agar konsisten/senada) */}
-      <div className="w-[105px] sm:w-[125px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
-        <div className="aspect-[3/4] relative flex items-center justify-center overflow-hidden bg-gray-100 dark:bg-white/5">
+      {/* Sisi Kiri: Cover 3:4 */}
+      <div className="w-[105px] sm:w-[130px] shrink-0 relative overflow-hidden bg-gray-200/80 dark:bg-white/10 rounded-xl sm:rounded-2xl shadow-2xs self-stretch min-h-[140px] sm:min-h-[160px]">
+        <div className="w-full h-full relative flex items-center justify-center overflow-hidden">
           {!isAccountLinked ? (
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gray-100 dark:bg-[#1f1f23] text-gray-400">
-              <div className="w-8 h-8 rounded-full bg-gray-200/80 dark:bg-white/10 flex items-center justify-center mb-1.5 text-gray-500 dark:text-gray-400">
-                <Unlink className="w-4 h-4" />
-              </div>
-              <span className="text-[10px] sm:text-[11px] font-bold text-gray-600 dark:text-gray-300 leading-tight">
-                Tidak<br />Terhubung
-              </span>
+            <div className="absolute inset-0 flex items-center justify-center p-2 text-center text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm">
+              Terputus
             </div>
           ) : (
-            <div className="absolute inset-0 flex flex-col items-center justify-center p-2 text-center bg-gradient-to-br from-rose-500/20 via-fuchsia-500/15 to-orange-500/20 dark:bg-white/5">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-rose-500 via-pink-500 to-fuchsia-600 flex items-center justify-center text-white mb-1.5 shadow-sm">
-                <Radio className="w-4 h-4" />
-              </div>
-              <span className="text-[10px] font-bold text-gray-800 dark:text-gray-200 leading-tight">
-                Live
-                <br />
-                Instagram
-              </span>
-              {liveContents.length > 0 && (
-                <span className="mt-1.5 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-rose-500/15 text-rose-600 dark:text-rose-400 border border-rose-500/20">
-                  {liveContents.length} Konten
-                </span>
-              )}
+            <div className="absolute inset-0 flex items-center justify-center p-2 text-center text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm">
+              Live Instagram
             </div>
           )}
         </div>
       </div>
 
       {/* Sisi Kanan: Konten Informasi */}
-      <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5">
+      <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5 gap-2.5">
         <div>
           {/* Baris 1: Judul & Menu Titik Tiga */}
           <div className="flex items-start justify-between gap-2 mb-0.5">
             <h3
-              className="text-[15px] sm:text-[17px] font-bold leading-tight tracking-tight text-gray-900 dark:text-white line-clamp-1 flex-1"
+              className="text-base sm:text-lg font-bold leading-tight tracking-tight text-gray-900 dark:text-white line-clamp-1 flex-1"
               title={rule.name}
             >
               {rule.name}
@@ -151,7 +130,7 @@ export function LiveRuleCard({
                     activeDropdownRuleId === rule.id ? null : rule.id
                   )
                 }
-                className="w-7 h-7 rounded-lg border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
                 title="Opsi Aturan"
               >
                 <MoreVertical className="w-4 h-4" />
@@ -164,7 +143,7 @@ export function LiveRuleCard({
                       setActiveDropdownRuleId(null);
                       handleToggleRule(rule.id, rule.isActive);
                     }}
-                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2.5 transition-colors"
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2.5 transition-colors cursor-pointer"
                   >
                     {rule.isActive ? (
                       <>
@@ -184,7 +163,7 @@ export function LiveRuleCard({
                       setActiveDropdownRuleId(null);
                       handleDuplicateRule(rule.id);
                     }}
-                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2.5 transition-colors"
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2.5 transition-colors cursor-pointer"
                   >
                     <Copy className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                     <span>Buat Salinan</span>
@@ -195,7 +174,7 @@ export function LiveRuleCard({
                       setActiveDropdownRuleId(null);
                       handleOpenEditRuleModal(rule);
                     }}
-                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2.5 transition-colors"
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2.5 transition-colors cursor-pointer"
                   >
                     <Pencil className="w-3.5 h-3.5 text-gray-600 dark:text-gray-400" />
                     <span>Edit</span>
@@ -206,7 +185,7 @@ export function LiveRuleCard({
                       setActiveDropdownRuleId(null);
                       handleDeleteRule(rule.id, rule.name);
                     }}
-                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2.5 transition-colors border-t border-gray-100 dark:border-white/5"
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2.5 transition-colors border-t border-gray-100 dark:border-white/5 cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5 text-rose-500" />
                     <span>Hapus</span>
@@ -217,50 +196,103 @@ export function LiveRuleCard({
           </div>
 
           {/* Baris 2: Status */}
-          <div className="mb-1 leading-none">
+          <div className="mb-2 leading-none">
             {!isAccountLinked ? (
-              <span className="text-[11px] font-semibold text-amber-600 dark:text-amber-400">
+              <span className="text-xs sm:text-sm font-medium text-gray-400 dark:text-gray-500">
                 Terputus
               </span>
             ) : (
-              <span
-                className={`text-[11px] font-semibold ${
-                  rule.isActive
-                    ? "text-emerald-600 dark:text-emerald-400"
-                    : "text-gray-400"
-                }`}
-              >
-                {rule.isActive ? "Berjalan" : "Nonaktif"}
+              <span className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                Terhubung
               </span>
             )}
           </div>
 
-          {/* Baris 3: Detail */}
-          <div className="flex items-center gap-1.5 text-xs mb-2.5 flex-wrap">
-            <button
-              type="button"
-              onClick={() => setDetailRuleId(rule.id)}
-              className="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 inline-flex items-center gap-0.5 font-semibold transition-colors cursor-pointer"
-            >
-              Detail <ChevronRight className="w-3.5 h-3.5" />
-            </button>
+          {/* Baris 3: 4 Metrics Columns */}
+          <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-2.5 max-w-sm">
+            <div>
+              <span className="text-[11px] sm:text-xs text-gray-400 block font-normal leading-none mb-1">
+                Terkirim
+              </span>
+              <span
+                className={`text-base sm:text-lg font-bold block leading-none ${
+                  isAccountLinked
+                    ? "text-orange-600 dark:text-orange-500"
+                    : "text-gray-600 dark:text-gray-400"
+                }`}
+              >
+                {sentCount}
+              </span>
+            </div>
+            <div>
+              <span className="text-[11px] sm:text-xs text-gray-400 block font-normal leading-none mb-1">
+                Klik
+              </span>
+              <span
+                className={`text-base sm:text-lg font-bold block leading-none ${
+                  isAccountLinked
+                    ? "text-orange-600 dark:text-orange-500"
+                    : "text-gray-600 dark:text-gray-400"
+                }`}
+              >
+                {clickCount}
+              </span>
+            </div>
+            <div>
+              <span className="text-[11px] sm:text-xs text-gray-400 block font-normal leading-none mb-1">
+                Follower
+              </span>
+              <span
+                className={`text-base sm:text-lg font-bold block leading-none ${
+                  isAccountLinked
+                    ? "text-orange-600 dark:text-orange-500"
+                    : "text-gray-600 dark:text-gray-400"
+                }`}
+              >
+                {followerCount}
+              </span>
+            </div>
+            <div>
+              <span className="text-[11px] sm:text-xs text-gray-400 block font-normal leading-none mb-1">
+                CTR
+              </span>
+              <span
+                className={`text-base sm:text-lg font-bold block leading-none ${
+                  isAccountLinked
+                    ? "text-orange-600 dark:text-orange-500"
+                    : "text-gray-600 dark:text-gray-400"
+                }`}
+              >
+                {ctrRate}
+              </span>
+            </div>
           </div>
 
           {/* Baris 4: Kata Pemicu */}
-          <div className="mb-2.5">
-            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 block mb-1">
+          <div className="mb-2">
+            <span className="text-[11px] sm:text-xs text-gray-400 block font-normal mb-1">
               Kata Pemicu
             </span>
             <div className="flex items-center gap-1.5 flex-wrap">
               {keywordList.length === 0 ? (
-                <span className="font-semibold rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 inline-flex items-center gap-1">
-                  <Link2 className="w-3 h-3" /> Semua Kata
+                <span
+                  className={`font-bold uppercase text-[10px] sm:text-[11px] px-2 py-0.5 rounded-sm tracking-wide ${
+                    isAccountLinked
+                      ? "bg-[#ff5500] text-white"
+                      : "bg-[#6b7280] text-white"
+                  }`}
+                >
+                  SEMUA KATA
                 </span>
               ) : (
                 keywordList.map((kw: string, idx: number) => (
                   <span
                     key={idx}
-                    className="font-medium rounded-md px-2 py-0.5 text-[10px] sm:text-[11px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border border-gray-200/60 dark:border-white/5"
+                    className={`font-bold uppercase text-[10px] sm:text-[11px] px-2 py-0.5 rounded-sm tracking-wide ${
+                      isAccountLinked
+                        ? "bg-[#ff5500] text-white"
+                        : "bg-[#6b7280] text-white"
+                    }`}
                   >
                     {kw}
                   </span>
@@ -270,40 +302,31 @@ export function LiveRuleCard({
           </div>
         </div>
 
-        {/* Baris 5: 4 Metrics Columns */}
-        <div className="pt-2 border-t border-gray-100 dark:border-white/5 grid grid-cols-4 gap-1.5 text-center sm:text-left">
-          <div>
-            <span className="text-[10px] text-gray-400 block font-medium leading-none">
-              Terkirim
-            </span>
-            <span className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">
-              {sentCount}
-            </span>
-          </div>
-          <div>
-            <span className="text-[10px] text-gray-400 block font-medium leading-none">
-              Mengklik
-            </span>
-            <span className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">
-              {clickCount}
-            </span>
-          </div>
-          <div>
-            <span className="text-[10px] text-gray-400 block font-medium leading-none">
-              CTR
-            </span>
-            <span className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">
-              {ctrRate}
-            </span>
-          </div>
-          <div>
-            <span className="text-[10px] text-gray-400 block font-medium leading-none">
-              Follower
-            </span>
-            <span className="font-bold text-gray-900 dark:text-white text-xs sm:text-sm">
-              {followerCount}
-            </span>
-          </div>
+        {/* Baris 5: Action Buttons (Bawah Kanan) */}
+        <div className="flex items-center justify-end gap-2 sm:gap-2.5 pt-1">
+          <button
+            type="button"
+            onClick={() => {
+              if (accountUsername) {
+                window.open(
+                  `https://instagram.com/${accountUsername.replace(/^@/, "")}`,
+                  "_blank"
+                );
+              } else {
+                window.open("https://instagram.com", "_blank");
+              }
+            }}
+            className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-[#222226] hover:bg-black dark:bg-[#222226] dark:hover:bg-[#2c2c31] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs active:scale-[0.98] cursor-pointer"
+          >
+            Lihat Profile
+          </button>
+          <button
+            type="button"
+            onClick={() => setDetailRuleId(rule.id)}
+            className="px-4 sm:px-5 py-1.5 sm:py-2 rounded-xl bg-[#222226] hover:bg-black dark:bg-[#222226] dark:hover:bg-[#2c2c31] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs active:scale-[0.98] cursor-pointer"
+          >
+            Detail
+          </button>
         </div>
       </div>
     </div>
@@ -314,6 +337,7 @@ interface LiveAutomationSectionProps {
   filteredRules: any[];
   filterStatus: "ALL" | "ACTIVE" | "INACTIVE";
   isAccountLinked: boolean;
+  accountUsername?: string | null;
   logs: any[];
   activeDropdownRuleId: string | null;
   setActiveDropdownRuleId: (id: string | null) => void;
@@ -329,6 +353,7 @@ export function LiveAutomationSection({
   filteredRules,
   filterStatus,
   isAccountLinked,
+  accountUsername,
   logs,
   activeDropdownRuleId,
   setActiveDropdownRuleId,
@@ -376,6 +401,7 @@ export function LiveAutomationSection({
               key={rule.id}
               rule={rule}
               isAccountLinked={isAccountLinked}
+              accountUsername={accountUsername}
               logs={logs}
               activeDropdownRuleId={activeDropdownRuleId}
               setActiveDropdownRuleId={setActiveDropdownRuleId}
