@@ -80,7 +80,7 @@ export async function handlePostbackEvent(
     const pbRuleId = parts[1];
     const itemId = parts[2];
     const pbRule = await (prisma as any).instagramAutomationRule.findFirst({
-      where: { id: pbRuleId },
+      where: { id: pbRuleId, accountId: account.id },
     });
     if (pbRule) {
       let pbRuleConfig: any = {};
@@ -136,7 +136,7 @@ export async function handlePostbackEvent(
 
   const ruleId = postbackPayload.split("_").pop();
   const targetRule = await (prisma as any).instagramAutomationRule.findFirst({
-    where: { id: ruleId },
+    where: { id: ruleId, accountId: account.id },
   });
 
   if (!targetRule) return;

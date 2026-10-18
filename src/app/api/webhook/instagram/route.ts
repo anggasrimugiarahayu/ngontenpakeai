@@ -93,6 +93,11 @@ export async function POST(req: NextRequest) {
       // =========================================================================
       const messagingList = entry.messaging || [];
       for (const msgEvent of messagingList) {
+        // Abaikan echo message (pesan keluar dari bot sendiri yang direfleksikan kembali oleh Meta)
+        if (msgEvent.message?.is_echo) {
+          continue;
+        }
+
         const senderId = String(msgEvent.sender?.id || "");
         const msgText = (msgEvent.message?.text || "").trim();
         const postbackPayload =
