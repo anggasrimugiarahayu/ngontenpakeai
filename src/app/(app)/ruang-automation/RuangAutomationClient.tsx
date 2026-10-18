@@ -1982,8 +1982,8 @@ export default function RuangAutomationClient({
         setSimulatedLiveQrId={setSimulatedLiveQrId}
         simulatedFollowStep={simulatedFollowStep}
         setSimulatedFollowStep={setSimulatedFollowStep}
-        account={account}
-        currentAgent={currentAgent}
+        account={displayAccount || currentAgent || account}
+        currentAgent={currentAgent || displayAccount || account}
         showToast={showToast}
       />
 

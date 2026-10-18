@@ -85,6 +85,16 @@ export function InstagramPhonePreview({
   simulatedLiveQrId,
   setSimulatedLiveQrId,
 }: InstagramPhonePreviewProps) {
+  const activeAccount = currentAgent || account;
+  const previewUsername =
+    activeAccount?.username ||
+    activeAccount?.name?.replace(/^Agen\s*@?/i, "") ||
+    "ruangcreativemuslim";
+  const previewDisplayName =
+    activeAccount?.profileName || activeAccount?.name || previewUsername;
+  const previewAvatarUrl =
+    activeAccount?.profilePicUrl || "/images/instagram/rcm-avatar.png";
+
   return (
     <div className="lg:col-span-7 xl:col-span-7 bg-gray-50/70 dark:bg-black/30 p-5 md:p-6 flex flex-col justify-between overflow-y-auto">
       {/* Header Pratinjau */}
@@ -210,8 +220,8 @@ export function InstagramPhonePreview({
                     </button>
                     <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-yellow-400 to-pink-500 p-0.5 shrink-0 overflow-hidden shadow-2xs">
                       <img
-                        src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
-                        alt={account?.username || "ruangcreativemuslim"}
+                        src={previewAvatarUrl}
+                        alt={previewUsername}
                         className="w-full h-full object-cover rounded-full"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).src = "/images/instagram/rcm-avatar.png";
@@ -220,10 +230,10 @@ export function InstagramPhonePreview({
                     </div>
                     <div className="min-w-0">
                       <span className="block font-bold text-xs text-gray-900 dark:text-white truncate leading-tight">
-                        {currentAgent?.name || "Harits | Faceless Cor"}
+                        {previewDisplayName}
                       </span>
                       <span className="block text-[10px] text-gray-400 truncate -mt-0.5 font-medium">
-                        @{account?.username || "ruangcreativemuslim"}
+                        @{previewUsername}
                       </span>
                     </div>
                   </div>
@@ -310,7 +320,7 @@ export function InstagramPhonePreview({
                       <div className="flex items-start gap-2 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
                         <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
                           <img
-                            src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
+                            src={previewAvatarUrl}
                             alt="Profile"
                             className="w-full h-full object-cover"
                             onError={(e) => {
@@ -359,7 +369,7 @@ export function InstagramPhonePreview({
                       <div className="flex items-start gap-2 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
                         <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
                           <img
-                            src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
+                            src={previewAvatarUrl}
                             alt="Profile"
                             className="w-full h-full object-cover"
                             onError={(e) => {
@@ -414,7 +424,7 @@ export function InstagramPhonePreview({
                           <div className="flex items-start gap-2 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
                             <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
                               <img
-                                src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
+                                src={previewAvatarUrl}
                                 alt="Profile"
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
@@ -483,7 +493,7 @@ export function InstagramPhonePreview({
                           <div className="flex items-start gap-2 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
                             <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
                               <img
-                                src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
+                                src={previewAvatarUrl}
                                 alt="Profile"
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
@@ -525,11 +535,7 @@ export function InstagramPhonePreview({
                                 carouselSlides: ruleFormData.carouselSlides || [],
                               }
                         }
-                        avatarUrl={
-                          account?.profilePicUrl ||
-                          currentAgent?.profilePicUrl ||
-                          "/images/instagram/rcm-avatar.png"
-                        }
+                        avatarUrl={previewAvatarUrl}
                         resolvePreviewVariables={resolvePreviewVariables}
                         defaultSlideImage={selectedPost?.image || feedPosts[0]?.image || ""}
                         simulatedButtonId={simulatedButtonId}
@@ -553,7 +559,7 @@ export function InstagramPhonePreview({
                           <div className="flex items-start gap-2 pt-0.5">
                             <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
                               <img
-                                src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
+                                src={previewAvatarUrl}
                                 alt="Profile"
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
@@ -625,8 +631,8 @@ export function InstagramPhonePreview({
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-yellow-400 via-rose-500 to-purple-600 p-[1.5px] shrink-0 overflow-hidden shadow-xs">
                       <img
-                        src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
-                        alt={account?.username || "ruangcreativemuslim"}
+                        src={previewAvatarUrl}
+                        alt={previewUsername}
                         className="w-full h-full object-cover rounded-full"
                         onError={(e) => {
                           (e.currentTarget as HTMLImageElement).src = "/images/instagram/rcm-avatar.png";
@@ -634,7 +640,7 @@ export function InstagramPhonePreview({
                       />
                     </div>
                     <span className="font-bold text-xs text-white truncate max-w-[120px]">
-                      {account?.username || "ruangcreativemuslim"}
+                      {previewUsername}
                     </span>
                     <span className="text-[11px] text-white/70 shrink-0">10m</span>
                   </div>
@@ -722,7 +728,7 @@ export function InstagramPhonePreview({
                   <ArrowLeft className="w-4 h-4 text-gray-800 dark:text-gray-200" />
                   <div className="text-center">
                     <span className="text-[10px] text-gray-400 block -mb-0.5 font-medium">
-                      {account?.username || "ruangcreativemuslim"}
+                      {previewUsername}
                     </span>
                     <span className="text-xs font-bold">
                       {ruleFormData.targetOtomasi.includes("Story") ? "Story" : "Postingan"}
@@ -739,8 +745,8 @@ export function InstagramPhonePreview({
                       <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-yellow-400 to-orange-500 p-0.5 shrink-0 overflow-hidden shadow-xs">
                         <div className="w-full h-full rounded-full bg-white dark:bg-black overflow-hidden flex items-center justify-center">
                           <img
-                            src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
-                            alt={account?.username || "ruangcreativemuslim"}
+                            src={previewAvatarUrl}
+                            alt={previewUsername}
                             className="w-full h-full object-cover rounded-full"
                             onError={(e) => {
                               (e.currentTarget as HTMLImageElement).src = "/images/instagram/rcm-avatar.png";
@@ -748,7 +754,7 @@ export function InstagramPhonePreview({
                           />
                         </div>
                       </div>
-                      <span className="font-bold text-xs">{account?.username || "ruangcreativemuslim"}</span>
+                      <span className="font-bold text-xs">{previewUsername}</span>
                     </div>
                     <span className="text-gray-800 dark:text-gray-200 text-sm font-bold tracking-widest leading-none">•••</span>
                   </div>
@@ -796,7 +802,7 @@ export function InstagramPhonePreview({
                   {/* Caption Block */}
                   <div className="space-y-0.5 px-4 pt-0.5 pb-2">
                     <p className="text-xs leading-relaxed">
-                      <strong className="font-bold mr-1.5">{account?.username || "ruangcreativemuslim"}</strong>
+                      <strong className="font-bold mr-1.5">{previewUsername}</strong>
                       <span className="text-gray-700 dark:text-gray-300">
                         {selectedPost?.caption || "Kehilangan penghasilan tetap bukan akhir segalanya kalau kamu punya sistem yang..."}
                       </span>
@@ -818,7 +824,7 @@ export function InstagramPhonePreview({
                   <Film className="w-4 h-4" />
                   <div className="w-5 h-5 rounded-full bg-gradient-to-tr from-yellow-400 to-orange-500 p-0.5 shrink-0 overflow-hidden">
                     <img
-                      src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
+                      src={previewAvatarUrl}
                       alt="Profile"
                       className="w-full h-full object-cover rounded-full"
                       onError={(e) => {
@@ -886,7 +892,7 @@ export function InstagramPhonePreview({
                             {/* Bot Avatar */}
                             <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-white/10 mt-0.5">
                               <img
-                                src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
+                                src={previewAvatarUrl}
                                 alt="Bot"
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
@@ -897,7 +903,7 @@ export function InstagramPhonePreview({
                             <div className="space-y-0.5 min-w-0 flex-1">
                               <div className="flex items-center gap-1.5 flex-wrap">
                                 <span className="font-bold text-xs text-gray-900 dark:text-white">
-                                  {account?.username || currentAgent?.name || "ruangcreativemuslim"}
+                                  {previewUsername}
                                 </span>
                                 <span className="text-[10px] text-gray-400">
                                   baru saja
@@ -943,7 +949,7 @@ export function InstagramPhonePreview({
                     <div className="flex items-center gap-2.5 px-3 py-2 border-t border-gray-100 dark:border-white/5 bg-gray-50/70 dark:bg-white/[0.02] shrink-0">
                       <div className="w-5 h-5 rounded-full overflow-hidden shrink-0 border border-gray-200 dark:border-white/10">
                         <img
-                          src={account?.profilePicUrl || currentAgent?.profilePicUrl || "/images/instagram/rcm-avatar.png"}
+                          src={previewAvatarUrl}
                           alt="Profile"
                           className="w-full h-full object-cover"
                           onError={(e) => {

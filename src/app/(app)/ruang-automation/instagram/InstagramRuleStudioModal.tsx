@@ -833,8 +833,8 @@ export function InstagramRuleStudioModal({
                 activeLiveContentIdx={activeLiveContentIdx}
                 setActiveLiveContentIdx={setActiveLiveContentIdx}
                 activeLiveContent={activeLiveContent}
-                account={account}
-                currentAgent={currentAgent}
+                account={currentAgent || account}
+                currentAgent={currentAgent || account}
                 selectedPost={selectedPost}
                 selectedStory={selectedStory}
                 feedPosts={feedPosts}
