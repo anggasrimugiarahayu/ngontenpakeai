@@ -8,6 +8,22 @@ import {
   stringifyLogMeta,
 } from "./webhookHelpers";
 
+const processedComments = new Map<string, number>();
+
+function isCommentDebounced(commentId: string, windowMs = 15000): boolean {
+  if (!commentId) return false;
+  const now = Date.now();
+  const lastTime = processedComments.get(commentId);
+  if (lastTime && now - lastTime < windowMs) return true;
+  processedComments.set(commentId, now);
+  if (processedComments.size > 500) {
+    for (const [k, time] of processedComments.entries()) {
+      if (now - time > 60000) processedComments.delete(k);
+    }
+  }
+  return false;
+}
+
 /**
  * Handler: Komentar masuk pada Post/Reels (field === "comments") maupun Live Instagram (field === "live_comments")
  */
@@ -23,11 +39,16 @@ export async function handleCommentEvent(change: any, account: any, origin: stri
     change.field === "live_comments" ||
     String(comment.media?.media_product_type || "").toUpperCase() === "LIVE";
 
+  if (!commentId || !commentText) return;
+
+  if (isCommentDebounced(commentId, 15000)) {
+    console.log(`⏩ [Meta Webhook] Comment ID ${commentId} already processed (in-memory debounce). Skipping duplicate.`);
+    return;
+  }
+
   console.log(
     `💬 [Meta Webhook] New ${isLiveCommentEvent ? "LIVE comment" : "comment"} on media ${mediaId} from @${fromUsername} (${fromId}): "${commentText}"`
   );
-
-  if (!commentId || !commentText) return;
 
   // Jika dari username berbeda namun fromId sama dengan account.instagramId (indikasi ID akun di DB belum tersinkron dengan user_id asli),
   // lakukan verifikasi dinamis ke Meta API

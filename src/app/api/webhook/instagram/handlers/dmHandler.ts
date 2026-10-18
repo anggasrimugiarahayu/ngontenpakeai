@@ -11,6 +11,23 @@ import {
   stringifyLogMeta,
 } from "./webhookHelpers";
 
+// In-Memory Debounce Cache untuk Pesan DM Masuk
+const processedDms = new Map<string, number>();
+
+function isDmDebounced(messageId: string, windowMs = 15000): boolean {
+  if (!messageId) return false;
+  const now = Date.now();
+  const lastTime = processedDms.get(messageId);
+  if (lastTime && now - lastTime < windowMs) return true;
+  processedDms.set(messageId, now);
+  if (processedDms.size > 500) {
+    for (const [k, time] of processedDms.entries()) {
+      if (now - time > 60000) processedDms.delete(k);
+    }
+  }
+  return false;
+}
+
 /**
  * Handler: Pesan DM Teks Masuk
  * Menangani:
@@ -28,6 +45,10 @@ export async function handleIncomingDmEvent(
   if (!msgText || msgEvent.message?.is_echo) return;
 
   const messageId = msgEvent.message?.mid || msgEvent.message?.id || (msgEvent as any)?.mid;
+  if (messageId && isDmDebounced(messageId, 15000)) {
+    console.log(`⏩ [Meta Webhook] DM messageId ${messageId} already processed (in-memory debounce). Skipping duplicate.`);
+    return;
+  }
   const userProfile = await getIgUserProfile(senderId, account.accessToken);
   const senderUsername = userProfile.username || "kak";
 

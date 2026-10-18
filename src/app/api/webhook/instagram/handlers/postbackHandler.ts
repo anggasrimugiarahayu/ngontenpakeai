@@ -9,6 +9,32 @@ import {
   stringifyLogMeta,
 } from "./webhookHelpers";
 
+// In-Memory Debounce Cache (Mencegah event duplikat dari retry Meta atau klik ganda tak sengaja dalam 8 detik)
+const recentPostbackEvents = new Map<string, number>();
+
+function isPostbackDebounced(senderId: string, payload: string, windowMs = 8000): boolean {
+  const now = Date.now();
+  const dedupKey = `${senderId}:${payload}`;
+  const lastTime = recentPostbackEvents.get(dedupKey);
+
+  if (lastTime && now - lastTime < windowMs) {
+    return true; // Sedang dalam masa cooldown debounce
+  }
+
+  recentPostbackEvents.set(dedupKey, now);
+
+  // Bersihkan cache yang sudah lebih dari 30 detik agar hemat memori
+  if (recentPostbackEvents.size > 500) {
+    for (const [key, timestamp] of recentPostbackEvents.entries()) {
+      if (now - timestamp > 30000) {
+        recentPostbackEvents.delete(key);
+      }
+    }
+  }
+
+  return false;
+}
+
 /**
  * Handler: Postback & Quick Reply (LIVE_QR::, BTN_TEXT::, WELCOME_AGREE_, CHECK_FOLLOW_)
  */
@@ -19,6 +45,16 @@ export async function handlePostbackEvent(
   msgText: string,
   postbackPayload: string
 ) {
+  // 1. In-Memory Debounce Guard (Jeda 8 detik)
+  // Menahan retry otomatis dari Meta / double-tap dalam rentang 8 detik
+  // Jika lewat dari 8 detik (misal user klik lagi di lain waktu), pesan akan tetap dikirim normal 1x
+  if (isPostbackDebounced(senderId, postbackPayload, 8000)) {
+    console.log(
+      `⏩ [Meta Webhook] Suppressed duplicate postback event for sender ${senderId} (payload: ${postbackPayload}) within debounce window.`
+    );
+    return;
+  }
+
   if (postbackPayload.startsWith("LIVE_QR::") || postbackPayload.startsWith("BTN_TEXT::")) {
     const isBtnText = postbackPayload.startsWith("BTN_TEXT::");
     const parts = postbackPayload.split("::");
@@ -113,10 +149,28 @@ export async function handlePostbackEvent(
     }) || recentLogs[0];
 
   const currentMeta = userLog ? parseLogMeta(userLog.errorMessage) : {};
+
+  // 2. Database Cooldown Guard (Perlindungan lintas container serverless dalam 8 detik)
+  const now = Date.now();
+  const lastPostbackTime = currentMeta.lastPostbackAt ? new Date(currentMeta.lastPostbackAt).getTime() : 0;
+  const mainSentTime = currentMeta.mainSentAt ? new Date(currentMeta.mainSentAt).getTime() : 0;
+
+  if (
+    (currentMeta.lastPostbackPayload === postbackPayload && now - lastPostbackTime < 8000) ||
+    (postbackPayload.startsWith("WELCOME_AGREE") && currentMeta.mainSentAt && now - mainSentTime < 8000)
+  ) {
+    console.log(
+      `⏩ [Meta Webhook] Suppressed duplicate postback via DB cooldown for sender ${senderId} (last action was < 8s ago).`
+    );
+    return;
+  }
+
   const updatedMeta: Record<string, any> = {
     ...currentMeta,
     read: true,
     senderId,
+    lastPostbackAt: new Date().toISOString(),
+    lastPostbackPayload: postbackPayload,
   };
 
   const matchedLiveContentItem =
