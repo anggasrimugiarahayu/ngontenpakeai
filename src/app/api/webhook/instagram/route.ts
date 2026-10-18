@@ -63,6 +63,21 @@ export async function POST(req: NextRequest) {
         continue;
       }
 
+      // Filter Dual-Pipeline Meta:
+      // Jika akun memiliki instagramId resmi, dan entry ini datang dari pageId terhubung (bukan instagramId):
+      // Abaikan entry pageId ini karena Meta selalu mengirimkan event yang sama lewat jalur resmi instagramId!
+      if (
+        account.instagramId &&
+        account.pageId &&
+        igAccountId === account.pageId &&
+        igAccountId !== account.instagramId
+      ) {
+        console.log(
+          `⏩ [Meta Webhook] Skipping duplicate Page-level entry ${igAccountId} for Instagram account @${account.username} (${account.instagramId})`
+        );
+        continue;
+      }
+
       // =========================================================================
       // A. EVENT: KOMENTAR MASUK (field === "comments" atau "live_comments")
       // =========================================================================

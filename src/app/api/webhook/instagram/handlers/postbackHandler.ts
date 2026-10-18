@@ -11,6 +11,7 @@ import {
 
 // In-Memory Debounce Cache (Mencegah event duplikat dari retry Meta atau klik ganda tak sengaja dalam 8 detik)
 const recentPostbackEvents = new Map<string, number>();
+const recentUserPostbackEvents = new Map<string, number>();
 
 function isPostbackDebounced(senderId: string, payload: string, windowMs = 8000): boolean {
   const now = Date.now();
@@ -32,6 +33,24 @@ function isPostbackDebounced(senderId: string, payload: string, windowMs = 8000)
     }
   }
 
+  return false;
+}
+
+function isUserPostbackDebounced(key: string, windowMs = 8000): boolean {
+  if (!key) return false;
+  const now = Date.now();
+  const lastTime = recentUserPostbackEvents.get(key);
+  if (lastTime && now - lastTime < windowMs) {
+    return true;
+  }
+  recentUserPostbackEvents.set(key, now);
+  if (recentUserPostbackEvents.size > 500) {
+    for (const [k, timestamp] of recentUserPostbackEvents.entries()) {
+      if (now - timestamp > 30000) {
+        recentUserPostbackEvents.delete(k);
+      }
+    }
+  }
   return false;
 }
 
@@ -133,6 +152,18 @@ export async function handlePostbackEvent(
   const userProfile = await getIgUserProfile(senderId, account.accessToken);
   const senderUsername = userProfile.username || "kak";
 
+  // 1b. Username-Level Debounce Guard (Jeda 8 detik)
+  // Menjaga jika Meta mengirim 2 event dengan senderId berbeda (Page-scoped vs Instagram-scoped) untuk username yang sama
+  if (senderUsername && senderUsername !== "kak") {
+    const userDedupKey = `${account.id}:${senderUsername.toLowerCase()}:${postbackPayload}`;
+    if (isUserPostbackDebounced(userDedupKey, 8000)) {
+      console.log(
+        `⏩ [Meta Webhook] Suppressed duplicate postback event for user @${senderUsername} (${userDedupKey}) within debounce window.`
+      );
+      return;
+    }
+  }
+
   // Cari log terbaru untuk user & rule ini agar bisa diupdate status read / newFollower / awaitingContact
   const recentLogs = await (prisma as any).instagramAutomationLog.findMany({
     where: { ruleId: targetRule.id },
@@ -144,7 +175,7 @@ export async function handlePostbackEvent(
       const m = parseLogMeta(l.errorMessage);
       return (
         m.senderId === senderId ||
-        (senderUsername && l.fromUsername?.toLowerCase() === senderUsername.toLowerCase())
+        (senderUsername && senderUsername !== "kak" && l.fromUsername?.toLowerCase() === senderUsername.toLowerCase())
       );
     }) || recentLogs[0];
 
