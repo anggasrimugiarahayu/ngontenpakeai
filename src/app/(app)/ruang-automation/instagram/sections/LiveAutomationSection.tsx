@@ -94,8 +94,8 @@ export function LiveRuleCard({
     <div
       className="flex flex-row items-stretch w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-2xl relative p-3 sm:p-5 gap-3.5 sm:gap-5"
     >
-      {/* Sisi Kiri: Cover 4:5 */}
-      <div className="w-[120px] sm:w-[150px] md:w-[165px] aspect-[4/5] shrink-0 relative overflow-hidden bg-gray-200/80 dark:bg-white/10 rounded-xl sm:rounded-2xl shadow-2xs self-start">
+      {/* Sisi Kiri: Cover 4:5 Ramping */}
+      <div className="w-[105px] sm:w-[125px] aspect-[4/5] shrink-0 relative overflow-hidden bg-gray-200/80 dark:bg-white/10 rounded-xl sm:rounded-2xl shadow-2xs self-start">
         <div className="w-full h-full relative flex items-center justify-center overflow-hidden">
           {!isAccountLinked ? (
             <div className="absolute inset-0 flex items-center justify-center p-2 text-center text-gray-500 dark:text-gray-400 font-semibold text-xs sm:text-sm">
@@ -209,13 +209,13 @@ export function LiveRuleCard({
           </div>
 
           {/* Baris 3: 4 Metrics Columns */}
-          <div className="grid grid-cols-4 gap-2 sm:gap-4 max-w-sm pt-0.5">
+          <div className="grid grid-cols-4 gap-2 sm:gap-3 max-w-sm pt-0.5">
             <div>
-              <span className="text-[11px] sm:text-xs text-gray-400 block font-normal leading-none mb-1">
+              <span className="text-[10px] sm:text-[11px] text-gray-400 block font-normal leading-tight mb-1">
                 Terkirim
               </span>
               <span
-                className={`text-base sm:text-lg font-bold block leading-none ${
+                className={`text-sm sm:text-base font-bold block leading-none ${
                   isAccountLinked
                     ? "text-orange-600 dark:text-orange-500"
                     : "text-gray-600 dark:text-gray-400"
@@ -225,11 +225,11 @@ export function LiveRuleCard({
               </span>
             </div>
             <div>
-              <span className="text-[11px] sm:text-xs text-gray-400 block font-normal leading-none mb-1">
+              <span className="text-[10px] sm:text-[11px] text-gray-400 block font-normal leading-tight mb-1">
                 Klik
               </span>
               <span
-                className={`text-base sm:text-lg font-bold block leading-none ${
+                className={`text-sm sm:text-base font-bold block leading-none ${
                   isAccountLinked
                     ? "text-orange-600 dark:text-orange-500"
                     : "text-gray-600 dark:text-gray-400"
@@ -239,11 +239,11 @@ export function LiveRuleCard({
               </span>
             </div>
             <div>
-              <span className="text-[11px] sm:text-xs text-gray-400 block font-normal leading-none mb-1">
+              <span className="text-[10px] sm:text-[11px] text-gray-400 block font-normal leading-tight mb-1">
                 Follower
               </span>
               <span
-                className={`text-base sm:text-lg font-bold block leading-none ${
+                className={`text-sm sm:text-base font-bold block leading-none ${
                   isAccountLinked
                     ? "text-orange-600 dark:text-orange-500"
                     : "text-gray-600 dark:text-gray-400"
@@ -253,11 +253,11 @@ export function LiveRuleCard({
               </span>
             </div>
             <div>
-              <span className="text-[11px] sm:text-xs text-gray-400 block font-normal leading-none mb-1">
+              <span className="text-[10px] sm:text-[11px] text-gray-400 block font-normal leading-tight mb-1">
                 CTR
               </span>
               <span
-                className={`text-base sm:text-lg font-bold block leading-none ${
+                className={`text-sm sm:text-base font-bold block leading-none ${
                   isAccountLinked
                     ? "text-orange-600 dark:text-orange-500"
                     : "text-gray-600 dark:text-gray-400"
@@ -270,7 +270,7 @@ export function LiveRuleCard({
 
           {/* Baris 4: Kata Pemicu */}
           <div>
-            <span className="text-[11px] sm:text-xs text-gray-400 block font-normal mb-1">
+            <span className="text-[10px] sm:text-[11px] text-gray-400 block font-normal mb-1">
               Kata Pemicu
             </span>
             <div className="flex items-center gap-1.5 flex-wrap">
@@ -316,14 +316,14 @@ export function LiveRuleCard({
                 window.open("https://instagram.com", "_blank");
               }
             }}
-            className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-[#222226] hover:bg-black dark:bg-[#222226] dark:hover:bg-[#2c2c31] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs active:scale-[0.98] cursor-pointer"
+            className="px-3 sm:px-3.5 py-1.5 rounded-xl bg-[#222226] hover:bg-black dark:bg-[#222226] dark:hover:bg-[#2c2c31] text-white text-xs font-semibold whitespace-nowrap transition-all shadow-xs active:scale-[0.98] cursor-pointer shrink-0"
           >
             Lihat Profile
           </button>
           <button
             type="button"
             onClick={() => setDetailRuleId(rule.id)}
-            className="px-4 sm:px-5 py-1.5 sm:py-2 rounded-xl bg-[#222226] hover:bg-black dark:bg-[#222226] dark:hover:bg-[#2c2c31] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs active:scale-[0.98] cursor-pointer"
+            className="px-3.5 sm:px-4 py-1.5 rounded-xl bg-[#222226] hover:bg-black dark:bg-[#222226] dark:hover:bg-[#2c2c31] text-white text-xs font-semibold whitespace-nowrap transition-all shadow-xs active:scale-[0.98] cursor-pointer shrink-0"
           >
             Detail
           </button>
