@@ -177,7 +177,7 @@ export function InstagramAgentListSection({
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-5">
           {filteredAgents.map((agent: any) => (
             <div
               key={agent.id}
@@ -189,53 +189,57 @@ export function InstagramAgentListSection({
                   onSelectAgent(agent.id);
                 }
               }}
-              className="group relative flex items-center justify-between rounded-2xl border p-4 sm:p-5 text-left transition-all duration-200 cursor-pointer overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:shadow-md gap-3.5 sm:gap-4"
+              className="group relative flex items-center justify-between rounded-2xl border p-4 sm:p-5 text-left transition-all duration-200 cursor-pointer overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:shadow-md gap-4 sm:gap-6"
             >
               {/* Sisi Kiri & Tengah: Avatar + Informasi */}
               <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 flex-1">
                 {/* Avatar / Icon */}
-                {agent.isLinked ? (
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-[#f43f5e] dark:bg-rose-600 text-white font-extrabold flex items-center justify-center text-center p-1.5 text-[11px] sm:text-xs leading-tight shrink-0 shadow-2xs overflow-hidden select-none">
-                    {agent.profilePicUrl ? (
-                      <img
-                        src={agent.profilePicUrl}
-                        alt={agent.name}
-                        referrerPolicy="no-referrer"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.currentTarget as HTMLElement).style.display = "none";
-                        }}
-                      />
-                    ) : (
-                      <span>{agent.name.toUpperCase()}</span>
-                    )}
-                  </div>
-                ) : (
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center shrink-0">
-                    <InstagramIcon className="w-12 h-12 sm:w-14 sm:h-14 text-gray-800 dark:text-gray-200" />
-                  </div>
-                )}
+                <div className="relative shrink-0">
+                  {agent.isLinked ? (
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 overflow-hidden flex items-center justify-center shadow-2xs">
+                      {agent.profilePicUrl ? (
+                        <img
+                          src={agent.profilePicUrl}
+                          alt={agent.name}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = "none";
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full bg-[#f43f5e] text-white font-extrabold flex items-center justify-center text-center p-1.5 text-[11px] sm:text-xs leading-tight select-none">
+                          {agent.name.toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center">
+                      <InstagramIcon className="w-12 h-12 sm:w-14 sm:h-14 text-gray-800 dark:text-gray-200" />
+                    </div>
+                  )}
+                </div>
 
                 {/* Detail Info: Nama, Deskripsi, Status */}
                 <div className="min-w-0 flex-1">
                   <h3
-                    className="font-bold text-base sm:text-lg text-gray-900 dark:text-white leading-tight truncate"
+                    className="font-bold text-base sm:text-lg text-gray-900 dark:text-white leading-tight"
                     title={agent.name}
                   >
                     {agent.name}
                   </h3>
-                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-snug mt-1 line-clamp-2">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-normal mt-1">
                     {agent.isLinked
                       ? "Otomatisasi komentar dan DM aktif 24/7"
                       : "Silahkan untuk hubungkan akun IG anda"}
                   </p>
-                  <div className="mt-1.5 sm:mt-2">
+                  <div className="mt-1 sm:mt-1.5">
                     {agent.isLinked ? (
-                      <span className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                      <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400">
                         Terhubung
                       </span>
                     ) : (
-                      <span className="text-xs sm:text-sm font-medium text-gray-400 dark:text-gray-500">
+                      <span className="text-xs sm:text-sm font-semibold text-gray-400 dark:text-gray-500">
                         Terputus
                       </span>
                     )}
@@ -244,7 +248,7 @@ export function InstagramAgentListSection({
               </div>
 
               {/* Sisi Kanan: Menu Titik Tiga (Atas) & Tombol Buka (Bawah) */}
-              <div className="flex flex-col items-end justify-between self-stretch shrink-0 py-0.5">
+              <div className="flex flex-col items-end justify-between self-stretch shrink-0 py-0.5 pl-2 sm:pl-3">
                 {/* Dropdown Menu Titik Tiga */}
                 <div
                   className="relative agent-dropdown-menu"
