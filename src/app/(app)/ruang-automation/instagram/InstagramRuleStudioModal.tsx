@@ -311,7 +311,7 @@ export function InstagramRuleStudioModal({
                                   setSelectedPost(post);
                                   setRuleFormData({ ...ruleFormData, postId: post.id });
                                 }}
-                                className={`relative rounded-xl overflow-hidden aspect-[4/5] border-2 transition-all cursor-pointer ${
+                                className={`relative w-full block rounded-xl overflow-hidden aspect-[4/5] border-2 transition-all cursor-pointer ${
                                   isSelected
                                     ? "border-blue-600 ring-2 ring-blue-500/30 scale-[1.02] shadow-sm"
                                     : "border-gray-200 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20 opacity-85 hover:opacity-100"
@@ -853,47 +853,71 @@ export function InstagramRuleStudioModal({
       {/* MODAL POPUP: LIHAT SEMUA POSTINGAN */}
       {showAllPostsModal && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl p-5 max-w-lg w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-bold text-sm text-gray-900 dark:text-white">
-                Pilih Postingan Instagram
-              </h4>
+          <div className="bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl p-5 sm:p-6 max-w-2xl w-full shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/10">
+              <div>
+                <h4 className="font-bold text-base text-gray-900 dark:text-white">
+                  Pilih Postingan Instagram
+                </h4>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Pilih salah satu postingan dari akun Instagram Anda untuk ditautkan ke automasi ini.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => setShowAllPostsModal(false)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white cursor-pointer"
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer shrink-0"
               >
-                <X className="w-4 h-4" />
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="grid grid-cols-3 sm:grid-cols-4 gap-2.5 max-h-80 overflow-y-auto pr-1">
-              {feedPosts.map((post) => {
-                const isSelected = selectedPost?.id === post.id;
-                return (
-                  <button
-                    key={post.id}
-                    type="button"
-                    onClick={() => {
-                      setSelectedPost(post);
-                      setRuleFormData({ ...ruleFormData, postId: post.id });
-                      setShowAllPostsModal(false);
-                    }}
-                    className={`relative rounded-xl overflow-hidden aspect-[4/5] border-2 transition-all cursor-pointer ${
-                      isSelected
-                        ? "border-blue-600 ring-2 ring-blue-500/30 scale-[1.02] shadow-sm"
-                        : "border-gray-200 dark:border-white/10 hover:border-gray-400 opacity-85 hover:opacity-100"
-                    }`}
-                  >
-                    <img
-                      src={post.thumb || post.image}
-                      alt={post.title}
-                      referrerPolicy="no-referrer"
-                      className="w-full h-full object-cover"
-                    />
-                  </button>
-                );
-              })}
+            <div className="max-h-[65vh] overflow-y-auto pr-1 -mr-1">
+              {feedPosts.length === 0 ? (
+                <div className="py-12 text-center text-xs text-gray-400">
+                  Tidak ada postingan yang ditemukan di feed akun ini.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 p-0.5">
+                  {feedPosts.map((post) => {
+                    const isSelected = selectedPost?.id === post.id;
+                    return (
+                      <button
+                        key={post.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedPost(post);
+                          setRuleFormData({ ...ruleFormData, postId: post.id });
+                          setShowAllPostsModal(false);
+                        }}
+                        className={`group relative w-full aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all cursor-pointer block text-left bg-gray-100 dark:bg-white/5 ${
+                          isSelected
+                            ? "border-blue-600 ring-2 ring-blue-500/30 scale-[1.02] shadow-md z-10"
+                            : "border-gray-200 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/30 opacity-90 hover:opacity-100"
+                        }`}
+                        title={post.title || post.caption}
+                      >
+                        <img
+                          src={post.thumb || post.image}
+                          alt={post.title || "Post"}
+                          referrerPolicy="no-referrer"
+                          className="w-full h-full object-cover transition-transform duration-200 group-hover:scale-105"
+                        />
+                        {post.mediaType === "VIDEO" && (
+                          <div className="absolute top-1.5 right-1.5 bg-black/70 backdrop-blur-xs rounded px-1.5 py-0.5 text-[8px] font-bold text-white shadow-xs">
+                            REEL
+                          </div>
+                        )}
+                        {isSelected && (
+                          <div className="absolute top-1.5 left-1.5 w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-xs">
+                            <Check className="w-3 h-3 stroke-[3]" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         </div>
