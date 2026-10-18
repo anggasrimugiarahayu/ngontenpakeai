@@ -140,11 +140,11 @@ export function PostRuleCard({
     <div
       className="flex flex-row items-stretch w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-2xl relative p-3 sm:p-5 gap-3.5 sm:gap-5"
     >
-      {/* Sisi Kiri: Cover 3:4 */}
-      <div className="w-[105px] sm:w-[130px] shrink-0 relative overflow-hidden bg-gray-200/80 dark:bg-white/10 rounded-xl sm:rounded-2xl shadow-2xs self-stretch min-h-[140px] sm:min-h-[160px]">
+      {/* Sisi Kiri: Cover 4:5 */}
+      <div className="w-[120px] sm:w-[150px] md:w-[165px] aspect-[4/5] shrink-0 relative overflow-hidden bg-gray-200/80 dark:bg-white/10 rounded-xl sm:rounded-2xl shadow-2xs self-start">
         <div className="w-full h-full relative flex items-center justify-center overflow-hidden">
           {!isAccountLinked ? (
-            <div className="absolute inset-0 flex items-center justify-center p-2 text-center text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm">
+            <div className="absolute inset-0 flex items-center justify-center p-2 text-center text-gray-500 dark:text-gray-400 font-semibold text-xs sm:text-sm">
               Terputus
             </div>
           ) : rule.triggerType === "SPECIFIC_POST" ? (
@@ -164,16 +164,16 @@ export function PostRuleCard({
                 }}
               />
             ) : (
-              <div className="absolute inset-0 flex items-center justify-center p-2 text-center text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm">
+              <div className="absolute inset-0 flex items-center justify-center p-2 text-center text-gray-500 dark:text-gray-400 font-semibold text-xs sm:text-sm">
                 Postingan Tertentu
               </div>
             )
           ) : rule.triggerType === "NEXT_POST" ? (
-            <div className="absolute inset-0 flex items-center justify-center p-2 text-center text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm">
+            <div className="absolute inset-0 flex items-center justify-center p-2 text-center text-gray-500 dark:text-gray-400 font-semibold text-xs sm:text-sm">
               Postingan Berikutnya
             </div>
           ) : (
-            <div className="absolute inset-0 flex items-center justify-center p-2 text-center text-gray-500 dark:text-gray-400 font-medium text-xs sm:text-sm">
+            <div className="absolute inset-0 flex items-center justify-center p-2 text-center text-gray-500 dark:text-gray-400 font-semibold text-xs sm:text-sm">
               Semua Postingan
             </div>
           )}
@@ -181,10 +181,10 @@ export function PostRuleCard({
       </div>
 
       {/* Sisi Kanan: Konten Informasi */}
-      <div className="flex flex-col flex-1 min-w-0 justify-between py-0.5 gap-2.5">
-        <div>
+      <div className="flex flex-col flex-1 min-w-0 justify-between">
+        <div className="space-y-2 sm:space-y-2.5">
           {/* Baris 1: Judul & Menu Titik Tiga */}
-          <div className="flex items-start justify-between gap-2 mb-0.5">
+          <div className="flex items-start justify-between gap-2">
             <h3
               className="text-base sm:text-lg font-bold leading-tight tracking-tight text-gray-900 dark:text-white line-clamp-1 flex-1"
               title={rule.name}
@@ -267,7 +267,7 @@ export function PostRuleCard({
           </div>
 
           {/* Baris 2: Status */}
-          <div className="mb-2 leading-none">
+          <div className="leading-none">
             {!isAccountLinked ? (
               <span className="text-xs sm:text-sm font-medium text-gray-400 dark:text-gray-500">
                 Terputus
@@ -280,7 +280,7 @@ export function PostRuleCard({
           </div>
 
           {/* Baris 3: 4 Metrics Columns */}
-          <div className="grid grid-cols-4 gap-2 sm:gap-4 mb-2.5 max-w-sm">
+          <div className="grid grid-cols-4 gap-2 sm:gap-4 max-w-sm pt-0.5">
             <div>
               <span className="text-[11px] sm:text-xs text-gray-400 block font-normal leading-none mb-1">
                 Terkirim
@@ -340,7 +340,7 @@ export function PostRuleCard({
           </div>
 
           {/* Baris 4: Kata Pemicu */}
-          <div className="mb-2">
+          <div>
             <span className="text-[11px] sm:text-xs text-gray-400 block font-normal mb-1">
               Kata Pemicu
             </span>
@@ -374,23 +374,25 @@ export function PostRuleCard({
         </div>
 
         {/* Baris 5: Action Buttons (Bawah Kanan) */}
-        <div className="flex items-center justify-end gap-2 sm:gap-2.5 pt-1">
-          <button
-            type="button"
-            onClick={() => {
-              if (postPermalink) {
-                window.open(postPermalink, "_blank");
-              } else if (accountUsername) {
-                window.open(
-                  `https://instagram.com/${accountUsername.replace(/^@/, "")}`,
-                  "_blank"
-                );
-              }
-            }}
-            className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-[#222226] hover:bg-black dark:bg-[#222226] dark:hover:bg-[#2c2c31] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs active:scale-[0.98] cursor-pointer"
-          >
-            Lihat Profile
-          </button>
+        <div className="flex items-center justify-end gap-2 sm:gap-2.5 pt-3 mt-auto">
+          {rule.triggerType === "SPECIFIC_POST" && (
+            <button
+              type="button"
+              onClick={() => {
+                if (postPermalink) {
+                  window.open(postPermalink, "_blank");
+                } else if (accountUsername) {
+                  window.open(
+                    `https://instagram.com/${accountUsername.replace(/^@/, "")}`,
+                    "_blank"
+                  );
+                }
+              }}
+              className="px-3.5 sm:px-4 py-1.5 sm:py-2 rounded-xl bg-[#222226] hover:bg-black dark:bg-[#222226] dark:hover:bg-[#2c2c31] text-white text-xs sm:text-sm font-semibold transition-all shadow-xs active:scale-[0.98] cursor-pointer"
+            >
+              Lihat Postingan
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setDetailRuleId(rule.id)}
