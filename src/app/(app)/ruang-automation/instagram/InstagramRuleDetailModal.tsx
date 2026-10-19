@@ -578,15 +578,17 @@ export function InstagramRuleDetailModal({
   return (
     <div className="fixed inset-0 z-[145] flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
       <div className="bg-white dark:bg-[#141417] border border-gray-200 dark:border-white/10 rounded-2xl sm:rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
-        {/* HEADER MODAL DETAIL */}
-        <div className="px-5 sm:px-7 py-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between gap-4 bg-white dark:bg-[#18181b] shrink-0">
-          <div className="min-w-0">
-            <div className="flex items-center gap-2.5 flex-wrap">
+        {/* HEADER MODAL DETAIL (RESPONSIF MOBILE DENGAN STRUKTUR 2 BARIS) */}
+        <div className="px-5 sm:px-7 py-3.5 sm:py-4 border-b border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] shrink-0 space-y-1.5 sm:space-y-1">
+          {/* Baris 1: Judul & Status di Kiri, Tombol Aksi di Kanan */}
+          <div className="flex items-center justify-between gap-3">
+            {/* Sisi Kiri: Judul Otomasi & Badge Status Sejajar */}
+            <div className="min-w-0 flex items-center gap-2 sm:gap-2.5">
               <h3 className="text-base sm:text-lg font-black text-gray-900 dark:text-white truncate">
                 {detailRule.name}
               </h3>
               <span
-                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
+                className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold shrink-0 whitespace-nowrap ${
                   detailRule.isActive
                     ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                     : "bg-gray-100 dark:bg-white/10 text-gray-500"
@@ -599,42 +601,67 @@ export function InstagramRuleDetailModal({
                 />
                 {detailRule.isActive ? "Berjalan" : "Nonaktif"}
               </span>
+
+              {/* Teks "Lihat Post" di layar tablet/desktop */}
               {detailRule.triggerType === "SPECIFIC_POST" && detailRule.specificPostId && (
                 <a
                   href={detailPostPermalink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline inline-flex items-center gap-1"
+                  className="hidden md:inline-flex text-xs font-semibold text-orange-600 dark:text-orange-400 hover:underline items-center gap-1 shrink-0 ml-1"
+                  title="Buka Postingan Instagram"
                 >
                   Lihat Post <ExternalLink className="w-3 h-3" />
                 </a>
               )}
             </div>
-            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              Analitik performa realtime, status konfigurasi funnel, dan riwayat log komentar 14 hari terakhir.
-            </p>
+
+            {/* Sisi Kanan: Barisan Tombol Aksi Kompak (Icon-Only di Mobile) */}
+            <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
+              {/* Tombol Icon Lihat Post di Layar Mobile */}
+              {detailRule.triggerType === "SPECIFIC_POST" && detailRule.specificPostId && (
+                <a
+                  href={detailPostPermalink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="md:hidden w-8 h-8 rounded-xl border border-gray-200 dark:border-white/10 flex items-center justify-center text-orange-600 dark:text-orange-400 hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors cursor-pointer"
+                  title="Lihat Postingan Instagram"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                </a>
+              )}
+
+              {/* Tombol Edit Otomasi: Di mobile hanya icon Pencil (w-8 h-8), di desktop menampilkan icon + teks */}
+              <button
+                type="button"
+                onClick={() => {
+                  const targetRule = detailRule;
+                  setDetailRuleId(null);
+                  handleOpenEditRuleModal(targetRule);
+                }}
+                className="w-8 h-8 sm:w-auto sm:px-3 sm:py-1.5 rounded-xl border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 inline-flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                title="Edit Otomasi"
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">Edit Otomasi</span>
+              </button>
+
+              {/* Tombol Tutup (Close) */}
+              <button
+                type="button"
+                onClick={() => setDetailRuleId(null)}
+                className="w-8 h-8 rounded-xl border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                title="Tutup Modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
           </div>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => {
-                const targetRule = detailRule;
-                setDetailRuleId(null);
-                handleOpenEditRuleModal(targetRule);
-              }}
-              className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 inline-flex items-center gap-1.5 transition-colors cursor-pointer"
-            >
-              <Pencil className="w-3.5 h-3.5" /> Edit Otomasi
-            </button>
-            <button
-              type="button"
-              onClick={() => setDetailRuleId(null)}
-              className="w-8 h-8 rounded-xl border border-gray-200 dark:border-white/10 flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          </div>
+          {/* Baris 2: Teks Penjelasan Membentang Penuh (Full Width) */}
+          <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+            Analitik performa realtime, status konfigurasi funnel, dan riwayat log komentar 14 hari terakhir.
+          </p>
         </div>
 
         {/* BODY MODAL DETAIL (SCROLLABLE) */}
