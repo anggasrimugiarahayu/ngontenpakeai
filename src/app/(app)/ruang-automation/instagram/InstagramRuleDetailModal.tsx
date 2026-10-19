@@ -327,135 +327,170 @@ export function InstagramRuleDetailModal({
             </div>
           </div>
 
-          {/* 2. DUA GRAFIK: PERFORMA OTOMASI & PERFORMA TOMBOL (KLIK) */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            {/* Grafik 1: Performa Otomasi */}
-            <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] p-5 space-y-4">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <TrendingUp className="w-4 h-4 text-orange-500" /> Performa Otomasi (14 Hari Terakhir)
-                  </h4>
-                  <p className="text-[11px] text-gray-500">
-                    Grafik perbandingan pesan terkirim (Send), direspon (Read), dan New Follower harian
-                  </p>
-                </div>
-                <div className="flex items-center gap-3 text-[10px] font-bold">
-                  <span className="inline-flex items-center gap-1 text-orange-500">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-orange-500 inline-block" /> Send
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-blue-500">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-blue-500 inline-block" /> Read
-                  </span>
-                  <span className="inline-flex items-center gap-1 text-emerald-500">
-                    <span className="w-2.5 h-2.5 rounded-sm bg-emerald-500 inline-block" /> Follower
-                  </span>
-                </div>
-              </div>
-
-              <div className="h-44 flex items-end gap-1.5 pt-6 pb-1 px-1 border-b border-gray-100 dark:border-white/5">
-                {dailyBuckets.map((b) => {
-                  const sendH = Math.max(4, Math.round((b.send / maxPerfValue) * 120));
-                  const readH = Math.max(
-                    b.read > 0 ? 4 : 0,
-                    Math.round((b.read / maxPerfValue) * 120)
-                  );
-                  const folH = Math.max(
-                    b.follower > 0 ? 4 : 0,
-                    Math.round((b.follower / maxPerfValue) * 120)
-                  );
-                  return (
-                    <div
-                      key={b.dateKey}
-                      className="flex-1 flex flex-col items-center group relative"
-                      title={`${b.label}: Send ${b.send}, Read ${b.read}, New Follower ${b.follower}`}
-                    >
-                      <div className="w-full flex items-end justify-center gap-0.5 h-[124px]">
-                        <div
-                          style={{ height: `${sendH}px` }}
-                          className={`w-2 rounded-t transition-all ${
-                            b.send > 0 ? "bg-orange-500" : "bg-gray-200 dark:bg-white/10"
-                          }`}
-                        />
-                        {readH > 0 && (
-                          <div
-                            style={{ height: `${readH}px` }}
-                            className="w-1.5 rounded-t bg-blue-500 transition-all"
-                          />
-                        )}
-                        {folH > 0 && (
-                          <div
-                            style={{ height: `${folH}px` }}
-                            className="w-1.5 rounded-t bg-emerald-500 transition-all"
-                          />
-                        )}
-                      </div>
-                      <span className="text-[9px] text-gray-400 mt-1.5 rotate-0 truncate max-w-full">
-                        {b.label.split(" ")[0]}
-                      </span>
-                    </div>
-                  );
-                })}
+          {/* 2. PERFORMA OTOMASI (WAFFLE CHART FUNNEL 4 PARAMETER - LEBAR PENUH) */}
+          <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div>
+                <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 text-emerald-500" /> Performa Otomasi (Funnel Konversi)
+                </h4>
+                <p className="text-[11px] text-gray-500">
+                  Rasio keberhasilan konversi pesan dari terkirim, dibaca, diklik hingga follower baru
+                </p>
               </div>
             </div>
 
-            {/* Grafik 2: Performa Tombol (Klik) */}
-            <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] p-5 space-y-4">
-              <div className="flex items-center justify-between gap-2 flex-wrap">
-                <div>
-                  <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                    <Link2 className="w-4 h-4 text-purple-500" /> Performa Tombol (Klik)
-                  </h4>
-                  <p className="text-[11px] text-gray-500">
-                    Tren klik tombol tautan dalam 14 hari terakhir (Link Tracking Aktif)
-                  </p>
-                </div>
-                <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-extrabold">
-                  Total {kpiClicked} Klik ({kpiCtr})
-                </span>
-              </div>
+            {/* 4 Kolom Matriks Waffle 10x10 */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 pt-2">
+              {[
+                {
+                  id: "send",
+                  title: "Pesan Terkirim",
+                  description: "Pesan otomasi berhasil dikirim ke DM audiens",
+                  percentage:
+                    kpiSend > 0
+                      ? failedLogsCount > 0
+                        ? Math.round((kpiSend / (kpiSend + failedLogsCount)) * 100)
+                        : 100
+                      : 0,
+                  countLabel: `${kpiSend} Pesan`,
+                  solidBg: "bg-[#3D5A27]",
+                  pastelBg: "bg-[#EAF2E4] dark:bg-[#3D5A27]/25",
+                  textColor: "text-[#3D5A27] dark:text-[#84cc16]",
+                },
+                {
+                  id: "read",
+                  title: "Direspon / Dibaca",
+                  description: "Audiens aktif membuka atau merespon pesan",
+                  percentage: kpiSend > 0 ? Math.min(100, Math.round((kpiRead / kpiSend) * 100)) : 0,
+                  countLabel: `${kpiRead} Direspon`,
+                  solidBg: "bg-[#C91D1D]",
+                  pastelBg: "bg-[#FCEAEA] dark:bg-[#C91D1D]/25",
+                  textColor: "text-[#C91D1D] dark:text-[#f87171]",
+                },
+                {
+                  id: "clicked",
+                  title: "Tautan Diklik (CTR)",
+                  description: "Audiens menekan tombol link yang dibagikan",
+                  percentage: kpiSend > 0 ? Math.min(100, Math.round((kpiClicked / kpiSend) * 100)) : 0,
+                  countLabel: `${kpiClicked} Klik`,
+                  solidBg: "bg-[#1E88E5]",
+                  pastelBg: "bg-[#E3F2FD] dark:bg-[#1E88E5]/25",
+                  textColor: "text-[#1E88E5] dark:text-[#60a5fa]",
+                },
+                {
+                  id: "follower",
+                  title: "Follower Baru",
+                  description: "Audiens terverifikasi follow dari Ask Follow",
+                  percentage: kpiSend > 0 ? Math.min(100, Math.round((kpiNewFollower / kpiSend) * 100)) : 0,
+                  countLabel: `${kpiNewFollower} Follower`,
+                  solidBg: "bg-[#E69100]",
+                  pastelBg: "bg-[#FEF5E1] dark:bg-[#E69100]/25",
+                  textColor: "text-[#E69100] dark:text-[#fbbf24]",
+                },
+              ].map((item) => (
+                <div
+                  key={item.id}
+                  className="p-4 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 flex flex-col justify-between"
+                >
+                  {/* Waffle Grid 10x10 (100 Kotak) */}
+                  <div className="grid grid-cols-10 gap-1 w-full max-w-[140px] aspect-square mx-auto mb-4">
+                    {Array.from({ length: 100 }).map((_, idx) => {
+                      const row = Math.floor(idx / 10);
+                      const col = idx % 10;
+                      const fromBottom = 9 - row;
+                      const blockIndex = fromBottom * 10 + col;
+                      const isFilled = blockIndex < item.percentage;
 
-              <div className="h-32 flex items-end gap-1.5 pt-4 pb-1 px-1 border-b border-gray-100 dark:border-white/5">
-                {dailyBuckets.map((b) => {
-                  const clickH = Math.max(4, Math.round((b.clicked / maxClickValue) * 90));
-                  return (
-                    <div
-                      key={b.dateKey}
-                      className="flex-1 flex flex-col items-center"
-                      title={`${b.label}: ${b.clicked} Klik`}
-                    >
-                      <div className="w-full flex items-end justify-center h-[94px]">
+                      return (
                         <div
-                          style={{ height: `${clickH}px` }}
-                          className={`w-full max-w-[14px] rounded-t transition-all ${
-                            b.clicked > 0
-                              ? "bg-gradient-to-t from-purple-600 to-orange-500"
-                              : "bg-gray-200 dark:bg-white/10"
+                          key={idx}
+                          className={`w-full aspect-square rounded-[2px] transition-colors duration-200 ${
+                            isFilled ? item.solidBg : item.pastelBg
                           }`}
                         />
-                      </div>
-                      <span className="text-[9px] text-gray-400 mt-1.5 truncate max-w-full">
-                        {b.label.split(" ")[0]}
+                      );
+                    })}
+                  </div>
+
+                  {/* Keterangan & Angka Persentase */}
+                  <div className="space-y-1">
+                    <div className={`text-2xl sm:text-3xl font-black ${item.textColor}`}>
+                      {item.percentage}%
+                    </div>
+                    <div className="font-bold text-xs sm:text-sm text-gray-900 dark:text-white">
+                      {item.title}
+                    </div>
+                    <p className="text-[11px] text-gray-500 dark:text-gray-400 leading-snug">
+                      {item.description}
+                    </p>
+                    <div className="pt-1.5">
+                      <span className="inline-block text-[10px] sm:text-[11px] font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-white/10 px-2 py-0.5 rounded-md border border-gray-200/80 dark:border-white/10 shadow-2xs">
+                        {item.countLabel}
                       </span>
                     </div>
-                  );
-                })}
-              </div>
-
-              {/* Ringkasan Tombol Aktif */}
-              <div className="flex items-center justify-between text-xs bg-gray-50 dark:bg-white/5 px-3.5 py-2.5 rounded-xl border border-gray-200/70 dark:border-white/5">
-                <div className="min-w-0 pr-2">
-                  <span className="font-bold text-gray-900 dark:text-white block truncate">
-                    Tombol: {detailRule.buttonText || "Buka Tautan"}
-                  </span>
-                  <span className="text-[11px] text-gray-400 block truncate">
-                    {detailRule.buttonUrl || "Tidak ada URL tombol"}
-                  </span>
+                  </div>
                 </div>
-                <span className="font-black text-orange-600 dark:text-orange-400 shrink-0">
-                  {kpiClicked} Klik
+              ))}
+            </div>
+          </div>
+
+          {/* 3. PERFORMA TOMBOL (KLIK) - DISIMPAN DI BAWAH PERFORMA OTOMASI DENGAN LEBAR PENUH */}
+          <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div>
+                <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                  <Link2 className="w-4 h-4 text-purple-500" /> Performa Tombol (Klik)
+                </h4>
+                <p className="text-[11px] text-gray-500">
+                  Tren klik tombol tautan dalam 14 hari terakhir (Link Tracking Aktif)
+                </p>
+              </div>
+              <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-extrabold">
+                Total {kpiClicked} Klik ({kpiCtr})
+              </span>
+            </div>
+
+            <div className="h-36 flex items-end gap-2 pt-4 pb-1 px-1 border-b border-gray-100 dark:border-white/5">
+              {dailyBuckets.map((b) => {
+                const clickH = Math.max(4, Math.round((b.clicked / maxClickValue) * 105));
+                return (
+                  <div
+                    key={b.dateKey}
+                    className="flex-1 flex flex-col items-center group relative cursor-pointer"
+                    title={`${b.label}: ${b.clicked} Klik`}
+                  >
+                    <div className="w-full flex items-end justify-center h-[110px]">
+                      <div
+                        style={{ height: `${clickH}px` }}
+                        className={`w-full max-w-[22px] rounded-t transition-all ${
+                          b.clicked > 0
+                            ? "bg-gradient-to-t from-purple-600 to-orange-500 shadow-sm"
+                            : "bg-gray-200 dark:bg-white/10"
+                        }`}
+                      />
+                    </div>
+                    <span className="text-[9px] text-gray-400 mt-2 truncate max-w-full">
+                      {b.label.split(" ")[0]}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Ringkasan Tombol Aktif */}
+            <div className="flex items-center justify-between text-xs bg-gray-50 dark:bg-white/5 px-4 py-3 rounded-xl border border-gray-200/70 dark:border-white/5">
+              <div className="min-w-0 pr-3">
+                <span className="font-bold text-gray-900 dark:text-white block truncate text-xs sm:text-sm">
+                  Tombol: {detailRule.buttonText || "Buka Tautan"}
+                </span>
+                <span className="text-[11px] text-gray-400 block truncate mt-0.5">
+                  {detailRule.buttonUrl || "Tidak ada URL tombol"}
                 </span>
               </div>
+              <span className="font-black text-orange-600 dark:text-orange-400 shrink-0 text-sm sm:text-base">
+                {kpiClicked} Klik
+              </span>
             </div>
           </div>
 
