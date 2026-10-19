@@ -225,14 +225,14 @@ export default function AppShellLayout({
       window.history.pushState(null, "", href);
       window.dispatchEvent(new Event("app-shallow-navigate"));
       setIsOpen(false);
-    } else if (href === "/ruang-automation") {
+    } else if (href === "/ruang-automation" && activePath.startsWith("/ruang-automation")) {
       e.preventDefault();
       window.history.pushState(null, "", "/ruang-automation");
       setActivePlatform(null);
       window.dispatchEvent(new CustomEvent("automation-platform-change", { detail: null }));
       window.dispatchEvent(new Event("app-shallow-navigate"));
       setIsOpen(false);
-    } else if (href.startsWith("/ruang-automation?platform=")) {
+    } else if (href.startsWith("/ruang-automation?platform=") && activePath.startsWith("/ruang-automation")) {
       e.preventDefault();
       const params = new URLSearchParams(href.split("?")[1]);
       const plat = params.get("platform");

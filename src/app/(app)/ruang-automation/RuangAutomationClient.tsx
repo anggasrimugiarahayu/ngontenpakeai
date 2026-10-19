@@ -59,29 +59,18 @@ export default function RuangAutomationClient({
   isPro,
   isAdmin,
   initialAgentId = null,
+  initialPlatform = null,
 }: {
   initialData: any;
   isLoggedIn?: boolean;
   isPro: boolean;
   isAdmin: boolean;
   initialAgentId?: string | null;
+  initialPlatform?: "instagram" | null;
 }) {
   const router = useRouter();
-  const [selectedPlatform, setSelectedPlatform] = useState<"instagram" | null>(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("platform") === "instagram" ? "instagram" : null;
-    }
-    return null;
-  });
-  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(() => {
-    if (initialAgentId) return initialAgentId;
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      return params.get("agentId") || null;
-    }
-    return null;
-  });
+  const [selectedPlatform, setSelectedPlatform] = useState<"instagram" | null>(initialPlatform);
+  const [selectedAgentId, setSelectedAgentId] = useState<string | null>(initialAgentId);
   const [activeIgTab, setActiveIgTab] = useState<"koneksi" | "komentar" | "dashboard">("koneksi");
   const [userHasExitedToHub, setUserHasExitedToHub] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -165,11 +154,11 @@ export default function RuangAutomationClient({
       const plat = e.detail;
       if (!plat) {
         setUserHasExitedToHub(true);
-        setSelectedPlatform(null);
-        setSelectedAgentId(null);
+        setSelectedPlatform((prev) => (prev !== null ? null : prev));
+        setSelectedAgentId((prev) => (prev !== null ? null : prev));
       } else if (plat === "instagram") {
         setUserHasExitedToHub(false);
-        setSelectedPlatform("instagram");
+        setSelectedPlatform((prev) => (prev !== "instagram" ? "instagram" : prev));
       }
     };
 
@@ -179,12 +168,12 @@ export default function RuangAutomationClient({
       const plat = params.get("platform");
       if (plat === "instagram") {
         setUserHasExitedToHub(false);
-        setSelectedPlatform("instagram");
-        setSelectedAgentId(params.get("agentId") || null);
+        setSelectedPlatform((prev) => (prev !== "instagram" ? "instagram" : prev));
+        setSelectedAgentId((prev) => (prev !== (params.get("agentId") || null) ? (params.get("agentId") || null) : prev));
       } else {
         setUserHasExitedToHub(true);
-        setSelectedPlatform(null);
-        setSelectedAgentId(null);
+        setSelectedPlatform((prev) => (prev !== null ? null : prev));
+        setSelectedAgentId((prev) => (prev !== null ? null : prev));
       }
     };
 

@@ -26,6 +26,7 @@ export default async function RuangAutomationPage({
 
   const resolvedParams = searchParams ? await searchParams : {};
   const initialAgentId = typeof resolvedParams.agentId === "string" ? resolvedParams.agentId : null;
+  const initialPlatform = resolvedParams.platform === "instagram" ? "instagram" : null;
 
   let initialData = { agents: [], account: null, rules: [], stats: { totalComments: 0, totalDms: 0 }, logs: [] };
   if (isLoggedIn && (isPro || isAdmin)) {
@@ -43,6 +44,7 @@ export default async function RuangAutomationPage({
       isPro={isPro}
       isAdmin={isAdmin}
       initialAgentId={initialAgentId}
+      initialPlatform={initialPlatform}
     />
   );
 }
