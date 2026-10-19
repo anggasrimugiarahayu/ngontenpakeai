@@ -122,6 +122,22 @@ export function resolvePreviewVariables(text: string): string {
   return resolved;
 }
 
+export function formatDateTimeId(isoStr?: string | null): string {
+  if (!isoStr) return "-";
+  try {
+    const dt = new Date(isoStr);
+    return dt.toLocaleDateString("id-ID", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return "-";
+  }
+}
+
 // Sample Instagram Posts for feed selection & preview
 export const SAMPLE_INSTAGRAM_POSTS = [
   {

@@ -13,6 +13,8 @@ import {
   Loader2,
   RefreshCw,
   Clock,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { parseClientRuleConfig, parseClientLogMeta } from "../utils/automationHelpers";
 
@@ -67,12 +69,24 @@ export function InstagramRuleDetailModal({
       ? `https://www.instagram.com/${accountUsername}/`
       : "https://www.instagram.com/");
 
+  const [logPage, setLogPage] = React.useState(1);
+  const LOGS_PER_PAGE = 10;
+
   const fourteenDaysAgoMs = Date.now() - 14 * 24 * 60 * 60 * 1000;
   const allRuleLogs = (logs || []).filter((l: any) => l.ruleId === detailRule.id);
   const recent14dLogs = allRuleLogs.filter((l: any) => {
     const ts = l.createdAt ? new Date(l.createdAt).getTime() : Date.now();
     return ts >= fourteenDaysAgoMs;
   });
+
+  const totalLogPages = Math.ceil(recent14dLogs.length / LOGS_PER_PAGE) || 1;
+  const startLogIdx = (logPage - 1) * LOGS_PER_PAGE;
+  const endLogIdx = startLogIdx + LOGS_PER_PAGE;
+  const paginatedRecentLogs = recent14dLogs.slice(startLogIdx, endLogIdx);
+
+  React.useEffect(() => {
+    setLogPage(1);
+  }, [detailRuleId]);
 
   // Hitung 7 KPI Metrics secara akurat dari database log
   const sentLogs = allRuleLogs.filter((l: any) => l.dmStatus === "SENT");
@@ -860,7 +874,7 @@ export function InstagramRuleDetailModal({
                       </td>
                     </tr>
                   ) : (
-                    recent14dLogs.map((log: any) => {
+                    paginatedRecentLogs.map((log: any) => {
                       const meta = parseClientLogMeta(log.errorMessage);
                       const isDmSent = log.dmStatus === "SENT";
                       const isReplySent = log.replyCommentStatus === "SENT";
@@ -879,7 +893,7 @@ export function InstagramRuleDetailModal({
                               @{log.fromUsername ? log.fromUsername.replace(/^@/, "") : (log.commenterUsername || "user")}
                             </div>
                             <div className="text-gray-600 dark:text-gray-300 mt-0.5">
-                              "{log.commentText || "-"}"
+                              &quot;{log.commentText || "-"}&quot;
                             </div>
                             {meta.contact && (
                               <span className="mt-1 inline-block px-2 py-0.5 rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 text-[10px] font-semibold">
@@ -945,6 +959,71 @@ export function InstagramRuleDetailModal({
                 </tbody>
               </table>
             </div>
+
+            {/* Pagination Controls */}
+            {totalLogPages > 1 && (
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-white/5 text-xs text-gray-500">
+                <div className="text-[11px] text-gray-500 dark:text-gray-400">
+                  Menampilkan <span className="font-semibold text-gray-900 dark:text-white">{startLogIdx + 1}</span>–
+                  <span className="font-semibold text-gray-900 dark:text-white">{Math.min(endLogIdx, recent14dLogs.length)}</span> dari{" "}
+                  <span className="font-semibold text-gray-900 dark:text-white">{recent14dLogs.length}</span> komentar
+                </div>
+
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    disabled={logPage === 1}
+                    onClick={() => setLogPage((p) => Math.max(1, p - 1))}
+                    className="px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-1 text-[11px] text-gray-700 dark:text-gray-300 cursor-pointer"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span>Prev</span>
+                  </button>
+
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalLogPages }, (_, i) => i + 1)
+                      .filter((page) => {
+                        return (
+                          page === 1 ||
+                          page === totalLogPages ||
+                          Math.abs(page - logPage) <= 1
+                        );
+                      })
+                      .map((page, idx, arr) => {
+                        const prevPage = arr[idx - 1];
+                        const hasGap = prevPage && page - prevPage > 1;
+
+                        return (
+                          <React.Fragment key={page}>
+                            {hasGap && <span className="px-1 text-gray-400 text-xs">...</span>}
+                            <button
+                              type="button"
+                              onClick={() => setLogPage(page)}
+                              className={`w-7 h-7 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                                logPage === page
+                                  ? "bg-orange-500 text-white shadow-2xs"
+                                  : "border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          </React.Fragment>
+                        );
+                      })}
+                  </div>
+
+                  <button
+                    type="button"
+                    disabled={logPage === totalLogPages}
+                    onClick={() => setLogPage((p) => Math.min(totalLogPages, p + 1))}
+                    className="px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-1 text-[11px] text-gray-700 dark:text-gray-300 cursor-pointer"
+                  >
+                    <span>Next</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
