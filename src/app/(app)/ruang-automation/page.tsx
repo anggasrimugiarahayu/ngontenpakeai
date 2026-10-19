@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { getInstagramAutomationDataAction } from "@/app/actions/instagramAutomation";
-import { getCachedAppUser } from "@/lib/cache";
+import { getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
 import RuangAutomationClient from "./RuangAutomationClient";
 
 export const metadata = {
@@ -19,13 +19,17 @@ export default async function RuangAutomationPage({
 
   let isPro = isAdmin;
   if (!isAdmin && session?.user?.id) {
-    const [dbUser, userOrders] = await Promise.all([
-      getCachedAppUser(session.user.id),
-      getCachedUserOrders(session.user.id)
-    ]);
-    const hasAutomation = !!((dbUser as any)?.proAutomationExpiredAt && new Date((dbUser as any).proAutomationExpiredAt) > new Date());
-    const hasProPlus = userOrders.some((o: any) => o.orderType === "PRO_PLUS");
-    isPro = hasAutomation || hasProPlus || dbUser?.role === "ADMIN";
+    try {
+      const [dbUser, userOrders] = await Promise.all([
+        getCachedAppUser(session.user.id),
+        getCachedUserOrders(session.user.id)
+      ]);
+      const hasAutomation = !!((dbUser as any)?.proAutomationExpiredAt && new Date((dbUser as any).proAutomationExpiredAt) > new Date());
+      const hasProPlus = Array.isArray(userOrders) && userOrders.some((o: any) => o.orderType === "PRO_PLUS");
+      isPro = hasAutomation || hasProPlus || dbUser?.role === "ADMIN";
+    } catch (err) {
+      console.error("Error checking pro status in RuangAutomationPage:", err);
+    }
   }
 
   const resolvedParams = searchParams ? await searchParams : {};
