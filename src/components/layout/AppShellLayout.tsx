@@ -172,9 +172,9 @@ export default function AppShellLayout({
     if (typeof window !== "undefined") {
       const params = new URLSearchParams(window.location.search);
       const plat = params.get("platform");
-      if (pathname.startsWith("/ruang-automation") && plat) {
-        setActivePlatform(plat);
-      } else if (!pathname.startsWith("/ruang-automation")) {
+      if (pathname.startsWith("/ruang-automation")) {
+        setActivePlatform(plat || null);
+      } else {
         setActivePlatform(null);
       }
     }
@@ -186,9 +186,9 @@ export default function AppShellLayout({
       if (typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
         const plat = params.get("platform");
-        if (window.location.pathname.startsWith("/ruang-automation") && plat) {
-          setActivePlatform(plat);
-        } else if (!window.location.pathname.startsWith("/ruang-automation")) {
+        if (window.location.pathname.startsWith("/ruang-automation")) {
+          setActivePlatform(plat || null);
+        } else {
           setActivePlatform(null);
         }
       }
@@ -225,7 +225,7 @@ export default function AppShellLayout({
       window.history.pushState(null, "", href);
       window.dispatchEvent(new Event("app-shallow-navigate"));
       setIsOpen(false);
-    } else if (href === "/ruang-automation" && isAutomationMode) {
+    } else if (href === "/ruang-automation") {
       e.preventDefault();
       window.history.pushState(null, "", "/ruang-automation");
       setActivePlatform(null);

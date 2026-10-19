@@ -10,6 +10,7 @@ import {
   Pencil,
   Unlink,
   Trash2,
+  ArrowLeft,
 } from "lucide-react";
 import { InstagramIcon } from "../components/AutomationIcons";
 
@@ -22,6 +23,7 @@ interface InstagramAgentListSectionProps {
   setIsAgentFilterOpen: (val: boolean) => void;
   activeDropdownAgentId: string | null;
   setActiveDropdownAgentId: (val: string | null) => void;
+  onBackToPlatformHub?: () => void;
   onSelectAgent: (agentId: string) => void;
   onOpenCreateAgentModal: () => void;
   onOpenEditAgentModal: (agent: any) => void;
@@ -38,6 +40,7 @@ export function InstagramAgentListSection({
   setIsAgentFilterOpen,
   activeDropdownAgentId,
   setActiveDropdownAgentId,
+  onBackToPlatformHub,
   onSelectAgent,
   onOpenCreateAgentModal: onOpenCreateAgent,
   onOpenEditAgentModal: onOpenEditAgent,
@@ -46,6 +49,20 @@ export function InstagramAgentListSection({
 }: InstagramAgentListSectionProps) {
   return (
     <div className="animate-in fade-in duration-200 space-y-6">
+      {/* Top Navigation / Breadcrumb to Hub */}
+      {onBackToPlatformHub && (
+        <div>
+          <button
+            type="button"
+            onClick={onBackToPlatformHub}
+            className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 bg-gray-100 dark:bg-white/5 hover:bg-orange-500/10 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-white/10 transition-colors w-fit cursor-pointer"
+          >
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Pilihan Platform</span>
+          </button>
+        </div>
+      )}
+
       {/* Header & Actions Card */}
       <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214] shadow-sm">
         <div className="mb-2 md:mb-0">

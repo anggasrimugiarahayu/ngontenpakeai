@@ -67,9 +67,13 @@ export default function RuangAutomationClient({
   initialAgentId?: string | null;
 }) {
   const router = useRouter();
-  const [selectedPlatform, setSelectedPlatform] = useState<"instagram" | null>(
-    initialData?.account?.isActive || (initialData?.agents && initialData.agents.length > 0) ? "instagram" : null
-  );
+  const [selectedPlatform, setSelectedPlatform] = useState<"instagram" | null>(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("platform") === "instagram" ? "instagram" : null;
+    }
+    return null;
+  });
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(() => {
     if (initialAgentId) return initialAgentId;
     if (typeof window !== "undefined") {
@@ -134,13 +138,6 @@ export default function RuangAutomationClient({
   const displayAccount = currentAgent || account;
   const isAccountLinked = Boolean(displayAccount && displayAccount.isLinked);
 
-  // If user has not exited to hub and platform is null, default to Instagram platform
-  useEffect(() => {
-    if ((data?.account?.isActive || (data?.agents && data.agents.length > 0)) && !userHasExitedToHub && selectedPlatform === null) {
-      setSelectedPlatform("instagram");
-    }
-  }, [data?.account?.isActive, data?.agents, userHasExitedToHub, selectedPlatform]);
-
   // Synchronize selectedPlatform with URL and dispatch automation-platform-change for ClientLayout
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -153,28 +150,52 @@ export default function RuangAutomationClient({
       window.dispatchEvent(new CustomEvent("automation-platform-change", { detail: "instagram" }));
     } else if (selectedPlatform === null) {
       const currentUrl = new URL(window.location.href);
-      if (currentUrl.searchParams.has("platform")) {
+      if (currentUrl.searchParams.has("platform") || currentUrl.searchParams.has("agentId")) {
         currentUrl.searchParams.delete("platform");
+        currentUrl.searchParams.delete("agentId");
         window.history.replaceState({}, "", currentUrl.toString());
       }
       window.dispatchEvent(new CustomEvent("automation-platform-change", { detail: null }));
     }
   }, [selectedPlatform]);
 
-  // Listen to platform changes dispatched from ClientLayout (e.g. user clicked Back or sub-tool)
+  // Listen to platform changes dispatched from ClientLayout & URL popstate
   useEffect(() => {
     const handlePlatformChange = (e: any) => {
       const plat = e.detail;
       if (!plat) {
         setUserHasExitedToHub(true);
         setSelectedPlatform(null);
+        setSelectedAgentId(null);
       } else if (plat === "instagram") {
         setUserHasExitedToHub(false);
         setSelectedPlatform("instagram");
       }
     };
+
+    const handleUrlSync = () => {
+      if (typeof window === "undefined") return;
+      const params = new URLSearchParams(window.location.search);
+      const plat = params.get("platform");
+      if (plat === "instagram") {
+        setUserHasExitedToHub(false);
+        setSelectedPlatform("instagram");
+        setSelectedAgentId(params.get("agentId") || null);
+      } else {
+        setUserHasExitedToHub(true);
+        setSelectedPlatform(null);
+        setSelectedAgentId(null);
+      }
+    };
+
     window.addEventListener("automation-platform-change", handlePlatformChange);
-    return () => window.removeEventListener("automation-platform-change", handlePlatformChange);
+    window.addEventListener("popstate", handleUrlSync);
+    window.addEventListener("app-shallow-navigate", handleUrlSync);
+    return () => {
+      window.removeEventListener("automation-platform-change", handlePlatformChange);
+      window.removeEventListener("popstate", handleUrlSync);
+      window.removeEventListener("app-shallow-navigate", handleUrlSync);
+    };
   }, []);
 
   // Notification Toast state
@@ -1643,6 +1664,16 @@ export default function RuangAutomationClient({
           setIsAgentFilterOpen={setIsAgentFilterOpen}
           activeDropdownAgentId={activeDropdownAgentId}
           setActiveDropdownAgentId={setActiveDropdownAgentId}
+          onBackToPlatformHub={() => {
+            setUserHasExitedToHub(true);
+            setSelectedPlatform(null);
+            setSelectedAgentId(null);
+            if (typeof window !== "undefined") {
+              window.history.pushState(null, "", "/ruang-automation");
+              window.dispatchEvent(new CustomEvent("automation-platform-change", { detail: null }));
+              window.dispatchEvent(new Event("app-shallow-navigate"));
+            }
+          }}
           onOpenCreateAgentModal={() => {
             setNewAgentName("");
             setIsCreateAgentModalOpen(true);
