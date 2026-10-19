@@ -52,6 +52,8 @@ export function InstagramRuleDetailModal({
   showToast,
   mutateData,
 }: InstagramRuleDetailModalProps) {
+  const [hoveredDot, setHoveredDot] = React.useState<any | null>(null);
+
   if (!detailRuleId) return null;
   const detailRule = (rules || []).find((r: any) => r.id === detailRuleId);
   if (!detailRule) return null;
@@ -394,6 +396,154 @@ export function InstagramRuleDetailModal({
 
   const totalTrackedClicks = Math.max(kpiClicked, totalClicksSum);
 
+  // Bangun data Dot Matrix 14 Hari (Opsi A Solusi 1: Setiap Titik mewakili Tombol)
+  const dotMatrixMaxPos = 12;
+  const dotMatrixMaxNeg = 8;
+
+  const dotMatrixDays = dailyBuckets.map((b) => {
+    const dayLogs = recent14dLogs.filter((l: any) => {
+      const d = l.createdAt ? new Date(l.createdAt) : new Date();
+      const yyyy = d.getFullYear();
+      const mm = String(d.getMonth() + 1).padStart(2, "0");
+      const dd = String(d.getDate()).padStart(2, "0");
+      return `${yyyy}-${mm}-${dd}` === b.dateKey;
+    });
+
+    const daySends = b.send;
+
+    // Hitung performa setiap tombol pada hari ini
+    const buttonsWithDayStats = allConfiguredButtons.map((btn) => {
+      let clicks = 0;
+      for (const l of dayLogs) {
+        const m = parseClientLogMeta(l.errorMessage);
+        if (Array.isArray(m.buttonClicks) && m.buttonClicks.length > 0) {
+          for (const clk of m.buttonClicks) {
+            if (
+              clk.label?.trim().toLowerCase() === btn.label.trim().toLowerCase() ||
+              clk.action?.trim().toLowerCase() === btn.action.trim().toLowerCase()
+            ) {
+              clicks += 1;
+            }
+          }
+        } else {
+          if (btn.module === "Pesan Pembuka" && m.lastPostbackPayload?.startsWith("WELCOME_AGREE")) {
+            clicks += 1;
+          } else if (
+            btn.module === "Ask For Follow" &&
+            (m.lastPostbackPayload?.startsWith("CHECK_FOLLOW") || m.newFollower)
+          ) {
+            clicks += 1;
+          } else if (btn.type === "web_url" && m.clicked) {
+            clicks += Number(m.clickCount) || 1;
+          }
+        }
+      }
+
+      const ctr = daySends > 0 ? Math.round((clicks / daySends) * 100) : 0;
+      return {
+        ...btn,
+        dayClicks: clicks,
+        dayCtr: ctr,
+      };
+    });
+
+    // 1. Titik Positif (Di atas garis 0) -> Tombol yang berhasil diklik
+    const positiveDots: any[] = [];
+    const activeClickedButtons = buttonsWithDayStats.filter((btn) => btn.dayClicks > 0);
+
+    activeClickedButtons.forEach((btn) => {
+      const dotCount = Math.max(1, Math.min(4, btn.dayClicks));
+      for (let i = 0; i < dotCount; i++) {
+        let dotColor = "bg-[#86EFAC]"; // Hijau muda (CTR < 15%)
+        let dotHex = "#86EFAC";
+        if (btn.dayCtr >= 35) {
+          dotColor = "bg-[#0284C7]"; // Biru (CTR sangat tinggi)
+          dotHex = "#0284C7";
+        } else if (btn.dayCtr >= 20) {
+          dotColor = "bg-[#16A34A]"; // Hijau tua (CTR tinggi)
+          dotHex = "#16A34A";
+        } else if (btn.dayCtr >= 10) {
+          dotColor = "bg-[#22C55E]"; // Hijau sedang (CTR bagus)
+          dotHex = "#22C55E";
+        }
+
+        positiveDots.push({
+          id: `${btn.id}_${b.dateKey}_${i}`,
+          label: btn.label,
+          module: btn.module,
+          action: btn.action,
+          destination: btn.destination,
+          clicks: btn.dayClicks,
+          ctr: btn.dayCtr,
+          color: dotColor,
+          colorHex: dotHex,
+          isHighlight: i === 0 && btn.dayCtr >= 20,
+          isPositive: true,
+          dateLabel: b.label,
+        });
+      }
+    });
+
+    // 2. Titik Negatif (Di bawah garis 0) -> Tombol yang diabaikan / dropoff
+    const negativeDots: any[] = [];
+    if (daySends > 0) {
+      const dropoffButtons = buttonsWithDayStats.filter((btn) => btn.dayClicks === 0);
+      const dayDropoffCount = Math.max(0, daySends - b.clicked);
+      const dropoffDotCount = Math.max(
+        dropoffButtons.length > 0 ? 1 : 0,
+        Math.min(dotMatrixMaxNeg, Math.max(1, Math.round(dayDropoffCount / Math.max(1, Math.ceil(daySends / 6)))))
+      );
+
+      for (let j = 0; j < dropoffDotCount; j++) {
+        const refBtn = dropoffButtons[j % Math.max(1, dropoffButtons.length)] || {
+          label: "Pesan Diabaikan",
+          module: "Pesan Utama",
+          action: "Dropoff",
+          destination: "Audiens belum menekan tombol",
+        };
+
+        let dropoffColor = "bg-[#FEF08A]"; // Kuning muda (Dropoff rendah)
+        let dropoffHex = "#FEF08A";
+        const dropoffRate = daySends > 0 ? (dayDropoffCount / daySends) * 100 : 0;
+        if (dropoffRate >= 75) {
+          dropoffColor = "bg-[#DC2626]"; // Merah pekat
+          dropoffHex = "#DC2626";
+        } else if (dropoffRate >= 50) {
+          dropoffColor = "bg-[#EA580C]"; // Oranye pekat
+          dropoffHex = "#EA580C";
+        } else if (dropoffRate >= 25) {
+          dropoffColor = "bg-[#FBBF24]"; // Kuning tua / Amber
+          dropoffHex = "#FBBF24";
+        }
+
+        negativeDots.push({
+          id: `drop_${b.dateKey}_${j}`,
+          label: refBtn.label,
+          module: refBtn.module,
+          action: refBtn.action,
+          destination: refBtn.destination,
+          clicks: 0,
+          ctr: 0,
+          dropoffCount: dayDropoffCount,
+          color: dropoffColor,
+          colorHex: dropoffHex,
+          isHighlight: false,
+          isPositive: false,
+          dateLabel: b.label,
+        });
+      }
+    }
+
+    return {
+      dateKey: b.dateKey,
+      label: b.label,
+      sends: daySends,
+      hasActivity: daySends > 0,
+      positiveDots: positiveDots.slice(0, dotMatrixMaxPos),
+      negativeDots: negativeDots.slice(0, dotMatrixMaxNeg),
+    };
+  });
+
   const detailKeywords = Array.isArray(detailRule.keywords)
     ? detailRule.keywords
     : typeof detailRule.keywords === "string"
@@ -686,32 +836,170 @@ export function InstagramRuleDetailModal({
               </span>
             </div>
 
-            {/* Grafik Tren 14 Hari Terakhir */}
-            <div className="h-36 flex items-end gap-2 pt-4 pb-1 px-1 border-b border-gray-100 dark:border-white/5">
-              {dailyBuckets.map((b) => {
-                const clickH = Math.max(4, Math.round((b.clicked / maxClickValue) * 105));
-                return (
-                  <div
-                    key={b.dateKey}
-                    className="flex-1 flex flex-col items-center group relative cursor-pointer"
-                    title={`${b.label}: ${b.clicked} Klik`}
-                  >
-                    <div className="w-full flex items-end justify-center h-[110px]">
-                      <div
-                        style={{ height: `${clickH}px` }}
-                        className={`w-full max-w-[22px] rounded-t transition-all ${
-                          b.clicked > 0
-                            ? "bg-gradient-to-t from-purple-600 to-orange-500 shadow-sm"
-                            : "bg-gray-200 dark:bg-white/10"
-                        }`}
-                      />
+            {/* 2. DIVERGING DOT MATRIX CHART (100% PERSIS GAYA WASHINGTON POST: SETIAP TITIK 1 TOMBOL) */}
+            <div className="relative pt-2 pb-1 px-1 sm:px-2 border-b border-gray-100 dark:border-white/5 select-none">
+              {/* Header Legend Skala Warna (Persis Kanan Atas Gambar) */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4">
+                <div className="space-y-0.5">
+                  <div className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                    <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                    Winners and Losers: Sebaran Performa Tombol Harian
+                  </div>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Setiap titik mewakili 1 tombol interaksi. Diarsir berdasarkan rasio CTR konversi (atas) &amp; dropoff (bawah).
+                  </p>
+                </div>
+
+                {/* Legend Heatmap Warna */}
+                <div className="flex flex-col items-start sm:items-end gap-1 shrink-0">
+                  <div className="flex items-center gap-1 text-[10px] text-gray-400 font-bold">
+                    <span className="mr-1 text-[#DC2626]">◄ DROPOFF</span>
+                    <div className="w-3.5 h-3 rounded-[2px] bg-[#DC2626]" title="Dropoff >75%" />
+                    <div className="w-3.5 h-3 rounded-[2px] bg-[#EA580C]" title="Dropoff 50-75%" />
+                    <div className="w-3.5 h-3 rounded-[2px] bg-[#FBBF24]" title="Dropoff 25-50%" />
+                    <div className="w-3.5 h-3 rounded-[2px] bg-[#FEF08A]" title="Dropoff <25%" />
+                    <div className="w-1.5 h-3 mx-0.5 border-l border-dashed border-gray-300 dark:border-white/20" title="0% Baseline" />
+                    <div className="w-3.5 h-3 rounded-[2px] bg-[#86EFAC]" title="CTR <10%" />
+                    <div className="w-3.5 h-3 rounded-[2px] bg-[#22C55E]" title="CTR 10-20%" />
+                    <div className="w-3.5 h-3 rounded-[2px] bg-[#16A34A]" title="CTR 20-35%" />
+                    <div className="w-3.5 h-3 rounded-[2px] bg-[#0284C7]" title="CTR >35%" />
+                    <span className="ml-1 text-[#0284C7]">CTR TINGGI ►</span>
+                  </div>
+                  <span className="text-[10px] text-gray-400 font-medium">1 Titik = 1 Tombol Interaksi</span>
+                </div>
+              </div>
+
+              {/* Area Canvas Matrix Titik Bersekat Sumbu 0 */}
+              <div className="flex gap-1.5 sm:gap-3 items-stretch">
+                {/* Y-Axis Label Kiri (Persis Gambar: SECTORS RISING > / < SECTORS FALLING) */}
+                <div className="flex flex-col justify-between text-[9px] font-bold text-gray-400 dark:text-gray-500 py-1 w-10 sm:w-16 shrink-0 text-right pr-1 sm:pr-2 select-none">
+                  <div className="flex flex-col items-end justify-start h-[120px] pb-1">
+                    <span className="text-[8px] sm:text-[9px] text-emerald-600 dark:text-emerald-400 uppercase tracking-tight">▲ KLIK</span>
+                    <span className="text-gray-400 mt-auto">+10</span>
+                  </div>
+                  <div className="py-0.5 font-black text-gray-700 dark:text-gray-200 text-[10px]">
+                    0 ──
+                  </div>
+                  <div className="flex flex-col items-end justify-between h-[90px] pt-1">
+                    <span className="text-gray-400">-5</span>
+                    <span className="text-[8px] sm:text-[9px] text-amber-600 dark:text-amber-400 uppercase tracking-tight">▼ DROPOFF</span>
+                  </div>
+                  <div className="pt-2 text-[9px] text-gray-400">
+                    Unch.
+                  </div>
+                </div>
+
+                {/* 14 Kolom Tanggal Flex */}
+                <div className="flex-1 flex justify-between items-stretch gap-1 sm:gap-2">
+                  {dotMatrixDays.map((day) => (
+                    <div key={day.dateKey} className="flex-1 min-w-0 flex flex-col items-center">
+                      {/* 1. Tumpukan Positif (Di atas Garis 0) */}
+                      <div className="h-[120px] w-full flex flex-col-reverse items-center justify-start gap-1 pb-1">
+                        {day.positiveDots.length === 0 ? (
+                          <div className="w-2.5 sm:w-3 aspect-square rounded-full bg-gray-100 dark:bg-white/5 opacity-40" />
+                        ) : (
+                          day.positiveDots.map((dot: any) => (
+                            <button
+                              key={dot.id}
+                              type="button"
+                              onMouseEnter={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setHoveredDot({
+                                  ...dot,
+                                  x: rect.left + rect.width / 2,
+                                  y: rect.top,
+                                });
+                              }}
+                              onMouseLeave={() => setHoveredDot(null)}
+                              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${dot.color} transition-transform hover:scale-135 cursor-pointer relative shadow-2xs`}
+                            >
+                              {dot.isHighlight && (
+                                <span className="absolute inset-0 m-auto w-1 h-1 rounded-full bg-gray-900 dark:bg-black" />
+                              )}
+                            </button>
+                          ))
+                        )}
+                      </div>
+
+                      {/* 2. Garis Horizontal Baseline 0 */}
+                      <div className="w-full h-[2px] bg-gray-300 dark:bg-white/20" />
+
+                      {/* 3. Tumpukan Negatif (Di bawah Garis 0) */}
+                      <div className="h-[90px] w-full flex flex-col items-center justify-start gap-1 pt-1">
+                        {day.negativeDots.length === 0 ? (
+                          <div className="w-2.5 sm:w-3 aspect-square rounded-full bg-gray-100 dark:bg-white/5 opacity-40" />
+                        ) : (
+                          day.negativeDots.map((dot: any) => (
+                            <button
+                              key={dot.id}
+                              type="button"
+                              onMouseEnter={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setHoveredDot({
+                                  ...dot,
+                                  x: rect.left + rect.width / 2,
+                                  y: rect.top,
+                                });
+                              }}
+                              onMouseLeave={() => setHoveredDot(null)}
+                              className={`w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full ${dot.color} transition-transform hover:scale-135 cursor-pointer shadow-2xs`}
+                            />
+                          ))
+                        )}
+                      </div>
+
+                      {/* 4. Baris Unchanged (Unch.) di paling bawah */}
+                      <div className="pt-2 pb-1">
+                        <div
+                          className={`w-2 h-2 rounded-full transition-colors ${
+                            !day.hasActivity
+                              ? "bg-gray-400 dark:bg-gray-500"
+                              : "bg-gray-200 dark:bg-white/10"
+                          }`}
+                          title={!day.hasActivity ? "Tidak ada pesan terkirim (Unchanged)" : "Ada pesan terkirim"}
+                        />
+                      </div>
+
+                      {/* 5. Label Tanggal X-Axis */}
+                      <span className="text-[8px] sm:text-[9px] text-gray-400 dark:text-gray-500 truncate max-w-full text-center mt-1">
+                        {day.label.split(" ")[0]}
+                      </span>
                     </div>
-                    <span className="text-[9px] text-gray-400 mt-2 truncate max-w-full">
-                      {b.label.split(" ")[0]}
+                  ))}
+                </div>
+              </div>
+
+              {/* Tooltip Mengambang (Persis Kotak Gelap Construction di Gambar) */}
+              {hoveredDot && (
+                <div
+                  className="fixed z-[200] pointer-events-none bg-gray-900/95 dark:bg-black/95 text-white px-3 py-2 rounded-xl shadow-2xl border border-white/10 text-xs backdrop-blur-md transition-all duration-75 animate-in fade-in zoom-in-95"
+                  style={{
+                    left: `${hoveredDot.x}px`,
+                    top: `${hoveredDot.y - 12}px`,
+                    transform: "translate(-50%, -100%)",
+                  }}
+                >
+                  <div className="flex items-center gap-1.5 font-bold text-white mb-0.5">
+                    <span
+                      className="w-2.5 h-2.5 rounded-full inline-block shrink-0 shadow-xs"
+                      style={{ backgroundColor: hoveredDot.colorHex }}
+                    />
+                    <span className="truncate max-w-[210px]">{hoveredDot.label}</span>
+                  </div>
+                  <div className="text-[11px] text-gray-300 flex items-center justify-between gap-3 mt-0.5">
+                    <span className="font-medium text-gray-400">{hoveredDot.dateLabel}</span>
+                    <span className={hoveredDot.isPositive ? "text-emerald-400 font-extrabold" : "text-amber-400 font-extrabold"}>
+                      {hoveredDot.isPositive
+                        ? `+${hoveredDot.ctr}% CTR (${hoveredDot.clicks} Klik)`
+                        : `${hoveredDot.dropoffCount} Dropoff`}
                     </span>
                   </div>
-                );
-              })}
+                  <div className="text-[10px] text-gray-400 mt-1 border-t border-white/10 pt-1 flex items-center justify-between gap-2">
+                    <span>Modul: {hoveredDot.module}</span>
+                    <span className="italic">{hoveredDot.action}</span>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Rincian Seluruh Tombol Interaksi & Tautan DM */}
