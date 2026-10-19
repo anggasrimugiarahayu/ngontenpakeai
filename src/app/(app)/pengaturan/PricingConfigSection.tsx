@@ -3,7 +3,7 @@
 import toast from "react-hot-toast";
 import { useState } from "react";
 import { saveAppSetting } from "@/app/actions/adminSettings";
-import { Save, CheckCircle2, Edit, Package, Wrench, Gem, Check, X, Plus, BookOpen } from "lucide-react";
+import { Save, CheckCircle2, Edit, Package, Wrench, Gem, Check, X, Plus, BookOpen, Bot } from "lucide-react";
 
 export function PricingConfigSection({ products, settings }: { products: any[], settings: any[] }) {
   const [loading, setLoading] = useState(false);
@@ -44,6 +44,22 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
       ],
       bundledProductIds: [] 
     },
+    PRO_AUTOMATION: { 
+      name: "Paket Pro Automation", 
+      desc: "Cocok buat yang ingin mengotomasi interaksi, auto DM & komentar Instagram 24/7.",
+      price: 99000, 
+      originalPrice: 799000,
+      discountLabel: "88% OFF",
+      highlightText: "",
+      features: [
+        "Koneksi Akun Instagram Bisnis & Creator",
+        "Auto Balas Komentar Post & Reels Instan",
+        "Auto Kirim Link / Kupon Diskon via DM",
+        "Analitik Funnel Konversi Realtime",
+        "Akses Selama 30 Hari"
+      ],
+      bundledProductIds: [] 
+    },
     PRO_PLUS: { 
       name: "Paket Lengkap (Ebook)", 
       desc: "Bonus terbanyak, akses jualan (PLR) dan Lifetime support.",
@@ -52,11 +68,11 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
       discountLabel: "94% OFF",
       highlightText: "PALING WORTH",
       features: [
-        "Semua isi Paket Basic",
+        "Semua isi Paket Basic & Tools",
+        "Akses Penuh Instagram Automation",
         "Hak Jual Ulang (PLR) untuk berbagai materi",
         "Bimbingan Private 1-on-1 (Lifetime)",
-        "Tools Text to Voice Over",
-        "Video Footage Siap Pakai"
+        "Tools Text to Voice Over & Video Footage"
       ],
       bundledProductIds: [] 
     },
@@ -263,7 +279,13 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
         </ul>
 
         <button className={`w-full py-2.5 rounded-xl font-black text-xs transition-all duration-300 ${isSpecial ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20' : 'bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-900 dark:text-white'}`}>
-          {pkg.name.includes("Basic") ? "Pilih Paket Basic" : pkg.name.includes("Tools") ? "Pilih Sistem Tools" : "Pilih Paket Lengkap"}
+          {pkg.name.includes("Basic") || pkg.name.includes("Book") || pkg.name.includes("Ebook")
+            ? "Pilih Paket Ebook"
+            : pkg.name.includes("Auto")
+            ? "Pilih Paket Automation"
+            : pkg.name.includes("Tools")
+            ? "Pilih Sistem Tools"
+            : "Pilih Paket Lengkap"}
         </button>
       </div>
     );
@@ -288,6 +310,9 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
           <button onClick={() => setEditingPackage("PRO_TOOLS")} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-sm transition-colors whitespace-nowrap">
             <Wrench className="w-4 h-4" /> Paket Tools
           </button>
+          <button onClick={() => setEditingPackage("PRO_AUTOMATION")} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-sm transition-colors whitespace-nowrap">
+            <Bot className="w-4 h-4" /> Paket Automation
+          </button>
           <button onClick={() => setEditingPackage("PRO_PLUS")} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-rn-accent hover:bg-orange-600 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-rn-accent/20 whitespace-nowrap">
             <Gem className="w-4 h-4" /> Paket Lengkap
           </button>
@@ -308,9 +333,10 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Live Preview</h2>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-6 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 max-w-7xl mx-auto">
             <PreviewCard pkgKey="PRO_BOOK" />
             <PreviewCard pkgKey="PRO_TOOLS" />
+            <PreviewCard pkgKey="PRO_AUTOMATION" />
             <PreviewCard pkgKey="PRO_PLUS" />
         </div>
       </div>

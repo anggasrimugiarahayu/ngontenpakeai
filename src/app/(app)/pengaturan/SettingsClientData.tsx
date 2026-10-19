@@ -14,13 +14,15 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
   const usages = userData?.usages || [];
   const ownedEbooks = userData?.ownedEbooks || [];
   const proExpiredAt = userData?.proExpiredAt ? new Date(userData.proExpiredAt) : null;
+  const proAutomationExpiredAt = userData?.proAutomationExpiredAt ? new Date(userData.proAutomationExpiredAt) : null;
 
   const usageMap = usages.reduce((acc: any, usage: any) => {
     acc[usage.featureId] = usage.count;
     return acc;
   }, {} as Record<string, number>);
 
-  const isNearlyExpired = proExpiredAt && (proExpiredAt.getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000);
+  const isNearlyExpired = (proExpiredAt && (proExpiredAt.getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000)) ||
+    (proAutomationExpiredAt && (proAutomationExpiredAt.getTime() - new Date().getTime() < 7 * 24 * 60 * 60 * 1000));
 
   return (
     <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
@@ -38,12 +40,24 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
               </span>
             )}
           </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            {isPro && proExpiredAt 
-              ? `Masa Aktif: Berlaku hingga ${format(proExpiredAt, 'd MMMM yyyy', { locale: id })}`
-              : "Status: Paket Free (Terbatas)"
-            }
-          </p>
+          {isPro && (proExpiredAt || proAutomationExpiredAt) ? (
+            <div className="space-y-0.5 mt-1">
+              {proExpiredAt && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  • Sistem Tools: Berlaku hingga {format(proExpiredAt, 'd MMMM yyyy', { locale: id })}
+                </p>
+              )}
+              {proAutomationExpiredAt && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  • Ruang Automation: Berlaku hingga {format(proAutomationExpiredAt, 'd MMMM yyyy', { locale: id })}
+                </p>
+              )}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              Status: Paket Free (Terbatas)
+            </p>
+          )}
         </div>
         
         {!isPro ? (

@@ -45,6 +45,7 @@ export async function getPengaturanDataAction() {
     features, 
     usages, 
     proExpiredAt: dbUser?.proToolsExpiredAt || null,
+    proAutomationExpiredAt: (dbUser as any)?.proAutomationExpiredAt || null,
     ownedEbooks
   };
 

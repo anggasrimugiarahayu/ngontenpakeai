@@ -8,7 +8,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { calculatePaymentFees, PAYMENT_METHODS, PaymentMethodKey } from "@/lib/payment-calc";
 
 export async function createCheckoutToken(data: { 
-  type: "EBOOK" | "PRO_BOOK" | "PRO_TOOLS" | "PRO_PLUS", 
+  type: "EBOOK" | "PRO_BOOK" | "PRO_TOOLS" | "PRO_AUTOMATION" | "PRO_PLUS", 
   productId?: string, 
   paymentMethodKey: PaymentMethodKey,
   customerName: string,

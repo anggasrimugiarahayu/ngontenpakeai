@@ -292,7 +292,7 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
         </main>
       ) : (
         /* PRICING MODAL / SECTION */
-        <main className="flex-1 flex flex-col items-center p-4 md:p-6 text-center max-w-5xl mx-auto w-full py-6 md:py-8 animate-in fade-in zoom-in duration-300">
+        <main className="flex-1 flex flex-col items-center p-4 md:p-6 text-center max-w-7xl mx-auto w-full py-6 md:py-8 animate-in fade-in zoom-in duration-300">
           <button
             onClick={handleClosePricing}
             className="group flex items-center gap-2 px-4 py-1.5 rounded-full font-bold text-[10px] uppercase tracking-widest mb-4 transition-colors border border-yellow-500/50 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-600 dark:border-yellow-500/30 dark:text-yellow-400"
@@ -316,10 +316,11 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
             Ambil kesempatan mumpung lagi diskon besar-besaran. Sekali bayar!
           </p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 w-full text-left">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 lg:gap-6 w-full text-left">
             {[
               { key: "PRO_BOOK", type: "PRO_BOOK" },
               { key: "PRO_TOOLS", type: "PRO_TOOLS" },
+              { key: "PRO_AUTOMATION", type: "PRO_AUTOMATION" },
               { key: "PRO_PLUS", type: "PRO_PLUS" }
             ].map(pkgItem => {
               const defaultPkg = {
@@ -339,7 +340,16 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
                   originalPrice: 666000,
                   discountLabel: "85% OFF",
                   highlightText: "",
-                  features: ["Akses 8 Sistem AI Ngonten Pakai AI", "Ebook Ngonten Pakai AI (Included)", "Bonus 4 Resource Ekstra (Footage, Hook, Tools)", "Sekali Bayar, Akses Selamanya"]
+                  features: ["Akses 8 Sistem AI Ngonten Pakai AI", "Ebook Ngonten Pakai AI (Included)", "Bonus 4 Resource Ekstra (Footage, Hook, Tools)", "Akses Selama 30 Hari"]
+                },
+                PRO_AUTOMATION: {
+                  name: "Paket Pro Automation",
+                  desc: "Cocok buat yang ingin mengotomasi interaksi, auto DM & komentar Instagram 24/7.",
+                  price: 99000,
+                  originalPrice: 799000,
+                  discountLabel: "88% OFF",
+                  highlightText: "",
+                  features: ["Koneksi Akun Instagram Bisnis & Creator", "Auto Balas Komentar Post & Reels Instan", "Auto Kirim Link / Kupon Diskon via DM", "Analitik Funnel Konversi Realtime", "Akses Selama 30 Hari"]
                 },
                 PRO_PLUS: {
                   name: "Paket Lengkap (Ebook)",
@@ -348,7 +358,7 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
                   originalPrice: 2419000,
                   discountLabel: "94% OFF",
                   highlightText: "Paling Worth",
-                  features: ["Semua isi Paket Basic", "Hak Jual Ulang (PLR) untuk berbagai materi", "Bimbingan Private 1-on-1 (Lifetime)", "Tools Text to Voice Over", "Video Footage Siap Pakai"]
+                  features: ["Semua isi Paket Basic & Tools", "Akses Penuh Instagram Automation", "Hak Jual Ulang (PLR) untuk berbagai materi", "Bimbingan Private 1-on-1 (Lifetime)", "Tools Text to Voice Over & Video Footage"]
                 }
               };
               
@@ -359,44 +369,46 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
               const formatK = (p: number) => p >= 1000 ? (p / 1000) + 'k' : p.toString();
 
               return (
-                <div key={pkgItem.key} className={`border rounded-2xl p-5 md:p-6 flex flex-col relative transition-colors duration-300 ${hasHighlight ? 'border-2 border-rn-accent transform lg:-translate-y-4 bg-white dark:bg-[#18181b]' : 'bg-white border-gray-200 dark:bg-[#18181b] dark:border-white/5'}`}>
-                  {hasHighlight && (
-                    <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-rn-accent text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest whitespace-nowrap">
-                      {pkgData.highlightText}
+                <div key={pkgItem.key} className={`border rounded-2xl p-5 md:p-6 flex flex-col justify-between relative transition-all duration-300 ${hasHighlight ? 'border-2 border-rn-accent transform xl:-translate-y-3 bg-white dark:bg-[#18181b] shadow-xl shadow-orange-500/10' : 'bg-white border-gray-200 dark:bg-[#18181b] dark:border-white/5 hover:border-gray-300 dark:hover:border-white/20'}`}>
+                  <div>
+                    {hasHighlight && (
+                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-rn-accent text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest whitespace-nowrap shadow-sm">
+                        {pkgData.highlightText}
+                      </div>
+                    )}
+
+                    <h3 className={`font-bold text-lg md:text-xl font-heading mb-1 transition-colors duration-300 text-gray-900 dark:text-white`}>
+                      {pkgData.name}
+                    </h3>
+                    <p className={`text-xs md:text-sm mb-4 transition-colors duration-300 text-gray-600 dark:text-gray-400 line-clamp-2`}>
+                      {pkgData.desc}
+                    </p>
+
+                    <div className="flex items-end gap-2 mb-2">
+                      <span className={`text-2xl md:text-3xl font-black transition-colors duration-300 text-gray-900 dark:text-white`}>
+                        Rp {formatK(pkgData.price)}
+                      </span>
                     </div>
-                  )}
-
-                  <h3 className={`font-bold text-lg md:text-xl font-heading mb-1 transition-colors duration-300 text-gray-900 dark:text-white`}>
-                    {pkgData.name}
-                  </h3>
-                  <p className={`text-xs md:text-sm mb-4 transition-colors duration-300 text-gray-600 dark:text-gray-400 line-clamp-2`}>
-                    {pkgData.desc}
-                  </p>
-
-                  <div className="flex items-end gap-2 mb-2">
-                    <span className={`text-2xl md:text-3xl font-black transition-colors duration-300 text-gray-900 dark:text-white`}>
-                      Rp {formatK(pkgData.price)}
-                    </span>
-                  </div>
-                  
-                  <div className={`text-xs md:text-sm mb-2 transition-colors duration-300 text-gray-500 dark:text-gray-400`}>
-                    Total <span className="line-through">Rp {pkgData.originalPrice.toLocaleString('id-ID')}</span>
-                  </div>
-                  
-                  {pkgData.discountLabel && (
-                    <div className="inline-block bg-red-500/20 text-red-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider w-max mb-4">
-                      {pkgData.discountLabel}
+                    
+                    <div className={`text-xs md:text-sm mb-2 transition-colors duration-300 text-gray-500 dark:text-gray-400`}>
+                      Total <span className="line-through">Rp {pkgData.originalPrice.toLocaleString('id-ID')}</span>
                     </div>
-                  )}
+                    
+                    {pkgData.discountLabel && (
+                      <div className="inline-block bg-red-500/20 text-red-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider w-max mb-4">
+                        {pkgData.discountLabel}
+                      </div>
+                    )}
 
-                  <div className="flex-1">
-                    <ul className={`space-y-2 md:space-y-3 text-xs md:text-sm transition-colors duration-300 text-gray-700 dark:text-gray-300`}>
-                      {pkgData.features.map((f: string, i: number) => (
-                        <li key={i} className={`flex gap-2 items-start ${isLengkap && i === 0 ? 'font-bold text-gray-900 dark:text-white' : ''}`}>
-                          <Check className="w-4 h-4 text-rn-accent shrink-0 mt-0.5" /> {f}
-                        </li>
-                      ))}
-                    </ul>
+                    <div className="mt-4">
+                      <ul className={`space-y-2 md:space-y-3 text-xs md:text-sm transition-colors duration-300 text-gray-700 dark:text-gray-300`}>
+                        {pkgData.features.map((f: string, i: number) => (
+                          <li key={i} className={`flex gap-2 items-start ${isLengkap && i === 0 ? 'font-bold text-gray-900 dark:text-white' : ''}`}>
+                            <Check className="w-4 h-4 text-rn-accent shrink-0 mt-0.5" /> {f}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   </div>
 
                   <Link 
@@ -406,7 +418,13 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
                     onTouchStart={() => { if (isLoggedIn) preload(["checkout", pkgItem.type, undefined], () => getCheckoutDetailsAction(pkgItem.type, undefined)) }}
                     className={`w-full mt-6 block text-center font-bold py-3 rounded-xl transition-all ${hasHighlight ? 'bg-rn-accent text-black font-black hover:bg-white shadow-[0_0_20px_rgba(208,226,6,0.2)]' : 'bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white'}`}
                   >
-                    {pkgData.name.includes("Basic") ? "Pilih Paket Basic" : pkgData.name.includes("Tools") ? "Pilih Sistem Tools" : "Pilih Paket Lengkap"}
+                    {pkgData.name.includes("Basic") || pkgData.name.includes("Book") || pkgData.name.includes("Ebook")
+                      ? "Pilih Paket Ebook"
+                      : pkgData.name.includes("Auto")
+                      ? "Pilih Paket Automation"
+                      : pkgData.name.includes("Tools")
+                      ? "Pilih Sistem Tools"
+                      : "Pilih Paket Lengkap"}
                   </Link>
                 </div>
               );

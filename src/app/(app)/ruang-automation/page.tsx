@@ -19,9 +19,13 @@ export default async function RuangAutomationPage({
 
   let isPro = isAdmin;
   if (!isAdmin && session?.user?.id) {
-    const dbUser = await getCachedAppUser(session.user.id);
-    const hasTools = dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();
-    isPro = !!hasTools || dbUser?.role === "ADMIN" || dbUser?.role === "PRO";
+    const [dbUser, userOrders] = await Promise.all([
+      getCachedAppUser(session.user.id),
+      getCachedUserOrders(session.user.id)
+    ]);
+    const hasAutomation = !!((dbUser as any)?.proAutomationExpiredAt && new Date((dbUser as any).proAutomationExpiredAt) > new Date());
+    const hasProPlus = userOrders.some((o: any) => o.orderType === "PRO_PLUS");
+    isPro = hasAutomation || hasProPlus || dbUser?.role === "ADMIN";
   }
 
   const resolvedParams = searchParams ? await searchParams : {};

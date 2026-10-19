@@ -79,11 +79,9 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     itemName = product.title;
     itemDescription = product.description || "Akses selamanya untuk produk ini.";
     productImage = (product as any).coverUrl || "";
-  } else if (type === "PRO_BOOK" || type === "PRO_TOOLS" || type === "PRO_PLUS") {
+  } else if (type === "PRO_BOOK" || type === "PRO_TOOLS" || type === "PRO_AUTOMATION" || type === "PRO_PLUS") {
     const setting = await prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
     const pricingConfig = setting?.value ? JSON.parse(setting.value) : null;
-
-    
 
     if (pricingConfig && pricingConfig[type]) {
       baseAmount = pricingConfig[type].price;
@@ -93,6 +91,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
       switch(type) {
         case "PRO_BOOK": productImage = "/img_paket/paket_ebook.png"; break;
         case "PRO_TOOLS": productImage = "/img_paket/paket_tools.png"; break;
+        case "PRO_AUTOMATION": productImage = "/img_paket/paket_tools.png"; break;
         case "PRO_PLUS": productImage = "/img_paket/paket_lengkap.png"; break;
       }
     } else {
@@ -102,6 +101,8 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
         baseAmount = 99000; itemName = "Paket PRO BOOK"; itemDescription = "Cocok buat yang mau fokus belajar teori faceless creator.";
       } else if (type === "PRO_TOOLS") {
         baseAmount = 99000; itemName = "Paket Sistem Tools"; itemDescription = "Cocok buat yang butuh bantuan AI untuk eksekusi ngonten.";
+      } else if (type === "PRO_AUTOMATION") {
+        baseAmount = 99000; itemName = "Paket Pro Automation"; itemDescription = "Otomatisasi balasan komentar pintar dan auto-DM Instagram 24/7.";
       } else if (type === "PRO_PLUS") {
         baseAmount = 149000; itemName = "Paket Lengkap (Ebook)"; itemDescription = "Bonus terbanyak, akses jualan (PLR) dan Lifetime support.";
       }

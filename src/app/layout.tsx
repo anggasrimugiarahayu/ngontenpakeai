@@ -44,6 +44,7 @@ export default async function RootLayout({
         
         // Calculate badge dynamically
         const hasTools = dbUser.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();
+        const hasAutomation = (dbUser as any).proAutomationExpiredAt && new Date((dbUser as any).proAutomationExpiredAt) > new Date();
         const isAdmin = dbUser.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
         
         // Check if they ever bought PRO_BOOK or PRO_PLUS from cached orders
@@ -52,7 +53,10 @@ export default async function RootLayout({
         ) || isAdmin;
         
         if (isAdmin) badgeName = "ADMIN";
+        else if (hasBook && hasTools && hasAutomation) badgeName = "PRO PLUS";
         else if (hasBook && hasTools) badgeName = "PRO PLUS";
+        else if (hasTools && hasAutomation) badgeName = "PRO PLUS";
+        else if (hasAutomation) badgeName = "PRO AUTO";
         else if (hasTools) badgeName = "PRO TOOLS";
         else if (hasBook) badgeName = "PRO BOOK";
       }

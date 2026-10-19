@@ -11,7 +11,7 @@ import { PAYMENT_METHODS, calculatePaymentFees, PaymentMethodKey } from "@/lib/p
 import CheckoutModals, { CheckoutAddonItem } from "./CheckoutModals";
 
 interface CheckoutClientProps {
-  type: "EBOOK" | "PRO_BOOK" | "PRO_TOOLS" | "PRO_PLUS";
+  type: "EBOOK" | "PRO_BOOK" | "PRO_TOOLS" | "PRO_AUTOMATION" | "PRO_PLUS";
   productId?: string;
   itemName: string;
   itemDescription: string;

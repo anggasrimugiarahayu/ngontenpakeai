@@ -45,6 +45,7 @@ model User {
   emailVerified    DateTime?         @map("email_verified")
   role             String            @default("USER")
   proToolsExpiredAt DateTime?         @map("pro_tools_expired_at")
+  proAutomationExpiredAt DateTime?    @map("pro_automation_expired_at")
   image            String?
   googleApiKey     String?           @map("google_api_key")
   onboardingCompleted Boolean           @default(false) @map("onboarding_completed")
