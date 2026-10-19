@@ -9,6 +9,7 @@ import {
   X,
   ExternalLink,
 } from "lucide-react";
+import { SpintaxAntiSpamTips } from "./SpintaxAntiSpamTips";
 
 interface AdditionalFeaturesBuilderProps {
   ruleFormData: any;
@@ -320,6 +321,7 @@ export function AdditionalFeaturesBuilder({
 
               {/* Pesan */}
               <div className="space-y-1.5">
+                <SpintaxAntiSpamTips context="followup" className="mb-2" />
                 <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
                   Pesan
                 </label>
@@ -427,58 +429,7 @@ export function AdditionalFeaturesBuilder({
             {ruleFormData.featureReplyComment && (
               <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-4 animate-in fade-in duration-150">
                 {/* Tips Box */}
-                <div className="p-3.5 sm:p-4 rounded-xl border border-blue-400/50 dark:border-blue-500/30 bg-blue-50/40 dark:bg-blue-950/20 space-y-2.5">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="space-y-0.5">
-                      <div className="text-xs font-bold text-gray-900 dark:text-white">
-                        Tips
-                      </div>
-                      <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                        Tips bermanfaat untuk menghindari spam
-                      </p>
-                    </div>
-                    <div className="w-5 h-5 rounded-full border border-blue-500 text-blue-500 flex items-center justify-center shrink-0 text-xs font-bold font-serif">
-                      i
-                    </div>
-                  </div>
-
-                  <ol className="space-y-1.5 text-[11px] text-gray-600 dark:text-gray-400 list-decimal pl-4 leading-relaxed">
-                    <li>
-                      Matikan fitur ini ketika konten Anda mendapatkan banyak
-                      trafik
-                    </li>
-                    <li>Ganti secara berkala isi balasan komentar</li>
-                    <li>
-                      Pastikan balasan komentar pada konten Anda berbeda-beda
-                    </li>
-                    <li>
-                      Balas menggunakan{" "}
-                      <code className="text-blue-600 dark:text-blue-400 font-semibold font-mono">
-                        @&#123;username&#125;
-                      </code>{" "}
-                      untuk bisa secara dinamis memanggil username audiens
-                    </li>
-                    <li>
-                      Balas menggunakan format{" "}
-                      <code className="text-blue-600 dark:text-blue-400 font-semibold font-mono">
-                        &#123;option1|option2|option3|dan seterusnya..&#125;
-                      </code>{" "}
-                      untuk membuat variasi balasan dalam 1 input
-                    </li>
-                  </ol>
-
-                  <div className="flex justify-end pt-0.5">
-                    <a
-                      href="https://help.instagram.com"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
-                    >
-                      <span>Panduan</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                  </div>
-                </div>
+                <SpintaxAntiSpamTips context="comment" />
 
                 {/* Limit Dropdown */}
                 <div className="space-y-1.5 relative">
@@ -763,6 +714,11 @@ export function AdditionalFeaturesBuilder({
 
               {/* Pesan */}
               <div className="space-y-1">
+                <SpintaxAntiSpamTips
+                  context="dm"
+                  className="mb-2"
+                  customExample="{Halo|Hai} {first_name}! {Terima kasih sudah menghubungi kami|Selamat datang}! Klik tombol di bawah untuk konfirmasi ya 👇"
+                />
                 <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
                   Pesan
                 </label>
@@ -966,6 +922,7 @@ export function AdditionalFeaturesBuilder({
 
                 {/* Pesan Utama */}
                 <div className="space-y-1.5">
+                  <SpintaxAntiSpamTips context="follow" className="mb-2" />
                   <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
                     Pesan
                   </label>
@@ -1028,6 +985,11 @@ export function AdditionalFeaturesBuilder({
                 {/* Masih belum mengikuti? (+ Tambah Pesan / Pesan ke-2) */}
                 {ruleFormData.askForFollowHasRetry ? (
                   <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-3 animate-in fade-in duration-150">
+                    <SpintaxAntiSpamTips
+                      context="follow"
+                      className="mb-1"
+                      customExample="{Ih sepertinya kamu belum follow beneran nih 😅|Follow akun kami dulu ya kak} agar materi bisa langsung kami kirimkan 🙌"
+                    />
                     <div className="flex items-center justify-between">
                       <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
                         Pesan
@@ -1249,6 +1211,7 @@ export function AdditionalFeaturesBuilder({
 
               {/* Pesan Permintaan Kontak */}
               <div className="space-y-1.5">
+                <SpintaxAntiSpamTips context="contact" className="mb-2" />
                 <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
                   Pesan Permintaan Kontak
                 </label>

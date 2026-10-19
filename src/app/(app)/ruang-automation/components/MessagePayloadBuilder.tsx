@@ -10,6 +10,7 @@ import {
   X,
   Image as ImageIcon,
 } from "lucide-react";
+import { SpintaxAntiSpamTips } from "./SpintaxAntiSpamTips";
 
 export type MessageTypeOption = "BUTTON_TEMPLATE" | "PLAIN_TEXT" | "CAROUSEL";
 
@@ -232,6 +233,7 @@ export function MessagePayloadBuilder({
       {/* 2. Isi Pesan (Untuk Template Tombol & Teks Biasa) */}
       {currentMessageType !== "CAROUSEL" && (
         <div className="space-y-1.5">
+          <SpintaxAntiSpamTips context="dm" className="mb-2" />
           <div className="flex items-center justify-between">
             <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
               Pesan {requiredMark && <span className="text-rose-500">*</span>}
@@ -386,6 +388,11 @@ export function MessagePayloadBuilder({
 
                     {/* Teks Balasan Saat Quick Reply Diklik */}
                     <div className="space-y-1">
+                      <SpintaxAntiSpamTips
+                        context="dm"
+                        className="mb-1"
+                        customExample="{Terima kasih sudah memilih opsi ini!|Siap kak, langsung kami proses ya!} ✨"
+                      />
                       <label className="block text-[11px] font-semibold text-gray-700 dark:text-gray-300">
                         Teks
                       </label>
@@ -720,6 +727,11 @@ export function MessagePayloadBuilder({
               {/* Masukkan Teks (jika Kirim Teks) */}
               {btn.action === "Kirim Teks" && (
                 <div className="space-y-1 animate-in fade-in duration-150">
+                  <SpintaxAntiSpamTips
+                    context="dm"
+                    className="mb-1"
+                    customExample="{Siap kak, ini info tambahannya ya!|Baik kak, silakan disimak ya!} 🙌"
+                  />
                   <label className="text-[11px] font-semibold text-gray-600 dark:text-gray-400 block">
                     Masukkan Teks
                   </label>
