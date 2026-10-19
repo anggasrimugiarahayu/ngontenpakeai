@@ -369,7 +369,7 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
               const formatK = (p: number) => p >= 1000 ? (p / 1000) + 'k' : p.toString();
 
               return (
-                <div key={pkgItem.key} className={`border rounded-2xl p-4 xl:p-4.5 flex flex-col justify-between relative transition-all duration-300 ${hasHighlight ? 'border-2 border-rn-accent transform xl:-translate-y-1 bg-white dark:bg-[#18181b] shadow-xl shadow-orange-500/10' : 'bg-white border-gray-200 dark:bg-[#18181b] dark:border-white/5 hover:border-gray-300 dark:hover:border-white/20'}`}>
+                <div key={pkgItem.key} className={`border rounded-2xl p-4.5 xl:p-5 flex flex-col justify-between relative transition-all duration-300 ${hasHighlight ? 'border-2 border-rn-accent transform xl:-translate-y-1 bg-white dark:bg-[#18181b] shadow-xl shadow-orange-500/10' : 'bg-white border-gray-200 dark:bg-[#18181b] dark:border-white/5 hover:border-gray-300 dark:hover:border-white/20'}`}>
                   <div>
                     {hasHighlight && (
                       <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-rn-accent text-black text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest whitespace-nowrap shadow-sm">
@@ -377,35 +377,35 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
                       </div>
                     )}
 
-                    <h3 className={`font-bold text-base xl:text-lg font-heading mb-0.5 transition-colors duration-300 text-gray-900 dark:text-white leading-tight`}>
+                    <h3 className={`font-bold text-base xl:text-lg font-heading mb-1 transition-colors duration-300 text-gray-900 dark:text-white leading-tight`}>
                       {pkgData.name}
                     </h3>
-                    <p className={`text-[11px] xl:text-xs mb-2.5 transition-colors duration-300 text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed`}>
+                    <p className={`text-xs xl:text-[13px] mb-3 transition-colors duration-300 text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed`}>
                       {pkgData.desc}
                     </p>
 
-                    <div className="flex items-baseline gap-2 mb-0.5">
-                      <span className={`text-2xl xl:text-[26px] font-black transition-colors duration-300 text-gray-900 dark:text-white leading-tight`}>
+                    <div className="flex items-baseline gap-2 mb-1">
+                      <span className={`text-2xl xl:text-3xl font-black transition-colors duration-300 text-gray-900 dark:text-white leading-tight`}>
                         Rp {formatK(pkgData.price)}
                       </span>
                     </div>
                     
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className={`text-[11px] transition-colors duration-300 text-gray-400 dark:text-gray-500`}>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={`text-xs transition-colors duration-300 text-gray-400 dark:text-gray-500`}>
                         Total <span className="line-through">Rp {pkgData.originalPrice.toLocaleString('id-ID')}</span>
                       </span>
                       {pkgData.discountLabel && (
-                        <span className="inline-block bg-red-500/15 text-red-500 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">
+                        <span className="inline-block bg-red-500/15 text-red-500 text-[10px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">
                           {pkgData.discountLabel}
                         </span>
                       )}
                     </div>
 
-                    <div className="mt-2.5">
-                      <ul className={`space-y-1.5 xl:space-y-1.5 text-[11px] xl:text-xs transition-colors duration-300 text-gray-700 dark:text-gray-300`}>
+                    <div className="mt-3">
+                      <ul className={`space-y-2 xl:space-y-2.5 text-xs xl:text-[13px] transition-colors duration-300 text-gray-700 dark:text-gray-300`}>
                         {pkgData.features.map((f: string, i: number) => (
-                          <li key={i} className={`flex gap-1.5 items-start leading-snug ${isLengkap && i === 0 ? 'font-bold text-gray-900 dark:text-white' : ''}`}>
-                            <Check className="w-3.5 h-3.5 text-rn-accent shrink-0 mt-0.5" />
+                          <li key={i} className={`flex gap-2 items-start leading-snug ${isLengkap && i === 0 ? 'font-bold text-gray-900 dark:text-white' : ''}`}>
+                            <Check className="w-4 h-4 text-rn-accent shrink-0 mt-0.5" />
                             <span className="line-clamp-2">{f}</span>
                           </li>
                         ))}
@@ -418,7 +418,7 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
                     href={isLoggedIn ? `/checkout?type=${pkgItem.type}` : `/login?redirect=/checkout?type=${pkgItem.type}`}
                     onMouseEnter={() => { if (isLoggedIn) preload(["checkout", pkgItem.type, undefined], () => getCheckoutDetailsAction(pkgItem.type, undefined)) }}
                     onTouchStart={() => { if (isLoggedIn) preload(["checkout", pkgItem.type, undefined], () => getCheckoutDetailsAction(pkgItem.type, undefined)) }}
-                    className={`w-full mt-3.5 xl:mt-4 block text-center font-bold text-xs xl:text-sm py-2.5 rounded-xl transition-all ${hasHighlight ? 'bg-rn-accent text-black font-black hover:bg-white shadow-[0_0_20px_rgba(208,226,6,0.2)]' : 'bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white'}`}
+                    className={`w-full mt-4 xl:mt-5 block text-center font-bold text-xs xl:text-sm py-3 rounded-xl transition-all ${hasHighlight ? 'bg-rn-accent text-black font-black hover:bg-white shadow-[0_0_20px_rgba(208,226,6,0.2)]' : 'bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white'}`}
                   >
                     {pkgData.name.includes("Basic") || pkgData.name.includes("Book") || pkgData.name.includes("Ebook")
                       ? "Pilih Paket Ebook"
