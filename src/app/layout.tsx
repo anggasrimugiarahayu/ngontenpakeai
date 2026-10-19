@@ -86,7 +86,7 @@ export default async function RootLayout({
                 <Suspense>
                   <Navbar memberCount={memberCount.toString()} userRole={userRole} badgeName={badgeName} />
                 </Suspense>
-                <main className="flex-1 flex flex-col pt-16 md:pt-20 pb-2">
+                <main className="flex-1 flex flex-col pt-16 md:pt-16 pb-1">
                   {children}
                 </main>
                 <Footer />

@@ -292,31 +292,31 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
         </main>
       ) : (
         /* PRICING MODAL / SECTION */
-        <main className="flex-1 flex flex-col items-center p-4 md:p-6 text-center max-w-7xl mx-auto w-full py-6 md:py-8 animate-in fade-in zoom-in duration-300">
+        <main className="flex-1 flex flex-col items-center justify-center p-3 md:p-4 xl:px-6 text-center max-w-7xl mx-auto w-full py-2 md:py-3 xl:py-2 animate-in fade-in zoom-in duration-300">
           <button
             onClick={handleClosePricing}
-            className="group flex items-center gap-2 px-4 py-1.5 rounded-full font-bold text-[10px] uppercase tracking-widest mb-4 transition-colors border border-yellow-500/50 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-600 dark:border-yellow-500/30 dark:text-yellow-400"
+            className="group flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-[9px] xl:text-[10px] uppercase tracking-widest mb-1.5 transition-colors border border-yellow-500/50 bg-yellow-500/10 hover:bg-yellow-500/20 text-yellow-600 dark:border-yellow-500/30 dark:text-yellow-400"
           >
-            <span className="mr-1 text-base leading-none transition-transform duration-300 group-hover:-translate-x-1 group-active:-translate-x-2">&lsaquo;</span> PROMO
+            <span className="mr-0.5 text-sm leading-none transition-transform duration-300 group-hover:-translate-x-1 group-active:-translate-x-2">&lsaquo;</span> PROMO
             hingga 95%{" "}
             <Flame
-              className="w-3.5 h-3.5 text-yellow-500"
+              className="w-3 h-3 text-yellow-500"
               fill="currentColor"
             />
           </button>
 
           <h1
-            className={`text-2xl md:text-4xl font-black font-heading mb-2 tracking-tight transition-colors duration-300 text-gray-900 dark:text-white`}
+            className={`text-xl md:text-2xl xl:text-3xl font-black font-heading mb-0.5 tracking-tight transition-colors duration-300 text-gray-900 dark:text-white`}
           >
             Pilih paket kamu
           </h1>
           <p
-            className={`text-xs md:text-sm mb-6 md:mb-8 transition-colors duration-300 text-gray-600 dark:text-gray-400`}
+            className={`text-[11px] md:text-xs mb-3 xl:mb-4 transition-colors duration-300 text-gray-600 dark:text-gray-400`}
           >
             Ambil kesempatan mumpung lagi diskon besar-besaran. Sekali bayar!
           </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5 lg:gap-6 w-full text-left">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3.5 xl:gap-4 w-full text-left">
             {[
               { key: "PRO_BOOK", type: "PRO_BOOK" },
               { key: "PRO_TOOLS", type: "PRO_TOOLS" },
@@ -369,42 +369,44 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
               const formatK = (p: number) => p >= 1000 ? (p / 1000) + 'k' : p.toString();
 
               return (
-                <div key={pkgItem.key} className={`border rounded-2xl p-5 md:p-6 flex flex-col justify-between relative transition-all duration-300 ${hasHighlight ? 'border-2 border-rn-accent transform xl:-translate-y-3 bg-white dark:bg-[#18181b] shadow-xl shadow-orange-500/10' : 'bg-white border-gray-200 dark:bg-[#18181b] dark:border-white/5 hover:border-gray-300 dark:hover:border-white/20'}`}>
+                <div key={pkgItem.key} className={`border rounded-2xl p-4 xl:p-4.5 flex flex-col justify-between relative transition-all duration-300 ${hasHighlight ? 'border-2 border-rn-accent transform xl:-translate-y-1 bg-white dark:bg-[#18181b] shadow-xl shadow-orange-500/10' : 'bg-white border-gray-200 dark:bg-[#18181b] dark:border-white/5 hover:border-gray-300 dark:hover:border-white/20'}`}>
                   <div>
                     {hasHighlight && (
-                      <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-rn-accent text-black text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest whitespace-nowrap shadow-sm">
+                      <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-rn-accent text-black text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-widest whitespace-nowrap shadow-sm">
                         {pkgData.highlightText}
                       </div>
                     )}
 
-                    <h3 className={`font-bold text-lg md:text-xl font-heading mb-1 transition-colors duration-300 text-gray-900 dark:text-white`}>
+                    <h3 className={`font-bold text-base xl:text-lg font-heading mb-0.5 transition-colors duration-300 text-gray-900 dark:text-white leading-tight`}>
                       {pkgData.name}
                     </h3>
-                    <p className={`text-xs md:text-sm mb-4 transition-colors duration-300 text-gray-600 dark:text-gray-400 line-clamp-2`}>
+                    <p className={`text-[11px] xl:text-xs mb-2.5 transition-colors duration-300 text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed`}>
                       {pkgData.desc}
                     </p>
 
-                    <div className="flex items-end gap-2 mb-2">
-                      <span className={`text-2xl md:text-3xl font-black transition-colors duration-300 text-gray-900 dark:text-white`}>
+                    <div className="flex items-baseline gap-2 mb-0.5">
+                      <span className={`text-2xl xl:text-[26px] font-black transition-colors duration-300 text-gray-900 dark:text-white leading-tight`}>
                         Rp {formatK(pkgData.price)}
                       </span>
                     </div>
                     
-                    <div className={`text-xs md:text-sm mb-2 transition-colors duration-300 text-gray-500 dark:text-gray-400`}>
-                      Total <span className="line-through">Rp {pkgData.originalPrice.toLocaleString('id-ID')}</span>
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className={`text-[11px] transition-colors duration-300 text-gray-400 dark:text-gray-500`}>
+                        Total <span className="line-through">Rp {pkgData.originalPrice.toLocaleString('id-ID')}</span>
+                      </span>
+                      {pkgData.discountLabel && (
+                        <span className="inline-block bg-red-500/15 text-red-500 text-[9px] font-black px-1.5 py-0.5 rounded uppercase tracking-wider">
+                          {pkgData.discountLabel}
+                        </span>
+                      )}
                     </div>
-                    
-                    {pkgData.discountLabel && (
-                      <div className="inline-block bg-red-500/20 text-red-500 text-[10px] font-bold px-2 py-0.5 rounded uppercase tracking-wider w-max mb-4">
-                        {pkgData.discountLabel}
-                      </div>
-                    )}
 
-                    <div className="mt-4">
-                      <ul className={`space-y-2 md:space-y-3 text-xs md:text-sm transition-colors duration-300 text-gray-700 dark:text-gray-300`}>
+                    <div className="mt-2.5">
+                      <ul className={`space-y-1.5 xl:space-y-1.5 text-[11px] xl:text-xs transition-colors duration-300 text-gray-700 dark:text-gray-300`}>
                         {pkgData.features.map((f: string, i: number) => (
-                          <li key={i} className={`flex gap-2 items-start ${isLengkap && i === 0 ? 'font-bold text-gray-900 dark:text-white' : ''}`}>
-                            <Check className="w-4 h-4 text-rn-accent shrink-0 mt-0.5" /> {f}
+                          <li key={i} className={`flex gap-1.5 items-start leading-snug ${isLengkap && i === 0 ? 'font-bold text-gray-900 dark:text-white' : ''}`}>
+                            <Check className="w-3.5 h-3.5 text-rn-accent shrink-0 mt-0.5" />
+                            <span className="line-clamp-2">{f}</span>
                           </li>
                         ))}
                       </ul>
@@ -416,7 +418,7 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
                     href={isLoggedIn ? `/checkout?type=${pkgItem.type}` : `/login?redirect=/checkout?type=${pkgItem.type}`}
                     onMouseEnter={() => { if (isLoggedIn) preload(["checkout", pkgItem.type, undefined], () => getCheckoutDetailsAction(pkgItem.type, undefined)) }}
                     onTouchStart={() => { if (isLoggedIn) preload(["checkout", pkgItem.type, undefined], () => getCheckoutDetailsAction(pkgItem.type, undefined)) }}
-                    className={`w-full mt-6 block text-center font-bold py-3 rounded-xl transition-all ${hasHighlight ? 'bg-rn-accent text-black font-black hover:bg-white shadow-[0_0_20px_rgba(208,226,6,0.2)]' : 'bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white'}`}
+                    className={`w-full mt-3.5 xl:mt-4 block text-center font-bold text-xs xl:text-sm py-2.5 rounded-xl transition-all ${hasHighlight ? 'bg-rn-accent text-black font-black hover:bg-white shadow-[0_0_20px_rgba(208,226,6,0.2)]' : 'bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white'}`}
                   >
                     {pkgData.name.includes("Basic") || pkgData.name.includes("Book") || pkgData.name.includes("Ebook")
                       ? "Pilih Paket Ebook"
