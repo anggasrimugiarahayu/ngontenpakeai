@@ -296,26 +296,90 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
       {renderModal()}
       
       {/* Header & Control Panel */}
-      <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-4 sm:p-6 bg-white dark:bg-[#121214] flex flex-col xl:flex-row xl:items-center justify-between gap-5">
-        <div className="flex-1">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Manajemen Pricing Paket</h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Kelola pricing paket untuk setiap paket langanan member anda.
-          </p>
+      <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-4 sm:p-6 bg-white dark:bg-[#121214] space-y-4 sm:space-y-5 shadow-sm">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
+          <div>
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+              Manajemen Pricing Paket
+            </h2>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+              Kelola pricing paket untuk setiap paket langganan member anda.
+            </p>
+          </div>
+          <span className="hidden lg:inline-flex text-[11px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-gray-100 dark:border-white/5 shrink-0">
+            Klik paket untuk edit
+          </span>
         </div>
-        <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-3 shrink-0 w-full xl:w-auto">
-          <button onClick={() => setEditingPackage("PRO_BOOK")} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-sm transition-colors whitespace-nowrap">
-            <BookOpen className="w-4 h-4" /> Paket Ebook
-          </button>
-          <button onClick={() => setEditingPackage("PRO_TOOLS")} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-sm transition-colors whitespace-nowrap">
-            <Wrench className="w-4 h-4" /> Paket Tools
-          </button>
-          <button onClick={() => setEditingPackage("PRO_AUTOMATION")} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-sm transition-colors whitespace-nowrap">
-            <Bot className="w-4 h-4" /> Paket Automation
-          </button>
-          <button onClick={() => setEditingPackage("PRO_PLUS")} className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2 bg-rn-accent hover:bg-orange-600 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-rn-accent/20 whitespace-nowrap">
-            <Gem className="w-4 h-4" /> Paket Lengkap
-          </button>
+
+        {/* Action Buttons: 1 line on mobile (4 icons), full labels on desktop */}
+        <div className="pt-3 border-t border-gray-100 dark:border-white/5">
+          {/* Mobile View: 1 Line Grid of 4 Pure Icon Buttons */}
+          <div className="grid grid-cols-4 gap-2 sm:hidden">
+            <button
+              onClick={() => setEditingPackage("PRO_BOOK")}
+              title="Paket Ebook"
+              aria-label="Paket Ebook"
+              className="flex items-center justify-center h-11 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl transition-all active:scale-95 shadow-sm"
+            >
+              <BookOpen className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setEditingPackage("PRO_TOOLS")}
+              title="Paket Tools"
+              aria-label="Paket Tools"
+              className="flex items-center justify-center h-11 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl transition-all active:scale-95 shadow-sm"
+            >
+              <Wrench className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setEditingPackage("PRO_AUTOMATION")}
+              title="Paket Automation"
+              aria-label="Paket Automation"
+              className="flex items-center justify-center h-11 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl transition-all active:scale-95 shadow-sm"
+            >
+              <Bot className="w-5 h-5" />
+            </button>
+            <button
+              onClick={() => setEditingPackage("PRO_PLUS")}
+              title="Paket Lengkap"
+              aria-label="Paket Lengkap"
+              className="flex items-center justify-center h-11 bg-rn-accent hover:bg-orange-600 text-white rounded-xl transition-all active:scale-95 shadow-md shadow-rn-accent/20"
+            >
+              <Gem className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Tablet & Desktop View: 4 Buttons with Icons & Labels in 1 Row */}
+          <div className="hidden sm:grid sm:grid-cols-4 gap-2.5">
+            <button
+              onClick={() => setEditingPackage("PRO_BOOK")}
+              className="flex items-center justify-center gap-2 px-3.5 py-2.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-xs md:text-sm transition-all hover:-translate-y-0.5 shadow-sm whitespace-nowrap"
+            >
+              <BookOpen className="w-4 h-4 shrink-0" />
+              <span>Paket Ebook</span>
+            </button>
+            <button
+              onClick={() => setEditingPackage("PRO_TOOLS")}
+              className="flex items-center justify-center gap-2 px-3.5 py-2.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-xs md:text-sm transition-all hover:-translate-y-0.5 shadow-sm whitespace-nowrap"
+            >
+              <Wrench className="w-4 h-4 shrink-0" />
+              <span>Paket Tools</span>
+            </button>
+            <button
+              onClick={() => setEditingPackage("PRO_AUTOMATION")}
+              className="flex items-center justify-center gap-2 px-3.5 py-2.5 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 hover:bg-orange-100 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 rounded-xl font-bold text-xs md:text-sm transition-all hover:-translate-y-0.5 shadow-sm whitespace-nowrap"
+            >
+              <Bot className="w-4 h-4 shrink-0" />
+              <span>Paket Automation</span>
+            </button>
+            <button
+              onClick={() => setEditingPackage("PRO_PLUS")}
+              className="flex items-center justify-center gap-2 px-3.5 py-2.5 bg-rn-accent hover:bg-orange-600 text-white rounded-xl font-bold text-xs md:text-sm transition-all shadow-md shadow-rn-accent/20 hover:-translate-y-0.5 whitespace-nowrap"
+            >
+              <Gem className="w-4 h-4 shrink-0" />
+              <span>Paket Lengkap</span>
+            </button>
+          </div>
         </div>
       </div>
 
