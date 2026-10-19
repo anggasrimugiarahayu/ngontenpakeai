@@ -13,6 +13,7 @@ import {
   Loader2,
   RefreshCw,
   Clock,
+  MousePointerClick,
 } from "lucide-react";
 import { parseClientRuleConfig, parseClientLogMeta } from "../utils/automationHelpers";
 
@@ -158,6 +159,240 @@ export function InstagramRuleDetailModal({
     { label: "Follow Up", active: hasFollowUp },
     { label: "Ask For Payment", active: hasAskPayment },
   ];
+
+  // Ekstraksi seluruh tombol interaksi yang terkonfigurasi pada aturan ini
+  const welcomeButton = detailConfig.featureWelcomeMessage
+    ? [
+        {
+          id: "welcome_btn",
+          label: detailConfig.welcomeButtonLabel?.trim() || "Ya, Saya Mau!",
+          module: "Pesan Pembuka",
+          action: "Konfirmasi Minat",
+          type: "postback" as const,
+          destination: "Melanjutkan alur DM setelah konfirmasi audiens",
+          badgeColor: "bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20",
+        },
+      ]
+    : [];
+
+  const askFollowButton = detailConfig.featureAskForFollow
+    ? [
+        {
+          id: "ask_follow_btn",
+          label: detailConfig.askForFollowButtonLabel?.trim() || "Sudah mengikuti 🙌",
+          module: "Ask For Follow",
+          action: "Verifikasi Follow",
+          type: "postback" as const,
+          destination: "Verifikasi status follow real-time ke Meta API",
+          badgeColor: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
+        },
+      ]
+    : [];
+
+  const mainButtons: any[] = [];
+  if (detailConfig.messageType === "CAROUSEL") {
+    if (Array.isArray(detailConfig.carouselSlides)) {
+      detailConfig.carouselSlides.forEach((slide: any, sIdx: number) => {
+        if (Array.isArray(slide.buttons)) {
+          slide.buttons.forEach((b: any, bIdx: number) => {
+            if (b?.label?.trim()) {
+              mainButtons.push({
+                id: `carousel_${sIdx}_${bIdx}`,
+                label: b.label.trim(),
+                module: "Carousel DM",
+                action: `Slide ${sIdx + 1}`,
+                type: "web_url" as const,
+                destination: b.url?.trim() || "-",
+                badgeColor: "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20",
+              });
+            }
+          });
+        }
+      });
+    }
+  } else if (detailConfig.messageType === "PLAIN_TEXT") {
+    if (Array.isArray(detailConfig.quickReplies) && detailConfig.quickReplies.length > 0) {
+      detailConfig.quickReplies.forEach((q: any, qIdx: number) => {
+        const qLbl = q.label?.trim() || q.text?.trim();
+        if (qLbl) {
+          mainButtons.push({
+            id: q.id || `qr_${qIdx}`,
+            label: qLbl,
+            module: "Quick Reply",
+            action: "Pilihan Cepat",
+            type: "quick_reply" as const,
+            destination: q.text?.trim() ? `Balasan: "${q.text.trim()}"` : "Balasan Cepat",
+            badgeColor: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20",
+          });
+        }
+      });
+    }
+  } else {
+    // BUTTON_TEMPLATE atau Default
+    if (Array.isArray(detailConfig.buttons) && detailConfig.buttons.length > 0) {
+      detailConfig.buttons.forEach((b: any, bIdx: number) => {
+        const lbl = b.labelType === "Klik Disini" ? "Klik Disini" : b.label?.trim();
+        if (lbl) {
+          const isText = b.action === "Kirim Teks";
+          mainButtons.push({
+            id: b.id || `btn_${bIdx}`,
+            label: lbl,
+            module: "Pesan Utama",
+            action: isText ? "Kirim Teks" : "Buka Website",
+            type: isText ? ("postback" as const) : ("web_url" as const),
+            destination: isText
+              ? b.text?.trim()
+                ? `Balasan: "${b.text.trim()}"`
+                : "Balasan Teks Otomatis"
+              : b.url?.trim() || "-",
+            badgeColor: isText
+              ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+              : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+          });
+        }
+      });
+    } else if (detailRule.buttonText) {
+      mainButtons.push({
+        id: "main_default_btn",
+        label: detailRule.buttonText.trim(),
+        module: "Pesan Utama",
+        action: "Buka Website",
+        type: "web_url" as const,
+        destination: detailRule.buttonUrl?.trim() || "-",
+        badgeColor: "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+      });
+    }
+  }
+
+  const liveButtons: any[] = [];
+  if (Array.isArray(detailConfig.liveContents)) {
+    detailConfig.liveContents.forEach((c: any, cIdx: number) => {
+      if (Array.isArray(c.buttons)) {
+        c.buttons.forEach((b: any, bIdx: number) => {
+          const lbl = b.labelType === "Klik Disini" ? "Klik Disini" : b.label?.trim();
+          if (lbl) {
+            const isText = b.action === "Kirim Teks";
+            liveButtons.push({
+              id: b.id || `live_btn_${cIdx}_${bIdx}`,
+              label: lbl,
+              module: `Live Item ${cIdx + 1}`,
+              action: isText ? "Kirim Teks" : "Buka Website",
+              type: isText ? ("postback" as const) : ("web_url" as const),
+              destination: isText
+                ? b.text?.trim()
+                  ? `Balasan: "${b.text.trim()}"`
+                  : "Balasan Teks Otomatis"
+                : b.url?.trim() || "-",
+              badgeColor: isText
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                : "bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20",
+            });
+          }
+        });
+      }
+      if (Array.isArray(c.quickReplies)) {
+        c.quickReplies.forEach((q: any, qIdx: number) => {
+          const qLbl = q.label?.trim() || q.text?.trim();
+          if (qLbl) {
+            liveButtons.push({
+              id: q.id || `live_qr_${cIdx}_${qIdx}`,
+              label: qLbl,
+              module: `Live Item ${cIdx + 1}`,
+              action: "Quick Reply",
+              type: "quick_reply" as const,
+              destination: q.text?.trim() ? `Balasan: "${q.text.trim()}"` : "Balasan Cepat",
+              badgeColor: "bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 border border-cyan-500/20",
+            });
+          }
+        });
+      }
+    });
+  }
+
+  const followUpButton =
+    detailConfig.featureFollowUp && detailConfig.followUpMessageType !== "Teks Biasa"
+      ? [
+          {
+            id: "followup_btn",
+            label: detailConfig.followUpButtonLabel?.trim() || detailRule.buttonText?.trim() || "Buka Link Sekarang",
+            module: "Follow Up",
+            action: "Buka Website",
+            type: "web_url" as const,
+            destination: detailRule.buttonUrl?.trim() || "https://ruangcreativemuslim.com",
+            badgeColor: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20",
+          },
+        ]
+      : [];
+
+  const allConfiguredButtons = [
+    ...welcomeButton,
+    ...askFollowButton,
+    ...mainButtons,
+    ...liveButtons,
+    ...followUpButton,
+  ];
+
+  // Hitung agregasi klik tombol dari log
+  const clickCountsByLabel = new Map<string, number>();
+  let legacyWebClicks = 0;
+  let legacyWelcomeClicks = 0;
+  let legacyFollowClicks = 0;
+  let totalClicksSum = 0;
+
+  for (const l of allRuleLogs) {
+    const m = parseClientLogMeta(l.errorMessage);
+
+    if (Array.isArray(m.buttonClicks) && m.buttonClicks.length > 0) {
+      for (const clk of m.buttonClicks) {
+        totalClicksSum += 1;
+        const lbl = (clk.label || "").trim().toLowerCase();
+        if (lbl) clickCountsByLabel.set(lbl, (clickCountsByLabel.get(lbl) || 0) + 1);
+      }
+    } else {
+      if (m.clicked) {
+        const count = Number(m.clickCount) || 1;
+        legacyWebClicks += count;
+        totalClicksSum += count;
+      }
+      if (m.lastPostbackPayload?.startsWith("WELCOME_AGREE")) {
+        legacyWelcomeClicks += 1;
+        totalClicksSum += 1;
+      }
+      if (m.lastPostbackPayload?.startsWith("CHECK_FOLLOW") || m.newFollower) {
+        legacyFollowClicks += 1;
+        totalClicksSum += 1;
+      }
+    }
+  }
+
+  const resolvedButtons = allConfiguredButtons.map((btn) => {
+    const lblLower = btn.label.trim().toLowerCase();
+    let clicks = clickCountsByLabel.get(lblLower) || 0;
+
+    // Fallback retro-compatibility
+    if (btn.module === "Pesan Pembuka") {
+      clicks += legacyWelcomeClicks;
+    } else if (btn.module === "Ask For Follow") {
+      clicks += legacyFollowClicks;
+    } else if (btn.type === "web_url" && (btn.module === "Pesan Utama" || btn.action === "Buka Website")) {
+      const webUrlBtns = allConfiguredButtons.filter((b) => b.type === "web_url");
+      if (webUrlBtns.length <= 1) {
+        clicks += legacyWebClicks;
+      }
+    }
+
+    const ctr = kpiSend > 0 ? ((clicks / kpiSend) * 100).toFixed(1).replace(/\.0$/, "") + "%" : "0%";
+    const share = totalClicksSum > 0 ? Math.round((clicks / totalClicksSum) * 100) : 0;
+
+    return {
+      ...btn,
+      clicks,
+      ctr,
+      share,
+    };
+  });
+
+  const totalTrackedClicks = Math.max(kpiClicked, totalClicksSum);
 
   const detailKeywords = Array.isArray(detailRule.keywords)
     ? detailRule.keywords
@@ -436,21 +671,22 @@ export function InstagramRuleDetailModal({
           </div>
 
           {/* 3. PERFORMA TOMBOL (KLIK) - DISIMPAN DI BAWAH PERFORMA OTOMASI DENGAN LEBAR PENUH */}
-          <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] p-5 sm:p-6 space-y-4">
+          <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] p-5 sm:p-6 space-y-5">
             <div className="flex items-center justify-between gap-2 flex-wrap">
               <div>
                 <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
                   <Link2 className="w-4 h-4 text-purple-500" /> Performa Tombol (Klik)
                 </h4>
                 <p className="text-[11px] text-gray-500">
-                  Tren klik tombol tautan dalam 14 hari terakhir (Link Tracking Aktif)
+                  Statistik &amp; konversi klik seluruh tombol interaksi DM (Pesan Utama, Pembuka, Ask Follow, Quick Reply)
                 </p>
               </div>
               <span className="px-2.5 py-1 rounded-lg bg-purple-500/10 text-purple-600 dark:text-purple-400 text-xs font-extrabold">
-                Total {kpiClicked} Klik ({kpiCtr})
+                Total {totalTrackedClicks} Klik ({kpiCtr})
               </span>
             </div>
 
+            {/* Grafik Tren 14 Hari Terakhir */}
             <div className="h-36 flex items-end gap-2 pt-4 pb-1 px-1 border-b border-gray-100 dark:border-white/5">
               {dailyBuckets.map((b) => {
                 const clickH = Math.max(4, Math.round((b.clicked / maxClickValue) * 105));
@@ -478,19 +714,80 @@ export function InstagramRuleDetailModal({
               })}
             </div>
 
-            {/* Ringkasan Tombol Aktif */}
-            <div className="flex items-center justify-between text-xs bg-gray-50 dark:bg-white/5 px-4 py-3 rounded-xl border border-gray-200/70 dark:border-white/5">
-              <div className="min-w-0 pr-3">
-                <span className="font-bold text-gray-900 dark:text-white block truncate text-xs sm:text-sm">
-                  Tombol: {detailRule.buttonText || "Buka Tautan"}
+            {/* Rincian Seluruh Tombol Interaksi & Tautan DM */}
+            <div className="space-y-3 pt-1">
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <span className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider flex items-center gap-1.5">
+                  <MousePointerClick className="w-3.5 h-3.5 text-orange-500" />
+                  Rincian Performa per Tombol ({resolvedButtons.length})
                 </span>
-                <span className="text-[11px] text-gray-400 block truncate mt-0.5">
-                  {detailRule.buttonUrl || "Tidak ada URL tombol"}
+                <span className="text-[11px] text-gray-400">
+                  Melacak klik tautan web, konfirmasi pembuka, verifikasi follow, &amp; respon tombol DM
                 </span>
               </div>
-              <span className="font-black text-orange-600 dark:text-orange-400 shrink-0 text-sm sm:text-base">
-                {kpiClicked} Klik
-              </span>
+
+              {resolvedButtons.length === 0 ? (
+                <div className="p-4 rounded-xl border border-dashed border-gray-200 dark:border-white/10 text-center text-gray-400 text-xs">
+                  Tidak ada tombol atau quick reply yang dikonfigurasi pada aturan ini (Pesan Teks Biasa).
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-2.5">
+                  {resolvedButtons.map((btn) => (
+                    <div
+                      key={btn.id}
+                      className="p-3.5 rounded-xl border border-gray-100 dark:border-white/5 bg-gray-50/70 dark:bg-white/[0.02] hover:bg-gray-100/70 dark:hover:bg-white/[0.04] transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                    >
+                      {/* Sisi Kiri: Badge Modul, Label Tombol & Aksi/Target */}
+                      <div className="min-w-0 flex-1 space-y-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${btn.badgeColor}`}>
+                            {btn.module}
+                          </span>
+                          <span className="text-xs font-black text-gray-900 dark:text-white truncate">
+                            {btn.label}
+                          </span>
+                          <span className="text-[10px] font-semibold text-gray-400 bg-white dark:bg-white/5 px-1.5 py-0.5 rounded border border-gray-200/60 dark:border-white/10">
+                            {btn.action}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                          {btn.type === "web_url" && /^https?:\/\//i.test(btn.destination) ? (
+                            <a
+                              href={btn.destination}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="text-blue-500 hover:underline flex items-center gap-1 truncate"
+                            >
+                              <ExternalLink className="w-3 h-3 shrink-0" />
+                              <span className="truncate">{btn.destination}</span>
+                            </a>
+                          ) : (
+                            <span className="truncate">{btn.destination}</span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Sisi Kanan: Metrik Klik, CTR, & Progress Bar */}
+                      <div className="flex items-center sm:flex-col sm:items-end justify-between gap-1 shrink-0 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100 dark:border-white/5">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs sm:text-sm font-black text-orange-600 dark:text-orange-400">
+                            {btn.clicks} Klik
+                          </span>
+                          <span className="text-[10px] sm:text-[11px] font-bold px-2 py-0.5 rounded-full bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+                            {btn.ctr} CTR
+                          </span>
+                        </div>
+                        <div className="w-24 sm:w-28 bg-gray-200 dark:bg-white/10 rounded-full h-1.5 mt-1 overflow-hidden" title={`${btn.share}% dari total klik`}>
+                          <div
+                            className="bg-gradient-to-r from-purple-500 to-orange-500 h-full rounded-full transition-all duration-300"
+                            style={{ width: `${Math.min(100, Math.max(btn.clicks > 0 ? 4 : 0, btn.share))}%` }}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
 

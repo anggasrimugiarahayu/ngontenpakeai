@@ -20,6 +20,8 @@ export async function GET(req: NextRequest) {
   const ruleId = searchParams.get("ruleId");
   const logId = searchParams.get("logId");
   const senderId = searchParams.get("senderId");
+  const btnLabel = searchParams.get("btnLabel") || "Buka Website";
+  const btnAction = searchParams.get("btnAction") || "Buka Website";
 
   try {
     let targetLog: any = null;
@@ -51,12 +53,22 @@ export async function GET(req: NextRequest) {
 
     if (targetLog) {
       const currentMeta = parseLogMeta(targetLog.errorMessage);
+      const buttonClicks = Array.isArray(currentMeta.buttonClicks) ? [...currentMeta.buttonClicks] : [];
+      buttonClicks.push({
+        label: btnLabel,
+        type: "web_url",
+        action: btnAction,
+        url: targetUrl,
+        clickedAt: new Date().toISOString(),
+      });
+
       const updatedMeta = {
         ...currentMeta,
         read: true,
         clicked: true,
         clickCount: (Number(currentMeta.clickCount) || 0) + 1,
         clickedAt: new Date().toISOString(),
+        buttonClicks,
         ...(senderId ? { senderId } : {}),
       };
 

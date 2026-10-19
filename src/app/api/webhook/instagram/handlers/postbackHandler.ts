@@ -91,6 +91,7 @@ export async function handlePostbackEvent(
       } catch {}
 
       let foundReplyText = "";
+      let foundBtnLabel = "";
       if (isBtnText) {
         // Cari di buttons utama atau di liveContents[].buttons
         const allButtons: any[] = [
@@ -101,6 +102,7 @@ export async function handlePostbackEvent(
         ];
         const matchedBtn = allButtons.find((b: any) => String(b?.id) === String(itemId));
         foundReplyText = matchedBtn?.text || "";
+        foundBtnLabel = matchedBtn?.label || matchedBtn?.title || "Kirim Teks";
       } else {
         // Cari di quickReplies utama atau di liveContents[].quickReplies
         const allQrs: any[] = [
@@ -115,11 +117,60 @@ export async function handlePostbackEvent(
             (msgText && q?.label?.trim().toLowerCase() === msgText.toLowerCase())
         );
         foundReplyText = matchedQr?.text || "";
+        foundBtnLabel = matchedQr?.label || matchedQr?.text || msgText || "Quick Reply";
       }
 
       if (foundReplyText) {
         const userProfile = await getIgUserProfile(senderId, account.accessToken);
         const senderUsername = userProfile.username || "kak";
+
+        // Catat klik tombol Kirim Teks / Quick Reply ke log database
+        try {
+          const recentLogs = await (prisma as any).instagramAutomationLog.findMany({
+            where: { ruleId: pbRule.id },
+            orderBy: { createdAt: "desc" },
+            take: 25,
+          });
+          const userLog =
+            recentLogs.find((l: any) => {
+              const m = parseLogMeta(l.errorMessage);
+              return (
+                m.senderId === senderId ||
+                (senderUsername && senderUsername !== "kak" && l.fromUsername?.toLowerCase() === senderUsername.toLowerCase())
+              );
+            }) || recentLogs[0];
+
+          if (userLog && (!userLog.errorMessage || userLog.errorMessage.startsWith("__META__:"))) {
+            const m = parseLogMeta(userLog.errorMessage);
+            const buttonClicks = Array.isArray(m.buttonClicks) ? [...m.buttonClicks] : [];
+            buttonClicks.push({
+              label: foundBtnLabel || (isBtnText ? "Kirim Teks" : "Quick Reply"),
+              type: isBtnText ? "postback" : "quick_reply",
+              action: isBtnText ? "Kirim Teks" : "Quick Reply",
+              buttonId: itemId,
+              clickedAt: new Date().toISOString(),
+            });
+            const updatedM = {
+              ...m,
+              read: true,
+              clicked: true,
+              clickCount: (Number(m.clickCount) || 0) + 1,
+              clickedAt: new Date().toISOString(),
+              lastPostbackAt: new Date().toISOString(),
+              lastPostbackPayload: postbackPayload,
+              buttonClicks,
+            };
+            await (prisma as any).instagramAutomationLog
+              .update({
+                where: { id: userLog.id },
+                data: { errorMessage: stringifyLogMeta(updatedM) },
+              })
+              .catch(() => {});
+          }
+        } catch (logErr) {
+          console.warn("Error updating postback log for BTN_TEXT/LIVE_QR:", logErr);
+        }
+
         const replyText = resolveVariables(foundReplyText, senderUsername);
         await postToMetaGraph(
           `/me/messages`,
@@ -234,6 +285,19 @@ export async function handlePostbackEvent(
 
   if (postbackPayload.startsWith("WELCOME_AGREE")) {
     // User baru saja klik tombol pada Pesan Pembuka
+    const welcomeLabel = ruleConfig.welcomeButtonLabel || "Ya, Saya Mau!";
+    const buttonClicks = Array.isArray(updatedMeta.buttonClicks) ? [...updatedMeta.buttonClicks] : [];
+    buttonClicks.push({
+      label: welcomeLabel,
+      type: "postback",
+      action: "Pesan Pembuka",
+      clickedAt: new Date().toISOString(),
+    });
+    updatedMeta.clicked = true;
+    updatedMeta.clickCount = (Number(updatedMeta.clickCount) || 0) + 1;
+    updatedMeta.clickedAt = new Date().toISOString();
+    updatedMeta.buttonClicks = buttonClicks;
+
     if (ruleConfig.featureAskForFollow && ruleConfig.askForFollowMessage) {
       if (userProfile.isFollowing === true) {
         // Jika ternyata user sudah follow, langsung kirim Ask For Contact / Pesan Utama
@@ -259,6 +323,19 @@ export async function handlePostbackEvent(
     }
   } else if (postbackPayload.startsWith("CHECK_FOLLOW")) {
     // User klik tombol "Sudah mengikuti 🙌" -> Verifikasi real-time ke Meta API
+    const followLabel = ruleConfig.askForFollowButtonLabel || "Sudah mengikuti 🙌";
+    const buttonClicks = Array.isArray(updatedMeta.buttonClicks) ? [...updatedMeta.buttonClicks] : [];
+    buttonClicks.push({
+      label: followLabel,
+      type: "postback",
+      action: "Ask For Follow",
+      clickedAt: new Date().toISOString(),
+    });
+    updatedMeta.clicked = true;
+    updatedMeta.clickCount = (Number(updatedMeta.clickCount) || 0) + 1;
+    updatedMeta.clickedAt = new Date().toISOString();
+    updatedMeta.buttonClicks = buttonClicks;
+
     if (userProfile.isFollowing === false) {
       updatedMeta.wasUnfollowed = true;
       // User belum benar-benar follow! Kirim pesan Retry / Peringatan Belum Follow

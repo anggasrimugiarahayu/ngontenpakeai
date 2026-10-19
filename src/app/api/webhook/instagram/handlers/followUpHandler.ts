@@ -61,7 +61,9 @@ export async function processPendingFollowUps(account: any, origin: string) {
         log.rule.id,
         ruleConfig.featureLinkTracking !== false,
         log.id,
-        meta.senderId
+        meta.senderId,
+        btnLabel,
+        "Follow Up"
       );
 
       const followUpPayload =

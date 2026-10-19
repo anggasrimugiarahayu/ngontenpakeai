@@ -168,7 +168,9 @@ export function buildTrackedUrl(
   ruleId: string,
   enableTracking: boolean = true,
   logId?: string,
-  senderId?: string
+  senderId?: string,
+  btnLabel?: string,
+  btnAction?: string
 ): string {
   const cleanUrl = (rawUrl || "https://ruangcreativemuslim.com").trim();
   if (!enableTracking) return cleanUrl;
@@ -177,6 +179,8 @@ export function buildTrackedUrl(
     ruleId,
     ...(logId ? { logId } : {}),
     ...(senderId ? { senderId } : {}),
+    ...(btnLabel ? { btnLabel } : {}),
+    ...(btnAction ? { btnAction } : {}),
   });
   return `${origin}/api/track/instagram?${params.toString()}`;
 }
@@ -226,11 +230,23 @@ export function buildMainDmPayload(params: {
           ? s.buttons
               .filter((b: any) => b && b.label?.trim() && b.url?.trim())
               .slice(0, 3)
-              .map((b: any) => ({
-                type: "web_url",
-                url: buildTrackedUrl(origin, b.url, rule.id, enableTracking, logId, senderId),
-                title: b.label.trim().slice(0, 20),
-              }))
+              .map((b: any) => {
+                const bTitle = b.label.trim();
+                return {
+                  type: "web_url",
+                  url: buildTrackedUrl(
+                    origin,
+                    b.url,
+                    rule.id,
+                    enableTracking,
+                    logId,
+                    senderId,
+                    bTitle,
+                    `Carousel (Slide ${idx + 1})`
+                  ),
+                  title: bTitle.slice(0, 20),
+                };
+              })
           : [];
         const el: Record<string, any> = {
           title: resolveVariables(s.title?.trim() || `Slide ${idx + 1}`, username).slice(0, 80),
@@ -288,7 +304,16 @@ export function buildMainDmPayload(params: {
         }
         return {
           type: "web_url",
-          url: buildTrackedUrl(origin, b.url, rule.id, enableTracking, logId, senderId),
+          url: buildTrackedUrl(
+            origin,
+            b.url,
+            rule.id,
+            enableTracking,
+            logId,
+            senderId,
+            title,
+            "Pesan Utama"
+          ),
           title,
         };
       });
@@ -298,7 +323,16 @@ export function buildMainDmPayload(params: {
     }
 
     if (rule?.buttonText && rule?.buttonUrl) {
-      const trackedUrl = buildTrackedUrl(origin, rule.buttonUrl, rule.id, enableTracking, logId, senderId);
+      const trackedUrl = buildTrackedUrl(
+        origin,
+        rule.buttonUrl,
+        rule.id,
+        enableTracking,
+        logId,
+        senderId,
+        rule.buttonText,
+        "Pesan Utama"
+      );
       return buildButtonTemplateMessage(deliveredText, [
         {
           type: "web_url",

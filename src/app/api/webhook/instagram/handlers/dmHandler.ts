@@ -335,7 +335,9 @@ export async function handleIncomingDmEvent(
         latestRule.id,
         ruleConfig.featureLinkTracking !== false,
         undefined,
-        senderId
+        senderId,
+        latestRule.buttonText || "Buka Website",
+        "Pesan Utama"
       );
       const finalPayload =
         latestRule.buttonText && latestRule.buttonUrl
