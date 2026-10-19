@@ -1152,13 +1152,15 @@ export async function retryFailedAutomationLogsAction(ruleId: string) {
       const isCommentEvent = log.commentId && !String(log.commentId).startsWith("dm_");
 
       // 1. Retry Public Comment Reply jika sebelumnya FAILED
+      const logUsername = (log.fromUsername || log.commenterUsername || "kak").replace(/^@/, "");
+
       if (log.replyCommentStatus === "FAILED" && isCommentEvent) {
         const replies: string[] = Array.isArray(rule.commentReplies) ? rule.commentReplies : [];
         if (replies.length > 0 && ext.featureReplyComment !== false) {
           const randomReply = replies[Math.floor(Math.random() * replies.length)];
           const personalizedReply = randomReply
-            .replace(/@\{username\}/gi, `@${log.commenterUsername || "kak"}`)
-            .replace(/\{username\}/gi, `@${log.commenterUsername || "kak"}`);
+            .replace(/@\{username\}/gi, `@${logUsername}`)
+            .replace(/\{username\}/gi, `@${logUsername}`);
           try {
             const replyRes = await fetch(`https://graph.instagram.com/v22.0/${log.commentId}/replies`, {
               method: "POST",
@@ -1183,9 +1185,9 @@ export async function retryFailedAutomationLogsAction(ruleId: string) {
       // 2. Retry DM jika sebelumnya FAILED
       if (log.dmStatus === "FAILED" && isCommentEvent && rawMainDm) {
         const dmText = rawMainDm
-          .replace(/@\{username\}/gi, `@${log.commenterUsername || "Kak"}`)
-          .replace(/\{username\}/gi, log.commenterUsername || "Kak")
-          .replace(/\{first_name\}/gi, log.commenterUsername || "Kak");
+          .replace(/@\{username\}/gi, `@${logUsername}`)
+          .replace(/\{username\}/gi, logUsername)
+          .replace(/\{first_name\}/gi, logUsername);
         let btnTitle = rule.buttonText || "Buka Tautan";
         if (ext && Array.isArray(ext.buttons) && ext.buttons[0]) {
           btnTitle = ext.buttons[0];
@@ -1423,7 +1425,7 @@ export async function rewindAutomationCommentsAction(ruleId: string) {
             ruleId: rule.id,
             commentId,
             commentText,
-            commenterUsername,
+            fromUsername: commenterUsername,
             replyCommentStatus: "SKIPPED",
             dmStatus: "SKIPPED",
             errorMessage: `__META__:${JSON.stringify(initialMeta)}`

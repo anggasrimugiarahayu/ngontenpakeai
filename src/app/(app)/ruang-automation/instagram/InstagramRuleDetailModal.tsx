@@ -257,73 +257,73 @@ export function InstagramRuleDetailModal({
           {/* 1. 7 KPI METRIC CARDS */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
             <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 Send
               </span>
               <span className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white mt-1 block">
                 {kpiSend}
               </span>
-              <span className="text-[10px] text-gray-400">Pesan terkirim</span>
+              <span className="text-[10px] text-gray-400 whitespace-nowrap">Pesan terkirim</span>
             </div>
 
             <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 Read
               </span>
               <span className="text-xl sm:text-2xl font-black text-blue-600 dark:text-blue-400 mt-1 block">
                 {kpiRead}
               </span>
-              <span className="text-[10px] text-gray-400">Direspon / dibaca</span>
+              <span className="text-[10px] text-gray-400 whitespace-nowrap">Direspon / dibaca</span>
             </div>
 
             <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 Clicked
               </span>
               <span className="text-xl sm:text-2xl font-black text-orange-600 dark:text-orange-400 mt-1 block">
                 {kpiClicked}
               </span>
-              <span className="text-[10px] text-gray-400">Total klik link</span>
+              <span className="text-[10px] text-gray-400 whitespace-nowrap">Total klik link</span>
             </div>
 
             <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 New Follower
               </span>
               <span className="text-xl sm:text-2xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block">
                 {kpiNewFollower}
               </span>
-              <span className="text-[10px] text-gray-400">Dari Ask Follow</span>
+              <span className="text-[10px] text-gray-400 whitespace-nowrap">Dari Ask Follow</span>
             </div>
 
             <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 CTR
               </span>
               <span className="text-xl sm:text-2xl font-black text-purple-600 dark:text-purple-400 mt-1 block">
                 {kpiCtr}
               </span>
-              <span className="text-[10px] text-gray-400">Rasio klik / kirim</span>
+              <span className="text-[10px] text-gray-400 whitespace-nowrap">Rasio klik / kirim</span>
             </div>
 
             <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 Paid
               </span>
               <span className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white mt-1 block">
                 {kpiPaid}
               </span>
-              <span className="text-[10px] text-gray-400">Transaksi lunas</span>
+              <span className="text-[10px] text-gray-400 whitespace-nowrap">Transaksi lunas</span>
             </div>
 
             <div className="rounded-2xl border border-gray-200 dark:border-white/10 bg-gray-50/60 dark:bg-[#18181b] p-3.5 col-span-2 sm:col-span-1">
-              <span className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block">
+              <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 Total Earning
               </span>
               <span className="text-lg sm:text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1 block truncate">
                 Rp {kpiTotalEarning.toLocaleString("id-ID")}
               </span>
-              <span className="text-[10px] text-gray-400">Pendapatan</span>
+              <span className="text-[10px] text-gray-400 whitespace-nowrap">Pendapatan</span>
             </div>
           </div>
 
@@ -713,7 +713,7 @@ export function InstagramRuleDetailModal({
                         >
                           <td className="py-3 px-4">
                             <div className="font-bold text-gray-900 dark:text-white">
-                              @{log.commenterUsername || "user"}
+                              @{log.fromUsername ? log.fromUsername.replace(/^@/, "") : (log.commenterUsername || "user")}
                             </div>
                             <div className="text-gray-600 dark:text-gray-300 mt-0.5">
                               "{log.commentText || "-"}"
