@@ -48,6 +48,14 @@
 }
 
 
+:root {
+  --card: #ffffff;
+}
+
+.dark {
+  --card: #18181b;
+}
+
 ::selection {
   background-color: #f97316;
   color: #fff;

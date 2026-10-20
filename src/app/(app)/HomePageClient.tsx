@@ -120,7 +120,7 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
               <div className="relative w-full overflow-hidden aspect-[16/9] rounded-lg">
                 <div
                   data-active="true"
-                  className={`iso-stage pointer-events-none absolute -z-10 aspect-[1642/1200] max-w-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out group-hover:scale-[1.05] text-gray-600 dark:text-gray-400`}
+                  className={`iso-stage pointer-events-none absolute -z-10 aspect-[1642/1200] max-w-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out group-hover:scale-[1.05] text-gray-900 dark:text-white`}
                   style={{ top: "50%", left: "50%", width: "290%" }}
                 >
                   <svg viewBox="0 0 1642 1200" className="size-full" aria-hidden="true" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><g strokeOpacity="0.18" strokeWidth="3" strokeDasharray="3 14"><line x1="21" y1="0" x2="21" y2="1200"></line><line x1="101" y1="0" x2="101" y2="1200"></line><line x1="181" y1="0" x2="181" y2="1200"></line><line x1="261" y1="0" x2="261" y2="1200"></line><line x1="341" y1="0" x2="341" y2="1200"></line><line x1="421" y1="0" x2="421" y2="1200"></line><line x1="501" y1="0" x2="501" y2="1200"></line><line x1="581" y1="0" x2="581" y2="1200"></line><line x1="661" y1="0" x2="661" y2="1200"></line><line x1="741" y1="0" x2="741" y2="1200"></line><line x1="821" y1="0" x2="821" y2="1200"></line><line x1="901" y1="0" x2="901" y2="1200"></line><line x1="981" y1="0" x2="981" y2="1200"></line><line x1="1061" y1="0" x2="1061" y2="1200"></line><line x1="1141" y1="0" x2="1141" y2="1200"></line><line x1="1221" y1="0" x2="1221" y2="1200"></line><line x1="1301" y1="0" x2="1301" y2="1200"></line><line x1="1381" y1="0" x2="1381" y2="1200"></line><line x1="1461" y1="0" x2="1461" y2="1200"></line><line x1="1541" y1="0" x2="1541" y2="1200"></line><line x1="1621" y1="0" x2="1621" y2="1200"></line><line x1="0" y1="40" x2="1642" y2="40"></line><line x1="0" y1="120" x2="1642" y2="120"></line><line x1="0" y1="200" x2="1642" y2="200"></line><line x1="0" y1="280" x2="1642" y2="280"></line><line x1="0" y1="360" x2="1642" y2="360"></line><line x1="0" y1="440" x2="1642" y2="440"></line><line x1="0" y1="520" x2="1642" y2="520"></line><line x1="0" y1="600" x2="1642" y2="600"></line><line x1="0" y1="680" x2="1642" y2="680"></line><line x1="0" y1="760" x2="1642" y2="760"></line><line x1="0" y1="840" x2="1642" y2="840"></line><line x1="0" y1="920" x2="1642" y2="920"></line><line x1="0" y1="1000" x2="1642" y2="1000"></line><line x1="0" y1="1080" x2="1642" y2="1080"></line><line x1="0" y1="1160" x2="1642" y2="1160"></line></g><g transform="translate(821 600)"><g transform="translate(-12 0)"><g className="sc-rise-10"><circle cx="-200" cy="-22" r="30" fill="currentColor" fillOpacity="0.06" strokeOpacity="0.75" strokeWidth="5"></circle><path d="M-212 -22 L-206 -33 L-200 -19 L-194 -33 L-188 -22" strokeWidth="5" strokeOpacity="0.8" className="sc-draw-50" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></path><rect x="-212" y="6" width="24" height="15" rx="3" fill="currentColor" fillOpacity="0.12" strokeOpacity="0.7" strokeWidth="4"></rect><line x1="-206" y1="25" x2="-194" y2="25" strokeWidth="5" strokeOpacity="0.6"></line><g className="sc-pop-90"><path d="M-200 -60 L-200 -74" strokeWidth="6" strokeOpacity="0.7"></path></g><g className="sc-pop-105"><path d="M-226 -44 L-236 -54" strokeWidth="6" strokeOpacity="0.7"></path></g><g className="sc-pop-120"><path d="M-174 -44 L-164 -54" strokeWidth="6" strokeOpacity="0.7"></path></g></g><g className="sc-rise-150"><g transform="translate(-160 -10)"><g className="sc-flow" style={{ animationDelay: '' }}><path d="M0 -12 L11 0 L0 12" strokeWidth="7" strokeOpacity="0.8"></path></g></g><g transform="translate(-144 -10)"><g className="sc-flow" style={{ animationDelay: '' }}><path d="M0 -12 L11 0 L0 12" strokeWidth="7" strokeOpacity="0.8"></path></g></g><g transform="translate(-128 -10)"><g className="sc-flow" style={{ animationDelay: '' }}><path d="M0 -12 L11 0 L0 12" strokeWidth="7" strokeOpacity="0.8"></path></g></g></g><g className="sc-rise-180"><rect x="-95" y="-100" width="210" height="190" rx="16" fill="currentColor" fillOpacity="0.05" strokeOpacity="0.7" strokeWidth="5"></rect><g className="sc-pop-210"><text x="-70" y="-70" fontSize="24" fontWeight="700" fill="currentColor" fillOpacity="0.85" stroke="none" dominantBaseline="central" letterSpacing="0.68">FACELESS</text></g><line x1="78" y1="-70" x2="110" y2="-70" strokeWidth="11" strokeOpacity="0.3" className="sc-draw-230" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-70" y1="-44" x2="90" y2="-44" strokeWidth="3" strokeOpacity="0.35" className="sc-draw-250" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-70" y1="-18" x2="55" y2="-18" strokeWidth="10" strokeOpacity="0.6" className="sc-draw-280" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-70" y1="8" x2="85" y2="8" strokeWidth="10" strokeOpacity="0.6" className="sc-draw-305" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><line x1="-70" y1="34" x2="35" y2="34" strokeWidth="10" strokeOpacity="0.6" className="sc-draw-330" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line></g><g className="sc-rise-360"><rect x="75" y="-50" width="190" height="150" rx="16" className="fill-white dark:fill-[#18181b]" strokeOpacity="0.8" strokeWidth="5"></rect><rect x="69" y="-56" width="12" height="12" fill="currentColor" stroke="none" opacity="0.85"></rect><rect x="259" y="-56" width="12" height="12" fill="currentColor" stroke="none" opacity="0.85"></rect><rect x="259" y="94" width="12" height="12" fill="currentColor" stroke="none" opacity="0.85"></rect><rect x="69" y="94" width="12" height="12" fill="currentColor" stroke="none" opacity="0.85"></rect><g className="sc-pop-390"><text x="95" y="-24" fontSize="28" fontWeight="600" fill="currentColor" fillOpacity="0.6" stroke="none" dominantBaseline="central" letterSpacing="0.56">Cuan</text></g><g><line x1="128" y1="4" x2="210" y2="4" strokeWidth="10" strokeOpacity="0.65" className="sc-draw-395" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><g transform="translate(107 4)"><g className="sc-pop-410"><rect x="-11" y="-11" width="22" height="22" rx="6" strokeOpacity="0.55" strokeWidth="4"></rect></g><g className="sc-pop-490"><rect x="-11" y="-11" width="22" height="22" rx="6" fill="oklch(0.75 0.13 150)" fillOpacity="0.18" stroke="oklch(0.75 0.13 150)" strokeOpacity="0.95" strokeWidth="4"></rect><path d="M-6 0 L-2 4 L7 -5" stroke="oklch(0.75 0.13 150)" strokeWidth="5"></path></g></g></g><g><line x1="128" y1="34" x2="240" y2="34" strokeWidth="10" strokeOpacity="0.65" className="sc-draw-415" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><g transform="translate(107 34)"><g className="sc-pop-430"><rect x="-11" y="-11" width="22" height="22" rx="6" strokeOpacity="0.55" strokeWidth="4"></rect></g><g className="sc-pop-530"><rect x="-11" y="-11" width="22" height="22" rx="6" fill="oklch(0.75 0.13 150)" fillOpacity="0.18" stroke="oklch(0.75 0.13 150)" strokeOpacity="0.95" strokeWidth="4"></rect><path d="M-6 0 L-2 4 L7 -5" stroke="oklch(0.75 0.13 150)" strokeWidth="5"></path></g></g></g><g><line x1="128" y1="64" x2="188" y2="64" strokeWidth="10" strokeOpacity="0.65" className="sc-draw-435" pathLength="1" strokeDasharray="1" strokeDashoffset="1"></line><g transform="translate(107 64)"><g className="sc-pop-450"><rect x="-11" y="-11" width="22" height="22" rx="6" strokeOpacity="0.55" strokeWidth="4"></rect></g><g className="sc-pop-570"><rect x="-11" y="-11" width="22" height="22" rx="6" fill="oklch(0.75 0.13 150)" fillOpacity="0.18" stroke="oklch(0.75 0.13 150)" strokeOpacity="0.95" strokeWidth="4"></rect><path d="M-6 0 L-2 4 L7 -5" stroke="oklch(0.75 0.13 150)" strokeWidth="5"></path></g></g></g></g></g></g></svg>
@@ -300,134 +300,10 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
               <div className="relative w-full overflow-hidden aspect-[16/9] rounded-lg">
                 <div
                   data-active="true"
-                  className={`iso-stage pointer-events-none absolute -z-10 aspect-[1642/1200] max-w-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out group-hover:scale-[1.05] text-gray-600 dark:text-gray-400`}
+                  className={`iso-stage pointer-events-none absolute -z-10 aspect-[1642/1200] max-w-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out group-hover:scale-[1.05] text-gray-900 dark:text-white`}
                   style={{ top: "50%", left: "50%", width: "290%" }}
                 >
-                  <svg viewBox="0 0 1642 1200" className="size-full" aria-hidden="true" fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round">
-                    <g strokeOpacity="0.18" strokeWidth="3" strokeDasharray="3 14">
-                      <line x1="21" y1="0" x2="21" y2="1200"></line>
-                      <line x1="101" y1="0" x2="101" y2="1200"></line>
-                      <line x1="181" y1="0" x2="181" y2="1200"></line>
-                      <line x1="261" y1="0" x2="261" y2="1200"></line>
-                      <line x1="341" y1="0" x2="341" y2="1200"></line>
-                      <line x1="421" y1="0" x2="421" y2="1200"></line>
-                      <line x1="501" y1="0" x2="501" y2="1200"></line>
-                      <line x1="581" y1="0" x2="581" y2="1200"></line>
-                      <line x1="661" y1="0" x2="661" y2="1200"></line>
-                      <line x1="741" y1="0" x2="741" y2="1200"></line>
-                      <line x1="821" y1="0" x2="821" y2="1200"></line>
-                      <line x1="901" y1="0" x2="901" y2="1200"></line>
-                      <line x1="981" y1="0" x2="981" y2="1200"></line>
-                      <line x1="1061" y1="0" x2="1061" y2="1200"></line>
-                      <line x1="1141" y1="0" x2="1141" y2="1200"></line>
-                      <line x1="1221" y1="0" x2="1221" y2="1200"></line>
-                      <line x1="1301" y1="0" x2="1301" y2="1200"></line>
-                      <line x1="1381" y1="0" x2="1381" y2="1200"></line>
-                      <line x1="1461" y1="0" x2="1461" y2="1200"></line>
-                      <line x1="1541" y1="0" x2="1541" y2="1200"></line>
-                      <line x1="1621" y1="0" x2="1621" y2="1200"></line>
-                      <line x1="0" y1="40" x2="1642" y2="40"></line>
-                      <line x1="0" y1="120" x2="1642" y2="120"></line>
-                      <line x1="0" y1="200" x2="1642" y2="200"></line>
-                      <line x1="0" y1="280" x2="1642" y2="280"></line>
-                      <line x1="0" y1="360" x2="1642" y2="360"></line>
-                      <line x1="0" y1="440" x2="1642" y2="440"></line>
-                      <line x1="0" y1="520" x2="1642" y2="520"></line>
-                      <line x1="0" y1="600" x2="1642" y2="600"></line>
-                      <line x1="0" y1="680" x2="1642" y2="680"></line>
-                      <line x1="0" y1="760" x2="1642" y2="760"></line>
-                      <line x1="0" y1="840" x2="1642" y2="840"></line>
-                      <line x1="0" y1="920" x2="1642" y2="920"></line>
-                      <line x1="0" y1="1000" x2="1642" y2="1000"></line>
-                      <line x1="0" y1="1080" x2="1642" y2="1080"></line>
-                      <line x1="1160" y1="0" x2="1160" y2="1200"></line>
-                    </g>
-                    <g transform="translate(821 680) scale(1.9) rotate(-30) skewX(30)">
-                      <g className="sc-rise-20">
-                        <rect x="-240" y="-110" width="480" height="220" rx="16" fill="var(--card, #121214)" strokeWidth="5" strokeOpacity="0.7"></rect>
-                        <path d="M-240 -76 H240" strokeWidth="3" strokeOpacity="0.25"></path>
-                        <circle cx="-216" cy="-93" r="4" fill="currentColor" stroke="none" opacity="0.4"></circle>
-                        <circle cx="-198" cy="-93" r="4" fill="currentColor" stroke="none" opacity="0.4"></circle>
-                        <circle cx="-180" cy="-93" r="4" fill="currentColor" stroke="none" opacity="0.4"></circle>
-                      </g>
-                      <g className="sc-rise-360">
-                        <g transform="translate(-215 -58)">
-                          <rect width="140" height="100" rx="8" fill="var(--card, #121214)" strokeWidth="3" strokeOpacity="0.6"></rect>
-                          <path d="M0 18 H140" strokeWidth="2" strokeOpacity="0.2"></path>
-                          <circle cx="12" cy="9" r="3.5" fill="oklch(0.76 0.14 300)" stroke="none"></circle>
-                          <line x1="22" y1="9" x2="60" y2="9" strokeWidth="4" strokeOpacity="0.4"></line>
-                          <path d="M12 88 L36 76 L60 80 L84 64 L108 68 L128 56" stroke="oklch(0.76 0.14 300)" strokeWidth="4" className="sc-draw-390" pathLength={1} strokeDasharray="1" strokeDashoffset="1"></path>
-                        </g>
-                      </g>
-                      <g className="sc-rise-400">
-                        <g transform="translate(-60 -58)">
-                          <rect width="140" height="100" rx="8" fill="var(--card, #121214)" strokeWidth="3" strokeOpacity="0.6"></rect>
-                          <path d="M0 18 H140" strokeWidth="2" strokeOpacity="0.2"></path>
-                          <circle cx="12" cy="9" r="3.5" fill="oklch(0.76 0.14 300)" stroke="none"></circle>
-                          <line x1="22" y1="9" x2="60" y2="9" strokeWidth="4" strokeOpacity="0.4"></line>
-                          <rect x="12" y="26" width="36" height="22" rx="5" fill="oklch(0.76 0.14 300)" fillOpacity="0.85" stroke="oklch(0.76 0.14 300)" strokeWidth="2"></rect>
-                          <rect x="52" y="26" width="36" height="22" rx="5" fill="oklch(0.76 0.14 300)" fillOpacity="0.2" stroke="oklch(0.76 0.14 300)" strokeWidth="2"></rect>
-                          <rect x="92" y="26" width="36" height="22" rx="5" fill="oklch(0.76 0.14 300)" fillOpacity="0.2" stroke="oklch(0.76 0.14 300)" strokeWidth="2"></rect>
-                          <g className="sc-pop-410">
-                            <circle cx="30" cy="37" r="5" fill="var(--card, #121214)" stroke="none"></circle>
-                          </g>
-                          <line x1="12" y1="62" x2="128" y2="62" strokeWidth="4" strokeOpacity="0.2"></line>
-                          <line x1="12" y1="74" x2="108" y2="74" strokeWidth="4" strokeOpacity="0.2"></line>
-                          <line x1="12" y1="86" x2="78" y2="86" strokeWidth="4" strokeOpacity="0.2"></line>
-                          <line x1="12" y1="74" x2="108" y2="74" stroke="oklch(0.76 0.14 300)" strokeWidth="5" className="sc-draw-430" pathLength={1} strokeDasharray="1" strokeDashoffset="1"></line>
-                        </g>
-                      </g>
-                      <g className="sc-rise-440">
-                        <g transform="translate(95 -58)">
-                          <rect width="120" height="100" rx="8" fill="var(--card, #121214)" strokeWidth="3" strokeOpacity="0.6"></rect>
-                          <path d="M0 18 H120" strokeWidth="2" strokeOpacity="0.2"></path>
-                          <circle cx="12" cy="9" r="3.5" fill="oklch(0.76 0.14 300)" stroke="none"></circle>
-                          <line x1="22" y1="9" x2="60" y2="9" strokeWidth="4" strokeOpacity="0.4"></line>
-                          <circle cx="60" cy="56" r="22" stroke="currentColor" strokeOpacity="0.2" strokeWidth="7"></circle>
-                          <circle cx="60" cy="56" r="22" stroke="oklch(0.76 0.14 300)" strokeWidth="7" className="sc-draw-470" pathLength={1} strokeDasharray="1" strokeDashoffset="1"></circle>
-                          <g className="sc-pop-450">
-                            <circle cx="60" cy="56" r="6" fill="oklch(0.76 0.14 300)" stroke="none"></circle>
-                          </g>
-                        </g>
-                      </g>
-                      <g transform="translate(-145 -18)">
-                        <g className="sc-pop-490">
-                          <circle r="9" fill="oklch(0.76 0.14 300)" stroke="none"></circle>
-                          <path d="M-3.5 0 L-1 2.5 L4.5 -3" stroke="var(--card, #121214)" strokeWidth="2.5" fill="none"></path>
-                        </g>
-                      </g>
-                      <g transform="translate(155 -18)">
-                        <g className="sc-pop-550">
-                          <circle r="9" fill="oklch(0.76 0.14 300)" stroke="none"></circle>
-                          <path d="M-3.5 0 L-1 2.5 L4.5 -3" stroke="var(--card, #121214)" strokeWidth="2.5" fill="none"></path>
-                        </g>
-                      </g>
-                      <g className="sc-sent">
-                        <g className="sc-rise-50">
-                          <rect x="-215" y="52" width="430" height="42" rx="12" fill="var(--card, #121214)" strokeWidth="4" strokeOpacity="0.9"></rect>
-                          <circle cx="-194" cy="73" r="5" fill="oklch(0.76 0.14 300)" stroke="none"></circle>
-                          <g transform="translate(-178 73)">
-                            <g className="sc-type">
-                              <line x1="0" y1="0" x2="290" y2="0" strokeWidth="6" strokeOpacity="0.75"></line>
-                            </g>
-                            <g className="sc-caret">
-                              <line x1="0" y1="-8" x2="0" y2="8" stroke="oklch(0.76 0.14 300)" strokeWidth="3" className="sc-blink"></line>
-                            </g>
-                          </g>
-                          <g transform="translate(176 73)">
-                            <circle r="15" stroke="oklch(0.76 0.14 300)" strokeWidth="3" className="sc-ripple"></circle>
-                            <g className="sc-enter">
-                              <circle r="15" fill="oklch(0.76 0.14 300)" stroke="none"></circle>
-                              <path d="M0 7 V-7 M-6 -1 L0 -7 L6 -1" stroke="var(--card, #121214)" strokeWidth="3"></path>
-                            </g>
-                          </g>
-                        </g>
-                      </g>
-                      <g className="sc-rise-570">
-                        <path d="M58 22 L58 52 L66 44 L75 61 L81 58 L72 41 L86 41 Z" fill="currentColor" stroke="var(--card, #121214)" strokeWidth="2"></path>
-                      </g>
-                    </g>
-                  </svg>
+                  <svg viewBox="0 0 1642 1200" className="size-full" aria-hidden={true} fill="none" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round"><g strokeOpacity="0.18" strokeWidth="3" strokeDasharray="3 14"><line x1="21" y1="0" x2="21" y2="1200"></line><line x1="101" y1="0" x2="101" y2="1200"></line><line x1="181" y1="0" x2="181" y2="1200"></line><line x1="261" y1="0" x2="261" y2="1200"></line><line x1="341" y1="0" x2="341" y2="1200"></line><line x1="421" y1="0" x2="421" y2="1200"></line><line x1="501" y1="0" x2="501" y2="1200"></line><line x1="581" y1="0" x2="581" y2="1200"></line><line x1="661" y1="0" x2="661" y2="1200"></line><line x1="741" y1="0" x2="741" y2="1200"></line><line x1="821" y1="0" x2="821" y2="1200"></line><line x1="901" y1="0" x2="901" y2="1200"></line><line x1="981" y1="0" x2="981" y2="1200"></line><line x1="1061" y1="0" x2="1061" y2="1200"></line><line x1="1141" y1="0" x2="1141" y2="1200"></line><line x1="1221" y1="0" x2="1221" y2="1200"></line><line x1="1301" y1="0" x2="1301" y2="1200"></line><line x1="1381" y1="0" x2="1381" y2="1200"></line><line x1="1461" y1="0" x2="1461" y2="1200"></line><line x1="1541" y1="0" x2="1541" y2="1200"></line><line x1="1621" y1="0" x2="1621" y2="1200"></line><line x1="0" y1="40" x2="1642" y2="40"></line><line x1="0" y1="120" x2="1642" y2="120"></line><line x1="0" y1="200" x2="1642" y2="200"></line><line x1="0" y1="280" x2="1642" y2="280"></line><line x1="0" y1="360" x2="1642" y2="360"></line><line x1="0" y1="440" x2="1642" y2="440"></line><line x1="0" y1="520" x2="1642" y2="520"></line><line x1="0" y1="600" x2="1642" y2="600"></line><line x1="0" y1="680" x2="1642" y2="680"></line><line x1="0" y1="760" x2="1642" y2="760"></line><line x1="0" y1="840" x2="1642" y2="840"></line><line x1="0" y1="920" x2="1642" y2="920"></line><line x1="0" y1="1000" x2="1642" y2="1000"></line><line x1="0" y1="1080" x2="1642" y2="1080"></line><line x1="0" y1="1160" x2="1642" y2="1160"></line></g><g transform="translate(821 600)"><g className="sc-rise-20"><rect x="-240" y="-110" width="480" height="220" rx="16" fill="var(--card)" strokeWidth="5" strokeOpacity="0.7"></rect><path d="M-240 -76 H240" strokeWidth="3" strokeOpacity="0.25"></path><circle cx="-216" cy="-93" r="4" fill="currentColor" stroke="none" opacity="0.4"></circle><circle cx="-198" cy="-93" r="4" fill="currentColor" stroke="none" opacity="0.4"></circle><circle cx="-180" cy="-93" r="4" fill="currentColor" stroke="none" opacity="0.4"></circle><text x="-156" y="-93" fontSize="15" fontWeight="600" fill="currentColor" fillOpacity="0.55" stroke="none" dominantBaseline="central" letterSpacing="0.3">Canvas</text></g><g transform="translate(-222 -62)"><g className="sc-rise-360"><rect width="140" height="100" rx="8" fill="var(--card)" strokeWidth="3" strokeOpacity="0.6"></rect><path d="M0 18 H140" strokeWidth="2" strokeOpacity="0.2"></path><circle cx="12" cy="9" r="3.5" fill="oklch(0.76 0.14 300)" stroke="none"></circle><line x1="100" y1="9" x2="128" y2="9" strokeWidth="3" strokeOpacity="0.3"></line><g className="sc-pop-410"><rect x="12" y="26" width="36" height="22" rx="5" fill="oklch(0.76 0.14 300)" fillOpacity="0.85" stroke="oklch(0.76 0.14 300)" strokeWidth="2"></rect><rect x="52" y="26" width="36" height="22" rx="5" fill="oklch(0.76 0.14 300)" fillOpacity="0.2" stroke="oklch(0.76 0.14 300)" strokeWidth="2"></rect><rect x="92" y="26" width="36" height="22" rx="5" fill="oklch(0.76 0.14 300)" fillOpacity="0.2" stroke="oklch(0.76 0.14 300)" strokeWidth="2"></rect></g><path d="M12 88 L36 76 L60 80 L84 64 L108 68 L128 56" stroke="oklch(0.76 0.14 300)" strokeWidth="4" className="sc-draw-390" pathLength={1} strokeDasharray="1" strokeDashoffset="1"></path></g></g><g transform="translate(-70 -62)"><g className="sc-rise-400"><rect width="140" height="100" rx="8" fill="var(--card)" strokeWidth="3" strokeOpacity="0.6"></rect><path d="M0 18 H140" strokeWidth="2" strokeOpacity="0.2"></path><circle cx="12" cy="9" r="3.5" fill="oklch(0.76 0.14 300)" stroke="none"></circle><line x1="100" y1="9" x2="128" y2="9" strokeWidth="3" strokeOpacity="0.3"></line><line x1="12" y1="30" x2="128" y2="30" strokeWidth="5" strokeOpacity="0.6" className="sc-draw-430" pathLength={1} strokeDasharray="1" strokeDashoffset="1"></line><line x1="28" y1="46" x2="88" y2="46" strokeWidth="4" strokeOpacity="0.35" className="sc-draw-430" pathLength={1} strokeDasharray="1" strokeDashoffset="1"></line><line x1="28" y1="60" x2="76" y2="60" strokeWidth="4" strokeOpacity="0.35" className="sc-draw-430" pathLength={1} strokeDasharray="1" strokeDashoffset="1"></line><line x1="28" y1="74" x2="92" y2="74" strokeWidth="4" strokeOpacity="0.35" className="sc-draw-430" pathLength={1} strokeDasharray="1" strokeDashoffset="1"></line><line x1="28" y1="88" x2="70" y2="88" strokeWidth="4" strokeOpacity="0.35" className="sc-draw-430" pathLength={1} strokeDasharray="1" strokeDashoffset="1"></line><g className="sc-pop-450"><g><circle cx="18" cy="46" r="4" fill="currentColor" fillOpacity="0.4" stroke="none"></circle><rect x="104" y="42" width="24" height="8" rx="4" fill="oklch(0.76 0.14 300)" fillOpacity="0.85" stroke="none"></rect></g><g><circle cx="18" cy="60" r="4" fill="currentColor" fillOpacity="0.4" stroke="none"></circle><rect x="104" y="56" width="24" height="8" rx="4" fill="oklch(0.76 0.14 300)" fillOpacity="0.3" stroke="none"></rect></g><g><circle cx="18" cy="74" r="4" fill="currentColor" fillOpacity="0.4" stroke="none"></circle><rect x="104" y="70" width="24" height="8" rx="4" fill="oklch(0.76 0.14 300)" fillOpacity="0.85" stroke="none"></rect></g><g><circle cx="18" cy="88" r="4" fill="currentColor" fillOpacity="0.4" stroke="none"></circle><rect x="104" y="84" width="24" height="8" rx="4" fill="oklch(0.76 0.14 300)" fillOpacity="0.3" stroke="none"></rect></g></g></g></g><g transform="translate(82 -62)"><g className="sc-rise-440"><rect width="140" height="100" rx="8" fill="var(--card)" strokeWidth="3" strokeOpacity="0.6"></rect><path d="M0 18 H140" strokeWidth="2" strokeOpacity="0.2"></path><circle cx="12" cy="9" r="3.5" fill="oklch(0.76 0.14 300)" stroke="none"></circle><line x1="100" y1="9" x2="128" y2="9" strokeWidth="3" strokeOpacity="0.3"></line><line x1="12" y1="30" x2="32" y2="30" strokeWidth="4" strokeOpacity="0.6" className="sc-draw-470" pathLength={1} strokeDasharray="1" strokeDashoffset="1"></line><line x1="52" y1="30" x2="72" y2="30" strokeWidth="4" strokeOpacity="0.6" className="sc-draw-470" pathLength={1} strokeDasharray="1" strokeDashoffset="1"></line><line x1="92" y1="30" x2="112" y2="30" strokeWidth="4" strokeOpacity="0.6" className="sc-draw-470" pathLength={1} strokeDasharray="1" strokeDashoffset="1"></line><g className="sc-pop-490"><rect x="12" y="40" width="36" height="15" rx="3" fill="currentColor" fillOpacity="0.08" strokeWidth="2" strokeOpacity="0.4"></rect><rect x="12" y="60" width="36" height="15" rx="3" fill="currentColor" fillOpacity="0.08" strokeWidth="2" strokeOpacity="0.4"></rect><rect x="12" y="80" width="36" height="15" rx="3" fill="currentColor" fillOpacity="0.08" strokeWidth="2" strokeOpacity="0.4"></rect><rect x="52" y="40" width="36" height="15" rx="3" fill="currentColor" fillOpacity="0.08" strokeWidth="2" strokeOpacity="0.4"></rect><rect x="52" y="60" width="36" height="15" rx="3" fill="currentColor" fillOpacity="0.08" strokeWidth="2" strokeOpacity="0.4"></rect><rect x="92" y="40" width="36" height="15" rx="3" fill="oklch(0.76 0.14 300)" fillOpacity="0.85" strokeWidth="2" strokeOpacity="0"></rect></g></g></g><g className="sc-pop-550" stroke="oklch(0.76 0.14 300)" strokeWidth="2"><rect x="-76" y="-68" width="152" height="112" rx="2" strokeDasharray="5 5"></rect><rect x="-80" y="-72" width="8" height="8" fill="var(--card)"></rect><rect x="-80" y="40" width="8" height="8" fill="var(--card)"></rect><rect x="72" y="-72" width="8" height="8" fill="var(--card)"></rect><rect x="72" y="40" width="8" height="8" fill="var(--card)"></rect></g><g className="sc-rise-50"><rect x="-200" y="52" width="400" height="42" rx="21" fill="var(--card)" stroke="oklch(0.76 0.14 300)" strokeWidth="3" strokeOpacity="0.8"></rect><path transform="translate(-178 73)" d="M0 -10 Q2 -2 10 0 Q2 2 0 10 Q-2 2 -10 0 Q-2 -2 0 -10 Z" fill="oklch(0.76 0.14 300)" stroke="none"></path><defs><clipPath id="home-v2-design-type"><rect x="-158" y="52" width="294" height="42" className="sc-type"></rect></clipPath></defs><g className="sc-sent"><text x="-156" y="73" fontSize="18" fontWeight="500" textLength="290" lengthAdjust="spacingAndGlyphs" fill="currentColor" fillOpacity="0.8" stroke="none" dominantBaseline="central" clipPath="url(#home-v2-design-type)">Buatkan dashboard CRM tim sales</text><g className="sc-caret"><line x1="-155" y1="62" x2="-155" y2="84" stroke="oklch(0.76 0.14 300)" strokeWidth="3" className="sc-blink"></line></g></g><g transform="translate(176 73)"><circle r="15" stroke="oklch(0.76 0.14 300)" strokeWidth="3" className="sc-ripple"></circle><g className="sc-enter"><circle r="15" fill="oklch(0.76 0.14 300)" stroke="none"></circle><path d="M0 7 V-7 M-6 -1 L0 -7 L6 -1" stroke="var(--card)" strokeWidth="3"></path></g></g></g><g className="sc-rise-570"><path d="M58 22 L58 52 L66 44 L75 61 L81 58 L72 41 L86 41 Z" fill="currentColor" stroke="var(--card)" strokeWidth="2"></path></g></g></svg>
                 </div>
               </div>
               <div className="relative mt-4 space-y-1">
