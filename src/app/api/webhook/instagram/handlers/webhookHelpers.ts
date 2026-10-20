@@ -392,6 +392,16 @@ export async function resolveAccountForEntry(igAccountId: string) {
       ],
       isActive: true,
     },
+    include: {
+      user: {
+        select: {
+          id: true,
+          email: true,
+          role: true,
+          proAutomationExpiredAt: true,
+        },
+      },
+    },
   });
 
   if (!account) {
@@ -399,6 +409,16 @@ export async function resolveAccountForEntry(igAccountId: string) {
       where: {
         isActive: true,
         accessToken: { not: "" },
+      },
+      include: {
+        user: {
+          select: {
+            id: true,
+            email: true,
+            role: true,
+            proAutomationExpiredAt: true,
+          },
+        },
       },
     });
 
@@ -436,6 +456,22 @@ export async function resolveAccountForEntry(igAccountId: string) {
         console.warn(`⚠️ [Meta Webhook] Failed to verify candidate account ${candidate.id}:`, verifyErr);
       }
     }
+  }
+
+  if (!account) return null;
+
+  // Verifikasi Hak Akses & Masa Aktif PRO Automation Pemilik Akun
+  const user = account.user;
+  const isAdmin = user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com" || user?.role === "ADMIN";
+  const isProAutomation = isAdmin || !!(
+    user?.proAutomationExpiredAt && new Date(user.proAutomationExpiredAt) > new Date()
+  );
+
+  if (!isProAutomation) {
+    console.warn(
+      `⛔ [Meta Webhook] Automation blocked for @${account.username || account.id}: User Pro Automation has expired or inactive (expiredAt: ${user?.proAutomationExpiredAt || "Never"}).`
+    );
+    return null;
   }
 
   return account;

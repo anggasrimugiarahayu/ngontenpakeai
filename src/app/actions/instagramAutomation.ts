@@ -27,6 +27,25 @@ function getDb(): PrismaClient {
   return fallbackPrisma;
 }
 
+export async function assertProAutomation(userId: string, email?: string | null) {
+  const isAdmin = email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  if (isAdmin) return true;
+
+  const db = getDb();
+  const user = await db.user.findUnique({
+    where: { id: userId },
+    select: { role: true, proAutomationExpiredAt: true }
+  });
+
+  if (user?.role === "ADMIN") return true;
+
+  const isPro = !!(user?.proAutomationExpiredAt && new Date(user.proAutomationExpiredAt) > new Date());
+  if (!isPro) {
+    throw new Error("Masa aktif Paket PRO Automation Anda telah berakhir atau belum aktif. Silakan upgrade paket untuk mengelola aturan.");
+  }
+  return true;
+}
+
 /**
  * Cache data automasi Instagram menggunakan unstable_cache (STA / SWR pattern di Next.js)
  * Cache otomatis di-revalidate tiap 60 detik atau instan saat ada perubahan aturan/koneksi.
@@ -869,6 +888,7 @@ export async function saveAutomationRuleAction(payload: {
 }) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
+  await assertProAutomation(session.user.id, session.user.email);
 
   const db = getDb();
   let targetAccountId = payload.accountId;
@@ -989,6 +1009,7 @@ export async function saveAutomationRuleAction(payload: {
 export async function toggleAutomationRuleAction(ruleId: string, isActive: boolean) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
+  await assertProAutomation(session.user.id, session.user.email);
 
   const db = getDb();
   await (db as any).instagramAutomationRule.update({
@@ -1008,6 +1029,7 @@ export async function toggleAutomationRuleAction(ruleId: string, isActive: boole
 export async function deleteAutomationRuleAction(ruleId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
+  await assertProAutomation(session.user.id, session.user.email);
 
   const db = getDb();
   await (db as any).instagramAutomationRule.delete({
@@ -1027,6 +1049,7 @@ export async function duplicateAutomationRuleAction(ruleId: string) {
   try {
     const session = await auth();
     if (!session?.user?.id) throw new Error("Unauthorized");
+    await assertProAutomation(session.user.id, session.user.email);
 
     const db = getDb();
     const rule = await (db as any).instagramAutomationRule.findUnique({

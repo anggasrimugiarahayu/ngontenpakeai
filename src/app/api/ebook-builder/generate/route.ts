@@ -2,9 +2,21 @@ import { getApiKey } from "@/lib/get-api-key";
 import { getDefaultAiModel } from "@/lib/get-ai-model";
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI, Type, Schema } from "@google/genai";
+import { auth } from "@/auth";
+import { verifyProToolsAccess } from "@/lib/auth-checks";
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const accessCheck = await verifyProToolsAccess(session.user.id, session.user.email);
+    if (!accessCheck.authorized) {
+      return NextResponse.json({ error: accessCheck.reason }, { status: 403 });
+    }
+
     const { 
       prompt,
       history = [],

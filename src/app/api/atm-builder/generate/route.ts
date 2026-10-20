@@ -2,11 +2,23 @@ import { getDefaultAiModel } from "@/lib/get-ai-model";
 import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
+import { auth } from "@/auth";
+import { verifyProToolsAccess } from "@/lib/auth-checks";
 
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function POST(req: Request) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const accessCheck = await verifyProToolsAccess(session.user.id, session.user.email);
+    if (!accessCheck.authorized) {
+      return NextResponse.json({ error: accessCheck.reason }, { status: 403 });
+    }
+
     const { chatHistory, currentInput, fileData, fileType, blueprint, model } = await req.json();
 
     const systemPrompt = `[MASTER PROMPT – ATM CONTENT BUILDER]

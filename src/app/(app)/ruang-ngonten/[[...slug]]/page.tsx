@@ -34,5 +34,29 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
     isPro = hasTools || dbUser?.role === "ADMIN";
   }
 
+  // Intercept direct URL access if accessing a pro-only tool while not Pro
+  if (params?.slug && params.slug.length > 0 && !isPro) {
+    const currentSlug = params.slug[0];
+    const matchingFeature = dbFeatures.find((f: any) => {
+      const slugName = f.name.toLowerCase().replace(/\s+/g, '-');
+      return (
+        slugName === currentSlug.toLowerCase() ||
+        (currentSlug === "master-blueprint" && f.name === "Master Blueprint") ||
+        (currentSlug === "bio-builder" && f.name === "Bio Builder") ||
+        (currentSlug === "idea-rooms" && f.name === "Idea Rooms") ||
+        (currentSlug === "script-builder" && f.name === "Script Builder") ||
+        (currentSlug === "carousel-builder" && f.name === "Carousel Prompt Builder") ||
+        (currentSlug === "atm-builder" && f.name === "ATM Content Builder") ||
+        (currentSlug === "ebook-builder" && f.name === "Ebook Prompt Builder") ||
+        (currentSlug === "content-calendar" && f.name === "Content Calendar")
+      );
+    });
+
+    const isProOnly = matchingFeature ? matchingFeature.isProOnly : false;
+    if (isProOnly) {
+      redirect("/?pricing=true");
+    }
+  }
+
   return <WorkspaceApp hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isLoggedIn={isLoggedIn} nicheReferences={nicheReferences} userImage={session?.user?.image} />;
 }

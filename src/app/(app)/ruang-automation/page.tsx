@@ -20,13 +20,9 @@ export default async function RuangAutomationPage({
   let isPro = isAdmin;
   if (!isAdmin && session?.user?.id) {
     try {
-      const [dbUser, userOrders] = await Promise.all([
-        getCachedAppUser(session.user.id),
-        getCachedUserOrders(session.user.id)
-      ]);
+      const dbUser = await getCachedAppUser(session.user.id);
       const hasAutomation = !!((dbUser as any)?.proAutomationExpiredAt && new Date((dbUser as any).proAutomationExpiredAt) > new Date());
-      const hasProPlus = Array.isArray(userOrders) && userOrders.some((o: any) => o.orderType === "PRO_PLUS");
-      isPro = hasAutomation || hasProPlus || dbUser?.role === "ADMIN";
+      isPro = hasAutomation || dbUser?.role === "ADMIN";
     } catch (err) {
       console.error("Error checking pro status in RuangAutomationPage:", err);
     }
