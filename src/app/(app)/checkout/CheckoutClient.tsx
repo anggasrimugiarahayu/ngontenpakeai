@@ -7,8 +7,11 @@ import { validatePromoCodeAction } from "@/app/actions/checkout";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, ArrowLeft, ChevronRight, X, Lock, CreditCard, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { PAYMENT_METHODS, calculatePaymentFees, PaymentMethodKey } from "@/lib/payment-calc";
-import CheckoutModals, { CheckoutAddonItem } from "./CheckoutModals";
+import type { CheckoutAddonItem } from "./CheckoutModals";
+
+const CheckoutModals = dynamic(() => import("./CheckoutModals"), { ssr: false });
 
 interface CheckoutClientProps {
   type: "EBOOK" | "PRO_BOOK" | "PRO_TOOLS" | "PRO_AUTOMATION" | "PRO_PLUS";
@@ -639,34 +642,36 @@ export default function CheckoutClient({
         </div>
       </div>
 
-      <CheckoutModals
-        type={type}
-        showAddonModal={showAddonModal}
-        setShowAddonModal={setShowAddonModal}
-        availableAddons={availableAddons}
-        selectedAddons={selectedAddons}
-        setSelectedAddons={setSelectedAddons}
-        showVoucherModal={showVoucherModal}
-        setShowVoucherModal={setShowVoucherModal}
-        promoCodeInput={promoCodeInput}
-        setPromoCodeInput={setPromoCodeInput}
-        promoError={promoError}
-        setPromoError={setPromoError}
-        isVerifyingPromo={isVerifyingPromo}
-        handleApplyPromo={handleApplyPromo}
-        showPaymentModal={showPaymentModal}
-        setShowPaymentModal={setShowPaymentModal}
-        groupedMethods={groupedMethods}
-        selectedMethod={selectedMethod}
-        setSelectedMethod={setSelectedMethod}
-        paymentState={paymentState}
-        isRedirecting={isRedirecting}
-        setIsRedirecting={setIsRedirecting}
-        isIncludedModalOpen={isIncludedModalOpen}
-        setIsIncludedModalOpen={setIsIncludedModalOpen}
-        includedAddons={includedAddons}
-        formatRupiah={formatRupiah}
-      />
+      {(showAddonModal || showVoucherModal || showPaymentModal || isIncludedModalOpen) && (
+        <CheckoutModals
+          type={type}
+          showAddonModal={showAddonModal}
+          setShowAddonModal={setShowAddonModal}
+          availableAddons={availableAddons}
+          selectedAddons={selectedAddons}
+          setSelectedAddons={setSelectedAddons}
+          showVoucherModal={showVoucherModal}
+          setShowVoucherModal={setShowVoucherModal}
+          promoCodeInput={promoCodeInput}
+          setPromoCodeInput={setPromoCodeInput}
+          promoError={promoError}
+          setPromoError={setPromoError}
+          isVerifyingPromo={isVerifyingPromo}
+          handleApplyPromo={handleApplyPromo}
+          showPaymentModal={showPaymentModal}
+          setShowPaymentModal={setShowPaymentModal}
+          groupedMethods={groupedMethods}
+          selectedMethod={selectedMethod}
+          setSelectedMethod={setSelectedMethod}
+          paymentState={paymentState}
+          isRedirecting={isRedirecting}
+          setIsRedirecting={setIsRedirecting}
+          isIncludedModalOpen={isIncludedModalOpen}
+          setIsIncludedModalOpen={setIsIncludedModalOpen}
+          includedAddons={includedAddons}
+          formatRupiah={formatRupiah}
+        />
+      )}
     </div>
   );
 }

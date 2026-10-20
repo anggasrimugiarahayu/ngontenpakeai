@@ -13,13 +13,27 @@ import { RefreshCw } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { subDays } from "date-fns";
 import toast from "react-hot-toast";
-import PrintModal from "./PrintModal";
-import WhatsAppModal from "./WhatsAppModal";
+import dynamic from "next/dynamic";
 import { DashboardMainTab } from "./tabs/DashboardMainTab";
-import { DashboardStatisticsTab } from "./tabs/DashboardStatisticsTab";
 import { DashboardOrdersTab } from "./tabs/DashboardOrdersTab";
-import { DashboardInsightsTab } from "./tabs/DashboardInsightsTab";
 import "react-day-picker/dist/style.css";
+
+const DashboardStatisticsTab = dynamic(
+  () => import("./tabs/DashboardStatisticsTab").then((m) => m.DashboardStatisticsTab),
+  {
+    loading: () => <LoadingSpinner message="Memuat Grafik Statistik..." />,
+    ssr: false,
+  }
+);
+const DashboardInsightsTab = dynamic(
+  () => import("./tabs/DashboardInsightsTab").then((m) => m.DashboardInsightsTab),
+  {
+    loading: () => <LoadingSpinner message="Memuat Audience Insights..." />,
+    ssr: false,
+  }
+);
+const PrintModal = dynamic(() => import("./PrintModal"), { ssr: false });
+const WhatsAppModal = dynamic(() => import("./WhatsAppModal"), { ssr: false });
 
 export default function DashboardClient({
   user: _user,
@@ -354,19 +368,23 @@ export default function DashboardClient({
           <DashboardInsightsTab insightsData={insightsData} />
         )}
 
-        <PrintModal
-          isOpen={isPrintModalOpen}
-          onClose={() => setIsPrintModalOpen(false)}
-          order={selectedOrder}
-        />
+        {isPrintModalOpen && (
+          <PrintModal
+            isOpen={isPrintModalOpen}
+            onClose={() => setIsPrintModalOpen(false)}
+            order={selectedOrder}
+          />
+        )}
 
-        <WhatsAppModal
-          isOpen={isWaModalOpen}
-          onClose={() => setIsWaModalOpen(false)}
-          order={waOrder}
-          message={waMessage}
-          setMessage={setWaMessage}
-        />
+        {isWaModalOpen && (
+          <WhatsAppModal
+            isOpen={isWaModalOpen}
+            onClose={() => setIsWaModalOpen(false)}
+            order={waOrder}
+            message={waMessage}
+            setMessage={setWaMessage}
+          />
+        )}
       </div>
     </>
   );

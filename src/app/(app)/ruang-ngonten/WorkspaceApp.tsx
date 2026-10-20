@@ -1,18 +1,56 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { usePathname } from "next/navigation";
+import dynamic from "next/dynamic";
 import useSWR from "swr";
 import { getBlueprintAction } from "@/app/actions/blueprint";
-import AtmBuilderClient from "./atm-builder/AtmBuilderClient";
-import BioBuilderClient from "./bio-builder/BioBuilderClient";
-import CarouselBuilderClient from "./carousel-builder/CarouselBuilderClient";
-import ContentCalendarClient from "./content-calendar/ContentCalendarClient";
-import EbookBuilderClient from "./ebook-builder/EbookBuilderClient";
-import IdeaRoomsClient from "./idea-rooms/IdeaRoomsClient";
-import MasterBlueprintClient from "./master-blueprint/MasterBlueprintClient";
-import ScriptBuilderClient from "./script-builder/ScriptBuilderClient";
 import ToolGrid from "./ToolGrid";
+
+const ToolLoading = ({ title }: { title: string }) => (
+  <div className="flex-1 w-full min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
+    <div className="w-9 h-9 border-3 border-orange-500 border-t-transparent rounded-full animate-spin mb-3" />
+    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+      Memuat {title}...
+    </p>
+    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+      Menyiapkan asisten AI dan sistem workspace
+    </p>
+  </div>
+);
+
+const AtmBuilderClient = dynamic(() => import("./atm-builder/AtmBuilderClient"), {
+  loading: () => <ToolLoading title="ATM Content Builder" />,
+  ssr: false,
+});
+const BioBuilderClient = dynamic(() => import("./bio-builder/BioBuilderClient"), {
+  loading: () => <ToolLoading title="Bio Builder" />,
+  ssr: false,
+});
+const CarouselBuilderClient = dynamic(() => import("./carousel-builder/CarouselBuilderClient"), {
+  loading: () => <ToolLoading title="Carousel Prompt Builder" />,
+  ssr: false,
+});
+const ContentCalendarClient = dynamic(() => import("./content-calendar/ContentCalendarClient"), {
+  loading: () => <ToolLoading title="Content Calendar" />,
+  ssr: false,
+});
+const EbookBuilderClient = dynamic(() => import("./ebook-builder/EbookBuilderClient"), {
+  loading: () => <ToolLoading title="Ebook Prompt Builder" />,
+  ssr: false,
+});
+const IdeaRoomsClient = dynamic(() => import("./idea-rooms/IdeaRoomsClient"), {
+  loading: () => <ToolLoading title="Idea Rooms" />,
+  ssr: false,
+});
+const MasterBlueprintClient = dynamic(() => import("./master-blueprint/MasterBlueprintClient"), {
+  loading: () => <ToolLoading title="Master Blueprint" />,
+  ssr: false,
+});
+const ScriptBuilderClient = dynamic(() => import("./script-builder/ScriptBuilderClient"), {
+  loading: () => <ToolLoading title="Script Builder" />,
+  ssr: false,
+});
 
 interface Props {
   hasBlueprint: boolean;
@@ -56,6 +94,28 @@ export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLogged
   const isMasterBlueprint = activePath.startsWith("/ruang-ngonten/master-blueprint");
   const isScriptBuilder = activePath.startsWith("/ruang-ngonten/script-builder");
 
+  const [visited, setVisited] = useState<Record<string, boolean>>({
+    atm: isAtm,
+    bio: isBio,
+    carousel: isCarousel,
+    calendar: isCalendar,
+    ebook: isEbook,
+    ideaRooms: isIdeaRooms,
+    masterBlueprint: isMasterBlueprint,
+    scriptBuilder: isScriptBuilder,
+  });
+
+  useEffect(() => {
+    if (isAtm && !visited.atm) setVisited(v => ({ ...v, atm: true }));
+    if (isBio && !visited.bio) setVisited(v => ({ ...v, bio: true }));
+    if (isCarousel && !visited.carousel) setVisited(v => ({ ...v, carousel: true }));
+    if (isCalendar && !visited.calendar) setVisited(v => ({ ...v, calendar: true }));
+    if (isEbook && !visited.ebook) setVisited(v => ({ ...v, ebook: true }));
+    if (isIdeaRooms && !visited.ideaRooms) setVisited(v => ({ ...v, ideaRooms: true }));
+    if (isMasterBlueprint && !visited.masterBlueprint) setVisited(v => ({ ...v, masterBlueprint: true }));
+    if (isScriptBuilder && !visited.scriptBuilder) setVisited(v => ({ ...v, scriptBuilder: true }));
+  }, [isAtm, isBio, isCarousel, isCalendar, isEbook, isIdeaRooms, isMasterBlueprint, isScriptBuilder, visited]);
+
   return (
     <>
       <div style={{ display: isDashboard ? "block" : "none", width: "100%" }}>
@@ -75,28 +135,28 @@ export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLogged
       </div>
       
       <div style={{ display: isAtm ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
-        <AtmBuilderClient />
+        {visited.atm && <AtmBuilderClient />}
       </div>
       <div style={{ display: isBio ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
-        <BioBuilderClient />
+        {visited.bio && <BioBuilderClient />}
       </div>
       <div style={{ display: isCarousel ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
-        <CarouselBuilderClient />
+        {visited.carousel && <CarouselBuilderClient />}
       </div>
       <div style={{ display: isCalendar ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
-        <ContentCalendarClient />
+        {visited.calendar && <ContentCalendarClient />}
       </div>
       <div style={{ display: isEbook ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
-        <EbookBuilderClient />
+        {visited.ebook && <EbookBuilderClient />}
       </div>
       <div style={{ display: isIdeaRooms ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
-        <IdeaRoomsClient />
+        {visited.ideaRooms && <IdeaRoomsClient />}
       </div>
       <div style={{ display: isMasterBlueprint ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
-        <MasterBlueprintClient nicheReferences={nicheReferences} />
+        {visited.masterBlueprint && <MasterBlueprintClient nicheReferences={nicheReferences} />}
       </div>
       <div style={{ display: isScriptBuilder ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
-        <ScriptBuilderClient />
+        {visited.scriptBuilder && <ScriptBuilderClient />}
       </div>
     </>
   );

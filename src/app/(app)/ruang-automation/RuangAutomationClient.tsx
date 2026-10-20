@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
+import dynamic from "next/dynamic";
 import useSWR from "swr";
 import {
   CheckCircle2,
@@ -43,9 +44,30 @@ import { PostAutomationSection } from "./instagram/sections/PostAutomationSectio
 import { StoryAutomationSection } from "./instagram/sections/StoryAutomationSection";
 import { LiveAutomationSection } from "./instagram/sections/LiveAutomationSection";
 import { DmAutomationSection } from "./instagram/sections/DmAutomationSection";
-import { InstagramRuleDetailModal } from "./instagram/InstagramRuleDetailModal";
-import { InstagramAgentModals } from "./instagram/InstagramAgentModals";
-import { InstagramRuleStudioModal } from "./instagram/InstagramRuleStudioModal";
+
+const InstagramRuleDetailModal = dynamic(
+  () =>
+    import("./instagram/InstagramRuleDetailModal").then(
+      (mod) => mod.InstagramRuleDetailModal
+    ),
+  { ssr: false }
+);
+
+const InstagramAgentModals = dynamic(
+  () =>
+    import("./instagram/InstagramAgentModals").then(
+      (mod) => mod.InstagramAgentModals
+    ),
+  { ssr: false }
+);
+
+const InstagramRuleStudioModal = dynamic(
+  () =>
+    import("./instagram/InstagramRuleStudioModal").then(
+      (mod) => mod.InstagramRuleStudioModal
+    ),
+  { ssr: false }
+);
 import {
   MessageButtonItem,
   MessageCarouselSlideItem,
@@ -2032,86 +2054,92 @@ export default function RuangAutomationClient({
       {/* ========================================================================= */}
       {/* MODAL: BUAT & UBAH AGEN (MODULAR) */}
       {/* ========================================================================= */}
-      <InstagramAgentModals
-        isCreateAgentModalOpen={isCreateAgentModalOpen}
-        setIsCreateAgentModalOpen={setIsCreateAgentModalOpen}
-        newAgentName={newAgentName}
-        setNewAgentName={setNewAgentName}
-        isSubmittingAgent={isSubmittingAgent}
-        handleCreateAgent={handleCreateAgent}
-        isEditAgentModalOpen={isEditAgentModalOpen}
-        setIsEditAgentModalOpen={setIsEditAgentModalOpen}
-        editingAgent={editingAgent}
-        editAgentName={editAgentName}
-        setEditAgentName={setEditAgentName}
-        handleSaveEditAgent={handleSaveEditAgent}
-      />
+      {(isCreateAgentModalOpen || isEditAgentModalOpen) && (
+        <InstagramAgentModals
+          isCreateAgentModalOpen={isCreateAgentModalOpen}
+          setIsCreateAgentModalOpen={setIsCreateAgentModalOpen}
+          newAgentName={newAgentName}
+          setNewAgentName={setNewAgentName}
+          isSubmittingAgent={isSubmittingAgent}
+          handleCreateAgent={handleCreateAgent}
+          isEditAgentModalOpen={isEditAgentModalOpen}
+          setIsEditAgentModalOpen={setIsEditAgentModalOpen}
+          editingAgent={editingAgent}
+          editAgentName={editAgentName}
+          setEditAgentName={setEditAgentName}
+          handleSaveEditAgent={handleSaveEditAgent}
+        />
+      )}
 
       {/* ========================================================================= */}
       {/* MODAL STUDIO: BUAT / EDIT OTOMASI BARU (MODULAR) */}
       {/* ========================================================================= */}
-      <InstagramRuleStudioModal
-        isRuleModalOpen={isRuleModalOpen}
-        setIsRuleModalOpen={setIsRuleModalOpen}
-        editingRule={editingRule}
-        ruleFormData={ruleFormData}
-        setRuleFormData={setRuleFormData}
-        handleSaveRule={handleSaveRule}
-        isPending={isPending}
-        isTargetDropdownOpen={isTargetDropdownOpen}
-        setIsTargetDropdownOpen={setIsTargetDropdownOpen}
-        isFrequencyDropdownOpen={isFrequencyDropdownOpen}
-        setIsFrequencyDropdownOpen={setIsFrequencyDropdownOpen}
-        isAccountLinked={isAccountLinked}
-        isFeedLive={isFeedLive}
-        isLoadingFeed={isLoadingFeed}
-        feedPosts={feedPosts}
-        selectedPost={selectedPost}
-        setSelectedPost={setSelectedPost}
-        showAllPostsModal={showAllPostsModal}
-        setShowAllPostsModal={setShowAllPostsModal}
-        isStoriesLive={isStoriesLive}
-        isLoadingStories={isLoadingStories}
-        isValidatingStories={isValidatingStories}
-        activeStories={activeStories}
-        selectedStory={selectedStory}
-        setSelectedStory={setSelectedStory}
-        handleRefreshStories={handleRefreshStories}
-        activePreviewTab={activePreviewTab}
-        setActivePreviewTab={setActivePreviewTab}
-        activeLiveContentIdx={activeLiveContentIdx}
-        setActiveLiveContentIdx={setActiveLiveContentIdx}
-        simulatedButtonId={simulatedButtonId}
-        setSimulatedButtonId={setSimulatedButtonId}
-        simulatedLiveQrId={simulatedLiveQrId}
-        setSimulatedLiveQrId={setSimulatedLiveQrId}
-        simulatedFollowStep={simulatedFollowStep}
-        setSimulatedFollowStep={setSimulatedFollowStep}
-        account={displayAccount || currentAgent || account}
-        currentAgent={currentAgent || displayAccount || account}
-        showToast={showToast}
-      />
+      {isRuleModalOpen && (
+        <InstagramRuleStudioModal
+          isRuleModalOpen={isRuleModalOpen}
+          setIsRuleModalOpen={setIsRuleModalOpen}
+          editingRule={editingRule}
+          ruleFormData={ruleFormData}
+          setRuleFormData={setRuleFormData}
+          handleSaveRule={handleSaveRule}
+          isPending={isPending}
+          isTargetDropdownOpen={isTargetDropdownOpen}
+          setIsTargetDropdownOpen={setIsTargetDropdownOpen}
+          isFrequencyDropdownOpen={isFrequencyDropdownOpen}
+          setIsFrequencyDropdownOpen={setIsFrequencyDropdownOpen}
+          isAccountLinked={isAccountLinked}
+          isFeedLive={isFeedLive}
+          isLoadingFeed={isLoadingFeed}
+          feedPosts={feedPosts}
+          selectedPost={selectedPost}
+          setSelectedPost={setSelectedPost}
+          showAllPostsModal={showAllPostsModal}
+          setShowAllPostsModal={setShowAllPostsModal}
+          isStoriesLive={isStoriesLive}
+          isLoadingStories={isLoadingStories}
+          isValidatingStories={isValidatingStories}
+          activeStories={activeStories}
+          selectedStory={selectedStory}
+          setSelectedStory={setSelectedStory}
+          handleRefreshStories={handleRefreshStories}
+          activePreviewTab={activePreviewTab}
+          setActivePreviewTab={setActivePreviewTab}
+          activeLiveContentIdx={activeLiveContentIdx}
+          setActiveLiveContentIdx={setActiveLiveContentIdx}
+          simulatedButtonId={simulatedButtonId}
+          setSimulatedButtonId={setSimulatedButtonId}
+          simulatedLiveQrId={simulatedLiveQrId}
+          setSimulatedLiveQrId={setSimulatedLiveQrId}
+          simulatedFollowStep={simulatedFollowStep}
+          setSimulatedFollowStep={setSimulatedFollowStep}
+          account={displayAccount || currentAgent || account}
+          currentAgent={currentAgent || displayAccount || account}
+          showToast={showToast}
+        />
+      )}
 
       {/* ========================================================================= */}
       {/* MODAL POPUP: DETAIL OTOMASI (MODULAR) */}
       {/* ========================================================================= */}
-      <InstagramRuleDetailModal
-        detailRuleId={detailRuleId}
-        setDetailRuleId={setDetailRuleId}
-        rules={rules}
-        feedPosts={feedPosts}
-        accountUsername={displayAccount?.username || account?.username}
-        logs={logs}
-        handleOpenEditRuleModal={handleOpenEditRuleModal}
-        isRetryingFailed={isRetryingFailed}
-        setIsRetryingFailed={setIsRetryingFailed}
-        isRewindingComments={isRewindingComments}
-        setIsRewindingComments={setIsRewindingComments}
-        retryFailedAutomationLogsAction={retryFailedAutomationLogsAction}
-        rewindAutomationCommentsAction={rewindAutomationCommentsAction}
-        showToast={showToast}
-        mutateData={mutateData}
-      />
+      {Boolean(detailRuleId) && (
+        <InstagramRuleDetailModal
+          detailRuleId={detailRuleId}
+          setDetailRuleId={setDetailRuleId}
+          rules={rules}
+          feedPosts={feedPosts}
+          accountUsername={displayAccount?.username || account?.username}
+          logs={logs}
+          handleOpenEditRuleModal={handleOpenEditRuleModal}
+          isRetryingFailed={isRetryingFailed}
+          setIsRetryingFailed={setIsRetryingFailed}
+          isRewindingComments={isRewindingComments}
+          setIsRewindingComments={setIsRewindingComments}
+          retryFailedAutomationLogsAction={retryFailedAutomationLogsAction}
+          rewindAutomationCommentsAction={rewindAutomationCommentsAction}
+          showToast={showToast}
+          mutateData={mutateData}
+        />
+      )}
     </div>
   );
 }
