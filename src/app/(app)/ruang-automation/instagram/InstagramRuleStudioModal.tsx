@@ -166,14 +166,18 @@ export function InstagramRuleStudioModal({
                     <button
                       type="button"
                       onClick={() => setIsTargetDropdownOpen(!isTargetDropdownOpen)}
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors"
+                      className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                        isTargetDropdownOpen
+                          ? "border-orange-500 ring-2 ring-orange-500/20"
+                          : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                      }`}
                     >
                       <span className="font-medium">{ruleFormData.targetOtomasi || "Postingan Tertentu"}</span>
                       <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${isTargetDropdownOpen ? "rotate-180" : ""}`} />
                     </button>
 
                     {isTargetDropdownOpen && (
-                      <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl py-2 z-50 max-h-72 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+                      <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 max-h-72 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
                         {[
                           {
                             category: "Post / Reel",
@@ -467,7 +471,11 @@ export function InstagramRuleStudioModal({
                       <button
                         type="button"
                         onClick={() => setIsFrequencyDropdownOpen(!isFrequencyDropdownOpen)}
-                        className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+                        className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                          isFrequencyDropdownOpen
+                            ? "border-orange-500 ring-2 ring-orange-500/20"
+                            : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                        }`}
                       >
                         <span className="font-medium">
                           {ruleFormData.storyMentionFrequency || "Atur frekuensi"}
@@ -480,7 +488,7 @@ export function InstagramRuleStudioModal({
                       </button>
 
                       {isFrequencyDropdownOpen && (
-                        <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                           {(
                             [
                               "24 jam sekali",

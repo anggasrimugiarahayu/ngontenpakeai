@@ -10,6 +10,7 @@ import { useState, useRef, useEffect } from "react";
 import { Loader2, ArrowLeft, CheckCircle2, Compass, FileJson, Download, FileText, Upload, RefreshCw, Save, AlertCircle, Target, Award, MessageSquare, Flag, Eye, Heart, Zap, TrendingUp, Users, LayoutDashboard, Map, Video, DollarSign, User, Lock, Star, Activity, X, Crosshair, Shield, List, BookOpen, Megaphone, UserCircle, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
 import HeroCanvasCell from "@/components/master-blueprint/HeroCanvasCell";
 import CanvasCell from "@/components/master-blueprint/CanvasCell";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 
 export default function MasterBlueprintClient({ nicheReferences }: { nicheReferences?: any[] }) {
@@ -569,20 +570,21 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
         </div>
         
         <div className="flex items-center gap-2">
-          <div className="relative">
-            <select 
-              onChange={(e) => {
-                const niche = (nicheReferences || []).find(n => n.id === e.target.value);
-                if (niche) loadNiche(niche.data);
-                e.target.value = "";
-              }}
-              className="pl-3 pr-8 py-2 text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl outline-none focus:ring-2 focus:ring-orange-500/50 truncate max-w-[160px] md:max-w-[210px] text-gray-900 dark:text-white appearance-none cursor-pointer"
-            >
-              <option value="">💡 Referensi Niche...</option>
-              {(nicheReferences || []).map((n: any, i: number) => <option key={n.id || i} value={n.id}>{n.nama}</option>)}
-            </select>
-            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
+          <CustomSelect
+            placeholder="💡 Referensi Niche..."
+            value=""
+            onChange={(val) => {
+              const niche = (nicheReferences || []).find((n) => n.id === val);
+              if (niche) loadNiche(niche.data);
+            }}
+            options={(nicheReferences || []).map((n: any, i: number) => ({
+              value: n.id || i,
+              label: n.nama,
+            }))}
+            size="sm"
+            variant="subtle"
+            containerClassName="w-44 md:w-52 shrink-0"
+          />
           <button onClick={() => fileInputRef.current?.click()} className="px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 text-sm font-bold text-gray-700 dark:text-gray-300 rounded-xl transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer">
             <Upload className="w-4 h-4" /> Import JSON
           </button>
@@ -642,82 +644,103 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
                 <div><label className={labelClass}>Nama Persona</label><input type="text" name="demo_nama_persona" value={formData.demo_nama_persona} onChange={handleChange} required className={inputClass} placeholder="Cth: Budi si Pemula" /></div>
                 
                 <div>
-                  <label className={labelClass}>Usia</label>
-                  <select name="demo_usia" value={formData.demo_usia} onChange={handleChange} required className={inputClass}>
-                    <option value="" disabled hidden>Pilih Rentang Usia...</option>
-                    <option value="Di bawah 18 tahun">Di bawah 18 tahun</option>
-                    <option value="18 - 24 tahun">18 - 24 tahun</option>
-                    <option value="25 - 34 tahun">25 - 34 tahun</option>
-                    <option value="35 - 44 tahun">35 - 44 tahun</option>
-                    <option value="45+ tahun">45+ tahun</option>
-                  </select>
+                  <CustomSelect
+                    label="Usia"
+                    placeholder="Pilih Rentang Usia..."
+                    name="demo_usia"
+                    value={formData.demo_usia}
+                    onChange={(val) => setFormData({ ...formData, demo_usia: val })}
+                    options={[
+                      "Di bawah 18 tahun",
+                      "18 - 24 tahun",
+                      "25 - 34 tahun",
+                      "35 - 44 tahun",
+                      "45+ tahun",
+                    ]}
+                  />
                 </div>
                 
                 <div>
-                  <label className={labelClass}>Gender</label>
-                  <select name="demo_gender" value={formData.demo_gender} onChange={handleChange} required className={inputClass}>
-                    <option value="" disabled hidden>Pilih Gender...</option>
-                    <option value="Pria">Pria</option>
-                    <option value="Wanita">Wanita</option>
-                    <option value="Semua Gender">Semua Gender</option>
-                  </select>
+                  <CustomSelect
+                    label="Gender"
+                    placeholder="Pilih Gender..."
+                    name="demo_gender"
+                    value={formData.demo_gender}
+                    onChange={(val) => setFormData({ ...formData, demo_gender: val })}
+                    options={["Pria", "Wanita", "Semua Gender"]}
+                  />
                 </div>
                 
                 <div><label className={labelClass}>Lokasi</label><input type="text" name="demo_lokasi" value={formData.demo_lokasi} onChange={handleChange} required className={inputClass} placeholder="Cth: Kota Besar di Indonesia" /></div>
                 <div><label className={labelClass}>Pekerjaan</label><input type="text" name="demo_pekerjaan" value={formData.demo_pekerjaan} onChange={handleChange} required className={inputClass} placeholder="Cth: Karyawan Swasta" /></div>
                 
                 <div>
-                  <label className={labelClass}>Penghasilan</label>
-                  <select name="demo_penghasilan" value={formData.demo_penghasilan} onChange={handleChange} required className={inputClass}>
-                    <option value="" disabled hidden>Pilih Penghasilan...</option>
-                    <option value="Pelajar/Mahasiswa (Belum Berpenghasilan)">Pelajar/Mahasiswa</option>
-                    <option value="Di bawah Rp 3 Juta">Di bawah Rp 3 Juta</option>
-                    <option value="Rp 3 Juta - Rp 10 Juta">Rp 3 Juta - Rp 10 Juta</option>
-                    <option value="Di atas Rp 10 Juta">Di atas Rp 10 Juta</option>
-                  </select>
+                  <CustomSelect
+                    label="Penghasilan"
+                    placeholder="Pilih Penghasilan..."
+                    name="demo_penghasilan"
+                    value={formData.demo_penghasilan}
+                    onChange={(val) => setFormData({ ...formData, demo_penghasilan: val })}
+                    options={[
+                      { value: "Pelajar/Mahasiswa (Belum Berpenghasilan)", label: "Pelajar/Mahasiswa" },
+                      { value: "Di bawah Rp 3 Juta", label: "Di bawah Rp 3 Juta" },
+                      { value: "Rp 3 Juta - Rp 10 Juta", label: "Rp 3 Juta - Rp 10 Juta" },
+                      { value: "Di atas Rp 10 Juta", label: "Di atas Rp 10 Juta" },
+                    ]}
+                  />
                 </div>
 
                 <div>
-                  <label className={labelClass}>Pendidikan</label>
-                  <select name="demo_pendidikan" value={formData.demo_pendidikan} onChange={handleChange} required className={inputClass}>
-                    <option value="" disabled hidden>Pilih Pendidikan...</option>
-                    <option value="SMA/SMK Sederajat">SMA/SMK Sederajat</option>
-                    <option value="D3 / S1">D3 / S1</option>
-                    <option value="S2 / S3">S2 / S3</option>
-                  </select>
+                  <CustomSelect
+                    label="Pendidikan"
+                    placeholder="Pilih Pendidikan..."
+                    name="demo_pendidikan"
+                    value={formData.demo_pendidikan}
+                    onChange={(val) => setFormData({ ...formData, demo_pendidikan: val })}
+                    options={["SMA/SMK Sederajat", "D3 / S1", "S2 / S3"]}
+                  />
                 </div>
 
                 <div>
-                  <label className={labelClass}>Status Personal</label>
-                  <select name="demo_status_personal" value={formData.demo_status_personal} onChange={handleChange} required className={inputClass}>
-                    <option value="" disabled hidden>Pilih Status...</option>
-                    <option value="Lajang / Belum Menikah">Lajang / Belum Menikah</option>
-                    <option value="Menikah Belum Punya Anak">Menikah Belum Punya Anak</option>
-                    <option value="Menikah & Punya Anak (Parenting)">Menikah & Punya Anak</option>
-                  </select>
+                  <CustomSelect
+                    label="Status Personal"
+                    placeholder="Pilih Status..."
+                    name="demo_status_personal"
+                    value={formData.demo_status_personal}
+                    onChange={(val) => setFormData({ ...formData, demo_status_personal: val })}
+                    options={[
+                      { value: "Lajang / Belum Menikah", label: "Lajang / Belum Menikah" },
+                      { value: "Menikah Belum Punya Anak", label: "Menikah Belum Punya Anak" },
+                      { value: "Menikah & Punya Anak (Parenting)", label: "Menikah & Punya Anak" },
+                    ]}
+                  />
                 </div>
                 
                 <div>
-                  <label className={labelClass}>Platform Utama</label>
-                  <select name="demo_platform" value={formData.demo_platform} onChange={handleChange} required className={inputClass}>
-                    <option value="" disabled hidden>Pilih Platform...</option>
-                    <option value="Instagram">Instagram</option>
-                    <option value="TikTok">TikTok</option>
-                    <option value="LinkedIn">LinkedIn</option>
-                    <option value="YouTube">YouTube</option>
-                    <option value="X (Twitter)">X (Twitter)</option>
-                  </select>
+                  <CustomSelect
+                    label="Platform Utama"
+                    placeholder="Pilih Platform..."
+                    name="demo_platform"
+                    value={formData.demo_platform}
+                    onChange={(val) => setFormData({ ...formData, demo_platform: val })}
+                    options={["Instagram", "TikTok", "LinkedIn", "YouTube", "X (Twitter)"]}
+                  />
                 </div>
 
                 <div>
-                  <label className={labelClass}>Jam Aktif Utama</label>
-                  <select name="demo_jam_aktif" value={formData.demo_jam_aktif} onChange={handleChange} required className={inputClass}>
-                    <option value="" disabled hidden>Pilih Waktu...</option>
-                    <option value="Pagi (06:00 - 09:00)">Pagi (06:00 - 09:00)</option>
-                    <option value="Siang (12:00 - 14:00)">Siang (Istirahat 12:00 - 14:00)</option>
-                    <option value="Sore (16:00 - 18:00)">Sore (Pulang Kerja 16:00 - 18:00)</option>
-                    <option value="Malam (19:00 - 22:00)">Malam (Prime Time 19:00 - 22:00)</option>
-                  </select>
+                  <CustomSelect
+                    label="Jam Aktif Utama"
+                    placeholder="Pilih Waktu..."
+                    name="demo_jam_aktif"
+                    value={formData.demo_jam_aktif}
+                    onChange={(val) => setFormData({ ...formData, demo_jam_aktif: val })}
+                    options={[
+                      { value: "Pagi (06:00 - 09:00)", label: "Pagi (06:00 - 09:00)" },
+                      { value: "Siang (12:00 - 14:00)", label: "Siang (Istirahat 12:00 - 14:00)" },
+                      { value: "Sore (16:00 - 18:00)", label: "Sore (Pulang Kerja 16:00 - 18:00)" },
+                      { value: "Malam (19:00 - 22:00)", label: "Malam (Prime Time 19:00 - 22:00)" },
+                    ]}
+                  />
                 </div>
               </div>
             </div>
@@ -748,25 +771,35 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
               <h3 className={`font-bold text-lg mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>Gaya Komunikasi & Eksekusi</h3>
               <div className="grid grid-cols-1 gap-4">
                 <div>
-                  <label className={labelClass}>Pilih Gaya Komunikasi Utama</label>
-                  <select name="gaya_komunikasi" value={formData.gaya_komunikasi} onChange={handleChange} required className={inputClass}>
-                    <option value="" disabled hidden>Pilih Gaya...</option>
-                    <option value="Edukatif & Solutif (Guru / Pakar)">Edukatif & Solutif (Guru / Pakar)</option>
-                    <option value="Santai & Relatable (Teman Nongkrong)">Santai & Relatable (Teman Nongkrong)</option>
-                    <option value="Tegas & Blak-blakan (Hard Truth)">Tegas & Blak-blakan (Hard Truth)</option>
-                    <option value="Motivasi & Inspiratif (Cheerleader)">Motivasi & Inspiratif (Cheerleader)</option>
-                    <option value="Analitis & Data-driven (Peneliti)">Analitis & Data-driven (Peneliti)</option>
-                  </select>
+                  <CustomSelect
+                    label="Pilih Gaya Komunikasi Utama"
+                    placeholder="Pilih Gaya..."
+                    name="gaya_komunikasi"
+                    value={formData.gaya_komunikasi}
+                    onChange={(val) => setFormData({ ...formData, gaya_komunikasi: val })}
+                    options={[
+                      "Edukatif & Solutif (Guru / Pakar)",
+                      "Santai & Relatable (Teman Nongkrong)",
+                      "Tegas & Blak-blakan (Hard Truth)",
+                      "Motivasi & Inspiratif (Cheerleader)",
+                      "Analitis & Data-driven (Peneliti)",
+                    ]}
+                  />
                 </div>
                 <div>
-                  <label className={labelClass}>Platform Eksekusi Pertama</label>
-                  <select name="platform" value={formData.platform} onChange={handleChange} required className={inputClass}>
-                    <option value="" disabled hidden>Mulai dari mana?</option>
-                    <option value="Instagram Reels & Carousel">Instagram Reels & Carousel</option>
-                    <option value="TikTok (Short Video)">TikTok (Short Video)</option>
-                    <option value="X (Twitter) Threads">X (Twitter) Threads</option>
-                    <option value="LinkedIn (Personal Branding)">LinkedIn (Personal Branding)</option>
-                  </select>
+                  <CustomSelect
+                    label="Platform Eksekusi Pertama"
+                    placeholder="Mulai dari mana?"
+                    name="platform"
+                    value={formData.platform}
+                    onChange={(val) => setFormData({ ...formData, platform: val })}
+                    options={[
+                      "Instagram Reels & Carousel",
+                      "TikTok (Short Video)",
+                      "X (Twitter) Threads",
+                      "LinkedIn (Personal Branding)",
+                    ]}
+                  />
                 </div>
               </div>
             </div>

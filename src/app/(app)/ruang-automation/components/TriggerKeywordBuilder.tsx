@@ -68,7 +68,11 @@ export function TriggerKeywordBuilder({
             e.stopPropagation();
             setIsDropdownOpen((prev) => !prev);
           }}
-          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+          className={`w-full px-3.5 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-colors cursor-pointer ${
+            isDropdownOpen
+              ? "border-orange-500 ring-2 ring-orange-500/20"
+              : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+          }`}
         >
           <span className="font-medium">{keywordRule || "Contains"}</span>
           <ChevronDown
@@ -81,7 +85,7 @@ export function TriggerKeywordBuilder({
         {isDropdownOpen && (
           <div
             onMouseDown={(e) => e.stopPropagation()}
-            className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+            className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150"
           >
             {(["Contains", "Match", "Starts with"] as const).map((ruleOpt) => {
               const isSelected = (keywordRule || "Contains") === ruleOpt;

@@ -13,6 +13,7 @@ import {
   deleteVoucher,
 } from "@/app/actions/adminSettings";
 import { confirmSwal } from "./confirmSwal";
+import CustomSelect from "@/components/ui/CustomSelect";
 
 interface AdminRuangBelajarModalsProps {
   categories: any[];
@@ -69,6 +70,8 @@ export function AdminRuangBelajarModals({
     products?.flatMap((p: any) =>
       (p.vouchers || []).map((v: any) => ({ ...v, productTitle: p.title }))
     ) || [];
+
+  const [addCategoryId, setAddCategoryId] = React.useState("");
 
   return (
     <>
@@ -206,23 +209,16 @@ export function AdminRuangBelajarModals({
                   />
                 </div>
                 <div className="flex gap-2">
-                  <div className="w-5/12 space-y-1.5">
-                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                      Tipe Diskon
-                    </label>
-                    <div className="relative">
-                      <select
-                        value={newVoucher.discountType}
-                        onChange={(e) =>
-                          setNewVoucher({ ...newVoucher, discountType: e.target.value })
-                        }
-                        className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl pl-3 pr-8 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 appearance-none cursor-pointer"
-                      >
-                        <option value="PERCENTAGE">Persen (%)</option>
-                        <option value="NOMINAL">Nominal (Rp)</option>
-                      </select>
-                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                    </div>
+                  <div className="w-5/12">
+                    <CustomSelect
+                      label="TIPE DISKON"
+                      value={newVoucher.discountType}
+                      onChange={(val) => setNewVoucher({ ...newVoucher, discountType: val })}
+                      options={[
+                        { value: "PERCENTAGE", label: "Persen (%)" },
+                        { value: "NOMINAL", label: "Nominal (Rp)" },
+                      ]}
+                    />
                   </div>
                   <div className="flex-1 space-y-1.5">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -244,29 +240,14 @@ export function AdminRuangBelajarModals({
                 </div>
 
                 {/* Target E-Book Dropdown */}
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    E-Book Tujuan
-                  </label>
-                  <div className="relative">
-                    <select
-                      value={newVoucher.digitalProductId || ""}
-                      onChange={(e) =>
-                        setNewVoucher({ ...newVoucher, digitalProductId: e.target.value })
-                      }
-                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl pl-3 pr-8 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 appearance-none cursor-pointer"
-                    >
-                      <option value="" disabled>
-                        -- Pilih E-Book Tujuan --
-                      </option>
-                      {products?.map((p: any) => (
-                        <option key={p.id} value={p.id}>
-                          {p.title}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  </div>
+                <div>
+                  <CustomSelect
+                    label="E-BOOK TUJUAN"
+                    placeholder="-- Pilih E-Book Tujuan --"
+                    value={newVoucher.digitalProductId || ""}
+                    onChange={(val) => setNewVoucher({ ...newVoucher, digitalProductId: val })}
+                    options={products?.map((p: any) => ({ value: p.id, label: p.title })) || []}
+                  />
                 </div>
 
                 <button
@@ -450,25 +431,16 @@ export function AdminRuangBelajarModals({
                     className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Kategori
-                  </label>
-                  <div className="relative">
-                    <select
-                      name="categoryId"
-                      required
-                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl pl-3 pr-8 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none cursor-pointer"
-                    >
-                      <option value="">Pilih Kategori...</option>
-                      {categories.map((c: any) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  </div>
+                <div>
+                  <CustomSelect
+                    label="KATEGORI"
+                    name="categoryId"
+                    placeholder="Pilih Kategori..."
+                    value={addCategoryId}
+                    onChange={(val) => setAddCategoryId(val)}
+                    options={categories.map((c: any) => ({ value: c.id, label: c.name }))}
+                    required
+                  />
                 </div>
                 <div className="col-span-2 space-y-3">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -586,22 +558,17 @@ export function AdminRuangBelajarModals({
               </div>
 
               <div className="mt-4">
-                <label className="block text-xs font-bold text-gray-500 mb-1">
-                  LEVEL AKSES E-BOOK
-                </label>
-                <div className="relative">
-                  <select
-                    name="accessLevel"
-                    value={addAccessLevel}
-                    onChange={(e) => setAddAccessLevel(e.target.value)}
-                    className="w-full pl-3 pr-10 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-sm text-gray-900 dark:text-white appearance-none cursor-pointer"
-                  >
-                    <option value="FREE">Free (Gratis untuk semua)</option>
-                    <option value="PRO">Pro (Khusus Member Bundle)</option>
-                    <option value="PREMIUM">Premium (Pembelian Eceran / Ala Carte)</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
+                <CustomSelect
+                  label="LEVEL AKSES E-BOOK"
+                  name="accessLevel"
+                  value={addAccessLevel}
+                  onChange={(val) => setAddAccessLevel(val)}
+                  options={[
+                    { value: "FREE", label: "Free (Gratis untuk semua)" },
+                    { value: "PRO", label: "Pro (Khusus Member Bundle)" },
+                    { value: "PREMIUM", label: "Premium (Pembelian Eceran / Ala Carte)" },
+                  ]}
+                />
               </div>
 
               {(addAccessLevel === "PREMIUM" || addAccessLevel === "PRO") && (
@@ -737,18 +704,15 @@ export function AdminRuangBelajarModals({
                   className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm uppercase focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
                 />
                 <div className="flex gap-2">
-                  <div className="relative w-1/3">
-                    <select
+                  <div className="w-1/3">
+                    <CustomSelect
                       value={newVoucher.discountType}
-                      onChange={(e) =>
-                        setNewVoucher({ ...newVoucher, discountType: e.target.value })
-                      }
-                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl pl-3 pr-7 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 appearance-none cursor-pointer"
-                    >
-                      <option value="PERCENTAGE">Persen (%)</option>
-                      <option value="NOMINAL">Nominal (Rp)</option>
-                    </select>
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                      onChange={(val) => setNewVoucher({ ...newVoucher, discountType: val })}
+                      options={[
+                        { value: "PERCENTAGE", label: "Persen (%)" },
+                        { value: "NOMINAL", label: "Nominal (Rp)" },
+                      ]}
+                    />
                   </div>
                   <input
                     type="number"
@@ -884,25 +848,15 @@ export function AdminRuangBelajarModals({
                     className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
-                    Kategori
-                  </label>
-                  <div className="relative">
-                    <select
-                      name="categoryId"
-                      defaultValue={editingProduct.categoryId}
-                      required
-                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl pl-3 pr-8 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none cursor-pointer"
-                    >
-                      {categories.map((c: any) => (
-                        <option key={c.id} value={c.id}>
-                          {c.name}
-                        </option>
-                      ))}
-                    </select>
-                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  </div>
+                <div>
+                  <CustomSelect
+                    label="KATEGORI"
+                    name="categoryId"
+                    value={editingProduct.categoryId}
+                    onChange={(val) => setEditingProduct({ ...editingProduct, categoryId: val })}
+                    options={categories.map((c: any) => ({ value: c.id, label: c.name }))}
+                    required
+                  />
                 </div>
                 <div className="col-span-2 space-y-3">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -1050,24 +1004,17 @@ export function AdminRuangBelajarModals({
               </div>
 
               <div className="mt-4">
-                <label className="block text-xs font-bold text-gray-500 mb-1">
-                  LEVEL AKSES E-BOOK
-                </label>
-                <div className="relative">
-                  <select
-                    name="accessLevel"
-                    value={editingProduct.accessLevel || "FREE"}
-                    onChange={(e) =>
-                      setEditingProduct({ ...editingProduct, accessLevel: e.target.value })
-                    }
-                    className="w-full pl-3 pr-10 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-sm text-gray-900 dark:text-white appearance-none cursor-pointer"
-                  >
-                    <option value="FREE">Free (Gratis untuk semua)</option>
-                    <option value="PRO">Pro (Khusus Member Bundle)</option>
-                    <option value="PREMIUM">Premium (Pembelian Eceran / Ala Carte)</option>
-                  </select>
-                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                </div>
+                <CustomSelect
+                  label="LEVEL AKSES E-BOOK"
+                  name="accessLevel"
+                  value={editingProduct.accessLevel || "FREE"}
+                  onChange={(val) => setEditingProduct({ ...editingProduct, accessLevel: val })}
+                  options={[
+                    { value: "FREE", label: "Free (Gratis untuk semua)" },
+                    { value: "PRO", label: "Pro (Khusus Member Bundle)" },
+                    { value: "PREMIUM", label: "Premium (Pembelian Eceran / Ala Carte)" },
+                  ]}
+                />
               </div>
 
               {(editingProduct.accessLevel === "PREMIUM" ||

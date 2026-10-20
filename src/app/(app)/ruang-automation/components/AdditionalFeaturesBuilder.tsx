@@ -138,7 +138,11 @@ export function AdditionalFeaturesBuilder({
                     e.stopPropagation();
                     toggleDropdown("followUpDelay");
                   }}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+                  className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                    openDropdown === "followUpDelay"
+                      ? "border-orange-500 ring-2 ring-orange-500/20"
+                      : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                  }`}
                 >
                   <span className="font-medium">
                     {ruleFormData.followUpDelay || "1 Jam"}
@@ -153,7 +157,7 @@ export function AdditionalFeaturesBuilder({
                 {openDropdown === "followUpDelay" && (
                   <div
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                   >
                     {(
                       ["15 Menit", "1 Jam", "3 Jam", "6 Jam", "12 Jam", "23 Jam"] as const
@@ -175,13 +179,13 @@ export function AdditionalFeaturesBuilder({
                           }}
                           className={`w-full px-4 py-2 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
                             isSelected
-                              ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
-                              : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                              ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                           }`}
                         >
                           <span>{delayOpt}</span>
                           {isSelected && (
-                            <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white stroke-[2.5]" />
+                            <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
                           )}
                         </button>
                       );
@@ -202,7 +206,11 @@ export function AdditionalFeaturesBuilder({
                     e.stopPropagation();
                     toggleDropdown("followUpCondition");
                   }}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+                  className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                    openDropdown === "followUpCondition"
+                      ? "border-orange-500 ring-2 ring-orange-500/20"
+                      : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                  }`}
                 >
                   <span className="font-medium">
                     {ruleFormData.followUpCondition || "Hanya yang Belum Klik Link"}
@@ -217,7 +225,7 @@ export function AdditionalFeaturesBuilder({
                 {openDropdown === "followUpCondition" && (
                   <div
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                   >
                     {(
                       ["Semua Penerima", "Hanya yang Belum Klik Link"] as const
@@ -240,13 +248,13 @@ export function AdditionalFeaturesBuilder({
                           }}
                           className={`w-full px-4 py-2 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
                             isSelected
-                              ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
-                              : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                              ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                           }`}
                         >
                           <span>{condOpt}</span>
                           {isSelected && (
-                            <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white stroke-[2.5]" />
+                            <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
                           )}
                         </button>
                       );
@@ -393,7 +401,11 @@ export function AdditionalFeaturesBuilder({
                       e.stopPropagation();
                       toggleDropdown("commentLimit");
                     }}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+                    className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                      openDropdown === "commentLimit"
+                        ? "border-orange-500 ring-2 ring-orange-500/20"
+                        : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                    }`}
                   >
                     <span className="font-medium">
                       {ruleFormData.commentReplyLimit || "Tak Terbatas"}
@@ -408,7 +420,7 @@ export function AdditionalFeaturesBuilder({
                   {openDropdown === "commentLimit" && (
                     <div
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                     >
                       {(
                         [
@@ -435,13 +447,13 @@ export function AdditionalFeaturesBuilder({
                             }}
                             className={`w-full px-4 py-2 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
                               isSelected
-                                ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
-                                : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                                ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                             }`}
                           >
                             <span>{limitOpt}</span>
                             {isSelected && (
-                              <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white stroke-[2.5]" />
+                              <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
                             )}
                           </button>
                         );
@@ -609,7 +621,11 @@ export function AdditionalFeaturesBuilder({
                     e.stopPropagation();
                     toggleDropdown("welcomeMsgType");
                   }}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+                  className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                    openDropdown === "welcomeMsgType"
+                      ? "border-orange-500 ring-2 ring-orange-500/20"
+                      : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                  }`}
                 >
                   <span className="font-medium">
                     {ruleFormData.welcomeMessageType || "Template Tombol"}
@@ -624,7 +640,7 @@ export function AdditionalFeaturesBuilder({
                 {openDropdown === "welcomeMsgType" && (
                   <div
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                   >
                     {(["Template Tombol", "Teks Biasa"] as const).map(
                       (typeOpt) => {
@@ -646,13 +662,13 @@ export function AdditionalFeaturesBuilder({
                             }}
                             className={`w-full px-4 py-2 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
                               isSelected
-                                ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
-                                : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                                ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                             }`}
                           >
                             <span>{typeOpt}</span>
                             {isSelected && (
-                              <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white stroke-[2.5]" />
+                              <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
                             )}
                           </button>
                         );
@@ -817,7 +833,11 @@ export function AdditionalFeaturesBuilder({
                       e.stopPropagation();
                       toggleDropdown("askFollowMsgType");
                     }}
-                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+                    className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                      openDropdown === "askFollowMsgType"
+                        ? "border-orange-500 ring-2 ring-orange-500/20"
+                        : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                    }`}
                   >
                     <span className="font-medium">
                       {ruleFormData.askForFollowMessageType || "Template Tombol"}
@@ -832,7 +852,7 @@ export function AdditionalFeaturesBuilder({
                   {openDropdown === "askFollowMsgType" && (
                     <div
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                     >
                       {(["Template Tombol", "Teks Biasa"] as const).map(
                         (typeOpt) => {
@@ -854,13 +874,13 @@ export function AdditionalFeaturesBuilder({
                               }}
                               className={`w-full px-4 py-2 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
                                 isSelected
-                                  ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
-                                  : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                                  ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                               }`}
                             >
                               <span>{typeOpt}</span>
                               {isSelected && (
-                                <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white stroke-[2.5]" />
+                                <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
                               )}
                             </button>
                           );
@@ -1098,7 +1118,11 @@ export function AdditionalFeaturesBuilder({
                     e.stopPropagation();
                     toggleDropdown("askContactType");
                   }}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+                  className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                    openDropdown === "askContactType"
+                      ? "border-orange-500 ring-2 ring-orange-500/20"
+                      : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                  }`}
                 >
                   <span className="font-medium">
                     {ruleFormData.askContactType || "Email Saja"}
@@ -1113,7 +1137,7 @@ export function AdditionalFeaturesBuilder({
                 {openDropdown === "askContactType" && (
                   <div
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                   >
                     {(
                       [
@@ -1144,13 +1168,13 @@ export function AdditionalFeaturesBuilder({
                           }}
                           className={`w-full px-4 py-2 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
                             isSelected
-                              ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
-                              : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                              ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                              : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                           }`}
                         >
                           <span>{typeOpt}</span>
                           {isSelected && (
-                            <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white stroke-[2.5]" />
+                            <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
                           )}
                         </button>
                       );

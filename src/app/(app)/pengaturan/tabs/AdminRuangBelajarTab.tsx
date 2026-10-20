@@ -347,7 +347,7 @@ export function AdminRuangBelajarTab({
                               className="fixed inset-0 z-30"
                               onClick={() => setOpenMenuProductId(null)}
                             />
-                            <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#1f1f23] rounded-xl shadow-xl border border-gray-200 dark:border-white/10 p-1.5 z-40 text-xs animate-in fade-in zoom-in-95 duration-150">
+                            <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#18181b] rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 p-2 z-40 text-xs animate-in fade-in zoom-in-95 duration-150">
                               <div className="px-2.5 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-white/5 mb-1">
                                 Status E-Book
                               </div>

@@ -94,8 +94,8 @@ export function InstagramAgentListSection({
             </button>
 
             {isAgentFilterOpen && (
-              <div className="absolute right-0 mt-2 w-48 rounded-xl bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
-                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
+              <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-2xl py-2 z-30 animate-in fade-in zoom-in-95 duration-150">
+                <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
                   Status Koneksi
                 </div>
                 <button
@@ -104,14 +104,14 @@ export function InstagramAgentListSection({
                     setAgentFilterStatus("ALL");
                     setIsAgentFilterOpen(false);
                   }}
-                  className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between cursor-pointer ${
+                  className={`w-full px-4 py-2 text-left text-xs font-medium flex items-center justify-between cursor-pointer transition-colors ${
                     agentFilterStatus === "ALL"
-                      ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                      ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                   }`}
                 >
                   Semua Status
-                  {agentFilterStatus === "ALL" && <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white" />}
+                  {agentFilterStatus === "ALL" && <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />}
                 </button>
                 <button
                   type="button"
@@ -119,14 +119,14 @@ export function InstagramAgentListSection({
                     setAgentFilterStatus("LINKED");
                     setIsAgentFilterOpen(false);
                   }}
-                  className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between cursor-pointer ${
+                  className={`w-full px-4 py-2 text-left text-xs font-medium flex items-center justify-between cursor-pointer transition-colors ${
                     agentFilterStatus === "LINKED"
-                      ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                      ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                   }`}
                 >
                   Terhubung Meta
-                  {agentFilterStatus === "LINKED" && <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white" />}
+                  {agentFilterStatus === "LINKED" && <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />}
                 </button>
                 <button
                   type="button"
@@ -134,14 +134,14 @@ export function InstagramAgentListSection({
                     setAgentFilterStatus("UNLINKED");
                     setIsAgentFilterOpen(false);
                   }}
-                  className={`w-full px-3.5 py-2 text-left text-xs font-semibold flex items-center justify-between cursor-pointer ${
+                  className={`w-full px-4 py-2 text-left text-xs font-medium flex items-center justify-between cursor-pointer transition-colors ${
                     agentFilterStatus === "UNLINKED"
-                      ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
-                      : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5"
+                      ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                   }`}
                 >
                   Belum Terhubung
-                  {agentFilterStatus === "UNLINKED" && <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white" />}
+                  {agentFilterStatus === "UNLINKED" && <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />}
                 </button>
               </div>
             )}

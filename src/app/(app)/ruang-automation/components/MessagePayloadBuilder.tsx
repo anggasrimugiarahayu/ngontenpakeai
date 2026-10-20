@@ -175,7 +175,11 @@ export function MessagePayloadBuilder({
             setIsMsgTypeOpen((prev) => !prev);
             setOpenButtonDropdown(null);
           }}
-          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+          className={`w-full px-3.5 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+            isMsgTypeOpen
+              ? "border-orange-500 ring-2 ring-orange-500/20"
+              : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+          }`}
         >
           <span className="font-medium">
             {currentMessageType === "BUTTON_TEMPLATE"
@@ -194,7 +198,7 @@ export function MessagePayloadBuilder({
         {isMsgTypeOpen && (
           <div
             onMouseDown={(e) => e.stopPropagation()}
-            className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150"
+            className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150"
           >
             {(
               [
@@ -215,13 +219,13 @@ export function MessagePayloadBuilder({
                   }}
                   className={`w-full px-4 py-2.5 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
                     isSelected
-                      ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
-                      : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                      ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                      : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                   }`}
                 >
                   <span>{opt.label}</span>
                   {isSelected && (
-                    <Check className="w-4 h-4 text-gray-900 dark:text-white stroke-[2.5]" />
+                    <Check className="w-4 h-4 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
                   )}
                 </button>
               );
@@ -515,7 +519,11 @@ export function MessagePayloadBuilder({
                       setOpenButtonDropdown({ id: btn.id, type: "label" });
                     }
                   }}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+                  className={`w-full px-3.5 py-2 rounded-xl border bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                    openButtonDropdown?.id === btn.id && openButtonDropdown?.type === "label"
+                      ? "border-orange-500 ring-2 ring-orange-500/20"
+                      : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                  }`}
                 >
                   <span className="font-medium">{btn.labelType || "Kustom"}</span>
                   <ChevronDown
@@ -532,7 +540,7 @@ export function MessagePayloadBuilder({
                   openButtonDropdown?.type === "label" && (
                     <div
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                     >
                       {(["Klik Disini", "Kustom"] as const).map((labelOpt) => {
                         const isSelected =
@@ -560,13 +568,13 @@ export function MessagePayloadBuilder({
                             }}
                             className={`w-full px-3.5 py-2 text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
                               isSelected
-                                ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
-                                : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                                ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                             }`}
                           >
                             <span>{labelOpt}</span>
                             {isSelected && (
-                              <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white stroke-[2.5]" />
+                              <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
                             )}
                           </button>
                         );
@@ -628,7 +636,11 @@ export function MessagePayloadBuilder({
                       setOpenButtonDropdown({ id: btn.id, type: "action" });
                     }
                   }}
-                  className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
+                  className={`w-full px-3.5 py-2 rounded-xl border bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                    openButtonDropdown?.id === btn.id && openButtonDropdown?.type === "action"
+                      ? "border-orange-500 ring-2 ring-orange-500/20"
+                      : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                  }`}
                 >
                   <span
                     className={`font-medium ${!btn.action ? "text-gray-400" : ""}`}
@@ -649,7 +661,7 @@ export function MessagePayloadBuilder({
                   openButtonDropdown?.type === "action" && (
                     <div
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                     >
                       {(
                         [
@@ -676,13 +688,13 @@ export function MessagePayloadBuilder({
                             }}
                             className={`w-full px-3.5 py-2 text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
                               isSelected
-                                ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
-                                : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                                ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                                : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                             }`}
                           >
                             <span>{actionOpt.label}</span>
                             {isSelected && (
-                              <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white stroke-[2.5]" />
+                              <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
                             )}
                           </button>
                         );
