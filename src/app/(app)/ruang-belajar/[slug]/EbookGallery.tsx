@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 
 interface EbookGalleryProps {
@@ -36,11 +37,15 @@ export default function EbookGallery({ title, images }: EbookGalleryProps) {
     <div className="w-full max-w-sm mx-auto lg:mx-0 shrink-0 flex flex-col gap-4">
        {/* Main Image */}
        <div className="aspect-[3/4] w-full rounded-2xl overflow-hidden shadow-2xl relative bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 group transition-all duration-300">
-          <img 
+          <Image 
             key={validImages[activeIndex]}
             src={validImages[activeIndex]} 
             alt={`${title} - image ${activeIndex + 1}`} 
-            className="absolute inset-0 w-full h-full object-cover animate-in fade-in duration-300" 
+            fill
+            sizes="(max-width: 640px) 100vw, 384px"
+            priority
+            unoptimized={validImages[activeIndex]?.startsWith("data:")}
+            className="object-cover" 
           />
           
           {/* Navigation Arrows */}
@@ -75,7 +80,14 @@ export default function EbookGallery({ title, images }: EbookGalleryProps) {
              onClick={() => setActiveIndex(idx)}
              className={`relative w-20 aspect-[3/4] rounded-lg overflow-hidden shrink-0 transition-all duration-200 ${activeIndex === idx ? 'border-2 border-rn-accent opacity-100 ring-2 ring-orange-500/20 shadow-md transform scale-105' : 'border border-gray-200 dark:border-white/10 opacity-50 hover:opacity-100 hover:scale-100'}`}
            >
-              <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-cover" />
+              <Image
+                src={img}
+                alt={`Thumbnail ${idx + 1}`}
+                fill
+                sizes="80px"
+                unoptimized={typeof img === "string" && img.startsWith("data:")}
+                className="object-cover"
+              />
            </button>
          ))}
        </div>

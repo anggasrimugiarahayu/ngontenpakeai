@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { BookOpen, Star, Loader2, Heart } from "lucide-react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import useSWR, { preload } from "swr";
@@ -32,7 +33,7 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
   const ownedSet = new Set(ownedProductIds);
 
   return (
-    <div className="flex-1 flex flex-col p-4 md:p-8 max-w-7xl mx-auto w-full animate-in fade-in duration-300">
+    <div className="flex-1 flex flex-col p-4 md:p-8 max-w-7xl mx-auto w-full">
       <div className="mb-10 text-center max-w-2xl mx-auto">
         <h1 className="text-3xl font-bold mb-3 font-heading text-gray-900 dark:text-white">Mau mulai belajar dari mana?</h1>
         <p className="text-[15px] leading-relaxed text-gray-600 dark:text-gray-400">
@@ -72,7 +73,15 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                       <div className="aspect-[3/4] relative flex items-center justify-center">
                         {ebook.coverUrl ? (
                           <>
-                            <img src={ebook.coverUrl} alt={ebook.title} className="absolute inset-0 w-full h-full object-cover z-0" />
+                            <Image
+                              src={ebook.coverUrl}
+                              alt={ebook.title}
+                              fill
+                              sizes="(max-width: 640px) 100px, 120px"
+                              priority
+                              unoptimized={typeof ebook.coverUrl === "string" && ebook.coverUrl.startsWith("data:")}
+                              className="object-cover z-0"
+                            />
                             <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent z-10 pointer-events-none" />
                           </>
                         ) : (

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Image from "next/image";
 import toast from "react-hot-toast";
 import { mutate } from "swr";
 import {
@@ -298,10 +299,13 @@ export function AdminRuangBelajarTab({
                   <div className="aspect-[3/4] relative flex items-center justify-center">
                     {prod.coverUrl ? (
                       <>
-                        <img
+                        <Image
                           src={prod.coverUrl}
                           alt={prod.title}
-                          className="absolute inset-0 w-full h-full object-cover z-0"
+                          fill
+                          sizes="(max-width: 640px) 100px, 120px"
+                          unoptimized={typeof prod.coverUrl === "string" && prod.coverUrl.startsWith("data:")}
+                          className="object-cover z-0"
                         />
                         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent z-10 pointer-events-none" />
                       </>
