@@ -201,7 +201,7 @@ export function StoryRuleCard({
               </button>
 
               {activeDropdownRuleId === rule.id && (
-                <div className="absolute right-0 mt-1 w-40 rounded-xl bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-1 w-40 rounded-xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
                   <button
                     onClick={() => {
                       setActiveDropdownRuleId(null);
@@ -463,15 +463,6 @@ export function StoryAutomationSection({
             Buat aturan automasi Story pertama Anda untuk membalas reaksi/reply story dan kirim DM instan 24/7.
           </p>
         </div>
-        {isAccountLinked && (
-          <button
-            onClick={handleOpenAddRuleModal}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rn-accent text-white font-bold text-xs shadow-sm hover:opacity-90 transition-opacity cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            Buat Story Automation
-          </button>
-        )}
       </div>
     );
   }

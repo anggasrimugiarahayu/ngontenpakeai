@@ -81,7 +81,7 @@ export function TriggerKeywordBuilder({
         {isDropdownOpen && (
           <div
             onMouseDown={(e) => e.stopPropagation()}
-            className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+            className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
           >
             {(["Contains", "Match", "Starts with"] as const).map((ruleOpt) => {
               const isSelected = (keywordRule || "Contains") === ruleOpt;
@@ -97,13 +97,13 @@ export function TriggerKeywordBuilder({
                   }}
                   className={`w-full px-3.5 py-2 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
                     isSelected
-                      ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
+                      ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
                       : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                   }`}
                 >
                   <span>{ruleOpt}</span>
                   {isSelected && (
-                    <Check className="w-4 h-4 text-gray-900 dark:text-white stroke-[2.5]" />
+                    <Check className="w-4 h-4 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
                   )}
                 </button>
               );

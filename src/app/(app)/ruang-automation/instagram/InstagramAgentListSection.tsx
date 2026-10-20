@@ -286,7 +286,7 @@ export function InstagramAgentListSection({
                   </button>
 
                   {activeDropdownAgentId === agent.id && (
-                    <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-[#202024] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95">
+                    <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95">
                       <button
                         type="button"
                         onClick={(e) => {
@@ -294,7 +294,7 @@ export function InstagramAgentListSection({
                           setActiveDropdownAgentId(null);
                           onOpenEditAgent(agent);
                         }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 cursor-pointer text-left"
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-left transition-colors"
                       >
                         <Pencil className="w-3.5 h-3.5 text-gray-500" />
                         <span>Ubah Nama Agen</span>

@@ -3,7 +3,7 @@
 import React from "react";
 import toast from "react-hot-toast";
 import { mutate } from "swr";
-import { BookOpen, Tag, Ticket, X, Trash2 } from "lucide-react";
+import { BookOpen, Tag, Ticket, X, Trash2, ChevronDown } from "lucide-react";
 import {
   createCategory,
   deleteCategory,
@@ -210,16 +210,19 @@ export function AdminRuangBelajarModals({
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                       Tipe Diskon
                     </label>
-                    <select
-                      value={newVoucher.discountType}
-                      onChange={(e) =>
-                        setNewVoucher({ ...newVoucher, discountType: e.target.value })
-                      }
-                      className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
-                    >
-                      <option value="PERCENTAGE">Persen (%)</option>
-                      <option value="NOMINAL">Nominal (Rp)</option>
-                    </select>
+                    <div className="relative">
+                      <select
+                        value={newVoucher.discountType}
+                        onChange={(e) =>
+                          setNewVoucher({ ...newVoucher, discountType: e.target.value })
+                        }
+                        className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl pl-3 pr-8 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 appearance-none cursor-pointer"
+                      >
+                        <option value="PERCENTAGE">Persen (%)</option>
+                        <option value="NOMINAL">Nominal (Rp)</option>
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    </div>
                   </div>
                   <div className="flex-1 space-y-1.5">
                     <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -235,7 +238,7 @@ export function AdminRuangBelajarModals({
                           discountValue: Number(e.target.value),
                         })
                       }
-                      className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
+                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-gray-900 dark:text-white"
                     />
                   </div>
                 </div>
@@ -245,22 +248,25 @@ export function AdminRuangBelajarModals({
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                     E-Book Tujuan
                   </label>
-                  <select
-                    value={newVoucher.digitalProductId || ""}
-                    onChange={(e) =>
-                      setNewVoucher({ ...newVoucher, digitalProductId: e.target.value })
-                    }
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
-                  >
-                    <option value="" disabled>
-                      -- Pilih E-Book Tujuan --
-                    </option>
-                    {products?.map((p: any) => (
-                      <option key={p.id} value={p.id}>
-                        {p.title}
+                  <div className="relative">
+                    <select
+                      value={newVoucher.digitalProductId || ""}
+                      onChange={(e) =>
+                        setNewVoucher({ ...newVoucher, digitalProductId: e.target.value })
+                      }
+                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl pl-3 pr-8 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 appearance-none cursor-pointer"
+                    >
+                      <option value="" disabled>
+                        -- Pilih E-Book Tujuan --
                       </option>
-                    ))}
-                  </select>
+                      {products?.map((p: any) => (
+                        <option key={p.id} value={p.id}>
+                          {p.title}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
 
                 <button
@@ -448,18 +454,21 @@ export function AdminRuangBelajarModals({
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                     Kategori
                   </label>
-                  <select
-                    name="categoryId"
-                    required
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all appearance-none"
-                  >
-                    <option value="">Pilih Kategori...</option>
-                    {categories.map((c: any) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      name="categoryId"
+                      required
+                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl pl-3 pr-8 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="">Pilih Kategori...</option>
+                      {categories.map((c: any) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
                 <div className="col-span-2 space-y-3">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -580,16 +589,19 @@ export function AdminRuangBelajarModals({
                 <label className="block text-xs font-bold text-gray-500 mb-1">
                   LEVEL AKSES E-BOOK
                 </label>
-                <select
-                  name="accessLevel"
-                  value={addAccessLevel}
-                  onChange={(e) => setAddAccessLevel(e.target.value)}
-                  className="w-full p-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-[#18181b] focus:outline-none focus:ring-2 focus:ring-rn-accent text-sm"
-                >
-                  <option value="FREE">Free (Gratis untuk semua)</option>
-                  <option value="PRO">Pro (Khusus Member Bundle)</option>
-                  <option value="PREMIUM">Premium (Pembelian Eceran / Ala Carte)</option>
-                </select>
+                <div className="relative">
+                  <select
+                    name="accessLevel"
+                    value={addAccessLevel}
+                    onChange={(e) => setAddAccessLevel(e.target.value)}
+                    className="w-full pl-3 pr-10 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-sm text-gray-900 dark:text-white appearance-none cursor-pointer"
+                  >
+                    <option value="FREE">Free (Gratis untuk semua)</option>
+                    <option value="PRO">Pro (Khusus Member Bundle)</option>
+                    <option value="PREMIUM">Premium (Pembelian Eceran / Ala Carte)</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
               </div>
 
               {(addAccessLevel === "PREMIUM" || addAccessLevel === "PRO") && (
@@ -725,16 +737,19 @@ export function AdminRuangBelajarModals({
                   className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm uppercase focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
                 />
                 <div className="flex gap-2">
-                  <select
-                    value={newVoucher.discountType}
-                    onChange={(e) =>
-                      setNewVoucher({ ...newVoucher, discountType: e.target.value })
-                    }
-                    className="w-1/3 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
-                  >
-                    <option value="PERCENTAGE">Persen (%)</option>
-                    <option value="NOMINAL">Nominal (Rp)</option>
-                  </select>
+                  <div className="relative w-1/3">
+                    <select
+                      value={newVoucher.discountType}
+                      onChange={(e) =>
+                        setNewVoucher({ ...newVoucher, discountType: e.target.value })
+                      }
+                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl pl-3 pr-7 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 appearance-none cursor-pointer"
+                    >
+                      <option value="PERCENTAGE">Persen (%)</option>
+                      <option value="NOMINAL">Nominal (Rp)</option>
+                    </select>
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                  </div>
                   <input
                     type="number"
                     placeholder="Nilai Diskon"
@@ -742,7 +757,7 @@ export function AdminRuangBelajarModals({
                     onChange={(e) =>
                       setNewVoucher({ ...newVoucher, discountValue: Number(e.target.value) })
                     }
-                    className="flex-1 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
+                    className="flex-1 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50"
                   />
                 </div>
                 <button
@@ -873,18 +888,21 @@ export function AdminRuangBelajarModals({
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
                     Kategori
                   </label>
-                  <select
-                    name="categoryId"
-                    defaultValue={editingProduct.categoryId}
-                    required
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all appearance-none"
-                  >
-                    {categories.map((c: any) => (
-                      <option key={c.id} value={c.id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select
+                      name="categoryId"
+                      defaultValue={editingProduct.categoryId}
+                      required
+                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl pl-3 pr-8 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50 transition-all appearance-none cursor-pointer"
+                    >
+                      {categories.map((c: any) => (
+                        <option key={c.id} value={c.id}>
+                          {c.name}
+                        </option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
                 <div className="col-span-2 space-y-3">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -1035,18 +1053,21 @@ export function AdminRuangBelajarModals({
                 <label className="block text-xs font-bold text-gray-500 mb-1">
                   LEVEL AKSES E-BOOK
                 </label>
-                <select
-                  name="accessLevel"
-                  value={editingProduct.accessLevel || "FREE"}
-                  onChange={(e) =>
-                    setEditingProduct({ ...editingProduct, accessLevel: e.target.value })
-                  }
-                  className="w-full p-3 rounded-lg border border-gray-300 dark:border-white/10 bg-white dark:bg-[#18181b] focus:outline-none focus:ring-2 focus:ring-rn-accent text-sm"
-                >
-                  <option value="FREE">Free (Gratis untuk semua)</option>
-                  <option value="PRO">Pro (Khusus Member Bundle)</option>
-                  <option value="PREMIUM">Premium (Pembelian Eceran / Ala Carte)</option>
-                </select>
+                <div className="relative">
+                  <select
+                    name="accessLevel"
+                    value={editingProduct.accessLevel || "FREE"}
+                    onChange={(e) =>
+                      setEditingProduct({ ...editingProduct, accessLevel: e.target.value })
+                    }
+                    className="w-full pl-3 pr-10 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-sm text-gray-900 dark:text-white appearance-none cursor-pointer"
+                  >
+                    <option value="FREE">Free (Gratis untuk semua)</option>
+                    <option value="PRO">Pro (Khusus Member Bundle)</option>
+                    <option value="PREMIUM">Premium (Pembelian Eceran / Ala Carte)</option>
+                  </select>
+                  <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
               </div>
 
               {(editingProduct.accessLevel === "PREMIUM" ||

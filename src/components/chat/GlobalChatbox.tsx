@@ -188,7 +188,7 @@ export default function GlobalChatbox({
             {isModelMenuOpen && (
               <>
                 <div className="fixed inset-0 z-[40]" onClick={(e) => { e.stopPropagation(); setIsModelMenuOpen(false); }}></div>
-                <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[180px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 cursor-default">
+                <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[180px] bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-xl rounded-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 cursor-default">
                   {models.map((model) => {
                     const val = model.modelId || model.value || model.id || "";
                     const name = model.name || model.label;
@@ -196,7 +196,7 @@ export default function GlobalChatbox({
                       <button 
                         key={val} 
                         onClick={(e) => { e.stopPropagation(); onModelChange(val); setIsModelMenuOpen(false); }} 
-                        className={`w-full text-left px-3 py-2 text-xs font-bold transition-colors ${selectedModel === val ? 'text-rn-accent bg-orange-50 dark:bg-orange-900/10' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                        className={`w-full text-left px-3 py-2 text-xs font-bold transition-colors cursor-pointer ${selectedModel === val ? 'text-orange-600 dark:text-orange-400 bg-orange-500/10' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}
                       >
                         {name}
                       </button>

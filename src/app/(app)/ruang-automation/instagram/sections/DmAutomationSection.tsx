@@ -132,7 +132,7 @@ export function DmRuleCard({
               </button>
 
               {activeDropdownRuleId === rule.id && (
-                <div className="absolute right-0 mt-1 w-40 rounded-xl bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-1 w-40 rounded-xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
                   <button
                     onClick={() => {
                       setActiveDropdownRuleId(null);
@@ -378,16 +378,6 @@ export function DmAutomationSection({
               Balas otomatis pesan masuk (Direct Message) dari audiens berdasarkan kata kunci tertentu seperti <strong>info, harga, mau, katalog</strong>.
             </p>
           </div>
-          {filterStatus === "ALL" && (
-            <button
-              type="button"
-              onClick={handleOpenAddRuleModal}
-              className="px-4 py-2 rounded-xl bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 text-xs font-bold inline-flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
-            >
-              <Plus className="w-3.5 h-3.5" />
-              <span>Buat Aturan DM Pertama</span>
-            </button>
-          )}
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3.5 sm:gap-4 items-start">

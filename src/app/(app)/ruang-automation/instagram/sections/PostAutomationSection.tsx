@@ -208,7 +208,7 @@ export function PostRuleCard({
               </button>
 
               {activeDropdownRuleId === rule.id && (
-                <div className="absolute right-0 mt-1 w-40 rounded-xl bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-1 w-40 rounded-xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
                   <button
                     onClick={() => {
                       setActiveDropdownRuleId(null);

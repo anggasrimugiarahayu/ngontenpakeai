@@ -2,7 +2,7 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { User, ShoppingBag, Settings, Search, Download, Printer, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { User, ShoppingBag, Settings, Search, Download, Printer, X, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { getDashboardOrdersAction } from "@/app/actions/dashboard";
 
 interface DashboardOrdersTabProps {
@@ -516,16 +516,19 @@ export function DashboardOrdersTab({
                     className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-gray-900 dark:text-white"
                   />
                 </div>
-                <select
-                  value={orderStatus}
-                  onChange={(e) => setOrderStatus(e.target.value)}
-                  className="py-2 px-3 bg-gray-50 dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-gray-900 dark:text-white"
-                >
-                  <option value="all">Semua Status</option>
-                  <option value="SUCCESS">Success</option>
-                  <option value="PENDING">Pending</option>
-                  <option value="FAILED">Failed</option>
-                </select>
+                <div className="relative shrink-0">
+                  <select
+                    value={orderStatus}
+                    onChange={(e) => setOrderStatus(e.target.value)}
+                    className="py-2 pl-3 pr-8 bg-gray-50 dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-gray-900 dark:text-white appearance-none cursor-pointer"
+                  >
+                    <option value="all">Semua Status</option>
+                    <option value="SUCCESS">Success</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="FAILED">Failed</option>
+                  </select>
+                  <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                </div>
               </div>
             </div>
 

@@ -605,15 +605,18 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG SESUAI KONFIGURASI INI.`;
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Jumlah Slide</label>
-                  <select 
-                    value={configData.jumlah_slide}
-                    onChange={e => setConfigData({...configData, jumlah_slide: parseInt(e.target.value)})}
-                    className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-rn-accent/50 outline-none text-sm appearance-none"
-                  >
-                    {[...Array(29)].map((_, i) => (
-                      <option key={i+2} value={i+2}>{i+2} Slide</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select 
+                      value={configData.jumlah_slide}
+                      onChange={e => setConfigData({...configData, jumlah_slide: parseInt(e.target.value)})}
+                      className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-orange-500/50 outline-none text-sm appearance-none cursor-pointer"
+                    >
+                      {[...Array(29)].map((_, i) => (
+                        <option key={i+2} value={i+2}>{i+2} Slide</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Watermark Username</label>
@@ -622,7 +625,7 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG SESUAI KONFIGURASI INI.`;
                     value={configData.watermark_username}
                     onChange={e => setConfigData({...configData, watermark_username: e.target.value})}
                     placeholder="@username" 
-                    className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-rn-accent/50 outline-none text-sm font-bold"
+                    className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-orange-500/50 outline-none text-sm font-bold"
                   />
                 </div>
               </div>
@@ -630,27 +633,33 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG SESUAI KONFIGURASI INI.`;
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Style Art Visual</label>
-                  <select 
-                    value={configData.style_art}
-                    onChange={e => setConfigData({...configData, style_art: e.target.value})}
-                    className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-rn-accent/50 outline-none text-sm font-bold appearance-none"
-                  >
-                    {dbStyles.map((style, idx) => (
-                      <option key={idx} value={style.deskripsiPrompt}>{style.namaLabel}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select 
+                      value={configData.style_art}
+                      onChange={e => setConfigData({...configData, style_art: e.target.value})}
+                      className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-orange-500/50 outline-none text-sm font-bold appearance-none cursor-pointer"
+                    >
+                      {dbStyles.map((style, idx) => (
+                        <option key={idx} value={style.deskripsiPrompt}>{style.namaLabel}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1.5">Pilihan Font</label>
-                  <select 
-                    value={configData.typography}
-                    onChange={e => setConfigData({...configData, typography: e.target.value})}
-                    className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-rn-accent/50 outline-none text-sm font-bold appearance-none"
-                  >
-                    {dbFonts.map((font, idx) => (
-                      <option key={idx} value={font.deskripsiPrompt}>{font.namaLabel}</option>
-                    ))}
-                  </select>
+                  <div className="relative">
+                    <select 
+                      value={configData.typography}
+                      onChange={e => setConfigData({...configData, typography: e.target.value})}
+                      className="w-full pl-4 pr-10 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-orange-500/50 outline-none text-sm font-bold appearance-none cursor-pointer"
+                    >
+                      {dbFonts.map((font, idx) => (
+                        <option key={idx} value={font.deskripsiPrompt}>{font.namaLabel}</option>
+                      ))}
+                    </select>
+                    <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  </div>
                 </div>
               </div>
 
@@ -659,41 +668,50 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG SESUAI KONFIGURASI INI.`;
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div>
                     <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">Gender</label>
-                    <select 
-                      value={configData.gender}
-                      onChange={e => setConfigData({...configData, gender: e.target.value})}
-                      className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-rn-accent/50 outline-none text-sm font-bold appearance-none"
-                    >
-                      <option value="Pria">Pria</option>
-                      <option value="Wanita">Wanita</option>
-                      <option value="Anak Laki-Laki">Anak Laki-Laki</option>
-                      <option value="Anak Perempuan">Anak Perempuan</option>
-                      <option value="Bayi">Bayi</option>
-                      <option value="Kucing">Kucing</option>
-                      <option value="Tanpa Karakter (Objek/Pemandangan)">Tanpa Karakter</option>
-                    </select>
+                    <div className="relative">
+                      <select 
+                        value={configData.gender}
+                        onChange={e => setConfigData({...configData, gender: e.target.value})}
+                        className="w-full pl-3.5 pr-8 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-orange-500/50 outline-none text-xs sm:text-sm font-bold appearance-none cursor-pointer"
+                      >
+                        <option value="Pria">Pria</option>
+                        <option value="Wanita">Wanita</option>
+                        <option value="Anak Laki-Laki">Anak Laki-Laki</option>
+                        <option value="Anak Perempuan">Anak Perempuan</option>
+                        <option value="Bayi">Bayi</option>
+                        <option value="Kucing">Kucing</option>
+                        <option value="Tanpa Karakter (Objek/Pemandangan)">Tanpa Karakter</option>
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">Tipe Wajah</label>
-                    <select 
-                      value={configData.tipe_wajah}
-                      onChange={e => setConfigData({...configData, tipe_wajah: e.target.value})}
-                      className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-rn-accent/50 outline-none text-sm font-bold appearance-none"
-                    >
-                      <option value="NORMAL">NORMAL</option>
-                      <option value="FACELESS (Tanpa Wajah)">FACELESS</option>
-                    </select>
+                    <div className="relative">
+                      <select 
+                        value={configData.tipe_wajah}
+                        onChange={e => setConfigData({...configData, tipe_wajah: e.target.value})}
+                        className="w-full pl-3.5 pr-8 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-orange-500/50 outline-none text-xs sm:text-sm font-bold appearance-none cursor-pointer"
+                      >
+                        <option value="NORMAL">NORMAL</option>
+                        <option value="FACELESS (Tanpa Wajah)">FACELESS</option>
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                    </div>
                   </div>
                   <div>
                     <label className="block text-xs font-bold text-gray-600 dark:text-gray-400 mb-1.5">Body Text</label>
-                    <select 
-                      value={configData.body_text}
-                      onChange={e => setConfigData({...configData, body_text: e.target.value})}
-                      className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-rn-accent/50 outline-none text-sm font-bold appearance-none"
-                    >
-                      <option value="Tanpa Point (Paragraf)">Tanpa Point (Paragraf)</option>
-                      <option value="Dengan Point (Bullet Points)">Dengan Point (Bullet)</option>
-                    </select>
+                    <div className="relative">
+                      <select 
+                        value={configData.body_text}
+                        onChange={e => setConfigData({...configData, body_text: e.target.value})}
+                        className="w-full pl-3.5 pr-8 py-2.5 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-orange-500/50 outline-none text-xs sm:text-sm font-bold appearance-none cursor-pointer"
+                      >
+                        <option value="Tanpa Point (Paragraf)">Tanpa Point (Paragraf)</option>
+                        <option value="Dengan Point (Bullet Points)">Dengan Point (Bullet)</option>
+                      </select>
+                      <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
+                    </div>
                   </div>
                 </div>
 

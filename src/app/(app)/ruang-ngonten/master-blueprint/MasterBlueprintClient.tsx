@@ -569,18 +569,21 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
         </div>
         
         <div className="flex items-center gap-2">
-          <select 
-            onChange={(e) => {
-              const niche = (nicheReferences || []).find(n => n.id === e.target.value);
-              if (niche) loadNiche(niche.data);
-              e.target.value = "";
-            }}
-            className="px-3 py-2 text-sm bg-gray-100 dark:bg-white/10 rounded-xl outline-none truncate max-w-[150px] md:max-w-[200px] border-r-8 border-transparent"
-          >
-            <option value="">💡 Referensi Niche...</option>
-            {(nicheReferences || []).map((n: any, i: number) => <option key={n.id || i} value={n.id}>{n.nama}</option>)}
-          </select>
-          <button onClick={() => fileInputRef.current?.click()} className="px-3 py-2 bg-gray-100 dark:bg-white/10 hover:bg-gray-200 dark:hover:bg-white/20 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
+          <div className="relative">
+            <select 
+              onChange={(e) => {
+                const niche = (nicheReferences || []).find(n => n.id === e.target.value);
+                if (niche) loadNiche(niche.data);
+                e.target.value = "";
+              }}
+              className="pl-3 pr-8 py-2 text-sm bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl outline-none focus:ring-2 focus:ring-orange-500/50 truncate max-w-[160px] md:max-w-[210px] text-gray-900 dark:text-white appearance-none cursor-pointer"
+            >
+              <option value="">💡 Referensi Niche...</option>
+              {(nicheReferences || []).map((n: any, i: number) => <option key={n.id || i} value={n.id}>{n.nama}</option>)}
+            </select>
+            <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+          </div>
+          <button onClick={() => fileInputRef.current?.click()} className="px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 text-sm font-bold text-gray-700 dark:text-gray-300 rounded-xl transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer">
             <Upload className="w-4 h-4" /> Import JSON
           </button>
         </div>

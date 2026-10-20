@@ -173,7 +173,7 @@ export function InstagramRuleStudioModal({
                     </button>
 
                     {isTargetDropdownOpen && (
-                      <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 max-h-72 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+                      <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl py-2 z-50 max-h-72 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
                         {[
                           {
                             category: "Post / Reel",
@@ -235,14 +235,14 @@ export function InstagramRuleStudioModal({
                                     }
                                     setIsTargetDropdownOpen(false);
                                   }}
-                                  className={`w-full px-4 py-2 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors ${
+                                  className={`w-full px-4 py-2 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
                                     isSelected
-                                      ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
+                                      ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
                                       : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                                   }`}
                                 >
                                   <span>{item}</span>
-                                  {isSelected && <Check className="w-4 h-4 text-gray-900 dark:text-white stroke-[2.5]" />}
+                                  {isSelected && <Check className="w-4 h-4 text-orange-600 dark:text-orange-400 stroke-[2.5]" />}
                                 </button>
                               );
                             })}
@@ -480,7 +480,7 @@ export function InstagramRuleStudioModal({
                       </button>
 
                       {isFrequencyDropdownOpen && (
-                        <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                           {(
                             [
                               "24 jam sekali",
@@ -507,13 +507,13 @@ export function InstagramRuleStudioModal({
                                 }}
                                 className={`w-full px-4 py-2.5 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
                                   isSelected
-                                    ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
+                                    ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
                                     : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                                 }`}
                               >
                                 <span>{freqOpt}</span>
                                 {isSelected && (
-                                  <Check className="w-4 h-4 text-gray-900 dark:text-white stroke-[2.5]" />
+                                  <Check className="w-4 h-4 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
                                 )}
                               </button>
                             );
