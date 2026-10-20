@@ -31,6 +31,7 @@ import {
   MessageSquare,
   LayoutDashboard,
   Bot,
+  Search,
 } from "lucide-react";
 
 const handleHoverPrefetch = (href: string) => {
@@ -261,6 +262,7 @@ export default function AppShellLayout({
       { label: "Ruang Belajar", href: "/ruang-belajar", icon: BookOpen },
       { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate },
       { label: "Ruang Automation", href: "/ruang-automation", icon: Bot },
+      { label: "Ruang Riset", href: "/ruang-riset", icon: Search },
       { label: "Pricing", href: "/?pricing=true", icon: CreditCard },
     ];
   } else {
@@ -268,6 +270,7 @@ export default function AppShellLayout({
       { label: "Ruang Belajar", href: "/ruang-belajar", icon: BookOpen },
       { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate },
       { label: "Ruang Automation", href: "/ruang-automation", icon: Bot },
+      { label: "Ruang Riset", href: "/ruang-riset", icon: Search },
     ];
     if (isAdmin) {
       GLOBAL_NAV_ITEMS.push({ label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" });

@@ -1404,4 +1404,97 @@
   27%, 96% { transform: translate(-46px, -45px); opacity: 1 }
   97%, 100% { transform: translate(-46px, -45px); opacity: 0 }
 }
+
+/* --- Ruang Riset (DesainPakeAI) Iso Animations --- */
+.iso-stage .sc-rise-50 { animation: sc-rise-50 8s cubic-bezier(.22,1,.36,1) infinite; }
+@keyframes sc-rise-50 {
+  0%,6.25% { transform: translateY(22px); opacity: 0 }
+  11.88%,90% { transform: translateY(0); opacity: 1 }
+  97%,100% { transform: translateY(-14px); opacity: 0 }
+}
+
+.iso-stage .sc-type { transform-origin: 0 50%; animation: sc-type 8s steps(31, end) infinite; }
+@keyframes sc-type {
+  0%,11.25% { transform: scaleX(0) }
+  28.75%,100% { transform: scaleX(1) }
+}
+
+.iso-stage .sc-caret { animation: sc-caret 8s steps(31, end) infinite; }
+@keyframes sc-caret {
+  0%,11.25% { transform: translateX(0) }
+  28.75%,100% { transform: translateX(290px) }
+}
+
+.iso-stage .sc-blink { animation: sc-blink 1s steps(1, end) infinite; }
+@keyframes sc-blink {
+  0% { opacity: 1 }
+  50% { opacity: 0 }
+}
+
+.iso-stage .sc-sent { animation: sc-sent 8s cubic-bezier(.4,0,1,1) infinite; }
+@keyframes sc-sent {
+  0%,40.63% { transform: translateY(0); opacity: 1 }
+  46.88%,100% { transform: translateY(-14px); opacity: 0 }
+}
+
+.iso-stage .sc-enter { transform-origin: 50% 50%; animation: sc-enter 8s ease-out infinite; }
+@keyframes sc-enter {
+  0%,37.50% { transform: scale(1) }
+  39.38% { transform: scale(.78) }
+  43.13% { transform: scale(1.1) }
+  45.63%,100% { transform: scale(1) }
+}
+
+.iso-stage .sc-ripple { transform-origin: 50% 50%; animation: sc-ripple 8s ease-out infinite; }
+@keyframes sc-ripple {
+  0%,39.00% { transform: scale(1); opacity: 0 }
+  39.38% { transform: scale(1); opacity: .9 }
+  50.00%,100% { transform: scale(2.4); opacity: 0 }
+}
+
+.iso-stage .sc-draw-430 { animation: sc-draw-430 8s linear infinite; }
+@keyframes sc-draw-430 {
+  0%,53.75% { stroke-dashoffset: 1; opacity: 1 }
+  60.62%,90% { stroke-dashoffset: 0; opacity: 1 }
+  97%,100% { stroke-dashoffset: 0; opacity: 0 }
+}
+
+.iso-stage .sc-rise-440 { animation: sc-rise-440 8s cubic-bezier(.22,1,.36,1) infinite; }
+@keyframes sc-rise-440 {
+  0%,55.00% { transform: translateY(22px); opacity: 0 }
+  60.63%,90% { transform: translateY(0); opacity: 1 }
+  97%,100% { transform: translateY(-14px); opacity: 0 }
+}
+
+.iso-stage .sc-pop-450 { transform-origin: 50% 50%; animation: sc-pop-450 8s cubic-bezier(.34,1.56,.64,1) infinite; }
+@keyframes sc-pop-450 {
+  0%,56.25% { transform: scale(0); opacity: 0 }
+  58.50% { transform: scale(1.22); opacity: 1 }
+  60.50%,90% { transform: scale(1); opacity: 1 }
+  97%,100% { transform: scale(.5); opacity: 0 }
+}
+
+.iso-stage .sc-pop-490 { transform-origin: 50% 50%; animation: sc-pop-490 8s cubic-bezier(.34,1.56,.64,1) infinite; }
+@keyframes sc-pop-490 {
+  0%,61.25% { transform: scale(0); opacity: 0 }
+  63.50% { transform: scale(1.22); opacity: 1 }
+  65.50%,90% { transform: scale(1); opacity: 1 }
+  97%,100% { transform: scale(.5); opacity: 0 }
+}
+
+.iso-stage .sc-pop-550 { transform-origin: 50% 50%; animation: sc-pop-550 8s cubic-bezier(.34,1.56,.64,1) infinite; }
+@keyframes sc-pop-550 {
+  0%,68.75% { transform: scale(0); opacity: 0 }
+  71.00% { transform: scale(1.22); opacity: 1 }
+  73.00%,90% { transform: scale(1); opacity: 1 }
+  97%,100% { transform: scale(.5); opacity: 0 }
+}
+
+.iso-stage .sc-rise-570 { animation: sc-rise-570 8s cubic-bezier(.22,1,.36,1) infinite; }
+@keyframes sc-rise-570 {
+  0%,71.25% { transform: translateY(22px); opacity: 0 }
+  76.88%,90% { transform: translateY(0); opacity: 1 }
+  97%,100% { transform: translateY(-14px); opacity: 0 }
+}
+
 @custom-variant dark (&:is(.dark *));
