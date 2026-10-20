@@ -109,6 +109,7 @@ model MasterBlueprint {
   updatedAt DateTime @updatedAt @map("updated_at")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("master_blueprints")
 }
 
@@ -134,6 +135,7 @@ model BioBuilder {
   updatedAt   DateTime @updatedAt @map("updated_at")
   user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("bio_builders")
 }
 
@@ -145,6 +147,7 @@ model ContentCalendar {
   updatedAt DateTime @updatedAt @map("updated_at")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@index([userId])
   @@map("content_calendars")
 }
 
@@ -240,6 +243,8 @@ model DigitalProduct {
   analytics   ProductAnalytics[]
   owners      UserOwnedProduct[]
 
+  @@index([categoryId])
+  @@index([isActive])
   @@map("digital_products")
 }
 
@@ -253,6 +258,7 @@ model Favorite {
   product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
 
   @@unique([userId, digitalProductId])
+  @@index([digitalProductId])
   @@map("favorites")
 }
 
@@ -268,6 +274,7 @@ model Review {
   product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
 
   @@unique([userId, digitalProductId])
+  @@index([digitalProductId])
   @@map("reviews")
 }
 
@@ -291,6 +298,9 @@ model Order {
   user             User           @relation(fields: [userId], references: [id], onDelete: Cascade)
   product          DigitalProduct? @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
 
+  @@index([userId, status])
+  @@index([status, createdAt])
+  @@index([digitalProductId])
   @@map("orders")
 }
 
@@ -304,6 +314,7 @@ model ProductAnalytics {
   product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
 
   @@unique([digitalProductId, date])
+  @@index([date])
   @@map("product_analytics")
 }
 
@@ -317,6 +328,7 @@ model UserOwnedProduct {
   product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
 
   @@unique([userId, digitalProductId])
+  @@index([digitalProductId])
   @@map("user_owned_products")
 }
 
@@ -354,6 +366,8 @@ model InstagramAccount {
   rules           InstagramAutomationRule[]
   logs            InstagramAutomationLog[]
 
+  @@index([userId])
+  @@index([pageId])
   @@map("instagram_accounts")
 }
 
@@ -375,6 +389,7 @@ model InstagramAutomationRule {
   account         InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
   logs            InstagramAutomationLog[]
 
+  @@index([accountId, isActive])
   @@map("instagram_automation_rules")
 }
 
@@ -393,6 +408,9 @@ model InstagramAutomationLog {
   account            InstagramAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
   rule               InstagramAutomationRule? @relation(fields: [ruleId], references: [id], onDelete: SetNull)
 
+  @@index([accountId, commentId])
+  @@index([accountId, createdAt])
+  @@index([ruleId])
   @@map("instagram_automation_logs")
 }
 
