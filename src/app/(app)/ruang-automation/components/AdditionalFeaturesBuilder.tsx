@@ -10,6 +10,7 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { SpintaxAntiSpamTips } from "./SpintaxAntiSpamTips";
+import { MessagePayloadBuilder } from "./MessagePayloadBuilder";
 
 interface AdditionalFeaturesBuilderProps {
   ruleFormData: any;
@@ -20,6 +21,7 @@ interface AdditionalFeaturesBuilderProps {
   setActivePreviewTab: (tab: "COMMENT" | "DM") => void;
   setSimulatedFollowStep: (step: "GATE" | "RETRY" | "VERIFIED") => void;
   showToast: (type: "success" | "error" | "info", message: string) => void;
+  defaultSlideImage?: string;
 }
 
 export function AdditionalFeaturesBuilder({
@@ -31,11 +33,11 @@ export function AdditionalFeaturesBuilder({
   setActivePreviewTab,
   setSimulatedFollowStep,
   showToast,
+  defaultSlideImage = "",
 }: AdditionalFeaturesBuilderProps) {
   const [openDropdown, setOpenDropdown] = useState<
     | "followUpDelay"
     | "followUpCondition"
-    | "followUpMsgType"
     | "commentLimit"
     | "welcomeMsgType"
     | "askFollowMsgType"
@@ -62,7 +64,6 @@ export function AdditionalFeaturesBuilder({
     key:
       | "followUpDelay"
       | "followUpCondition"
-      | "followUpMsgType"
       | "commentLimit"
       | "welcomeMsgType"
       | "askFollowMsgType"
@@ -254,130 +255,79 @@ export function AdditionalFeaturesBuilder({
                 )}
               </div>
 
-              {/* Jenis Pesan */}
-              <div className="space-y-1.5 relative">
-                <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
-                  Jenis Pesan
-                </label>
-                <button
-                  type="button"
-                  onMouseDown={(e) => e.stopPropagation()}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleDropdown("followUpMsgType");
+              {/* Konten Pesan Follow Up (MessagePayloadBuilder: Template Tombol, Teks Biasa, Carousel) */}
+              <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-2">
+                <MessagePayloadBuilder
+                  value={{
+                    messageType:
+                      ruleFormData.followUpMessageType === "Teks Biasa" ||
+                      ruleFormData.followUpMessageType === "PLAIN_TEXT"
+                        ? "PLAIN_TEXT"
+                        : ruleFormData.followUpMessageType === "Carousel" ||
+                          ruleFormData.followUpMessageType === "CAROUSEL"
+                        ? "CAROUSEL"
+                        : "BUTTON_TEMPLATE",
+                    message: ruleFormData.followUpMessage || "",
+                    buttons:
+                      Array.isArray(ruleFormData.followUpButtons) &&
+                      ruleFormData.followUpButtons.length > 0
+                        ? ruleFormData.followUpButtons
+                        : [
+                            {
+                              id: "followup_btn_1",
+                              labelType: "Kustom",
+                              label:
+                                ruleFormData.followUpButtonLabel ||
+                                "Buka Link Sekarang",
+                              action: "Buka Website",
+                              url:
+                                ruleFormData.buttonUrl ||
+                                "https://ruangcreativemuslim.com",
+                            },
+                          ],
+                    quickReplies: ruleFormData.followUpQuickReplies || [],
+                    carouselSlides:
+                      Array.isArray(ruleFormData.followUpCarouselSlides) &&
+                      ruleFormData.followUpCarouselSlides.length > 0
+                        ? ruleFormData.followUpCarouselSlides
+                        : [
+                            {
+                              id: `slide_${Date.now()}`,
+                              image: defaultSlideImage || "",
+                              title: "Follow Up Materi",
+                              subtitle: "Cek penawaran spesial atau info lanjutan",
+                              buttons: [
+                                {
+                                  id: `slide_btn_${Date.now()}`,
+                                  labelType: "Kustom",
+                                  label: "Buka Sekarang",
+                                  action: "Buka Website",
+                                  url:
+                                    ruleFormData.buttonUrl ||
+                                    "https://ruangcreativemuslim.com",
+                                },
+                              ],
+                            },
+                          ],
                   }}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between hover:border-gray-300 dark:hover:border-white/20 transition-colors cursor-pointer"
-                >
-                  <span className="font-medium">
-                    {ruleFormData.followUpMessageType || "Template Tombol"}
-                  </span>
-                  <ChevronDown
-                    className={`w-3.5 h-3.5 text-gray-400 transition-transform ${
-                      openDropdown === "followUpMsgType" ? "rotate-180" : ""
-                    }`}
-                  />
-                </button>
-
-                {openDropdown === "followUpMsgType" && (
-                  <div
-                    onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#1f1f23] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
-                  >
-                    {(["Template Tombol", "Teks Biasa"] as const).map(
-                      (typeOpt) => {
-                        const isSelected =
-                          (ruleFormData.followUpMessageType ||
-                            "Template Tombol") === typeOpt;
-                        return (
-                          <button
-                            key={typeOpt}
-                            type="button"
-                            onMouseDown={(e) => e.stopPropagation()}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setRuleFormData({
-                                ...ruleFormData,
-                                followUpMessageType: typeOpt,
-                              });
-                              setOpenDropdown(null);
-                            }}
-                            className={`w-full px-4 py-2 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
-                              isSelected
-                                ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white font-semibold"
-                                : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
-                            }`}
-                          >
-                            <span>{typeOpt}</span>
-                            {isSelected && (
-                              <Check className="w-3.5 h-3.5 text-gray-900 dark:text-white stroke-[2.5]" />
-                            )}
-                          </button>
-                        );
-                      }
-                    )}
-                  </div>
-                )}
+                  onChange={(nextVal) => {
+                    setRuleFormData({
+                      ...ruleFormData,
+                      followUpMessageType: nextVal.messageType,
+                      followUpMessage: nextVal.message,
+                      followUpButtons: nextVal.buttons,
+                      followUpButtonLabel:
+                        nextVal.buttons?.[0]?.label ||
+                        ruleFormData.followUpButtonLabel ||
+                        "Buka Link Sekarang",
+                      followUpQuickReplies: nextVal.quickReplies,
+                      followUpCarouselSlides: nextVal.carouselSlides,
+                    });
+                  }}
+                  onFocusPreviewDm={() => setActivePreviewTab("DM")}
+                  defaultSlideImage={defaultSlideImage}
+                />
               </div>
-
-              {/* Pesan */}
-              <div className="space-y-1.5">
-                <SpintaxAntiSpamTips context="followup" className="mb-2" />
-                <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
-                  Pesan
-                </label>
-                <div className="relative">
-                  <textarea
-                    rows={3}
-                    maxLength={
-                      ruleFormData.followUpMessageType === "Template Tombol"
-                        ? 640
-                        : 1000
-                    }
-                    value={ruleFormData.followUpMessage}
-                    onChange={(e) =>
-                      setRuleFormData({
-                        ...ruleFormData,
-                        followUpMessage: e.target.value,
-                      })
-                    }
-                    placeholder="Tulis pesan follow up..."
-                    className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed font-normal resize-none"
-                  />
-                  <div className="absolute right-2.5 bottom-2 text-[10px] text-gray-400 font-mono">
-                    {ruleFormData.followUpMessage.length}/
-                    {ruleFormData.followUpMessageType === "Template Tombol"
-                      ? 640
-                      : 1000}
-                  </div>
-                </div>
-              </div>
-
-              {/* Label Tombol (Hanya untuk Template Tombol) */}
-              {ruleFormData.followUpMessageType === "Template Tombol" && (
-                <div className="space-y-1.5">
-                  <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
-                    Label Tombol
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      maxLength={80}
-                      value={ruleFormData.followUpButtonLabel}
-                      onChange={(e) =>
-                        setRuleFormData({
-                          ...ruleFormData,
-                          followUpButtonLabel: e.target.value,
-                        })
-                      }
-                      placeholder="Buka Link Sekarang"
-                      className="w-full px-3.5 py-2 pr-12 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
-                    />
-                    <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-mono">
-                      {ruleFormData.followUpButtonLabel.length}/80
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
         </div>

@@ -555,40 +555,75 @@ export function InstagramPhonePreview({
                             </span>
                           </div>
 
-                          {/* Bot Follow Up Bubble */}
-                          <div className="flex items-start gap-2 pt-0.5">
-                            <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
-                              <img
-                                src={previewAvatarUrl}
-                                alt="Profile"
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  (e.currentTarget as HTMLImageElement).src = "/images/instagram/rcm-avatar.png";
-                                }}
-                              />
-                            </div>
-
-                            <div className="flex-1 max-w-[85%] space-y-2">
-                              {ruleFormData.followUpMessageType === "Template Tombol" ? (
-                                <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 p-3 space-y-2.5 shadow-2xs">
-                                  <div className="text-xs leading-relaxed text-gray-900 dark:text-white whitespace-pre-wrap break-words font-medium">
-                                    {resolvePreviewVariables(ruleFormData.followUpMessage || "Halo {first_name}! Link materinya tadi udah sempat kamu buka belum? Kalau ada kendala atau mau tanya-tanya bilang ya 😉")}
-                                  </div>
-                                  <div className="pt-0.5">
-                                    <div className="w-full py-2 px-3 rounded-xl bg-white dark:bg-[#2a2a2e] border border-gray-200/80 dark:border-white/10 shadow-2xs text-center text-xs font-semibold text-gray-900 dark:text-white truncate">
-                                      {ruleFormData.followUpButtonLabel || "Buka Link Sekarang"}
-                                    </div>
-                                  </div>
-                                </div>
-                              ) : (
-                                <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 p-3 shadow-2xs">
-                                  <div className="text-xs leading-relaxed text-gray-900 dark:text-white whitespace-pre-wrap break-words font-medium">
-                                    {resolvePreviewVariables(ruleFormData.followUpMessage || "Halo {first_name}! Link materinya tadi udah sempat kamu buka belum?...")}
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </div>
+                          {/* Message Preview Renderer for Follow Up */}
+                          <MessagePreviewRenderer
+                            payload={{
+                              messageType:
+                                ruleFormData.followUpMessageType === "Teks Biasa" ||
+                                ruleFormData.followUpMessageType === "PLAIN_TEXT"
+                                  ? "PLAIN_TEXT"
+                                  : ruleFormData.followUpMessageType === "Carousel" ||
+                                    ruleFormData.followUpMessageType === "CAROUSEL"
+                                  ? "CAROUSEL"
+                                  : "BUTTON_TEMPLATE",
+                              message:
+                                ruleFormData.followUpMessage ||
+                                "Halo {first_name}! Link materinya tadi udah sempat kamu buka belum? Kalau ada kendala atau mau tanya-tanya bilang ya 😉",
+                              buttons:
+                                Array.isArray(ruleFormData.followUpButtons) &&
+                                ruleFormData.followUpButtons.length > 0
+                                  ? ruleFormData.followUpButtons
+                                  : [
+                                      {
+                                        id: "followup_btn_1",
+                                        labelType: "Kustom",
+                                        label:
+                                          ruleFormData.followUpButtonLabel ||
+                                          "Buka Link Sekarang",
+                                        action: "Buka Website",
+                                        url:
+                                          ruleFormData.buttonUrl ||
+                                          "https://ruangcreativemuslim.com",
+                                      },
+                                    ],
+                              quickReplies: ruleFormData.followUpQuickReplies || [],
+                              carouselSlides:
+                                Array.isArray(ruleFormData.followUpCarouselSlides) &&
+                                ruleFormData.followUpCarouselSlides.length > 0
+                                  ? ruleFormData.followUpCarouselSlides
+                                  : [
+                                      {
+                                        id: "slide_followup_1",
+                                        image:
+                                          selectedPost?.image ||
+                                          feedPosts[0]?.image ||
+                                          "",
+                                        title: "Follow Up Materi",
+                                        subtitle:
+                                          "Cek penawaran spesial atau info lanjutan",
+                                        buttons: [
+                                          {
+                                            id: "slide_btn_followup_1",
+                                            labelType: "Kustom",
+                                            label: "Buka Sekarang",
+                                            action: "Buka Website",
+                                            url:
+                                              ruleFormData.buttonUrl ||
+                                              "https://ruangcreativemuslim.com",
+                                          },
+                                        ],
+                                      },
+                                    ],
+                            }}
+                            avatarUrl={previewAvatarUrl}
+                            resolvePreviewVariables={resolvePreviewVariables}
+                            defaultSlideImage={selectedPost?.image || feedPosts[0]?.image || ""}
+                            simulatedButtonId={null}
+                            setSimulatedButtonId={() => {}}
+                            simulatedQrId={null}
+                            setSimulatedQrId={() => {}}
+                            defaultFallbackText="Halo {first_name}! Link materinya tadi udah sempat kamu buka belum?"
+                          />
                         </div>
                       )}
                     </>

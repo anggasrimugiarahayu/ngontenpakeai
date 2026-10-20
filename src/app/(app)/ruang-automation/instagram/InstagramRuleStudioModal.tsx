@@ -809,6 +809,7 @@ export function InstagramRuleStudioModal({
                         setActivePreviewTab={setActivePreviewTab}
                         setSimulatedFollowStep={setSimulatedFollowStep}
                         showToast={showToast}
+                        defaultSlideImage={selectedPost?.image || feedPosts[0]?.image || ""}
                       />
                     </div>
                   )}

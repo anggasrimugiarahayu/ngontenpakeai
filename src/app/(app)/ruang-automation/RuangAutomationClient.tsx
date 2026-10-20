@@ -628,9 +628,36 @@ export default function RuangAutomationClient({
     featureFollowUp: false,
     followUpDelay: "1 Jam" as "15 Menit" | "1 Jam" | "3 Jam" | "6 Jam" | "12 Jam" | "23 Jam",
     followUpCondition: "Hanya yang Belum Klik Link" as "Semua Penerima" | "Hanya yang Belum Klik Link",
-    followUpMessageType: "Template Tombol" as "Template Tombol" | "Teks Biasa",
+    followUpMessageType: "BUTTON_TEMPLATE" as "BUTTON_TEMPLATE" | "PLAIN_TEXT" | "CAROUSEL" | "Template Tombol" | "Teks Biasa" | "Carousel",
     followUpMessage: "Halo {first_name}! Link materinya tadi udah sempat kamu buka belum? Kalau ada kendala atau mau tanya-tanya bilang ya 😉",
     followUpButtonLabel: "Buka Link Sekarang",
+    followUpButtons: [
+      {
+        id: "followup_btn_1",
+        labelType: "Kustom",
+        label: "Buka Link Sekarang",
+        action: "Buka Website",
+        url: "https://ruangcreativemuslim.com",
+      },
+    ] as MessageButtonItem[],
+    followUpCarouselSlides: [
+      {
+        id: "slide_1",
+        image: "",
+        title: "",
+        subtitle: "",
+        buttons: [
+          {
+            id: "slide_btn_1",
+            labelType: "Kustom",
+            label: "Button 1",
+            action: "Buka Website",
+            url: "https://ruangcreativemuslim.com",
+          },
+        ],
+      },
+    ] as MessageCarouselSlideItem[],
+    followUpQuickReplies: [] as MessageQuickReplyItem[],
     featureReplyComment: false,
     commentReplyLimit: "Tak Terbatas" as "Tak Terbatas" | "1 Kali per Pengguna" | "2 Kali per Pengguna",
     commentReplyVariations: [
@@ -813,9 +840,36 @@ export default function RuangAutomationClient({
       featureFollowUp: false,
       followUpDelay: "1 Jam",
       followUpCondition: "Hanya yang Belum Klik Link",
-      followUpMessageType: "Template Tombol",
+      followUpMessageType: "BUTTON_TEMPLATE",
       followUpMessage: "Halo {first_name}! Link materinya tadi udah sempat kamu buka belum? Kalau ada kendala atau mau tanya-tanya bilang ya 😉",
       followUpButtonLabel: "Buka Link Sekarang",
+      followUpButtons: [
+        {
+          id: "followup_btn_1",
+          labelType: "Kustom",
+          label: "Buka Link Sekarang",
+          action: "Buka Website",
+          url: "https://ruangcreativemuslim.com",
+        },
+      ],
+      followUpCarouselSlides: [
+        {
+          id: "slide_1",
+          image: "",
+          title: "",
+          subtitle: "",
+          buttons: [
+            {
+              id: "slide_btn_1",
+              labelType: "Kustom",
+              label: "Button 1",
+              action: "Buka Website",
+              url: "https://ruangcreativemuslim.com",
+            },
+          ],
+        },
+      ],
+      followUpQuickReplies: [],
       featureReplyComment: false,
       commentReplyLimit: "Tak Terbatas",
       commentReplyVariations: [
@@ -1061,9 +1115,37 @@ export default function RuangAutomationClient({
       featureFollowUp: config.featureFollowUp ?? false,
       followUpDelay: config.followUpDelay || "1 Jam",
       followUpCondition: config.followUpCondition || "Hanya yang Belum Klik Link",
-      followUpMessageType: config.followUpMessageType || "Template Tombol",
+      followUpMessageType:
+        config.followUpMessageType === "Teks Biasa" || config.followUpMessageType === "PLAIN_TEXT"
+          ? "PLAIN_TEXT"
+          : config.followUpMessageType === "Carousel" || config.followUpMessageType === "CAROUSEL"
+          ? "CAROUSEL"
+          : "BUTTON_TEMPLATE",
       followUpMessage: config.followUpMessage || "Halo {first_name}! Link materinya tadi udah sempat kamu buka belum? Kalau ada kendala atau mau tanya-tanya bilang ya 😉",
       followUpButtonLabel: config.followUpButtonLabel || "Buka Link Sekarang",
+      followUpButtons:
+        Array.isArray(config.followUpButtons) && config.followUpButtons.length > 0
+          ? config.followUpButtons
+          : [
+              {
+                id: "followup_btn_1",
+                labelType: "Kustom",
+                label: config.followUpButtonLabel || "Buka Link Sekarang",
+                action: "Buka Website",
+                url: rule.buttonUrl || "https://ruangcreativemuslim.com",
+              },
+            ],
+      followUpCarouselSlides:
+        Array.isArray(config.followUpCarouselSlides) && config.followUpCarouselSlides.length > 0
+          ? config.followUpCarouselSlides
+          : defaultSlideList,
+      followUpQuickReplies: Array.isArray(config.followUpQuickReplies)
+        ? config.followUpQuickReplies.map((qr: any, idx: number) => ({
+            id: qr.id || `followup_qr_${idx + 1}`,
+            label: qr.label ?? qr.text ?? "",
+            text: qr.text ?? "",
+          }))
+        : [],
       featureReplyComment: config.featureReplyComment ?? Boolean(
         (Array.isArray(rule.commentReplies) && rule.commentReplies.length > 0) ||
         (replyTemplateStr && replyTemplateStr.trim())
@@ -1313,6 +1395,9 @@ export default function RuangAutomationClient({
       followUpMessageType: ruleFormData.followUpMessageType,
       followUpMessage: ruleFormData.followUpMessage,
       followUpButtonLabel: ruleFormData.followUpButtonLabel,
+      followUpButtons: ruleFormData.followUpButtons,
+      followUpCarouselSlides: ruleFormData.followUpCarouselSlides,
+      followUpQuickReplies: ruleFormData.followUpQuickReplies,
       featureReplyComment: ruleFormData.featureReplyComment,
       featureLinkTracking: ruleFormData.featureLinkTracking,
       replyHeartReaction: ruleFormData.replyHeartReaction,

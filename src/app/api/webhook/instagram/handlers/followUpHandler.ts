@@ -1,11 +1,9 @@
 import prisma from "@/lib/prisma";
 import {
-  buildButtonTemplateMessage,
-  buildTrackedUrl,
+  buildMainDmPayload,
   parseDelayToMs,
   parseLogMeta,
   postToMetaGraph,
-  resolveVariables,
   stringifyLogMeta,
 } from "./webhookHelpers";
 
@@ -52,30 +50,40 @@ export async function processPendingFollowUps(account: any, origin: string) {
         continue;
       }
 
-      const followUpText = resolveVariables(ruleConfig.followUpMessage, log.fromUsername || "kak");
-      const btnLabel = ruleConfig.followUpButtonLabel || log.rule.buttonText || "Buka Link Sekarang";
-      const targetUrl = log.rule.buttonUrl || "https://ruangcreativemuslim.com";
-      const trackedUrl = buildTrackedUrl(
-        origin,
-        targetUrl,
-        log.rule.id,
-        ruleConfig.featureLinkTracking !== false,
-        log.id,
-        meta.senderId,
-        btnLabel,
-        "Follow Up"
-      );
+      // Bangun konfigurasi Follow Up untuk dikirim via buildMainDmPayload
+      const followUpConfig = {
+        messageType:
+          ruleConfig.followUpMessageType === "Teks Biasa" || ruleConfig.followUpMessageType === "PLAIN_TEXT"
+            ? "PLAIN_TEXT"
+            : ruleConfig.followUpMessageType === "Carousel" || ruleConfig.followUpMessageType === "CAROUSEL"
+            ? "CAROUSEL"
+            : "BUTTON_TEMPLATE",
+        mainMessage: ruleConfig.followUpMessage,
+        buttons:
+          Array.isArray(ruleConfig.followUpButtons) && ruleConfig.followUpButtons.length > 0
+            ? ruleConfig.followUpButtons
+            : [
+                {
+                  id: "followup_btn_1",
+                  label: ruleConfig.followUpButtonLabel || log.rule.buttonText || "Buka Link Sekarang",
+                  action: "Buka Website",
+                  url: log.rule.buttonUrl || "https://ruangcreativemuslim.com",
+                },
+              ],
+        carouselSlides: ruleConfig.followUpCarouselSlides,
+        quickReplies: ruleConfig.followUpQuickReplies,
+        featureLinkTracking: ruleConfig.featureLinkTracking,
+        postCoverUrl: ruleConfig.postCoverUrl,
+      };
 
-      const followUpPayload =
-        ruleConfig.followUpMessageType === "Teks Biasa" || !log.rule.buttonUrl
-          ? { text: followUpText }
-          : buildButtonTemplateMessage(followUpText, [
-              {
-                type: "web_url",
-                url: trackedUrl,
-                title: btnLabel.slice(0, 20),
-              },
-            ]);
+      const followUpPayload = buildMainDmPayload({
+        rule: log.rule,
+        ruleConfig: followUpConfig,
+        username: log.fromUsername || "kak",
+        origin,
+        logId: log.id,
+        senderId: meta.senderId,
+      });
 
       const res = await postToMetaGraph(
         `/me/messages`,
