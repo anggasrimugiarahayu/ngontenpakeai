@@ -440,7 +440,7 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
 
 export default function HomePageClient({ initialPricingConfig }: { initialPricingConfig: any }) {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-[#111111]" />}>
+    <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-rn-dark-bg" />}>
       <HomeContent initialPricingConfig={initialPricingConfig} />
     </Suspense>
   );
