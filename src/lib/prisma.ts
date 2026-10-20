@@ -13,9 +13,7 @@ const getPrismaClient = () => {
     return globalThis.prismaGlobal
   }
   const client = prismaClientSingleton()
-  if (process.env.NODE_ENV !== 'production') {
-    globalThis.prismaGlobal = client
-  }
+  globalThis.prismaGlobal = client
   return client
 }
 
@@ -23,4 +21,4 @@ const prisma = getPrismaClient()
 
 export default prisma
 
-if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma
+globalThis.prismaGlobal = prisma
