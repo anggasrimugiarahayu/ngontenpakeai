@@ -80,7 +80,7 @@ export function InstagramAgentListSection({
             <button
               type="button"
               onClick={() => setIsAgentFilterOpen(!isAgentFilterOpen)}
-              className={`px-3.5 py-2.5 rounded-lg border text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors cursor-pointer ${
+              className={`px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors cursor-pointer ${
                 agentFilterStatus !== "ALL"
                   ? "border-gray-900 dark:border-white bg-gray-900 text-white dark:bg-white dark:text-gray-900"
                   : "border-gray-200 dark:border-white/10 bg-white dark:bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
@@ -151,7 +151,7 @@ export function InstagramAgentListSection({
           <button
             type="button"
             onClick={onOpenCreateAgent}
-            className="px-4 py-2.5 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-500/20 hover:shadow-orange-500/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
+            className="px-4 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs sm:text-sm shadow-md shadow-orange-500/20 hover:shadow-orange-500/30 flex items-center justify-center gap-1.5 transition-all cursor-pointer shrink-0"
           >
             <Plus className="w-4 h-4" />
             <span>Buat Agen Baru</span>
@@ -206,7 +206,7 @@ export function InstagramAgentListSection({
                   onSelectAgent(agent.id);
                 }
               }}
-              className="group relative flex items-center justify-between rounded-2xl border p-4 sm:p-5 text-left transition-all duration-200 cursor-pointer overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:shadow-md gap-4 sm:gap-6"
+              className="group relative flex items-center justify-between rounded-2xl border-2 p-4 sm:p-5 text-left transition-all duration-300 cursor-pointer overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/10 hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 gap-4 sm:gap-6"
             >
               {/* Sisi Kiri & Tengah: Avatar + Informasi */}
               <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 flex-1">
@@ -232,7 +232,7 @@ export function InstagramAgentListSection({
                     </div>
                   ) : (
                     <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center">
-                      <InstagramIcon className="w-12 h-12 sm:w-14 sm:h-14 text-gray-800 dark:text-gray-200" />
+                      <InstagramIcon className="w-12 h-12 sm:w-14 sm:h-14 text-gray-800 dark:text-gray-200 group-hover:text-rn-accent transition-colors" />
                     </div>
                   )}
                 </div>
@@ -240,7 +240,7 @@ export function InstagramAgentListSection({
                 {/* Detail Info: Nama, Deskripsi, Status */}
                 <div className="min-w-0 flex-1">
                   <h3
-                    className="font-bold text-base sm:text-lg text-gray-900 dark:text-white leading-tight"
+                    className="font-bold text-base sm:text-lg text-gray-900 dark:text-white leading-tight group-hover:text-rn-accent transition-colors"
                     title={agent.name}
                   >
                     {agent.name}
@@ -338,7 +338,7 @@ export function InstagramAgentListSection({
                     e.stopPropagation();
                     onSelectAgent(agent.id);
                   }}
-                  className="px-4 py-1.5 rounded-xl bg-[#222226] hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 text-xs sm:text-sm font-semibold transition-all cursor-pointer shadow-2xs active:scale-[0.98]"
+                  className="px-4 py-1.5 rounded-xl bg-gray-900 group-hover:bg-orange-500 hover:!bg-orange-600 dark:bg-white/10 dark:group-hover:bg-orange-500 dark:hover:!bg-orange-600 text-white text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-sm active:scale-[0.98]"
                 >
                   Buka
                 </button>
