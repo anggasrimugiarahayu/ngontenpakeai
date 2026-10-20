@@ -322,15 +322,31 @@ export async function verifyPayment(orderId: string) {
               }
             });
           }
-        } else if (order.orderType === "PRO_BOOK" || order.orderType === "PRO_TOOLS" || order.orderType === "PRO_PLUS") {
+        } else if (order.orderType === "PRO_BOOK" || order.orderType === "PRO_TOOLS" || order.orderType === "PRO_AUTOMATION" || order.orderType === "PRO_PLUS") {
           // 1. Upgrade to PRO role
           let updateData: any = { role: "PRO" };
           
+          const currentUser = await tx.user.findUnique({
+            where: { id: order.userId },
+            select: { proToolsExpiredAt: true, proAutomationExpiredAt: true }
+          });
+
           // If they bought TOOLS or LENGKAP, give them 30 days of proToolsExpiredAt
           if (order.orderType === "PRO_TOOLS" || order.orderType === "PRO_PLUS") {
-            const expiryDate = new Date();
-            expiryDate.setDate(expiryDate.getDate() + 30);
-            updateData.proToolsExpiredAt = expiryDate;
+            const baseDate = (currentUser?.proToolsExpiredAt && new Date(currentUser.proToolsExpiredAt) > new Date())
+              ? new Date(currentUser.proToolsExpiredAt)
+              : new Date();
+            baseDate.setDate(baseDate.getDate() + 30);
+            updateData.proToolsExpiredAt = baseDate;
+          }
+
+          // If they bought AUTOMATION or LENGKAP, give them 30 days of proAutomationExpiredAt
+          if (order.orderType === "PRO_AUTOMATION" || order.orderType === "PRO_PLUS") {
+            const baseDate = (currentUser?.proAutomationExpiredAt && new Date(currentUser.proAutomationExpiredAt) > new Date())
+              ? new Date(currentUser.proAutomationExpiredAt)
+              : new Date();
+            baseDate.setDate(baseDate.getDate() + 30);
+            updateData.proAutomationExpiredAt = baseDate;
           }
 
           await tx.user.update({
@@ -361,6 +377,9 @@ export async function verifyPayment(orderId: string) {
         }
       });
       revalidatePath("/ruang-belajar");
+      revalidatePath("/ruang-ngonten");
+      revalidatePath("/ruang-automation");
+      revalidatePath("/dashboard");
       try {
         revalidateTag("admin-dashboard-stats", "default");
         revalidateTag("global-stats", "default");

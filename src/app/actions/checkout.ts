@@ -15,6 +15,7 @@ export async function revalidateAfterPurchaseAction() {
     revalidateTag("admin-dashboard-stats", "default");
     revalidatePath("/ruang-belajar");
     revalidatePath("/ruang-ngonten");
+    revalidatePath("/ruang-automation");
     revalidatePath("/dashboard");
     return { success: true };
   } catch (e) {
