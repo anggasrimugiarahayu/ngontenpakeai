@@ -304,7 +304,7 @@ export function AdminRuangBelajarTab({
                           alt={prod.title}
                           fill
                           sizes="(max-width: 640px) 100px, 120px"
-                          unoptimized={typeof prod.coverUrl === "string" && prod.coverUrl.startsWith("data:")}
+                          unoptimized={typeof prod.coverUrl === "string" && (prod.coverUrl.startsWith("data:") || prod.coverUrl.startsWith("/api/"))}
                           className="object-cover z-0"
                         />
                         <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent z-10 pointer-events-none" />

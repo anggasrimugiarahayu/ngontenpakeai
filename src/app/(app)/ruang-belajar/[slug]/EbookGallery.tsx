@@ -33,6 +33,11 @@ export default function EbookGallery({ title, images }: EbookGalleryProps) {
     setActiveIndex((prev) => (prev === 0 ? validImages.length - 1 : prev - 1));
   };
 
+  const isUnoptimizedUrl = (url: string | null | undefined) => {
+    if (!url || typeof url !== "string") return false;
+    return url.startsWith("data:") || url.startsWith("/api/");
+  };
+
   return (
     <div className="w-full max-w-sm mx-auto lg:mx-0 shrink-0 flex flex-col gap-4">
        {/* Main Image */}
@@ -44,7 +49,7 @@ export default function EbookGallery({ title, images }: EbookGalleryProps) {
             fill
             sizes="(max-width: 640px) 100vw, 384px"
             priority
-            unoptimized={validImages[activeIndex]?.startsWith("data:")}
+            unoptimized={isUnoptimizedUrl(validImages[activeIndex])}
             className="object-cover" 
           />
           
@@ -85,7 +90,7 @@ export default function EbookGallery({ title, images }: EbookGalleryProps) {
                 alt={`Thumbnail ${idx + 1}`}
                 fill
                 sizes="80px"
-                unoptimized={typeof img === "string" && img.startsWith("data:")}
+                unoptimized={isUnoptimizedUrl(img)}
                 className="object-cover"
               />
            </button>
