@@ -963,10 +963,11 @@ export function InstagramRuleDetailModal({
             {/* Pagination Controls */}
             {totalLogPages > 1 && (
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-white/5 text-xs text-gray-500">
-                <div className="text-[11px] text-gray-500 dark:text-gray-400">
-                  Menampilkan <span className="font-semibold text-gray-900 dark:text-white">{startLogIdx + 1}</span>–
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Menampilkan{" "}
+                  <span className="font-semibold text-gray-900 dark:text-white">{startLogIdx + 1}</span>–
                   <span className="font-semibold text-gray-900 dark:text-white">{Math.min(endLogIdx, recent14dLogs.length)}</span> dari{" "}
-                  <span className="font-semibold text-gray-900 dark:text-white">{recent14dLogs.length}</span> komentar
+                  <span className="font-semibold text-gray-900 dark:text-white">{recent14dLogs.length}</span> log
                 </div>
 
                 <div className="flex items-center gap-1.5">
@@ -974,10 +975,10 @@ export function InstagramRuleDetailModal({
                     type="button"
                     disabled={logPage === 1}
                     onClick={() => setLogPage((p) => Math.max(1, p - 1))}
-                    className="px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-1 text-[11px] text-gray-700 dark:text-gray-300 cursor-pointer"
+                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
-                    <span>Prev</span>
+                    <span className="hidden sm:inline">Prev</span>
                   </button>
 
                   <div className="flex items-center gap-1">
@@ -995,14 +996,18 @@ export function InstagramRuleDetailModal({
 
                         return (
                           <React.Fragment key={page}>
-                            {hasGap && <span className="px-1 text-gray-400 text-xs">...</span>}
+                            {hasGap && (
+                              <span className="w-6 h-8 flex items-center justify-center text-gray-400 dark:text-gray-500 text-xs">
+                                ...
+                              </span>
+                            )}
                             <button
                               type="button"
                               onClick={() => setLogPage(page)}
-                              className={`w-7 h-7 rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                              className={`w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                                 logPage === page
-                                  ? "bg-orange-500 text-white shadow-2xs"
-                                  : "border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300"
+                                  ? "bg-orange-500 text-white border border-orange-500 shadow-sm"
+                                  : "border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-medium"
                               }`}
                             >
                               {page}
@@ -1016,9 +1021,9 @@ export function InstagramRuleDetailModal({
                     type="button"
                     disabled={logPage === totalLogPages}
                     onClick={() => setLogPage((p) => Math.min(totalLogPages, p + 1))}
-                    className="px-2.5 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 disabled:opacity-40 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-1 text-[11px] text-gray-700 dark:text-gray-300 cursor-pointer"
+                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
-                    <span>Next</span>
+                    <span className="hidden sm:inline">Next</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { format } from "date-fns";
-import { User, ShoppingBag, Settings, Search, Download, Printer, X } from "lucide-react";
+import { User, ShoppingBag, Settings, Search, Download, Printer, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { getDashboardOrdersAction } from "@/app/actions/dashboard";
 
 interface DashboardOrdersTabProps {
@@ -627,100 +627,78 @@ export function DashboardOrdersTab({
 
             {/* Pagination UI */}
             {totalPages > 1 && (
-              <div className="p-4 sm:p-6 border-t border-gray-100 dark:border-white/10 flex items-center justify-between bg-white dark:bg-[#121214] shrink-0">
-                <span className="text-[15px] text-gray-900 dark:text-gray-100 hidden sm:block">
-                  Showing {(orderPage - 1) * itemsPerPage + 1} to{" "}
-                  {Math.min(orderPage * itemsPerPage, filteredOrders.length)} of{" "}
-                  {filteredOrders.length} entries
-                </span>
-                <div className="flex gap-2 w-full sm:w-auto justify-center sm:justify-end">
+              <div className="p-4 sm:p-5 border-t border-gray-100 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-[#121214] shrink-0">
+                <div className="text-xs text-gray-500 dark:text-gray-400">
+                  Menampilkan{" "}
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {totalServerOrders > 0 ? (orderPage - 1) * itemsPerPage + 1 : 0}
+                  </span>
+                  –
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {Math.min(orderPage * itemsPerPage, totalServerOrders)}
+                  </span>{" "}
+                  dari{" "}
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {totalServerOrders}
+                  </span>{" "}
+                  pesanan
+                </div>
+
+                <div className="flex items-center gap-1.5">
                   <button
+                    type="button"
                     onClick={() => setOrderPage((p) => Math.max(1, p - 1))}
                     disabled={orderPage === 1}
-                    className={`w-9 h-9 shrink-0 flex items-center justify-center rounded-lg transition-colors border ${
-                      orderPage === 1
-                        ? "bg-gray-200 border-gray-200 text-gray-400 dark:bg-white/5 dark:border-white/5 dark:text-gray-600 cursor-not-allowed"
-                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-[#121214] dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5"
-                    }`}
+                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="m15 18-6-6 6-6" />
-                    </svg>
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Prev</span>
                   </button>
 
-                  <div className="flex gap-2 overflow-x-auto no-scrollbar items-center">
-                    {(() => {
-                      const total = totalPages;
-                      const current = orderPage;
-                      let pages: (number | string)[] = [];
-                      if (total <= 5) {
-                        pages = Array.from({ length: total }).map((_, i) => i + 1);
-                      } else if (current <= 3) {
-                        pages = [1, 2, 3, 4, 5, "...", total];
-                      } else if (current >= total - 2) {
-                        pages = [
-                          1,
-                          "...",
-                          total - 4,
-                          total - 3,
-                          total - 2,
-                          total - 1,
-                          total,
-                        ];
-                      } else {
-                        pages = [1, "...", current - 1, current, current + 1, "...", total];
-                      }
-                      return pages.map((page, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => typeof page === "number" && setOrderPage(page)}
-                          disabled={page === "..."}
-                          className={`w-9 h-9 shrink-0 flex items-center justify-center rounded-lg text-[15px] font-semibold transition-colors border ${
-                            orderPage === page
-                              ? "bg-white border-orange-500 text-orange-500 dark:bg-[#121214] dark:border-orange-500 dark:text-orange-500 border-2"
-                              : page === "..."
-                              ? "border-transparent text-gray-500 dark:text-gray-400 bg-transparent"
-                              : "bg-white border-gray-200 text-gray-700 hover:bg-gray-50 dark:bg-[#121214] dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5"
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      ));
-                    })()}
+                  <div className="flex items-center gap-1">
+                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                      .filter((page) => {
+                        return (
+                          page === 1 ||
+                          page === totalPages ||
+                          Math.abs(page - orderPage) <= 1
+                        );
+                      })
+                      .map((page, idx, arr) => {
+                        const prevPage = arr[idx - 1];
+                        const hasGap = prevPage && page - prevPage > 1;
+
+                        return (
+                          <React.Fragment key={page}>
+                            {hasGap && (
+                              <span className="w-6 h-8 flex items-center justify-center text-gray-400 dark:text-gray-500 text-xs">
+                                ...
+                              </span>
+                            )}
+                            <button
+                              type="button"
+                              onClick={() => setOrderPage(page)}
+                              className={`w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-xs font-bold transition-colors cursor-pointer ${
+                                orderPage === page
+                                  ? "bg-orange-500 text-white border border-orange-500 shadow-sm"
+                                  : "border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-medium"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          </React.Fragment>
+                        );
+                      })}
                   </div>
 
                   <button
+                    type="button"
                     onClick={() => setOrderPage((p) => Math.min(totalPages, p + 1))}
                     disabled={orderPage === totalPages}
-                    className={`w-9 h-9 shrink-0 flex items-center justify-center rounded-lg transition-colors border ${
-                      orderPage === totalPages
-                        ? "bg-gray-200 border-gray-200 text-gray-400 dark:bg-white/5 dark:border-white/5 dark:text-gray-600 cursor-not-allowed"
-                        : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50 dark:bg-[#121214] dark:border-white/10 dark:text-gray-300 dark:hover:bg-white/5"
-                    }`}
+                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="18"
-                      height="18"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="m9 18 6-6-6-6" />
-                    </svg>
+                    <span className="hidden sm:inline">Next</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
               </div>
