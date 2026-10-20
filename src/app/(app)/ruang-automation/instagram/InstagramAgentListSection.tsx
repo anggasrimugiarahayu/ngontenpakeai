@@ -206,7 +206,7 @@ export function InstagramAgentListSection({
                   onSelectAgent(agent.id);
                 }
               }}
-              className="group relative flex items-center justify-between rounded-2xl border-2 p-4 sm:p-5 text-left transition-all duration-300 cursor-pointer overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/10 hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 gap-4 sm:gap-6"
+              className="group relative flex items-center justify-between rounded-[16px] sm:rounded-[20px] border border-gray-200 dark:border-white/10 p-4 sm:p-5 text-left transition-all duration-300 cursor-pointer overflow-hidden bg-white dark:bg-[#18181b] hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 gap-4 sm:gap-6"
             >
               {/* Sisi Kiri & Tengah: Avatar + Informasi */}
               <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 flex-1">
@@ -232,7 +232,7 @@ export function InstagramAgentListSection({
                     </div>
                   ) : (
                     <div className="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center">
-                      <InstagramIcon className="w-12 h-12 sm:w-14 sm:h-14 text-gray-800 dark:text-gray-200 group-hover:text-rn-accent transition-colors" />
+                      <InstagramIcon className="w-12 h-12 sm:w-14 sm:h-14 text-gray-800 dark:text-gray-200" />
                     </div>
                   )}
                 </div>
@@ -338,7 +338,7 @@ export function InstagramAgentListSection({
                     e.stopPropagation();
                     onSelectAgent(agent.id);
                   }}
-                  className="px-4 py-1.5 rounded-xl bg-gray-900 group-hover:bg-orange-500 hover:!bg-orange-600 dark:bg-white/10 dark:group-hover:bg-orange-500 dark:hover:!bg-orange-600 text-white text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-sm active:scale-[0.98]"
+                  className="whitespace-nowrap shrink-0 bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold shadow-sm transition-colors cursor-pointer"
                 >
                   Buka
                 </button>
