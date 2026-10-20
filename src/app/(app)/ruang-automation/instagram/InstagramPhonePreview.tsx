@@ -363,7 +363,7 @@ export function InstagramPhonePreview({
                   )}
 
                   {/* 1. ASK FOR FOLLOW (Gatekeeper Message) */}
-                  {ruleFormData.featureWelcomeMessage && ruleFormData.featureAskForFollow && (
+                  {ruleFormData.featureAskForFollow && (
                     <>
                       {/* Bot Ask For Follow Message Bubble */}
                       <div className="flex items-start gap-2 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
@@ -382,45 +382,40 @@ export function InstagramPhonePreview({
                           {ruleFormData.askForFollowMessageType === "Template Tombol" ? (
                             <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 p-3 space-y-2.5 shadow-2xs">
                               <div className="text-xs leading-relaxed text-gray-900 dark:text-white whitespace-pre-wrap break-words font-medium">
-                                {resolvePreviewVariables(ruleFormData.askForFollowMessage || "Btw, kayaknya kamu belum follow akun ini nih, sistemnya kita cuma bisa ngasih khusus untuk followers aja.\n\nKalo mau, follow dulu ya dan klik \"Udah Follow\" nanti dikirimin aksesnya")}
+                                {resolvePreviewVariables(
+                                  ruleFormData.askForFollowMessage ||
+                                    "Btw, kayaknya kamu belum follow akun ini nih, sistemnya kita cuma bisa ngasih khusus untuk followers aja.\n\nKalo mau, follow dulu ya dan klik \"Udah Follow\" nanti dikirimin aksesnya"
+                                )}
                               </div>
                               <div className="pt-0.5">
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    if (ruleFormData.askForFollowHasRetry && simulatedFollowStep === "GATE") {
-                                      setSimulatedFollowStep("RETRY");
-                                    } else {
-                                      setSimulatedFollowStep("VERIFIED");
-                                    }
-                                  }}
-                                  className="w-full py-2 px-3 rounded-xl bg-white dark:bg-[#2a2a2e] border border-gray-200/80 dark:border-white/10 shadow-2xs text-center text-xs font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer truncate"
-                                >
+                                <div className="w-full py-2 px-3 rounded-xl bg-white dark:bg-[#2a2a2e] border border-gray-200/80 dark:border-white/10 shadow-2xs text-center text-xs font-semibold text-gray-900 dark:text-white truncate">
                                   {ruleFormData.askForFollowButtonLabel || "Udah follow 🙌"}
-                                </button>
+                                </div>
                               </div>
                             </div>
                           ) : (
                             <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 p-3 shadow-2xs">
                               <div className="text-xs leading-relaxed text-gray-900 dark:text-white whitespace-pre-wrap break-words font-medium">
-                                {resolvePreviewVariables(ruleFormData.askForFollowMessage || "Btw, kayaknya kamu belum follow akun ini nih...")}
+                                {resolvePreviewVariables(
+                                  ruleFormData.askForFollowMessage ||
+                                    "Btw, kayaknya kamu belum follow akun ini nih..."
+                                )}
                               </div>
                             </div>
                           )}
                         </div>
                       </div>
 
-                      {/* Step: RETRY (Pengguna klik tombol tapi disimulasikan belum follow) */}
-                      {simulatedFollowStep === "RETRY" && (
-                        <>
-                          {/* User Simulated Response */}
-                          <div className="flex justify-end pt-0.5 animate-in fade-in slide-in-from-bottom-1 duration-200">
-                            <div className="px-3.5 py-1.5 rounded-2xl rounded-tr-xs bg-[#7048e8] text-white text-xs font-semibold shadow-xs max-w-[75%] break-words">
-                              {ruleFormData.askForFollowButtonLabel || "Udah follow 🙌"}
-                            </div>
-                          </div>
+                      {/* User Simulated Response to Follow 1 (Balon Ungu Kanan) */}
+                      <div className="flex justify-end pt-0.5 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                        <div className="px-3.5 py-1.5 rounded-2xl rounded-tr-xs bg-[#7048e8] text-white text-xs font-semibold shadow-xs max-w-[75%] break-words">
+                          {ruleFormData.askForFollowButtonLabel || "Udah follow 🙌"}
+                        </div>
+                      </div>
 
-                          {/* Bot Retry Message */}
+                      {/* Bot Retry Message & User Response 2 (Jika Masih Belum Mengikuti / Retry Aktif) */}
+                      {ruleFormData.askForFollowHasRetry && (
+                        <>
                           <div className="flex items-start gap-2 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
                             <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
                               <img
@@ -437,196 +432,191 @@ export function InstagramPhonePreview({
                               {ruleFormData.askForFollowMessageType === "Template Tombol" ? (
                                 <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 p-3 space-y-2.5 shadow-2xs">
                                   <div className="text-xs leading-relaxed text-gray-900 dark:text-white whitespace-pre-wrap break-words font-medium">
-                                    {resolvePreviewVariables(ruleFormData.askForFollowRetryMessage || "Ih kayaknya masih belum follow beneran nih 😅\n\nCoba follow dulu ya ke profile, kalo udah nanti klik \"Udah Follow\"")}
+                                    {resolvePreviewVariables(
+                                      ruleFormData.askForFollowRetryMessage ||
+                                        "Ah kayaknya masih belum follow beneran nih 😅\n\nCoba follow dulu ya ke profile, kalo udah nanti klik \"Udah Follow\""
+                                    )}
                                   </div>
                                   <div className="pt-0.5">
-                                    <button
-                                      type="button"
-                                      onClick={() => setSimulatedFollowStep("VERIFIED")}
-                                      className="w-full py-2 px-3 rounded-xl bg-white dark:bg-[#2a2a2e] border border-gray-200/80 dark:border-white/10 shadow-2xs text-center text-xs font-semibold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer truncate"
-                                    >
-                                      {ruleFormData.askForFollowRetryButtonLabel || "Udah follow 🙌"}
-                                    </button>
+                                    <div className="w-full py-2 px-3 rounded-xl bg-white dark:bg-[#2a2a2e] border border-gray-200/80 dark:border-white/10 shadow-2xs text-center text-xs font-semibold text-gray-900 dark:text-white truncate">
+                                      {ruleFormData.askForFollowRetryButtonLabel ||
+                                        ruleFormData.askForFollowButtonLabel ||
+                                        "Udah follow 🙌"}
+                                    </div>
                                   </div>
                                 </div>
                               ) : (
                                 <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 p-3 shadow-2xs">
                                   <div className="text-xs leading-relaxed text-gray-900 dark:text-white whitespace-pre-wrap break-words font-medium">
-                                    {resolvePreviewVariables(ruleFormData.askForFollowRetryMessage || "Ih kayaknya masih belum follow beneran nih 😅...")}
+                                    {resolvePreviewVariables(
+                                      ruleFormData.askForFollowRetryMessage ||
+                                        "Ah kayaknya masih belum follow beneran nih 😅..."
+                                    )}
                                   </div>
                                 </div>
                               )}
                             </div>
                           </div>
-                        </>
-                      )}
 
-                      {/* Step: VERIFIED (Setelah Follow Terverifikasi) */}
-                      {simulatedFollowStep === "VERIFIED" && (
-                        <>
+                          {/* User Simulated Response to Retry (Balon Ungu Kanan Kedua) */}
                           <div className="flex justify-end pt-0.5 animate-in fade-in slide-in-from-bottom-1 duration-200">
                             <div className="px-3.5 py-1.5 rounded-2xl rounded-tr-xs bg-[#7048e8] text-white text-xs font-semibold shadow-xs max-w-[75%] break-words">
-                              {ruleFormData.askForFollowHasRetry ? (ruleFormData.askForFollowRetryButtonLabel || "Udah follow 🙌") : (ruleFormData.askForFollowButtonLabel || "Udah follow 🙌")}
+                              {ruleFormData.askForFollowRetryButtonLabel ||
+                                ruleFormData.askForFollowButtonLabel ||
+                                "Udah follow 🙌"}
                             </div>
-                          </div>
-                          <div className="flex justify-center pt-0.5 pb-1">
-                            <button
-                              type="button"
-                              onClick={() => setSimulatedFollowStep("GATE")}
-                              className="text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 flex items-center gap-1 cursor-pointer transition-colors"
-                            >
-                              <RefreshCw className="w-2.5 h-2.5" />
-                              <span>Ulangi Simulasi Follow</span>
-                            </button>
                           </div>
                         </>
                       )}
                     </>
                   )}
 
-                  {/* 2. Bot Main Message (Hanya tampil jika tidak ada Ask For Follow, atau sudah lolos Verifikasi Follow) */}
-                  {(!ruleFormData.featureWelcomeMessage || !ruleFormData.featureAskForFollow || simulatedFollowStep === "VERIFIED") && (
+                  {/* 2. ASK FOR CONTACT (Jika aktif) */}
+                  {ruleFormData.featureAskForContact && (
                     <>
-                      {/* Ask for Contact Gate (Jika aktif) */}
-                      {ruleFormData.featureAskForContact && (
-                        <>
-                          <div className="flex items-start gap-2 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
-                            <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
-                              <img
-                                src={previewAvatarUrl}
-                                alt="Profile"
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  (e.currentTarget as HTMLImageElement).src = "/images/instagram/rcm-avatar.png";
-                                }}
-                              />
-                            </div>
-                            <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 p-3 shadow-2xs max-w-[85%]">
-                              <div className="text-xs leading-relaxed text-gray-900 dark:text-white whitespace-pre-wrap break-words font-medium">
-                                {resolvePreviewVariables(ruleFormData.askContactMessage || "Sip! Biar aksesnya langsung terkirim dan tersimpan aman di inbox kamu, boleh ketik Email aktif kamu di bawah ini ya 👇")}
-                              </div>
-                            </div>
+                      <div className="flex items-start gap-2 pt-1 animate-in fade-in slide-in-from-top-1 duration-200">
+                        <div className="w-6 h-6 rounded-full overflow-hidden shrink-0 mt-0.5 border border-gray-200 dark:border-white/10">
+                          <img
+                            src={previewAvatarUrl}
+                            alt="Profile"
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.currentTarget as HTMLImageElement).src = "/images/instagram/rcm-avatar.png";
+                            }}
+                          />
+                        </div>
+                        <div className="rounded-2xl rounded-tl-xs bg-gray-100 dark:bg-[#202024] border border-gray-200/80 dark:border-white/10 p-3 shadow-2xs max-w-[85%]">
+                          <div className="text-xs leading-relaxed text-gray-900 dark:text-white whitespace-pre-wrap break-words font-medium">
+                            {resolvePreviewVariables(
+                              ruleFormData.askContactMessage ||
+                                "Sip! Biar aksesnya langsung terkirim dan tersimpan aman di inbox kamu, boleh ketik Email aktif kamu di bawah ini ya 👇"
+                            )}
                           </div>
+                        </div>
+                      </div>
 
-                          {/* User Response to Ask for Contact (Purple Pill) */}
-                          <div className="flex justify-end pt-0.5 animate-in fade-in slide-in-from-bottom-1 duration-200">
-                            <div className="px-3.5 py-1.5 rounded-2xl rounded-tr-xs bg-[#7048e8] text-white text-xs font-semibold shadow-xs max-w-[75%] break-words">
-                              {ruleFormData.askContactType === "Nomor WhatsApp Saja" ? "+62 812-3456-7890" : "budi@gmail.com"}
-                            </div>
-                          </div>
-                        </>
-                      )}
+                      {/* User Response to Ask for Contact (Purple Pill) */}
+                      <div className="flex justify-end pt-0.5 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                        <div className="px-3.5 py-1.5 rounded-2xl rounded-tr-xs bg-[#7048e8] text-white text-xs font-semibold shadow-xs max-w-[75%] break-words">
+                          {ruleFormData.askContactType === "Nomor WhatsApp Saja"
+                            ? "+62 812-3456-7890"
+                            : ruleFormData.askContactType === "Email & WhatsApp"
+                            ? "budi@gmail.com, +62 812-3456-7890"
+                            : "budi@gmail.com"}
+                        </div>
+                      </div>
+                    </>
+                  )}
 
+                  {/* 3. PESAN YANG DIKIRIM SETELAH KOMENTAR (PESAN UTAMA DM) */}
+                  <MessagePreviewRenderer
+                    payload={
+                      isLiveTarget && activeLiveContent
+                        ? {
+                            messageType: activeLiveContent.messageType,
+                            message: activeLiveContent.message,
+                            buttons: activeLiveContent.buttons || [],
+                            quickReplies: activeLiveContent.quickReplies || [],
+                            carouselSlides: activeLiveContent.carouselSlides || [],
+                          }
+                        : {
+                            messageType: ruleFormData.messageType,
+                            message: ruleFormData.dmMessage,
+                            buttons: ruleFormData.buttons || [],
+                            quickReplies: ruleFormData.quickReplies || [],
+                            carouselSlides: ruleFormData.carouselSlides || [],
+                          }
+                    }
+                    avatarUrl={previewAvatarUrl}
+                    resolvePreviewVariables={resolvePreviewVariables}
+                    defaultSlideImage={selectedPost?.image || feedPosts[0]?.image || ""}
+                    simulatedButtonId={simulatedButtonId}
+                    setSimulatedButtonId={(id) => setSimulatedButtonId(id)}
+                    simulatedQrId={simulatedLiveQrId}
+                    setSimulatedQrId={(id) => setSimulatedLiveQrId(id)}
+                  />
+
+                  {/* 4. FOLLOW UP MESSAGE (Jika aktif) */}
+                  {ruleFormData.featureFollowUp && (
+                    <div className="pt-2 space-y-2 animate-in fade-in slide-in-from-bottom-1 duration-200">
+                      {/* Delay Time Pill */}
+                      <div className="flex justify-center">
+                        <span className="px-2.5 py-0.5 rounded-full bg-gray-200/90 dark:bg-white/10 text-[9px] font-semibold text-gray-600 dark:text-gray-300 shadow-2xs text-center flex items-center gap-1">
+                          <Clock className="w-2.5 h-2.5" />
+                          <span>{ruleFormData.followUpDelay || "1 Jam"} kemudian...</span>
+                        </span>
+                      </div>
+
+                      {/* Message Preview Renderer for Follow Up */}
                       <MessagePreviewRenderer
-                        payload={
-                          isLiveTarget && activeLiveContent
-                            ? {
-                                messageType: activeLiveContent.messageType,
-                                message: activeLiveContent.message,
-                                buttons: activeLiveContent.buttons || [],
-                                quickReplies: activeLiveContent.quickReplies || [],
-                                carouselSlides: activeLiveContent.carouselSlides || [],
-                              }
-                            : {
-                                messageType: ruleFormData.messageType,
-                                message: ruleFormData.dmMessage,
-                                buttons: ruleFormData.buttons || [],
-                                quickReplies: ruleFormData.quickReplies || [],
-                                carouselSlides: ruleFormData.carouselSlides || [],
-                              }
-                        }
-                        avatarUrl={previewAvatarUrl}
-                        resolvePreviewVariables={resolvePreviewVariables}
-                        defaultSlideImage={selectedPost?.image || feedPosts[0]?.image || ""}
-                        simulatedButtonId={simulatedButtonId}
-                        setSimulatedButtonId={(id) => setSimulatedButtonId(id)}
-                        simulatedQrId={simulatedLiveQrId}
-                        setSimulatedQrId={(id) => setSimulatedLiveQrId(id)}
-                      />
-
-                      {/* 3. FOLLOW UP MESSAGE (Jika aktif) */}
-                      {ruleFormData.featureFollowUp && (
-                        <div className="pt-2 space-y-2 animate-in fade-in slide-in-from-bottom-1 duration-200">
-                          {/* Delay Time Pill */}
-                          <div className="flex justify-center">
-                            <span className="px-2.5 py-0.5 rounded-full bg-gray-200/90 dark:bg-white/10 text-[9px] font-semibold text-gray-600 dark:text-gray-300 shadow-2xs text-center flex items-center gap-1">
-                              <Clock className="w-2.5 h-2.5" />
-                              <span>{ruleFormData.followUpDelay || "1 Jam"} kemudian...</span>
-                            </span>
-                          </div>
-
-                          {/* Message Preview Renderer for Follow Up */}
-                          <MessagePreviewRenderer
-                            payload={{
-                              messageType:
-                                ruleFormData.followUpMessageType === "Teks Biasa" ||
-                                ruleFormData.followUpMessageType === "PLAIN_TEXT"
-                                  ? "PLAIN_TEXT"
-                                  : ruleFormData.followUpMessageType === "Carousel" ||
-                                    ruleFormData.followUpMessageType === "CAROUSEL"
-                                  ? "CAROUSEL"
-                                  : "BUTTON_TEMPLATE",
-                              message:
-                                ruleFormData.followUpMessage ||
-                                "Halo {first_name}! Link materinya tadi udah sempat kamu buka belum? Kalau ada kendala atau mau tanya-tanya bilang ya 😉",
-                              buttons:
-                                Array.isArray(ruleFormData.followUpButtons) &&
-                                ruleFormData.followUpButtons.length > 0
-                                  ? ruleFormData.followUpButtons
-                                  : [
+                        payload={{
+                          messageType:
+                            ruleFormData.followUpMessageType === "Teks Biasa" ||
+                            ruleFormData.followUpMessageType === "PLAIN_TEXT"
+                              ? "PLAIN_TEXT"
+                              : ruleFormData.followUpMessageType === "Carousel" ||
+                                ruleFormData.followUpMessageType === "CAROUSEL"
+                              ? "CAROUSEL"
+                              : "BUTTON_TEMPLATE",
+                          message:
+                            ruleFormData.followUpMessage ||
+                            "Halo {first_name}! Link materinya tadi udah sempat kamu buka belum? Kalau ada kendala atau mau tanya-tanya bilang ya 😉",
+                          buttons:
+                            Array.isArray(ruleFormData.followUpButtons) &&
+                            ruleFormData.followUpButtons.length > 0
+                              ? ruleFormData.followUpButtons
+                              : [
+                                  {
+                                    id: "followup_btn_1",
+                                    labelType: "Kustom",
+                                    label:
+                                      ruleFormData.followUpButtonLabel ||
+                                      "Buka Link Sekarang",
+                                    action: "Buka Website",
+                                    url:
+                                      ruleFormData.buttonUrl ||
+                                      "https://ruangcreativemuslim.com",
+                                  },
+                                ],
+                          quickReplies: ruleFormData.followUpQuickReplies || [],
+                          carouselSlides:
+                            Array.isArray(ruleFormData.followUpCarouselSlides) &&
+                            ruleFormData.followUpCarouselSlides.length > 0
+                              ? ruleFormData.followUpCarouselSlides
+                              : [
+                                  {
+                                    id: "slide_followup_1",
+                                    image:
+                                      selectedPost?.image ||
+                                      feedPosts[0]?.image ||
+                                      "",
+                                    title: "Follow Up Materi",
+                                    subtitle:
+                                      "Cek penawaran spesial atau info lanjutan",
+                                    buttons: [
                                       {
-                                        id: "followup_btn_1",
+                                        id: "slide_btn_followup_1",
                                         labelType: "Kustom",
-                                        label:
-                                          ruleFormData.followUpButtonLabel ||
-                                          "Buka Link Sekarang",
+                                        label: "Buka Sekarang",
                                         action: "Buka Website",
                                         url:
                                           ruleFormData.buttonUrl ||
                                           "https://ruangcreativemuslim.com",
                                       },
                                     ],
-                              quickReplies: ruleFormData.followUpQuickReplies || [],
-                              carouselSlides:
-                                Array.isArray(ruleFormData.followUpCarouselSlides) &&
-                                ruleFormData.followUpCarouselSlides.length > 0
-                                  ? ruleFormData.followUpCarouselSlides
-                                  : [
-                                      {
-                                        id: "slide_followup_1",
-                                        image:
-                                          selectedPost?.image ||
-                                          feedPosts[0]?.image ||
-                                          "",
-                                        title: "Follow Up Materi",
-                                        subtitle:
-                                          "Cek penawaran spesial atau info lanjutan",
-                                        buttons: [
-                                          {
-                                            id: "slide_btn_followup_1",
-                                            labelType: "Kustom",
-                                            label: "Buka Sekarang",
-                                            action: "Buka Website",
-                                            url:
-                                              ruleFormData.buttonUrl ||
-                                              "https://ruangcreativemuslim.com",
-                                          },
-                                        ],
-                                      },
-                                    ],
-                            }}
-                            avatarUrl={previewAvatarUrl}
-                            resolvePreviewVariables={resolvePreviewVariables}
-                            defaultSlideImage={selectedPost?.image || feedPosts[0]?.image || ""}
-                            simulatedButtonId={null}
-                            setSimulatedButtonId={() => {}}
-                            simulatedQrId={null}
-                            setSimulatedQrId={() => {}}
-                            defaultFallbackText="Halo {first_name}! Link materinya tadi udah sempat kamu buka belum?"
-                          />
-                        </div>
-                      )}
-                    </>
+                                  },
+                                ],
+                        }}
+                        avatarUrl={previewAvatarUrl}
+                        resolvePreviewVariables={resolvePreviewVariables}
+                        defaultSlideImage={selectedPost?.image || feedPosts[0]?.image || ""}
+                        simulatedButtonId={null}
+                        setSimulatedButtonId={() => {}}
+                        simulatedQrId={null}
+                        setSimulatedQrId={() => {}}
+                        defaultFallbackText="Halo {first_name}! Link materinya tadi udah sempat kamu buka belum?"
+                      />
+                    </div>
                   )}
                 </div>
 

@@ -3,6 +3,7 @@ import {
   buildButtonTemplateMessage,
   buildMainDmPayload,
   checkKeywordMatch,
+  getIgUserProfile,
   postToMetaGraph,
   resolveVariables,
   stringifyLogMeta,
@@ -317,17 +318,47 @@ export async function handleCommentEvent(change: any, account: any, origin: stri
         },
       ]);
     } else if (ruleConfig.featureAskForFollow && ruleConfig.askForFollowMessage) {
-      // Step 4b: Ask For Follow Gate (Tanpa header kartu, teks hitam jelas)
-      const followText = resolveVariables(ruleConfig.askForFollowMessage, fromUsername);
-      const btnLabel = ruleConfig.askForFollowButtonLabel || "Sudah mengikuti 🙌";
+      let alreadyFollows = false;
+      if (fromId) {
+        try {
+          const userProfile = await getIgUserProfile(fromId, account.accessToken);
+          if (userProfile?.isFollowing === true) {
+            alreadyFollows = true;
+            console.log(`✅ [Meta Webhook] @${fromUsername} already follows @${account.username}, skipping Ask For Follow gate.`);
+          }
+        } catch {}
+      }
 
-      dmPayloadMessage = buildButtonTemplateMessage(followText, [
-        {
-          type: "postback",
-          title: btnLabel.slice(0, 20),
-          payload: `CHECK_FOLLOW_${matchedRule.id}`,
-        },
-      ]);
+      if (alreadyFollows) {
+        if (ruleConfig.featureAskForContact && ruleConfig.askContactMessage) {
+          const contactText = resolveVariables(ruleConfig.askContactMessage, fromUsername);
+          dmPayloadMessage = { text: contactText };
+          initialMeta.awaitingContact = true;
+          initialMeta.askContactType = ruleConfig.askContactType || "Email Saja";
+        } else {
+          initialMeta.mainSentAt = new Date().toISOString();
+          dmPayloadMessage = buildMainDmPayload({
+            rule: matchedRule,
+            ruleConfig,
+            liveContentItem: matchedLiveContent,
+            username: fromUsername,
+            origin,
+            senderId: fromId || undefined,
+          });
+        }
+      } else {
+        // Step 4b: Ask For Follow Gate (Tanpa header kartu, teks hitam jelas)
+        const followText = resolveVariables(ruleConfig.askForFollowMessage, fromUsername);
+        const btnLabel = ruleConfig.askForFollowButtonLabel || "Sudah mengikuti 🙌";
+
+        dmPayloadMessage = buildButtonTemplateMessage(followText, [
+          {
+            type: "postback",
+            title: btnLabel.slice(0, 20),
+            payload: `CHECK_FOLLOW_${matchedRule.id}`,
+          },
+        ]);
+      }
     } else if (ruleConfig.featureAskForContact && ruleConfig.askContactMessage) {
       // Step 4c: Ask for Contact Request
       const contactText = resolveVariables(ruleConfig.askContactMessage, fromUsername);
