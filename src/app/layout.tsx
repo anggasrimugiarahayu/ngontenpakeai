@@ -20,7 +20,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport = {
-  colorScheme: "dark",
+  colorScheme: "light dark",
 };
 
 export default async function RootLayout({
@@ -67,6 +67,26 @@ export default async function RootLayout({
 
   return (
     <html lang="id" className="scroll-smooth" suppressHydrationWarning>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var t = localStorage.getItem('theme');
+                if (t === 'light') {
+                  document.documentElement.classList.remove('dark');
+                  document.documentElement.classList.add('light');
+                  document.documentElement.style.colorScheme = 'light';
+                } else {
+                  document.documentElement.classList.remove('light');
+                  document.documentElement.classList.add('dark');
+                  document.documentElement.style.colorScheme = 'dark';
+                }
+              } catch (e) {}
+            `,
+          }}
+        />
+      </head>
       <body
         className={`bg-gray-50 text-gray-800 dark:bg-rn-dark-bg dark:text-gray-200 font-sans selection:bg-rn-accent selection:text-black antialiased relative min-h-screen`}
         suppressHydrationWarning

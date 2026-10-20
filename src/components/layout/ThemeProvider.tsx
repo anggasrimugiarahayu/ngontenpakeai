@@ -6,7 +6,7 @@ type ThemeProviderProps = React.ComponentProps<typeof NextThemesProvider>;
 
 export function ThemeProvider({ children, scriptProps, ...props }: ThemeProviderProps) {
   return (
-    <NextThemesProvider scriptProps={{ async: true, ...scriptProps }} {...props}>
+    <NextThemesProvider scriptProps={scriptProps} {...props}>
       {children}
     </NextThemesProvider>
   );
