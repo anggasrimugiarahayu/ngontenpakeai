@@ -261,7 +261,7 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
               href="/ruang-automation"
               className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-300 hover:shadow-xl hover:-translate-y-1.5 cursor-pointer z-0 overflow-hidden bg-white border-gray-200 shadow-gray-200 hover:border-purple-400 dark:bg-[#18181b] dark:border-white/5 dark:shadow-black/50 dark:hover:border-purple-500/50`}
             >
-              <span className="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-[#d97706] shadow-sm z-10" style={{ backgroundColor: "#f97316" }}>
+              <span className="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-orange-500 shadow-sm z-10">
                 Coming Soon
               </span>
 
@@ -418,7 +418,7 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
                     href={isLoggedIn ? `/checkout?type=${pkgItem.type}` : `/login?redirect=/checkout?type=${pkgItem.type}`}
                     onMouseEnter={() => { if (isLoggedIn) preload(["checkout", pkgItem.type, undefined], () => getCheckoutDetailsAction(pkgItem.type, undefined)) }}
                     onTouchStart={() => { if (isLoggedIn) preload(["checkout", pkgItem.type, undefined], () => getCheckoutDetailsAction(pkgItem.type, undefined)) }}
-                    className={`w-full mt-4 xl:mt-5 block text-center font-bold text-xs xl:text-sm py-3 rounded-xl transition-all ${hasHighlight ? 'bg-rn-accent text-black font-black hover:bg-white shadow-[0_0_20px_rgba(208,226,6,0.2)]' : 'bg-gray-900 hover:bg-rn-accent hover:text-black text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-black dark:text-white'}`}
+                    className={`w-full mt-4 xl:mt-5 block text-center font-bold text-xs xl:text-sm py-3 rounded-xl transition-all ${hasHighlight ? 'bg-rn-accent text-white font-black hover:bg-orange-600 shadow-[0_0_20px_rgba(249,115,22,0.25)]' : 'bg-gray-900 hover:bg-rn-accent hover:text-white text-white dark:bg-[#27272a] dark:hover:bg-rn-accent dark:hover:text-white dark:text-white'}`}
                   >
                     {pkgData.name.includes("Basic") || pkgData.name.includes("Book") || pkgData.name.includes("Ebook")
                       ? "Pilih Paket Ebook"

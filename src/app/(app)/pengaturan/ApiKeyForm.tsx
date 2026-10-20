@@ -130,7 +130,7 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
           <button
             type="submit"
             disabled={isLoading || !keyValue.trim()}
-            className="w-full md:w-auto px-6 py-2.5 md:py-2 rounded-lg bg-orange-700/80 hover:bg-orange-600 text-white font-medium transition-colors disabled:opacity-50"
+            className="w-full md:w-auto px-6 py-2.5 md:py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium transition-colors disabled:opacity-50 shadow-sm"
           >
             {isLoading ? "Menyimpan..." : "Simpan"}
           </button>

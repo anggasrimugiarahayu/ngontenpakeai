@@ -201,7 +201,7 @@ export default function AtmBuilderClient() {
             <div className="whitespace-pre-wrap text-[14px] text-gray-700 dark:text-gray-300 mb-6" dangerouslySetInnerHTML={{__html: (msg.data.opening_text || msg.data.ringkasan_analisis).replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-gray-900 dark:text-white font-heading">$1</strong>').replace(/\*(.*?)\*/g, '<em>$1</em>')}} />
           )}
 
-          <h4 className="font-bold text-gray-900 dark:text-white font-heading flex items-center gap-2 text-sm md:text-base mb-3 mt-6"><CheckCircle2 size={18} className="text-[#D0E206]" strokeWidth={2.5}/> 3 Versi Adaptasi (Original)</h4>
+          <h4 className="font-bold text-gray-900 dark:text-white font-heading flex items-center gap-2 text-sm md:text-base mb-3 mt-6"><CheckCircle2 size={18} className="text-orange-500" strokeWidth={2.5}/> 3 Versi Adaptasi (Original)</h4>
           <div className="grid grid-cols-1 gap-5">
             {(msg.data.versions || []).map((ver: any, i: number) => (
               <div key={i} className="bg-white dark:bg-black border border-gray-300 dark:border-white/20 rounded-[12px] overflow-hidden shadow-none hover:border-gray-900 dark:hover:border-white transition-all">
