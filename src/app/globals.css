@@ -1421,16 +1421,16 @@
   97%,100% { transform: translateY(-14px); opacity: 0 }
 }
 
-.iso-stage .sc-type { transform-origin: 0 50%; animation: sc-type 8s steps(31, end) infinite; }
+.iso-stage .sc-type { transform-origin: 0 50%; animation: sc-type 8s steps(10, end) infinite; }
 @keyframes sc-type {
   0%,11.25% { transform: scaleX(0) }
   28.75%,100% { transform: scaleX(1) }
 }
 
-.iso-stage .sc-caret { animation: sc-caret 8s steps(31, end) infinite; }
+.iso-stage .sc-caret { animation: sc-caret 8s steps(10, end) infinite; }
 @keyframes sc-caret {
   0%,11.25% { transform: translateX(0) }
-  28.75%,100% { transform: translateX(290px) }
+  28.75%,100% { transform: translateX(114px) }
 }
 
 .iso-stage .sc-blink { animation: sc-blink 1s steps(1, end) infinite; }
