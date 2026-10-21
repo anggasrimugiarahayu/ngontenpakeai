@@ -1,14 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { RisetPlatformCard, RisetPlatform } from "./components/RisetPlatformCard";
 import {
   InstagramIcon,
   TikTokIcon,
   YouTubeIcon,
   FacebookIcon,
 } from "./components/RisetIcons";
-import { RisetPlatformCard, RisetPlatform } from "./components/RisetPlatformCard";
+import { InstagramResearchStudio } from "./instagram/InstagramResearchStudio";
 
 interface RuangRisetClientProps {
   isLoggedIn: boolean;
@@ -22,51 +23,51 @@ const RISET_PLATFORMS: RisetPlatform[] = [
     id: "instagram",
     name: "Riset Instagram",
     description:
-      "Analisis akun kompetitor, bedah Reels viral, dan temukan format caption paling efektif di niche kamu.",
+      "Analisis performa akun, temukan Reels dengan Outlier Score tinggi, dan urutkan konten viral.",
     icon: InstagramIcon,
-    badge: "COMING SOON",
+    badge: "Populer",
     isActive: true,
     points: [
-      "Riset Profil & Top Post Kompetitor",
-      "Ekstrak Pola Hook & Caption Viral",
-      "Analisis Minat & Demografi Followers",
+      "Bongkar Outlier Score & Konten Paling Viral",
+      "Urutkan Reels Berdasarkan Views & Komentar",
+      "Ekspor Naskah, Hook, & Data ke CSV/Excel",
     ],
   },
   {
     id: "tiktok",
     name: "Riset TikTok",
     description:
-      "Pantau tren FYP terkini, temukan audio/sound viral lebih awal, dan bedah struktur video retensi tinggi.",
+      "Eksplorasi sound tren, pola durasi FYP, dan struktur hook video kompetitor.",
     icon: TikTokIcon,
-    badge: "COMING SOON",
+    badge: "Segera Hadir",
     isActive: false,
     points: [
-      "Deteksi Topik & Sound Viral FYP",
-      "Analisis Struktur Video 3 Detik Pertama",
-      "Temukan Celah Konten & Niche Unik",
+      "Deteksi Audio & Sound FYP yang Sedang Naik",
+      "Analisis Struktur 3 Detik Pertama Video Populer",
+      "Petakan Pola Durasi & Tipe Konten Pemenang",
     ],
   },
   {
     id: "youtube",
     name: "Riset YouTube",
     description:
-      "Riset ide video panjang & Shorts, analisis thumbnail dan judul dengan CTR tinggi dari channel teratas.",
+      "Riset judul, rasio klik tayang (CTR) thumbnail, dan topik Shorts dengan pencarian tinggi.",
     icon: YouTubeIcon,
-    badge: "COMING SOON",
+    badge: "Segera Hadir",
     isActive: false,
     points: [
-      "Riset Keyword & Judul High CTR",
-      "Analisis Performa Shorts & Video Panjang",
-      "Formula Hook Pembuka & Retensi Audiens",
+      "Bongkar Pola Judul & Thumbnail Penarik Klik",
+      "Temukan Celah Kata Kunci Volume Pencarian Tinggi",
+      "Pilah Format Durasi Shorts & Long-Form Efektif",
     ],
   },
   {
     id: "facebook",
     name: "Riset Facebook",
     description:
-      "Bongkar perbincangan hangat di grup Facebook, analisis konten fanspage viral, dan sentimen audiens.",
+      "Pantau topik diskusi grup ramai, performa postingan organik, dan iklan kompetitor.",
     icon: FacebookIcon,
-    badge: "COMING SOON",
+    badge: "Segera Hadir",
     isActive: false,
     points: [
       "Riset Diskusi Grup & Komunitas Ramai",
@@ -83,9 +84,30 @@ export default function RuangRisetClient({
   initialPlatform = null,
 }: RuangRisetClientProps) {
   const router = useRouter();
-  const [, setSelectedPlatform] = useState<"instagram" | null>(initialPlatform);
+  const [selectedPlatform, setSelectedPlatform] = useState<"instagram" | null>(
+    initialPlatform
+  );
 
-  // Handle click on Instagram Research Card (EXACT SAME BEHAVIOR AS RUANG AUTOMATION)
+  // Sync state with URL search params on mount & popstate
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const syncFromUrl = () => {
+      const params = new URLSearchParams(window.location.search);
+      const platformParam = params.get("platform");
+      if (platformParam === "instagram") {
+        setSelectedPlatform("instagram");
+      } else {
+        setSelectedPlatform(null);
+      }
+    };
+
+    syncFromUrl();
+    window.addEventListener("popstate", syncFromUrl);
+    return () => window.removeEventListener("popstate", syncFromUrl);
+  }, []);
+
+  // Handle click on Instagram Research Card
   const handleSelectInstagram = () => {
     if (!isLoggedIn) {
       window.dispatchEvent(new Event("app-loading-start"));
@@ -104,30 +126,47 @@ export default function RuangRisetClient({
     }
   };
 
+  const handleBackToHub = () => {
+    setSelectedPlatform(null);
+    if (typeof window !== "undefined") {
+      window.history.pushState(null, "", "/ruang-riset");
+      window.dispatchEvent(new Event("app-shallow-navigate"));
+    }
+  };
+
   return (
     <div className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 animate-in fade-in duration-300">
-      {/* Header - EXACT SAME CLEAN STYLE & SPACING AS RUANG NGONTEN */}
-      <div className="flex flex-col items-center justify-center text-center gap-2 mb-8 md:mb-10">
-        <div className="space-y-3 flex flex-col items-center">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
-            Mau mulai dari mana?
-          </h1>
-          <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 max-w-xl mx-auto text-balance leading-relaxed">
-            Pilih platform media sosial di bawah ini untuk riset topik tren viral, analisis kompetitor di niche kamu, dan temukan celah konten terbaik bareng AI.
-          </p>
-        </div>
-      </div>
+      {selectedPlatform === "instagram" ? (
+        <InstagramResearchStudio
+          onBackToPlatformHub={handleBackToHub}
+          defaultUsername="papamenyapa"
+        />
+      ) : (
+        <>
+          {/* Header - EXACT SAME CLEAN STYLE & SPACING AS RUANG NGONTEN */}
+          <div className="flex flex-col items-center justify-center text-center gap-2 mb-8 md:mb-10">
+            <div className="space-y-3 flex flex-col items-center">
+              <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+                Mau mulai dari mana?
+              </h1>
+              <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 max-w-xl mx-auto text-balance leading-relaxed">
+                Pilih platform media sosial di bawah ini untuk riset topik tren viral, analisis kompetitor di niche kamu, dan temukan celah konten terbaik bareng AI.
+              </p>
+            </div>
+          </div>
 
-      {/* Platform Cards Grid - EXACT SAME STYLE & GAP AS RUANG NGONTEN */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-        {RISET_PLATFORMS.map((platform) => (
-          <RisetPlatformCard
-            key={platform.id}
-            platform={platform}
-            onSelect={platform.id === "instagram" ? handleSelectInstagram : undefined}
-          />
-        ))}
-      </div>
+          {/* Platform Cards Grid - EXACT SAME STYLE & GAP AS RUANG NGONTEN */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
+            {RISET_PLATFORMS.map((platform) => (
+              <RisetPlatformCard
+                key={platform.id}
+                platform={platform}
+                onSelect={platform.id === "instagram" ? handleSelectInstagram : undefined}
+              />
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
