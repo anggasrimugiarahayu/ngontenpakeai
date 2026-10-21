@@ -1674,7 +1674,7 @@ export default function RuangAutomationClient({
     <div
       className={`flex-1 w-full mx-auto animate-in fade-in duration-300 ${
         selectedPlatform === null
-          ? "max-w-5xl px-4 md:px-8 py-10 md:py-16"
+          ? "max-w-7xl p-4 md:p-8"
           : "max-w-4xl p-6 py-10 md:py-16"
       }`}
     >

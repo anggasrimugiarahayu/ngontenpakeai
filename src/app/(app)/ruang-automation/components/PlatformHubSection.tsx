@@ -26,9 +26,9 @@ export function PlatformHubSection({
   ];
 
   return (
-    <div className="space-y-8">
+    <div>
       {/* Header - EXACT SAME STYLE & CENTER ALIGNED AS RUANG NGONTEN */}
-      <div className="flex flex-col items-center justify-center text-center gap-2 mb-6 md:mb-10">
+      <div className="flex flex-col items-center justify-center text-center gap-2 mb-8 md:mb-10">
         <div className="space-y-3 flex flex-col items-center">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
             Mau mulai dari mana?

@@ -105,9 +105,9 @@ export default function RuangRisetClient({
   };
 
   return (
-    <div className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 py-4 md:py-8 animate-in fade-in duration-300">
+    <div className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 animate-in fade-in duration-300">
       {/* Header - EXACT SAME CLEAN STYLE & SPACING AS RUANG NGONTEN */}
-      <div className="flex flex-col items-center justify-center text-center gap-2 mb-6 md:mb-10">
+      <div className="flex flex-col items-center justify-center text-center gap-2 mb-8 md:mb-10">
         <div className="space-y-3 flex flex-col items-center">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
             Mau mulai dari mana?
