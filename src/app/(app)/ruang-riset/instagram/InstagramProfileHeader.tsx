@@ -103,11 +103,14 @@ export function InstagramProfileHeader({
               )}
             </div>
 
-            {/* Menu Filter di Bagian Kanan Atas Profil (Sesuai Lampiran Gambar 1, 2, 3) */}
-            <div className="relative">
+            {/* Menu Filter Trigger di Kanan Atas (Desktop) */}
+            <div>
               <button
                 type="button"
-                onClick={() => setIsFilterOpen((prev) => !prev)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsFilterOpen((prev) => !prev);
+                }}
                 className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm cursor-pointer border ${
                   !hasAppliedFilter
                     ? "bg-rn-accent text-white hover:bg-orange-600 border-orange-500 ring-2 ring-orange-500/20"
@@ -122,24 +125,6 @@ export function InstagramProfileHeader({
                   }`}
                 />
               </button>
-
-              <SortFeedFilterDropdown
-                isOpen={isFilterOpen}
-                onClose={() => setIsFilterOpen(false)}
-                onApply={() => {
-                  if (onApplyFilters) onApplyFilters();
-                  setIsFilterOpen(false);
-                }}
-                filterMode={filterMode}
-                setFilterMode={setFilterMode}
-                postLimit={postLimit}
-                setPostLimit={setPostLimit}
-                dateFilter={dateFilter}
-                setDateFilter={setDateFilter}
-                sortOption={sortOption}
-                setSortOption={setSortOption}
-                onReset={onResetFilters}
-              />
             </div>
           </div>
 
@@ -226,10 +211,13 @@ export function InstagramProfileHeader({
             </div>
 
             {/* Mobile Filter Button */}
-            <div className="relative">
+            <div>
               <button
                 type="button"
-                onClick={() => setIsFilterOpen((prev) => !prev)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsFilterOpen((prev) => !prev);
+                }}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${
                   !hasAppliedFilter
                     ? "bg-rn-accent text-white"
@@ -239,24 +227,6 @@ export function InstagramProfileHeader({
                 <SlidersHorizontal className="w-3.5 h-3.5" />
                 <span>Filters & Sort</span>
               </button>
-
-              <SortFeedFilterDropdown
-                isOpen={isFilterOpen}
-                onClose={() => setIsFilterOpen(false)}
-                onApply={() => {
-                  if (onApplyFilters) onApplyFilters();
-                  setIsFilterOpen(false);
-                }}
-                filterMode={filterMode}
-                setFilterMode={setFilterMode}
-                postLimit={postLimit}
-                setPostLimit={setPostLimit}
-                dateFilter={dateFilter}
-                setDateFilter={setDateFilter}
-                sortOption={sortOption}
-                setSortOption={setSortOption}
-                onReset={onResetFilters}
-              />
             </div>
           </div>
 
@@ -277,6 +247,31 @@ export function InstagramProfileHeader({
               <span>{profile.externalUrl.replace(/^https?:\/\//, "")}</span>
             </a>
           )}
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* SINGLE DROPDOWN MODAL (Anchored at top-right of Card, 100% Reliable) */}
+      {/* ========================================================================= */}
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 md:top-8 md:right-8 pointer-events-none">
+        <div className="pointer-events-auto">
+          <SortFeedFilterDropdown
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            onApply={() => {
+              if (onApplyFilters) onApplyFilters();
+              setIsFilterOpen(false);
+            }}
+            filterMode={filterMode}
+            setFilterMode={setFilterMode}
+            postLimit={postLimit}
+            setPostLimit={setPostLimit}
+            dateFilter={dateFilter}
+            setDateFilter={setDateFilter}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
+            onReset={onResetFilters}
+          />
         </div>
       </div>
 
