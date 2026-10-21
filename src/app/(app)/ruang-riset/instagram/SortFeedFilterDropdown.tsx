@@ -25,6 +25,7 @@ import {
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  onApply?: () => void;
   filterMode: FilterMode;
   setFilterMode: (val: FilterMode) => void;
   postLimit: PostLimit;
@@ -39,6 +40,7 @@ interface Props {
 export function SortFeedFilterDropdown({
   isOpen,
   onClose,
+  onApply,
   filterMode,
   setFilterMode,
   postLimit,
@@ -93,6 +95,11 @@ export function SortFeedFilterDropdown({
       : dateFilterOptions.find((o) => o.value === dateFilter)?.label ||
         "All Posts";
 
+  const handleApply = () => {
+    if (onApply) onApply();
+    onClose();
+  };
+
   return (
     <div
       ref={containerRef}
@@ -104,7 +111,7 @@ export function SortFeedFilterDropdown({
           <div className="w-7 h-7 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center font-bold text-xs">
             <SlidersHorizontal className="w-4 h-4" />
           </div>
-          <h3 className="font-bold text-base font-heading">Sort Feed</h3>
+          <h3 className="font-bold text-base font-heading">Sort & Filter Feed</h3>
         </div>
         <button
           onClick={onClose}
@@ -159,7 +166,7 @@ export function SortFeedFilterDropdown({
           <button
             type="button"
             onClick={() => setIsDropdownOpen((prev) => !prev)}
-            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-blue-500/80 ring-2 ring-blue-500/20 bg-white dark:bg-[#202023] text-xs font-semibold text-gray-900 dark:text-white cursor-pointer"
+            className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-orange-500/80 ring-2 ring-orange-500/20 bg-white dark:bg-[#202023] text-xs font-semibold text-gray-900 dark:text-white cursor-pointer"
           >
             <span>{currentSelectLabel}</span>
             <ChevronDown
@@ -226,7 +233,7 @@ export function SortFeedFilterDropdown({
         </div>
       </div>
 
-      {/* Section 2: Sort by (Gambar 2) */}
+      {/* Section 2: Sort by (Gambar 2 & 3) */}
       <div className="pt-3 border-t border-gray-100 dark:border-white/10 space-y-2">
         <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">
           Sort by
@@ -245,26 +252,9 @@ export function SortFeedFilterDropdown({
           >
             <div className="flex items-center gap-2.5">
               <Zap className="w-4 h-4 text-amber-500 fill-amber-500" />
-              <span>Outlier score</span>
+              <span>Outlier score (Viralitas)</span>
             </div>
             {sortOption === "outlier" && <Check className="w-4 h-4 text-rn-accent" />}
-          </button>
-
-          {/* Views */}
-          <button
-            type="button"
-            onClick={() => setSortOption("views")}
-            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
-              sortOption === "views"
-                ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
-                : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
-            }`}
-          >
-            <div className="flex items-center gap-2.5">
-              <Play className="w-4 h-4 text-orange-500" />
-              <span>Views</span>
-            </div>
-            {sortOption === "views" && <Check className="w-4 h-4 text-rn-accent" />}
           </button>
 
           {/* Likes */}
@@ -278,10 +268,27 @@ export function SortFeedFilterDropdown({
             }`}
           >
             <div className="flex items-center gap-2.5">
-              <Heart className="w-4 h-4 text-rose-500" />
-              <span>Likes</span>
+              <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+              <span>Likes Terbanyak</span>
             </div>
             {sortOption === "likes" && <Check className="w-4 h-4 text-rn-accent" />}
+          </button>
+
+          {/* Views */}
+          <button
+            type="button"
+            onClick={() => setSortOption("views")}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+              sortOption === "views"
+                ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
+                : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <Play className="w-4 h-4 text-orange-500 fill-orange-500" />
+              <span>Views Terbanyak</span>
+            </div>
+            {sortOption === "views" && <Check className="w-4 h-4 text-rn-accent" />}
           </button>
 
           {/* Comments */}
@@ -296,9 +303,26 @@ export function SortFeedFilterDropdown({
           >
             <div className="flex items-center gap-2.5">
               <MessageSquare className="w-4 h-4 text-blue-500" />
-              <span>Comments</span>
+              <span>Comments Terbanyak</span>
             </div>
             {sortOption === "comments" && <Check className="w-4 h-4 text-rn-accent" />}
+          </button>
+
+          {/* Newest */}
+          <button
+            type="button"
+            onClick={() => setSortOption("newest")}
+            className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
+              sortOption === "newest"
+                ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
+                : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <Clock className="w-4 h-4 text-emerald-500" />
+              <span>Newest (Terbaru)</span>
+            </div>
+            {sortOption === "newest" && <Check className="w-4 h-4 text-rn-accent" />}
           </button>
 
           {/* Oldest */}
@@ -313,15 +337,15 @@ export function SortFeedFilterDropdown({
           >
             <div className="flex items-center gap-2.5">
               <Clock className="w-4 h-4 text-gray-500" />
-              <span>Oldest</span>
+              <span>Oldest (Terlama)</span>
             </div>
             {sortOption === "oldest" && <Check className="w-4 h-4 text-rn-accent" />}
           </button>
         </div>
       </div>
 
-      {/* Footer / Reset Action */}
-      <div className="mt-4 pt-3 border-t border-gray-100 dark:border-white/10 flex items-center justify-between">
+      {/* Footer / Reset & Apply Action */}
+      <div className="mt-4 pt-3 border-t border-gray-100 dark:border-white/10 flex items-center justify-between gap-3">
         <button
           type="button"
           onClick={onReset}
@@ -331,10 +355,10 @@ export function SortFeedFilterDropdown({
         </button>
         <button
           type="button"
-          onClick={onClose}
-          className="px-3.5 py-1.5 rounded-lg bg-rn-accent hover:bg-orange-600 text-white font-bold text-xs shadow-xs transition-all cursor-pointer"
+          onClick={handleApply}
+          className="px-4 py-2 rounded-xl bg-rn-accent hover:bg-orange-600 text-white font-bold text-xs shadow-sm transition-all cursor-pointer transform active:scale-95"
         >
-          Terapkan
+          Terapkan & Tampilkan Feed
         </button>
       </div>
     </div>

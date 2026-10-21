@@ -5,7 +5,6 @@ import {
   InstagramTargetProfile,
   InstagramPostItem,
   SortOption,
-  FormatFilter,
   FilterMode,
   PostLimit,
   DateFilter,
@@ -20,6 +19,7 @@ import {
   Search,
   AlertCircle,
   Loader2,
+  SlidersHorizontal,
 } from "lucide-react";
 
 interface Props {
@@ -69,13 +69,14 @@ export function InstagramResearchStudio({
   const [posts, setPosts] = useState<InstagramPostItem[]>([]);
   const [selectedPost, setSelectedPost] = useState<InstagramPostItem | null>(null);
 
+  // Gallery hidden initially until user selects & applies Filter & Sort
+  const [hasAppliedFilter, setHasAppliedFilter] = useState(false);
+
   // Sorting & Filtering State (SortFeed UX)
   const [filterMode, setFilterMode] = useState<FilterMode>("posts");
   const [postLimit, setPostLimit] = useState<PostLimit>(25);
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
-  const [sortOption, setSortOption] = useState<SortOption>("outlier");
-  const [formatFilter, setFormatFilter] = useState<FormatFilter>("all");
-  const [searchKeyword, setSearchKeyword] = useState("");
+  const [sortOption, setSortOption] = useState<SortOption>("likes");
 
   // Function to execute research
   const handleSearch = async (userToSearch: string) => {
@@ -84,6 +85,7 @@ export function InstagramResearchStudio({
 
     setIsLoading(true);
     setError(null);
+    setHasAppliedFilter(false); // Reset gallery view until user clicks Filters & Sort
     setLoadingPercent(15);
     setLoadingStepText(`Mengambil profil @${clean} dari Instagram...`);
 
@@ -99,7 +101,7 @@ export function InstagramResearchStudio({
 
     const timer3 = setTimeout(() => {
       setLoadingPercent(95);
-      setLoadingStepText("Menyusun grid feed visual...");
+      setLoadingStepText("Menyusun data analitik profil...");
     }, 1200);
 
     try {
@@ -138,57 +140,27 @@ export function InstagramResearchStudio({
     setFilterMode("posts");
     setPostLimit(25);
     setDateFilter("all");
-    setSortOption("outlier");
-    setFormatFilter("all");
-    setSearchKeyword("");
-  };
-
-  // Clear search & format filter from toolbar
-  const handleClearToolbarFilters = () => {
-    setSearchKeyword("");
-    setFormatFilter("all");
-    if (filterMode === "posts") {
-      setPostLimit(25);
-    } else {
-      setDateFilter("all");
-    }
+    setSortOption("likes");
   };
 
   // Filtered & Sorted Posts with SortFeed Logic
   const filteredAndSortedPosts = useMemo(() => {
     let result = [...posts];
 
-    // 1. Format Filter
-    if (formatFilter === "reels") {
-      result = result.filter((p) => p.mediaType === "VIDEO");
-    } else if (formatFilter === "posts") {
-      result = result.filter((p) => p.mediaType !== "VIDEO");
-    }
-
-    // 2. Keyword Search in Caption/Hook
-    if (searchKeyword.trim()) {
-      const q = searchKeyword.toLowerCase();
-      result = result.filter(
-        (p) =>
-          p.caption.toLowerCase().includes(q) ||
-          p.hookText.toLowerCase().includes(q)
-      );
-    }
-
-    // 3. Date Filter (if Filter Mode is 'date')
+    // 1. Date Filter (if Filter Mode is 'date')
     if (filterMode === "date") {
       result = result.filter((p) => isWithinDateFilter(p.timestamp, dateFilter));
     }
 
-    // 4. Sorting
+    // 2. Sorting (Strict numeric sort)
     result.sort((a, b) => {
       switch (sortOption) {
-        case "outlier":
-          return b.outlierScore - a.outlierScore;
-        case "views":
-          return b.viewsCount - a.viewsCount;
         case "likes":
           return b.likesCount - a.likesCount;
+        case "views":
+          return b.viewsCount - a.viewsCount;
+        case "outlier":
+          return b.outlierScore - a.outlierScore;
         case "comments":
           return b.commentsCount - a.commentsCount;
         case "newest":
@@ -196,17 +168,17 @@ export function InstagramResearchStudio({
         case "oldest":
           return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
         default:
-          return b.outlierScore - a.outlierScore;
+          return b.likesCount - a.likesCount;
       }
     });
 
-    // 5. Post Count Limit (if Filter Mode is 'posts')
+    // 3. Post Count Limit (if Filter Mode is 'posts')
     if (filterMode === "posts" && postLimit !== "all") {
       result = result.slice(0, postLimit);
     }
 
     return result;
-  }, [posts, sortOption, formatFilter, searchKeyword, filterMode, postLimit, dateFilter]);
+  }, [posts, sortOption, filterMode, postLimit, dateFilter]);
 
   const handleExportCSV = () => {
     if (!profile) return;
@@ -322,7 +294,7 @@ export function InstagramResearchStudio({
             </div>
           </div>
           <p className="text-[11px] text-gray-400">
-            Mengolah metrik performa, rata-rata penayangan, dan ranking Outlier Score
+            Mengolah metrik performa, rata-rata penayangan, dan ranking konten
           </p>
         </div>
       )}
@@ -350,32 +322,63 @@ export function InstagramResearchStudio({
             sortOption={sortOption}
             setSortOption={setSortOption}
             onResetFilters={handleResetFilters}
+            onApplyFilters={() => setHasAppliedFilter(true)}
+            hasAppliedFilter={hasAppliedFilter}
           />
 
-          {/* 2. Gallery Header & Toolbar (Matching SortFeed Image 4) */}
-          <InstagramSortToolbar
-            sortOption={sortOption}
-            setSortOption={setSortOption}
-            formatFilter={formatFilter}
-            setFormatFilter={setFormatFilter}
-            searchKeyword={searchKeyword}
-            setSearchKeyword={setSearchKeyword}
-            onExport={handleExportCSV}
-            totalFiltered={filteredAndSortedPosts.length}
-            totalCount={posts.length}
-            filterMode={filterMode}
-            postLimit={postLimit}
-            dateFilter={dateFilter}
-            onClearFilters={handleClearToolbarFilters}
-          />
+          {/* 2. Kartu Panduan Sebelum Membuka Feed */}
+          {!hasAppliedFilter && (
+            <div className="w-full p-8 sm:p-10 rounded-2xl border border-dashed border-gray-300 dark:border-white/15 bg-gray-50/50 dark:bg-white/5 text-center space-y-4 animate-in fade-in duration-200">
+              <div className="w-12 h-12 rounded-2xl bg-orange-500/10 text-rn-accent flex items-center justify-center mx-auto shadow-xs">
+                <SlidersHorizontal className="w-6 h-6" />
+              </div>
+              <div className="space-y-1.5 max-w-md mx-auto">
+                <h4 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white font-heading">
+                  Pilih Kriteria Sortir & Filter Feed
+                </h4>
+                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+                  Profil @{profile.username} berhasil dimuat. Klik tombol <strong>Filters & Sort</strong> di kanan atas atau tombol di bawah ini untuk menampilkan postingan yang disortir.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setHasAppliedFilter(true)}
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-rn-accent hover:bg-orange-600 text-white font-bold text-xs sm:text-sm shadow-sm transition-all transform active:scale-95 cursor-pointer"
+              >
+                <SlidersHorizontal className="w-4 h-4" />
+                <span>Tampilkan Feed Konten ({filteredAndSortedPosts.length} Post)</span>
+              </button>
+            </div>
+          )}
 
-          {/* 3. Instagram Feed Grid with 4 columns & Creator Avatar Badge */}
-          <InstagramFeedGrid
-            posts={filteredAndSortedPosts}
-            profile={profile}
-            sortOption={sortOption}
-            onSelectPost={(post) => setSelectedPost(post)}
-          />
+          {/* 3. Galeri Feed & Toolbar (HANYA MUNCUL SETELAH MEMILIH FILTER & SORT) */}
+          {hasAppliedFilter && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+              {/* Gallery Header & Toolbar (Persis Lampiran SortFeed) */}
+              <InstagramSortToolbar
+                sortOption={sortOption}
+                setSortOption={setSortOption}
+                filterMode={filterMode}
+                setFilterMode={setFilterMode}
+                postLimit={postLimit}
+                setPostLimit={setPostLimit}
+                dateFilter={dateFilter}
+                setDateFilter={setDateFilter}
+                totalFiltered={filteredAndSortedPosts.length}
+                totalCount={posts.length}
+                onExport={handleExportCSV}
+                onResetFilters={handleResetFilters}
+              />
+
+              {/* Instagram Feed Grid with 4 columns & Creator Avatar Badge */}
+              <InstagramFeedGrid
+                posts={filteredAndSortedPosts}
+                profile={profile}
+                sortOption={sortOption}
+                onSelectPost={(post) => setSelectedPost(post)}
+              />
+            </div>
+          )}
 
           {/* 4. Post Inspect Modal */}
           <InstagramPostModal

@@ -31,6 +31,8 @@ interface Props {
   sortOption: SortOption;
   setSortOption: (val: SortOption) => void;
   onResetFilters: () => void;
+  onApplyFilters?: () => void;
+  hasAppliedFilter?: boolean;
 }
 
 function formatNumber(num: number): string {
@@ -54,6 +56,8 @@ export function InstagramProfileHeader({
   sortOption,
   setSortOption,
   onResetFilters,
+  onApplyFilters,
+  hasAppliedFilter = false,
 }: Props) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -104,12 +108,16 @@ export function InstagramProfileHeader({
               <button
                 type="button"
                 onClick={() => setIsFilterOpen((prev) => !prev)}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-900 dark:text-white text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer border border-gray-200/80 dark:border-white/10"
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm cursor-pointer border ${
+                  !hasAppliedFilter
+                    ? "bg-rn-accent text-white hover:bg-orange-600 border-orange-500 ring-2 ring-orange-500/20"
+                    : "bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-900 dark:text-white border-gray-200/80 dark:border-white/10"
+                }`}
               >
-                <SlidersHorizontal className="w-4 h-4 text-rn-accent" />
+                <SlidersHorizontal className={`w-4 h-4 ${!hasAppliedFilter ? "text-white" : "text-rn-accent"}`} />
                 <span>Filters & Sort</span>
                 <ChevronDown
-                  className={`w-3.5 h-3.5 text-gray-400 transition-transform ${
+                  className={`w-3.5 h-3.5 transition-transform ${
                     isFilterOpen ? "rotate-180" : ""
                   }`}
                 />
@@ -118,6 +126,10 @@ export function InstagramProfileHeader({
               <SortFeedFilterDropdown
                 isOpen={isFilterOpen}
                 onClose={() => setIsFilterOpen(false)}
+                onApply={() => {
+                  if (onApplyFilters) onApplyFilters();
+                  setIsFilterOpen(false);
+                }}
                 filterMode={filterMode}
                 setFilterMode={setFilterMode}
                 postLimit={postLimit}
@@ -218,15 +230,23 @@ export function InstagramProfileHeader({
               <button
                 type="button"
                 onClick={() => setIsFilterOpen((prev) => !prev)}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white text-xs font-bold"
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${
+                  !hasAppliedFilter
+                    ? "bg-rn-accent text-white"
+                    : "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
+                }`}
               >
-                <SlidersHorizontal className="w-3.5 h-3.5 text-rn-accent" />
-                <span>Filter</span>
+                <SlidersHorizontal className="w-3.5 h-3.5" />
+                <span>Filters & Sort</span>
               </button>
 
               <SortFeedFilterDropdown
                 isOpen={isFilterOpen}
                 onClose={() => setIsFilterOpen(false)}
+                onApply={() => {
+                  if (onApplyFilters) onApplyFilters();
+                  setIsFilterOpen(false);
+                }}
                 filterMode={filterMode}
                 setFilterMode={setFilterMode}
                 postLimit={postLimit}

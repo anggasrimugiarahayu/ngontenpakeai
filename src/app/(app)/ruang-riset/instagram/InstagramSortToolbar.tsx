@@ -1,66 +1,61 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   SortOption,
-  FormatFilter,
   FilterMode,
   PostLimit,
   DateFilter,
 } from "./types";
+import { SortFeedFilterDropdown } from "./SortFeedFilterDropdown";
 import {
-  Flame,
-  Eye,
-  Heart,
-  MessageSquare,
-  Clock,
   Download,
-  Search,
+  Users,
   SlidersHorizontal,
-  Film,
-  Layers,
+  ArrowUpDown,
+  Check,
   RotateCcw,
-  Sparkles,
 } from "lucide-react";
 
 interface Props {
   sortOption: SortOption;
   setSortOption: (val: SortOption) => void;
-  formatFilter: FormatFilter;
-  setFormatFilter: (val: FormatFilter) => void;
-  searchKeyword: string;
-  setSearchKeyword: (val: string) => void;
-  onExport: () => void;
+  filterMode: FilterMode;
+  setFilterMode: (val: FilterMode) => void;
+  postLimit: PostLimit;
+  setPostLimit: (val: PostLimit) => void;
+  dateFilter: DateFilter;
+  setDateFilter: (val: DateFilter) => void;
   totalFiltered: number;
   totalCount: number;
-  filterMode?: FilterMode;
-  postLimit?: PostLimit;
-  dateFilter?: DateFilter;
-  onClearFilters: () => void;
+  onExport: () => void;
+  onResetFilters: () => void;
 }
 
 export function InstagramSortToolbar({
   sortOption,
   setSortOption,
-  formatFilter,
-  setFormatFilter,
-  searchKeyword,
-  setSearchKeyword,
-  onExport,
+  filterMode,
+  setFilterMode,
+  postLimit,
+  setPostLimit,
+  dateFilter,
+  setDateFilter,
   totalFiltered,
   totalCount,
-  filterMode,
-  postLimit,
-  dateFilter,
-  onClearFilters,
+  onExport,
+  onResetFilters,
 }: Props) {
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+
   // Title dynamic matching SortFeed Image 4
   const getSortTitle = () => {
     switch (sortOption) {
-      case "outlier":
-        return "Highest Outlier Posts";
       case "likes":
         return "Most Liked Posts";
+      case "outlier":
+        return "Highest Outlier Posts";
       case "views":
         return "Most Viewed Posts";
       case "comments":
@@ -70,36 +65,27 @@ export function InstagramSortToolbar({
       case "oldest":
         return "Oldest Posts";
       default:
-        return "Highest Outlier Posts";
+        return "Most Liked Posts";
     }
   };
 
-  const isFiltered =
-    searchKeyword.trim() !== "" ||
-    formatFilter !== "all" ||
+  const isCustomized =
+    sortOption !== "likes" ||
     (filterMode === "posts" && postLimit !== 25) ||
-    (filterMode === "date" && dateFilter !== "all");
+    filterMode === "date";
 
   return (
-    <div className="w-full bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl p-4 sm:p-5 md:p-6 shadow-xs space-y-4">
+    <div className="w-full bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5 relative">
       {/* ========================================================================= */}
-      {/* HEADER SECTION (Persis Layout Gambar 4 SortFeed) */}
+      {/* BARIS ATAS: Judul Kiri & Aksi Kanan (Persis Lampiran SortFeed) */}
       {/* ========================================================================= */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        {/* Left: Dynamic Title & Showing Count */}
-        <div className="space-y-0.5">
-          <div className="flex items-center gap-2">
-            <h3 className="text-xl sm:text-2xl font-bold font-heading text-gray-900 dark:text-white tracking-tight">
-              {getSortTitle()}
-            </h3>
-            {sortOption === "outlier" && (
-              <span className="hidden sm:inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
-                <Sparkles className="w-3 h-3" />
-                SortFeed
-              </span>
-            )}
-          </div>
-          <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
+        {/* Kiri: Judul Dinamis & Jumlah Postingan */}
+        <div>
+          <h3 className="text-xl sm:text-2xl font-bold font-heading text-gray-900 dark:text-white tracking-tight">
+            {getSortTitle()}
+          </h3>
+          <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mt-0.5">
             Showing <span className="font-bold text-gray-900 dark:text-white">{totalFiltered}</span> Posts
             {totalFiltered !== totalCount && (
               <span className="text-gray-400 ml-1">
@@ -109,13 +95,37 @@ export function InstagramSortToolbar({
           </p>
         </div>
 
-        {/* Right: Export Button (Standard Platform Button Style) */}
-        <div className="flex items-center gap-2 self-stretch sm:self-auto justify-end">
+        {/* Kanan: [👥 Similar New] | [📥 Download X] | [📤 Export X] */}
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap self-stretch sm:self-auto justify-end">
+          {/* Similar Button */}
           <button
+            type="button"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer"
+          >
+            <Users className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+            <span>Similar</span>
+            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-orange-500/10 text-rn-accent border border-orange-500/20">
+              New
+            </span>
+          </button>
+
+          {/* Download Count Button */}
+          <button
+            type="button"
             onClick={onExport}
             disabled={totalFiltered === 0}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-rn-accent hover:bg-orange-600 text-white font-bold text-xs sm:text-sm shadow-sm transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
-            title="Download CSV yang kompatibel dengan Excel & Google Sheets"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer disabled:opacity-50"
+          >
+            <Download className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+            <span>Download {totalFiltered}</span>
+          </button>
+
+          {/* Export Primary Button (Warna Standar App Kita) */}
+          <button
+            type="button"
+            onClick={onExport}
+            disabled={totalFiltered === 0}
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rn-accent hover:bg-orange-600 text-white font-bold text-xs sm:text-sm shadow-sm transition-all transform active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
           >
             <Download className="w-4 h-4" />
             <span>Export {totalFiltered}</span>
@@ -124,139 +134,75 @@ export function InstagramSortToolbar({
       </div>
 
       {/* ========================================================================= */}
-      {/* SECONDARY ROW: Search, Format Filter, Quick Sort & Clear */}
+      {/* BARIS KEDUA (SUB-BAR): Filters, Sort by, Clear all, Select (Persis Lampiran) */}
       {/* ========================================================================= */}
-      <div className="pt-3 border-t border-gray-100 dark:border-white/10 flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
-        {/* Left: Search input */}
-        <div className="relative flex-1 max-w-md">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
-          <input
-            type="text"
-            value={searchKeyword}
-            onChange={(e) => setSearchKeyword(e.target.value)}
-            placeholder="Cari kata kunci dalam caption/hook..."
-            className="w-full pl-9 pr-14 py-2 text-xs sm:text-sm rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rn-accent/20 focus:border-rn-accent transition-all"
-          />
-          {searchKeyword && (
-            <button
-              onClick={() => setSearchKeyword("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer"
-            >
-              Hapus
-            </button>
-          )}
-        </div>
-
-        {/* Center / Right: Quick Sort Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 lg:pb-0 scrollbar-none">
+      <div className="flex items-center justify-between gap-3 text-xs">
+        {/* Sisi Kiri: [ ≡ Filters ] [ ⇅ Sort by ] [ Clear all ] */}
+        <div className="flex items-center gap-3 sm:gap-4 flex-wrap relative">
+          {/* Filters Button */}
           <button
-            onClick={() => setSortOption("outlier")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
-              sortOption === "outlier"
-                ? "bg-rn-accent text-white shadow-xs"
-                : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
-            }`}
+            type="button"
+            onClick={() => setIsFilterOpen((prev) => !prev)}
+            className="inline-flex items-center gap-1.5 font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
           >
-            <Flame className="w-3.5 h-3.5 fill-current" />
-            <span>Outlier</span>
+            <SlidersHorizontal className="w-3.5 h-3.5 text-rn-accent" />
+            <span>Filters</span>
           </button>
 
+          {/* Sort by Button */}
           <button
-            onClick={() => setSortOption("likes")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
-              sortOption === "likes"
-                ? "bg-rn-accent text-white shadow-xs"
-                : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
-            }`}
+            type="button"
+            onClick={() => setIsFilterOpen((prev) => !prev)}
+            className="inline-flex items-center gap-1.5 font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
           >
-            <Heart className="w-3.5 h-3.5 fill-current" />
-            <span>Likes</span>
+            <ArrowUpDown className="w-3.5 h-3.5 text-rn-accent" />
+            <span>
+              Sort by: <strong className="text-gray-900 dark:text-white capitalize">{sortOption}</strong>
+            </span>
           </button>
 
-          <button
-            onClick={() => setSortOption("views")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
-              sortOption === "views"
-                ? "bg-rn-accent text-white shadow-xs"
-                : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
-            }`}
-          >
-            <Eye className="w-3.5 h-3.5" />
-            <span>Views</span>
-          </button>
-
-          <button
-            onClick={() => setSortOption("comments")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
-              sortOption === "comments"
-                ? "bg-rn-accent text-white shadow-xs"
-                : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
-            }`}
-          >
-            <MessageSquare className="w-3.5 h-3.5" />
-            <span>Comments</span>
-          </button>
-
-          <button
-            onClick={() => setSortOption("newest")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
-              sortOption === "newest"
-                ? "bg-rn-accent text-white shadow-xs"
-                : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
-            }`}
-          >
-            <Clock className="w-3.5 h-3.5" />
-            <span>Newest</span>
-          </button>
-        </div>
-
-        {/* Right: Format Switcher & Clear All */}
-        <div className="flex items-center gap-2 self-start lg:self-auto shrink-0">
-          <div className="flex items-center gap-1 bg-gray-100 dark:bg-white/5 p-1 rounded-xl">
+          {/* Clear all */}
+          {isCustomized && (
             <button
-              onClick={() => setFormatFilter("all")}
-              className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                formatFilter === "all"
-                  ? "bg-white dark:bg-[#202023] text-gray-900 dark:text-white shadow-xs"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              }`}
-            >
-              Semua
-            </button>
-            <button
-              onClick={() => setFormatFilter("reels")}
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                formatFilter === "reels"
-                  ? "bg-white dark:bg-[#202023] text-gray-900 dark:text-white shadow-xs"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              }`}
-            >
-              <Film className="w-3 h-3" />
-              <span>Reels</span>
-            </button>
-            <button
-              onClick={() => setFormatFilter("posts")}
-              className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                formatFilter === "posts"
-                  ? "bg-white dark:bg-[#202023] text-gray-900 dark:text-white shadow-xs"
-                  : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-              }`}
-            >
-              <Layers className="w-3 h-3" />
-              <span>Foto</span>
-            </button>
-          </div>
-
-          {isFiltered && (
-            <button
-              onClick={onClearFilters}
-              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-gray-500 hover:text-rose-600 dark:text-gray-400 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors cursor-pointer"
-              title="Reset pencarian & filter format"
+              type="button"
+              onClick={onResetFilters}
+              className="inline-flex items-center gap-1 text-gray-400 hover:text-rose-500 font-medium transition-colors cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
-              <span>Clear</span>
+              <span>Clear all</span>
             </button>
           )}
+
+          {/* Dropdown Modal anchored here if opened from toolbar */}
+          <SortFeedFilterDropdown
+            isOpen={isFilterOpen}
+            onClose={() => setIsFilterOpen(false)}
+            filterMode={filterMode}
+            setFilterMode={setFilterMode}
+            postLimit={postLimit}
+            setPostLimit={setPostLimit}
+            dateFilter={dateFilter}
+            setDateFilter={setDateFilter}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
+            onReset={onResetFilters}
+          />
+        </div>
+
+        {/* Sisi Kanan: [ ✓ Select ] */}
+        <div>
+          <button
+            type="button"
+            onClick={() => setIsSelectMode((prev) => !prev)}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+              isSelectMode
+                ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+            }`}
+          >
+            <Check className="w-3.5 h-3.5" />
+            <span>{isSelectMode ? "Selected" : "Select"}</span>
+          </button>
         </div>
       </div>
     </div>
