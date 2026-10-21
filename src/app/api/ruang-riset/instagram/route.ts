@@ -123,6 +123,8 @@ function enrichPostsAndProfile(
 // 1. Fetch live data for accounts connected in our database via official Instagram Graph API
 async function fetchDirectInstagramApi(targetUsername: string) {
   try {
+    let token = "";
+
     const connectedAccount = await (prisma as any).instagramAccount.findFirst({
       where: {
         username: { equals: targetUsername, mode: "insensitive" },
@@ -132,11 +134,18 @@ async function fetchDirectInstagramApi(targetUsername: string) {
       orderBy: { updatedAt: "desc" },
     });
 
-    if (!connectedAccount || !connectedAccount.accessToken) {
-      return null;
+    if (connectedAccount && connectedAccount.accessToken) {
+      token = connectedAccount.accessToken;
+    } else if (
+      process.env.INSTAGRAM_ACCESS_TOKEN &&
+      targetUsername.toLowerCase() === "ruangcreativemuslim"
+    ) {
+      token = process.env.INSTAGRAM_ACCESS_TOKEN;
     }
 
-    const token = connectedAccount.accessToken;
+    if (!token) {
+      return null;
+    }
 
     // Fetch official profile details from graph.instagram.com/v22.0/me
     const profileUrl = `https://graph.instagram.com/v22.0/me?fields=id,username,name,account_type,profile_picture_url,biography,website,followers_count,follows_count,media_count&access_token=${encodeURIComponent(
