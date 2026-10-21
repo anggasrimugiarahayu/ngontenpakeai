@@ -50,7 +50,7 @@ export function InstagramSortToolbar({
             value={searchKeyword}
             onChange={(e) => setSearchKeyword(e.target.value)}
             placeholder="Cari kata kunci di caption/hook (misal: 'hook', 'closing')..."
-            className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
+            className="w-full pl-10 pr-4 py-2 text-xs sm:text-sm rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rn-accent/20 focus:border-rn-accent transition-all"
           />
           {searchKeyword && (
             <button
@@ -63,7 +63,7 @@ export function InstagramSortToolbar({
         </div>
 
         {/* Export Button & Count */}
-        <div className="flex items-center gap-2 justify-between sm:justify-end">
+        <div className="flex items-center gap-3 justify-between sm:justify-end">
           <span className="text-xs text-gray-500 dark:text-gray-400 font-medium">
             Menampilkan <span className="font-bold text-gray-900 dark:text-white">{totalFiltered}</span> dari {totalCount} konten
           </span>
@@ -71,7 +71,7 @@ export function InstagramSortToolbar({
           <button
             onClick={onExport}
             disabled={totalFiltered === 0}
-            className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-sm transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-rn-accent hover:bg-orange-600 text-white text-xs sm:text-sm font-bold shadow-sm transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer shrink-0"
             title="Download CSV yang kompatibel dengan Microsoft Excel & Google Sheets"
           >
             <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -91,22 +91,22 @@ export function InstagramSortToolbar({
           {/* Outlier Score Button (Default SortFeed) */}
           <button
             onClick={() => setSortOption("outlier")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
               sortOption === "outlier"
-                ? "bg-rose-500 text-white shadow-sm ring-2 ring-rose-500/20"
+                ? "bg-rn-accent text-white shadow-xs"
                 : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
             }`}
           >
-            <Flame className="w-3 h-3 text-amber-300 fill-amber-300" />
+            <Flame className="w-3 h-3 text-white fill-white" />
             <span>Paling Viral (Outlier)</span>
           </button>
 
           {/* Most Views */}
           <button
             onClick={() => setSortOption("views")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
               sortOption === "views"
-                ? "bg-orange-500 text-white shadow-sm ring-2 ring-orange-500/20"
+                ? "bg-rn-accent text-white shadow-xs"
                 : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
             }`}
           >
@@ -117,9 +117,9 @@ export function InstagramSortToolbar({
           {/* Most Likes */}
           <button
             onClick={() => setSortOption("likes")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
               sortOption === "likes"
-                ? "bg-purple-600 text-white shadow-sm"
+                ? "bg-rn-accent text-white shadow-xs"
                 : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
             }`}
           >
@@ -130,9 +130,9 @@ export function InstagramSortToolbar({
           {/* Most Comments */}
           <button
             onClick={() => setSortOption("comments")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
               sortOption === "comments"
-                ? "bg-blue-600 text-white shadow-sm"
+                ? "bg-rn-accent text-white shadow-xs"
                 : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
             }`}
           >
@@ -143,9 +143,9 @@ export function InstagramSortToolbar({
           {/* Newest */}
           <button
             onClick={() => setSortOption("newest")}
-            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 flex items-center gap-1.5 cursor-pointer ${
               sortOption === "newest"
-                ? "bg-gray-900 text-white dark:bg-white dark:text-black shadow-sm"
+                ? "bg-rn-accent text-white shadow-xs"
                 : "bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/10"
             }`}
           >

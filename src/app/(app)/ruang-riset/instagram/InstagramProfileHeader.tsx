@@ -20,14 +20,14 @@ function formatNumber(num: number): string {
 
 export function InstagramProfileHeader({ profile }: Props) {
   return (
-    <div className="w-full bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl md:rounded-3xl p-4 sm:p-6 md:p-8 shadow-sm">
+    <div className="w-full bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl p-5 sm:p-6 md:p-8 shadow-xs">
       {/* ========================================================================= */}
       {/* DESKTOP LAYOUT (md:flex) */}
       {/* ========================================================================= */}
       <div className="hidden md:flex items-start gap-8 lg:gap-10">
         {/* Avatar Profil */}
         <div className="relative shrink-0">
-          <div className="w-28 h-28 lg:w-32 lg:h-32 rounded-full p-1 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shadow-md">
+          <div className="w-24 h-24 lg:w-28 lg:h-28 rounded-full p-1 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shadow-sm">
             <img
               src={profile.profilePicUrl}
               alt={profile.username}
@@ -37,7 +37,7 @@ export function InstagramProfileHeader({ profile }: Props) {
         </div>
 
         {/* Info & Bio */}
-        <div className="flex-1 min-w-0 space-y-4">
+        <div className="flex-1 min-w-0 space-y-3.5">
           {/* Baris 1: Username & Link */}
           <div className="flex items-center gap-3 flex-wrap">
             <h2 className="text-xl lg:text-2xl font-bold font-heading text-gray-900 dark:text-white flex items-center gap-1.5">
@@ -100,7 +100,7 @@ export function InstagramProfileHeader({ profile }: Props) {
       <div className="block md:hidden space-y-4">
         {/* Top: Avatar & 3-Column Stats */}
         <div className="flex items-center gap-4">
-          <div className="w-20 h-20 rounded-full p-0.5 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shrink-0">
+          <div className="w-18 h-18 rounded-full p-0.5 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shrink-0">
             <img
               src={profile.profilePicUrl}
               alt={profile.username}
@@ -161,61 +161,69 @@ export function InstagramProfileHeader({ profile }: Props) {
       </div>
 
       {/* ========================================================================= */}
-      {/* ANALYTICAL SUPER-CARDS (Kacamata Tembus Pandang SortFeed) */}
+      {/* ANALYTICAL SUPER-CARDS STANDAR (Bersih, Rapi, Harmonis) */}
       {/* ========================================================================= */}
-      <div className="mt-6 pt-5 border-t border-gray-100 dark:border-white/10 grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+      <div className="mt-6 pt-5 border-t border-gray-100 dark:border-white/10 grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Card 1: Rata-rata Views Baseline */}
-        <div className="p-3 sm:p-4 rounded-xl bg-orange-50/60 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20">
-          <div className="flex items-center justify-between text-xs font-semibold text-orange-600 dark:text-orange-400 mb-1">
+        <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
             <span>Rata-rata Views</span>
-            <Eye className="w-3.5 h-3.5" />
+            <div className="w-6 h-6 rounded-md bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
+              <Eye className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <p className="text-lg sm:text-xl font-black font-heading text-gray-900 dark:text-white">
+          <p className="text-lg sm:text-xl font-bold font-heading text-gray-900 dark:text-white">
             {formatNumber(profile.averageViews)}
           </p>
-          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="text-[11px] text-gray-400 mt-0.5">
             Patokan baseline akun
           </p>
         </div>
 
         {/* Card 2: Puncak Viralitas (Outlier Terbesar) */}
-        <div className="p-3 sm:p-4 rounded-xl bg-rose-50/60 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20">
-          <div className="flex items-center justify-between text-xs font-semibold text-rose-600 dark:text-rose-400 mb-1">
+        <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
             <span>Puncak Viral</span>
-            <Flame className="w-3.5 h-3.5" />
+            <div className="w-6 h-6 rounded-md bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+              <Flame className="w-3.5 h-3.5 fill-rose-500/20" />
+            </div>
           </div>
-          <p className="text-lg sm:text-xl font-black font-heading text-rose-600 dark:text-rose-400">
+          <p className="text-lg sm:text-xl font-bold font-heading text-rose-600 dark:text-rose-400">
             {profile.topOutlierMultiplier.toFixed(1)}× Outlier
           </p>
-          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="text-[11px] text-gray-400 mt-0.5">
             Di atas performa normal
           </p>
         </div>
 
         {/* Card 3: Rata-rata Likes */}
-        <div className="p-3 sm:p-4 rounded-xl bg-purple-50/60 dark:bg-purple-500/10 border border-purple-100 dark:border-purple-500/20">
-          <div className="flex items-center justify-between text-xs font-semibold text-purple-600 dark:text-purple-400 mb-1">
+        <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
             <span>Rata-rata Likes</span>
-            <Heart className="w-3.5 h-3.5" />
+            <div className="w-6 h-6 rounded-md bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
+              <Heart className="w-3.5 h-3.5 fill-purple-500/20" />
+            </div>
           </div>
-          <p className="text-lg sm:text-xl font-black font-heading text-gray-900 dark:text-white">
+          <p className="text-lg sm:text-xl font-bold font-heading text-gray-900 dark:text-white">
             {formatNumber(profile.averageLikes)}
           </p>
-          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="text-[11px] text-gray-400 mt-0.5">
             Apresiasi tiap postingan
           </p>
         </div>
 
         {/* Card 4: Engagement Rate */}
-        <div className="p-3 sm:p-4 rounded-xl bg-emerald-50/60 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
-          <div className="flex items-center justify-between text-xs font-semibold text-emerald-600 dark:text-emerald-400 mb-1">
+        <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
             <span>Engagement Rate</span>
-            <TrendingUp className="w-3.5 h-3.5" />
+            <div className="w-6 h-6 rounded-md bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+              <TrendingUp className="w-3.5 h-3.5" />
+            </div>
           </div>
-          <p className="text-lg sm:text-xl font-black font-heading text-emerald-600 dark:text-emerald-400">
+          <p className="text-lg sm:text-xl font-bold font-heading text-emerald-600 dark:text-emerald-400">
             {profile.averageEngagementRate}%
           </p>
-          <p className="text-[10px] text-gray-500 dark:text-gray-400 mt-0.5">
+          <p className="text-[11px] text-gray-400 mt-0.5">
             Rasio keterlibatan audiens
           </p>
         </div>

@@ -15,11 +15,8 @@ import { exportPostsToCSV } from "./exportUtils";
 import {
   ArrowLeft,
   Search,
-  Sparkles,
-  Flame,
   AlertCircle,
   Loader2,
-  CheckCircle2,
 } from "lucide-react";
 
 interface Props {
@@ -157,99 +154,94 @@ export function InstagramResearchStudio({
   };
 
   return (
-    <div className="w-full max-w-6xl mx-auto space-y-6 animate-in fade-in duration-300">
-      {/* Top Header & Back Button */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+    <div className="w-full space-y-8 animate-in fade-in duration-300">
+      {/* Top Navigation: Tombol Kembali Saja (Bersih, Tanpa Badge Tambahan) */}
+      <div className="flex items-center justify-start">
         <button
           onClick={onBackToPlatformHub}
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-bold text-gray-600 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 transition-colors cursor-pointer self-start"
+          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           <span>Kembali ke Pilihan Platform</span>
         </button>
-
-        <div className="flex items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-orange-500/10 via-rose-500/10 to-purple-500/10 border border-orange-500/20 text-[11px] sm:text-xs font-bold text-orange-600 dark:text-orange-400">
-            <Sparkles className="w-3.5 h-3.5 text-orange-500" />
-            <span>Studio Riset Instagram AI</span>
-          </span>
-        </div>
       </div>
 
-      {/* Main Search Bar Card */}
-      <div className="w-full bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl md:rounded-3xl p-5 sm:p-6 md:p-8 shadow-sm">
-        <div className="max-w-2xl mx-auto text-center space-y-3 mb-6">
-          <h2 className="text-xl sm:text-2xl font-black font-heading text-gray-900 dark:text-white">
-            Bongkar Pola Konten Viral Kompetitor
-          </h2>
-          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-relaxed">
+      {/* Header - EXACT SAME CLEAN STYLE, FONT, & SPACING AS RUANG NGONTEN / RUANG BELAJAR */}
+      <div className="flex flex-col items-center justify-center text-center gap-2 mb-8 md:mb-10">
+        <div className="space-y-3 flex flex-col items-center">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+            Mau riset akun siapa?
+          </h1>
+          <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 max-w-xl mx-auto text-balance leading-relaxed">
             Ketik username Instagram akun rujukan atau kompetitor di niche kamu untuk menyortir konten dengan tayangan terbanyak dan Outlier Score tertinggi.
           </p>
         </div>
 
-        {/* Input Form */}
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSearch(usernameInput);
-          }}
-          className="max-w-2xl mx-auto flex flex-col sm:flex-row items-stretch gap-2.5"
-        >
-          <div className="relative flex-1">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-sm text-gray-400 pointer-events-none">
-              @
-            </span>
-            <input
-              type="text"
-              value={usernameInput}
-              onChange={(e) => setUsernameInput(e.target.value)}
-              placeholder="Ketik username (contoh: papamenyapa)"
-              className="w-full pl-9 pr-4 py-3 sm:py-3.5 text-sm font-semibold rounded-xl sm:rounded-2xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={isLoading || !usernameInput.trim()}
-            className="px-6 py-3 sm:py-3.5 rounded-xl sm:rounded-2xl bg-gradient-to-r from-orange-500 to-rose-600 hover:from-orange-600 hover:to-rose-700 text-white font-bold text-sm shadow-md transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 shrink-0"
+        {/* Input Search Form Standar */}
+        <div className="w-full max-w-2xl mx-auto mt-6 space-y-3">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSearch(usernameInput);
+            }}
+            className="flex flex-col sm:flex-row items-stretch gap-2.5"
           >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Menganalisis...</span>
-              </>
-            ) : (
-              <>
-                <Search className="w-4 h-4" />
-                <span>Riset Konten</span>
-              </>
-            )}
-          </button>
-        </form>
+            <div className="relative flex-1">
+              <span className="absolute left-4 top-1/2 -translate-y-1/2 font-bold text-sm text-gray-400 pointer-events-none">
+                @
+              </span>
+              <input
+                type="text"
+                value={usernameInput}
+                onChange={(e) => setUsernameInput(e.target.value)}
+                placeholder="Ketik username (contoh: papamenyapa)"
+                className="w-full pl-9 pr-4 py-3 text-sm font-medium rounded-xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rn-accent/20 focus:border-rn-accent transition-all shadow-xs"
+              />
+            </div>
 
-        {/* Quick Suggestion Chips */}
-        <div className="max-w-2xl mx-auto mt-4 flex items-center justify-center gap-2 flex-wrap text-xs">
-          <span className="text-gray-400 font-medium">Contoh Akun:</span>
-          {["papamenyapa", "ruangcreativemuslim", "ayutingting92", "dr.tirta"].map((acc) => (
             <button
-              key={acc}
-              type="button"
-              onClick={() => {
-                setUsernameInput(acc);
-                handleSearch(acc);
-              }}
-              className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 font-semibold transition-colors cursor-pointer"
+              type="submit"
+              disabled={isLoading || !usernameInput.trim()}
+              className="px-6 py-3 rounded-xl bg-rn-accent hover:bg-orange-600 text-white font-bold text-sm shadow-sm transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 shrink-0"
             >
-              @{acc}
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Menganalisis...</span>
+                </>
+              ) : (
+                <>
+                  <Search className="w-4 h-4" />
+                  <span>Riset Konten</span>
+                </>
+              )}
             </button>
-          ))}
+          </form>
+
+          {/* Quick Suggestion Chips */}
+          <div className="flex items-center justify-center gap-2 flex-wrap text-xs pt-1">
+            <span className="text-gray-400 font-medium">Contoh Akun:</span>
+            {["papamenyapa", "ruangcreativemuslim", "ayutingting92", "dr.tirta"].map((acc) => (
+              <button
+                key={acc}
+                type="button"
+                onClick={() => {
+                  setUsernameInput(acc);
+                  handleSearch(acc);
+                }}
+                className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 font-medium transition-colors cursor-pointer"
+              >
+                @{acc}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
       {/* Loading Progress Indicator (Selesai 100%) */}
       {isLoading && (
-        <div className="w-full p-6 sm:p-8 bg-white dark:bg-[#18181b] rounded-2xl md:rounded-3xl border border-gray-200 dark:border-white/10 shadow-sm text-center space-y-4 animate-in fade-in duration-200">
-          <div className="w-12 h-12 rounded-full border-3 border-orange-500 border-t-transparent animate-spin mx-auto" />
+        <div className="w-full p-6 sm:p-8 bg-white dark:bg-[#18181b] rounded-2xl border border-gray-200 dark:border-white/10 shadow-sm text-center space-y-4 animate-in fade-in duration-200 max-w-2xl mx-auto">
+          <div className="w-10 h-10 rounded-full border-3 border-orange-500 border-t-transparent animate-spin mx-auto" />
           <div className="space-y-1.5 max-w-md mx-auto">
             <div className="flex items-center justify-between text-xs font-bold">
               <span className="text-gray-600 dark:text-gray-300">{loadingStepText}</span>
@@ -263,7 +255,7 @@ export function InstagramResearchStudio({
                 className={`h-full transition-all duration-300 ${
                   loadingPercent === 100
                     ? "bg-emerald-500"
-                    : "bg-gradient-to-r from-orange-500 to-rose-500"
+                    : "bg-orange-500"
                 }`}
                 style={{ width: `${loadingPercent}%` }}
               />
@@ -277,7 +269,7 @@ export function InstagramResearchStudio({
 
       {/* Error Notice */}
       {error && !isLoading && (
-        <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-300 flex items-center gap-3">
+        <div className="max-w-2xl mx-auto p-4 rounded-xl bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20 text-rose-700 dark:text-rose-300 flex items-center gap-3">
           <AlertCircle className="w-5 h-5 shrink-0" />
           <p className="text-sm font-semibold">{error}</p>
         </div>
