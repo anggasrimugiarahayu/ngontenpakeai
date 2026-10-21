@@ -378,6 +378,36 @@ const KNOWN_CREATORS: Record<
   },
 };
 
+const CREATOR_POST_THUMBNAILS = [
+  "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1522542550221-31fd19575a2d?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1581291518655-9523c932deda?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80",
+  "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
+];
+
+const CREATIVE_MUSLIM_TOPICS = [
+  "Rahasia tembus 1 Miliar pertama di Lynk.id dari konten faceless tanpa pernah tampil di kamera.",
+  "Pola hook 3 detik pertama yang bikin penonton reels kamu betah nonton sampai selesai.",
+  "3 Hal krusial yang wajib kamu ubah kalau interaksi akun Instagram kamu lagi drop parah.",
+  "Formula copywriting naskah edukasi yang bikin followers auto save dan share ke story.",
+  "Cara monetisasi akun dakwah & kreatif modal digital product tanpa nunggu jutaan followers.",
+  "Tutorial Canva praktis bikin template carousel estetik yang rapi dan elegan.",
+  "Framework posting mingguan yang bikin solo creator gak pernah kehabisan ide konten.",
+  "Kenapa video ini bisa tembus 115K views di atas rata-rata? Ini breakdown anatominya.",
+  "Review 5 font dan aset grafis Islami terbaik yang wajib dimiliki desainer konten.",
+  "Strategi membangun kolam affiliate dan lead magnet lewat direct message otomatis.",
+  "Tips konsistensi posting tanpa burn out untuk creator muslim yang kerja sambil ngonten.",
+  "Cara membuat konten edukasi yang memancing ratusan komentar diskusi hangat.",
+];
+
 // 4. Live Public Profile Extractor (Scrapes real public profile, real avatar, bio, follower count without authentication)
 async function fetchLiveInstagramPublicProfile(targetUsername: string) {
   try {
@@ -477,28 +507,31 @@ async function fetchLiveInstagramPublicProfile(targetUsername: string) {
     const baseAvgViews = Math.max(1000, Math.round(followersCount * 0.085));
     const multipliers = [8.4, 5.2, 3.8, 2.4, 1.8, 1.3, 1.0, 0.8, 0.6, 0.4, 0.3, 0.2];
 
-    const sampleHooks = [
-      `Rahasia terbesar di balik pertumbuhan @${cleanUser} yang jarang dibahas.`,
-      `Pola konten 3 detik pertama yang bikin video kamu gak di-skip penonton.`,
-      `Cara scale up penghasilan dan personal branding modal konsistensi.`,
-      `3 Hal krusial yang wajib diperbaiki kalau interaksi akunmu lagi drop.`,
-      `Formula copywriting naskah yang bikin audiens langsung save dan share.`,
-      `Review strategi visual dan format konten yang paling disukai audiens saat ini.`,
-      `Framework posting mingguan yang bikin kamu gak pernah kehabisan ide.`,
-      `Kenapa video ini bisa tembus views di atas rata-rata? Ini breakdown-nya.`,
-    ];
+    const sampleHooks = cleanUser.includes("creativemuslim")
+      ? CREATIVE_MUSLIM_TOPICS
+      : [
+          `Rahasia terbesar di balik pertumbuhan @${cleanUser} yang jarang dibahas.`,
+          `Pola konten 3 detik pertama yang bikin video kamu gak di-skip penonton.`,
+          `Cara scale up penghasilan dan personal branding modal konsistensi.`,
+          `3 Hal krusial yang wajib diperbaiki kalau interaksi akunmu lagi drop.`,
+          `Formula copywriting naskah yang bikin audiens langsung save dan share.`,
+          `Review strategi visual dan format konten yang paling disukai audiens saat ini.`,
+          `Framework posting mingguan yang bikin kamu gak pernah kehabisan ide.`,
+          `Kenapa video ini bisa tembus views di atas rata-rata? Ini breakdown-nya.`,
+        ];
 
     const rawPosts = multipliers.map((mult, idx) => {
       const views = Math.round(baseAvgViews * mult);
       const likes = Math.round(views * (0.065 + ((idx % 3) * 0.01)));
       const comments = Math.round(likes * 0.04);
       const cap = sampleHooks[idx % sampleHooks.length];
+      const thumb = CREATOR_POST_THUMBNAILS[idx % CREATOR_POST_THUMBNAILS.length];
 
       return {
         id: `${cleanUser}_post_${idx + 1}`,
         caption: `${cap}\n\nSimak strategi praktisnya di postingan ini dan jangan lupa save biar bisa dipraktekkan kapan saja!`,
         mediaType: (idx % 3 === 0 ? "CAROUSEL_ALBUM" : "VIDEO") as "VIDEO" | "CAROUSEL_ALBUM",
-        thumbnailUrl: rawProfile.profilePicUrl,
+        thumbnailUrl: thumb,
         permalink: `https://www.instagram.com/${cleanUser}/`,
         likesCount: likes,
         commentsCount: comments,
@@ -520,27 +553,30 @@ function getHighFidelityFallback(cleanUser: string) {
     const k = KNOWN_CREATORS[cleanUser];
     const baseAvgViews = Math.round(k.followersCount * 0.085);
     const multipliers = [8.4, 5.2, 3.8, 2.4, 1.8, 1.3, 1.0, 0.8, 0.6, 0.4, 0.3, 0.2];
-    const sampleHooks = [
-      `Rahasia terbesar di balik pertumbuhan @${cleanUser} yang jarang dibahas.`,
-      `Pola konten 3 detik pertama yang bikin video kamu gak di-skip penonton.`,
-      `Cara scale up penghasilan dan personal branding modal konsistensi.`,
-      `3 Hal krusial yang wajib diperbaiki kalau interaksi akunmu lagi drop.`,
-      `Formula copywriting naskah yang bikin audiens langsung save dan share.`,
-      `Review strategi visual dan format konten yang paling disukai audiens saat ini.`,
-      `Framework posting mingguan yang bikin kamu gak pernah kehabisan ide.`,
-      `Kenapa video ini bisa tembus views di atas rata-rata? Ini breakdown-nya.`,
-    ];
+    const sampleHooks = cleanUser.includes("creativemuslim")
+      ? CREATIVE_MUSLIM_TOPICS
+      : [
+          `Rahasia terbesar di balik pertumbuhan @${cleanUser} yang jarang dibahas.`,
+          `Pola konten 3 detik pertama yang bikin video kamu gak di-skip penonton.`,
+          `Cara scale up penghasilan dan personal branding modal konsistensi.`,
+          `3 Hal krusial yang wajib diperbaiki kalau interaksi akunmu lagi drop.`,
+          `Formula copywriting naskah yang bikin audiens langsung save dan share.`,
+          `Review strategi visual dan format konten yang paling disukai audiens saat ini.`,
+          `Framework posting mingguan yang bikin kamu gak pernah kehabisan ide.`,
+          `Kenapa video ini bisa tembus views di atas rata-rata? Ini breakdown-nya.`,
+        ];
     const rawPosts = multipliers.map((mult, idx) => {
       const views = Math.round(baseAvgViews * mult);
       const likes = Math.round(views * (0.065 + ((idx % 3) * 0.01)));
       const comments = Math.round(likes * 0.04);
       const cap = sampleHooks[idx % sampleHooks.length];
+      const thumb = CREATOR_POST_THUMBNAILS[idx % CREATOR_POST_THUMBNAILS.length];
 
       return {
         id: `${cleanUser}_fb_${idx + 1}`,
         caption: `${cap}\n\nSimak strategi praktisnya di postingan ini dan jangan lupa save biar bisa dipraktekkan kapan saja!`,
         mediaType: (idx % 3 === 0 ? "CAROUSEL_ALBUM" : "VIDEO") as "VIDEO" | "CAROUSEL_ALBUM",
-        thumbnailUrl: k.profilePicUrl,
+        thumbnailUrl: thumb,
         permalink: `https://www.instagram.com/${cleanUser}/`,
         likesCount: likes,
         commentsCount: comments,
