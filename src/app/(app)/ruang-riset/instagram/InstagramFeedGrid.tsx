@@ -33,7 +33,8 @@ export function InstagramFeedGrid({ posts, onSelectPost }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-3 gap-1.5 sm:gap-3 md:gap-4 lg:gap-5">
+    /* 4 feed per baris di layar desktop (lg:grid-cols-4), 3 di tablet (sm:grid-cols-3), 2 di mobile (grid-cols-2) */
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3 md:gap-4">
       {posts.map((post) => {
         const isReel = post.mediaType === "VIDEO";
         const isCarousel = post.mediaType === "CAROUSEL_ALBUM";
@@ -42,7 +43,7 @@ export function InstagramFeedGrid({ posts, onSelectPost }: Props) {
           <div
             key={post.id}
             onClick={() => onSelectPost(post)}
-            className="group relative aspect-square sm:aspect-[4/5] rounded-lg sm:rounded-xl md:rounded-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-white/10 cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+            className="group relative aspect-[4/5] rounded-xl md:rounded-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-white/10 cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
           >
             {/* Thumbnail Image */}
             <img
@@ -53,34 +54,34 @@ export function InstagramFeedGrid({ posts, onSelectPost }: Props) {
             />
 
             {/* Gradient Overlay for Text Readability */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-black/40 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-black/40 pointer-events-none" />
 
             {/* Top-Left: Outlier Score Badge (The SortFeed Power Indicator) */}
-            <div className="absolute top-1.5 left-1.5 sm:top-2.5 sm:left-2.5 z-10">
+            <div className="absolute top-2 left-2 z-10">
               {post.outlierTier === "super_viral" ? (
-                <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-black tracking-tight bg-gradient-to-r from-red-600 via-rose-600 to-orange-500 text-white shadow-md ring-1 ring-white/30 animate-pulse">
-                  <Flame className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 fill-amber-300 text-amber-300" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-black tracking-tight bg-gradient-to-r from-red-600 via-rose-600 to-orange-500 text-white shadow-md ring-1 ring-white/30 animate-pulse">
+                  <Flame className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-amber-300 text-amber-300" />
                   <span>{post.outlierScore}× VIRAL</span>
                 </span>
               ) : post.outlierTier === "viral" ? (
-                <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-black tracking-tight bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md">
-                  <Flame className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 fill-white text-white" />
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-black tracking-tight bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md">
+                  <Flame className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-white text-white" />
                   <span>{post.outlierScore}× VIRAL</span>
                 </span>
               ) : post.outlierTier === "high" ? (
-                <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-bold tracking-tight bg-purple-600 text-white shadow-md">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 sm:py-1 rounded-lg text-[10px] sm:text-xs font-bold tracking-tight bg-purple-600 text-white shadow-md">
                   <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   <span>{post.outlierScore}× TOP</span>
                 </span>
               ) : (
-                <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[11px] font-semibold bg-black/50 backdrop-blur-md text-white/90 border border-white/10">
+                <span className="inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-md text-[9px] sm:text-[10px] font-semibold bg-black/50 backdrop-blur-md text-white/90 border border-white/10">
                   {post.outlierScore}×
                 </span>
               )}
             </div>
 
             {/* Top-Right: Media Type Icon */}
-            <div className="absolute top-1.5 right-1.5 sm:top-2.5 sm:right-2.5 z-10 text-white/90 drop-shadow-md">
+            <div className="absolute top-2 right-2 z-10 text-white/90 drop-shadow-md">
               {isReel ? (
                 <Film className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
               ) : isCarousel ? (
@@ -89,14 +90,14 @@ export function InstagramFeedGrid({ posts, onSelectPost }: Props) {
             </div>
 
             {/* Bottom: Metrics Bar */}
-            <div className="absolute bottom-0 inset-x-0 p-1.5 sm:p-2.5 md:p-3 text-white z-10 flex flex-col justify-end">
-              {/* Hook text preview (Visible on tablet/desktop) */}
-              <p className="hidden sm:line-clamp-2 text-[11px] font-medium text-white/90 leading-tight mb-2 drop-shadow-sm">
+            <div className="absolute bottom-0 inset-x-0 p-2 sm:p-2.5 md:p-3 text-white z-10 flex flex-col justify-end">
+              {/* Hook text preview */}
+              <p className="line-clamp-2 text-[10px] sm:text-[11px] font-medium text-white/90 leading-snug mb-1.5 drop-shadow-xs">
                 "{post.hookText}"
               </p>
 
               {/* Numbers: Views, Likes, Comments */}
-              <div className="flex items-center justify-between text-[10px] sm:text-xs font-bold tracking-tight">
+              <div className="flex items-center justify-between text-[10px] sm:text-xs font-bold tracking-tight pt-1 border-t border-white/15">
                 {/* Views */}
                 <div className="flex items-center gap-1 text-orange-300">
                   <Play className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-orange-300" />
@@ -109,9 +110,9 @@ export function InstagramFeedGrid({ posts, onSelectPost }: Props) {
                   <span>{formatCompact(post.likesCount)}</span>
                 </div>
 
-                {/* Comments (Desktop only) */}
-                <div className="hidden md:flex items-center gap-1 text-white/80">
-                  <MessageSquare className="w-3 h-3" />
+                {/* Comments */}
+                <div className="flex items-center gap-1 text-white/80">
+                  <MessageSquare className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                   <span>{formatCompact(post.commentsCount)}</span>
                 </div>
               </div>
