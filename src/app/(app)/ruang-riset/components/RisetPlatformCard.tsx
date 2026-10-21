@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import { AlertCircle } from "lucide-react";
+import React from "react";
 
 export interface RisetPlatform {
   id: string;
@@ -13,14 +12,20 @@ export interface RisetPlatform {
   points: string[];
 }
 
-export function RisetPlatformCard({ platform }: { platform: RisetPlatform }) {
-  const [showSoon, setShowSoon] = useState(false);
+export function RisetPlatformCard({
+  platform,
+  onSelect,
+}: {
+  platform: RisetPlatform;
+  onSelect?: () => void;
+}) {
   const Icon = platform.icon;
   const isActive = platform.isActive;
 
   const handleClick = () => {
-    setShowSoon(true);
-    setTimeout(() => setShowSoon(false), 3000);
+    if (isActive && onSelect) {
+      onSelect();
+    }
   };
 
   const cardClasses = `group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-300 z-0 overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/5 ${
@@ -31,24 +36,14 @@ export function RisetPlatformCard({ platform }: { platform: RisetPlatform }) {
 
   return (
     <div
-      role="button"
-      tabIndex={0}
+      role={isActive ? "button" : undefined}
+      tabIndex={isActive ? 0 : -1}
       onClick={handleClick}
       onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") handleClick();
+        if (isActive && (e.key === "Enter" || e.key === " ")) handleClick();
       }}
       className={cardClasses}
     >
-      {/* Maintenance / Sedang Dikembangkan Overlay on Click */}
-      {showSoon && (
-        <div className="absolute inset-0 bg-red-500/10 backdrop-blur-[1px] flex flex-col items-center justify-center z-50 animate-in fade-in duration-200">
-          <div className="bg-red-50 dark:bg-red-950/80 text-red-600 dark:text-red-400 text-xs font-bold px-3 py-1.5 rounded-full flex items-center gap-2 shadow-sm border border-red-200 dark:border-red-900">
-            <AlertCircle className="w-4 h-4" />
-            Sedang Maintenance
-          </div>
-        </div>
-      )}
-
       {/* Card Header */}
       <div className="flex items-center gap-3 mb-3">
         <div

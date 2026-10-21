@@ -1,6 +1,7 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   InstagramIcon,
   TikTokIcon,
@@ -11,7 +12,9 @@ import { RisetPlatformCard, RisetPlatform } from "./components/RisetPlatformCard
 
 interface RuangRisetClientProps {
   isLoggedIn: boolean;
-  isAdmin: boolean;
+  isPro?: boolean;
+  isAdmin?: boolean;
+  initialPlatform?: "instagram" | null;
 }
 
 const RISET_PLATFORMS: RisetPlatform[] = [
@@ -75,8 +78,32 @@ const RISET_PLATFORMS: RisetPlatform[] = [
 
 export default function RuangRisetClient({
   isLoggedIn,
-  isAdmin,
+  isPro = false,
+  isAdmin = false,
+  initialPlatform = null,
 }: RuangRisetClientProps) {
+  const router = useRouter();
+  const [, setSelectedPlatform] = useState<"instagram" | null>(initialPlatform);
+
+  // Handle click on Instagram Research Card (EXACT SAME BEHAVIOR AS RUANG AUTOMATION)
+  const handleSelectInstagram = () => {
+    if (!isLoggedIn) {
+      window.dispatchEvent(new Event("app-loading-start"));
+      router.push("/login?redirect=/ruang-riset?platform=instagram");
+      return;
+    }
+    if (!isPro && !isAdmin) {
+      window.dispatchEvent(new Event("app-loading-start"));
+      router.push("/?pricing=true");
+      return;
+    }
+    setSelectedPlatform("instagram");
+    if (typeof window !== "undefined") {
+      window.history.pushState(null, "", "/ruang-riset?platform=instagram");
+      window.dispatchEvent(new Event("app-shallow-navigate"));
+    }
+  };
+
   return (
     <div className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-6 py-4 md:py-8 animate-in fade-in duration-300">
       {/* Header - EXACT SAME CLEAN STYLE & SPACING AS RUANG NGONTEN */}
@@ -94,7 +121,11 @@ export default function RuangRisetClient({
       {/* Platform Cards Grid - EXACT SAME STYLE & GAP AS RUANG NGONTEN */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
         {RISET_PLATFORMS.map((platform) => (
-          <RisetPlatformCard key={platform.id} platform={platform} />
+          <RisetPlatformCard
+            key={platform.id}
+            platform={platform}
+            onSelect={platform.id === "instagram" ? handleSelectInstagram : undefined}
+          />
         ))}
       </div>
     </div>
