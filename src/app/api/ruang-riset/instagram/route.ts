@@ -6,6 +6,32 @@ import {
 } from "@/app/(app)/ruang-riset/instagram/types";
 
 // Helper to compute stats, engagement rate, and outlier score
+function decodeHtmlEntities(str: string): string {
+  if (!str) return "";
+  return str
+    .replace(/&#x([0-9a-fA-F]+);/g, (_, hex) => {
+      try {
+        return String.fromCodePoint(parseInt(hex, 16));
+      } catch {
+        return "";
+      }
+    })
+    .replace(/&#([0-9]+);/g, (_, dec) => {
+      try {
+        return String.fromCodePoint(parseInt(dec, 10));
+      } catch {
+        return "";
+      }
+    })
+    .replace(/&quot;/g, '"')
+    .replace(/&apos;/g, "'")
+    .replace(/&#064;/g, "@")
+    .replace(/&#x2022;/g, "•")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">");
+}
+
 function enrichPostsAndProfile(
   rawProfile: {
     username: string;
@@ -81,7 +107,7 @@ function enrichPostsAndProfile(
     const engagementRate = Number(
       (((p.likesCount + p.commentsCount) / p.viewsCount) * 100).toFixed(2)
     );
-    const captionText = p.caption || "";
+    const captionText = decodeHtmlEntities(p.caption || "");
     const firstSentence = captionText.split("\n")[0] || captionText.slice(0, 80);
 
     return {
@@ -110,6 +136,8 @@ function enrichPostsAndProfile(
 
   const profile: InstagramTargetProfile = {
     ...rawProfile,
+    fullName: decodeHtmlEntities(rawProfile.fullName),
+    biography: decodeHtmlEntities(rawProfile.biography),
     averageViews,
     averageLikes,
     averageComments,
@@ -235,6 +263,8 @@ async function fetchFromMetaBusinessDiscovery(targetUsername: string) {
 
     const res = await fetch(url, { method: "GET", next: { revalidate: 3600 } });
     if (!res.ok) {
+      const errJson = await res.json().catch(() => null);
+      console.warn("Meta Business Discovery error:", res.status, errJson);
       return null;
     }
 
