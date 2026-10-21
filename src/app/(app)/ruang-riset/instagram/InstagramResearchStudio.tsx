@@ -1,11 +1,14 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useMemo } from "react";
 import {
   InstagramTargetProfile,
   InstagramPostItem,
   SortOption,
   FormatFilter,
+  FilterMode,
+  PostLimit,
+  DateFilter,
 } from "./types";
 import { InstagramProfileHeader } from "./InstagramProfileHeader";
 import { InstagramSortToolbar } from "./InstagramSortToolbar";
@@ -24,6 +27,33 @@ interface Props {
   defaultUsername?: string;
 }
 
+function isWithinDateFilter(timestamp: string, dateFilter: DateFilter): boolean {
+  if (dateFilter === "all") return true;
+  const postTime = new Date(timestamp).getTime();
+  if (isNaN(postTime)) return true;
+  const now = Date.now();
+  const dayMs = 24 * 60 * 60 * 1000;
+  let days = Infinity;
+  switch (dateFilter) {
+    case "1w":
+      days = 7;
+      break;
+    case "1m":
+      days = 30;
+      break;
+    case "3m":
+      days = 90;
+      break;
+    case "6m":
+      days = 180;
+      break;
+    case "1y":
+      days = 365;
+      break;
+  }
+  return now - postTime <= days * dayMs;
+}
+
 export function InstagramResearchStudio({
   onBackToPlatformHub,
   defaultUsername = "papamenyapa",
@@ -34,11 +64,15 @@ export function InstagramResearchStudio({
   const [loadingPercent, setLoadingPercent] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
+  // Clean initial state: profile & posts are null/empty until user triggers search
   const [profile, setProfile] = useState<InstagramTargetProfile | null>(null);
   const [posts, setPosts] = useState<InstagramPostItem[]>([]);
   const [selectedPost, setSelectedPost] = useState<InstagramPostItem | null>(null);
 
-  // Sorting & Filtering State
+  // Sorting & Filtering State (SortFeed UX)
+  const [filterMode, setFilterMode] = useState<FilterMode>("posts");
+  const [postLimit, setPostLimit] = useState<PostLimit>(25);
+  const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [sortOption, setSortOption] = useState<SortOption>("outlier");
   const [formatFilter, setFormatFilter] = useState<FormatFilter>("all");
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -99,12 +133,28 @@ export function InstagramResearchStudio({
     }
   };
 
-  // Initial load with defaultUsername on mount
-  useEffect(() => {
-    handleSearch(defaultUsername);
-  }, []);
+  // Reset all filters to default
+  const handleResetFilters = () => {
+    setFilterMode("posts");
+    setPostLimit(25);
+    setDateFilter("all");
+    setSortOption("outlier");
+    setFormatFilter("all");
+    setSearchKeyword("");
+  };
 
-  // Filtered & Sorted Posts
+  // Clear search & format filter from toolbar
+  const handleClearToolbarFilters = () => {
+    setSearchKeyword("");
+    setFormatFilter("all");
+    if (filterMode === "posts") {
+      setPostLimit(25);
+    } else {
+      setDateFilter("all");
+    }
+  };
+
+  // Filtered & Sorted Posts with SortFeed Logic
   const filteredAndSortedPosts = useMemo(() => {
     let result = [...posts];
 
@@ -125,7 +175,12 @@ export function InstagramResearchStudio({
       );
     }
 
-    // 3. Sorting
+    // 3. Date Filter (if Filter Mode is 'date')
+    if (filterMode === "date") {
+      result = result.filter((p) => isWithinDateFilter(p.timestamp, dateFilter));
+    }
+
+    // 4. Sorting
     result.sort((a, b) => {
       switch (sortOption) {
         case "outlier":
@@ -145,8 +200,13 @@ export function InstagramResearchStudio({
       }
     });
 
+    // 5. Post Count Limit (if Filter Mode is 'posts')
+    if (filterMode === "posts" && postLimit !== "all") {
+      result = result.slice(0, postLimit);
+    }
+
     return result;
-  }, [posts, sortOption, formatFilter, searchKeyword]);
+  }, [posts, sortOption, formatFilter, searchKeyword, filterMode, postLimit, dateFilter]);
 
   const handleExportCSV = () => {
     if (!profile) return;
@@ -169,7 +229,7 @@ export function InstagramResearchStudio({
       {/* Header - EXACT SAME CLEAN STYLE, FONT, & SPACING AS RUANG NGONTEN / RUANG BELAJAR */}
       <div className="flex flex-col items-center justify-center text-center gap-2 mb-8 md:mb-10">
         <div className="space-y-3 flex flex-col items-center">
-          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+          <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white font-heading">
             Mau riset akun siapa?
           </h1>
           <p className="text-sm md:text-base text-gray-500 dark:text-gray-400 max-w-xl mx-auto text-balance leading-relaxed">
@@ -275,13 +335,24 @@ export function InstagramResearchStudio({
         </div>
       )}
 
-      {/* Main Results View */}
+      {/* Main Results View (Hanya Muncul Setelah User Riset Akun) */}
       {!isLoading && profile && (
         <div className="space-y-6 animate-in fade-in duration-300">
-          {/* 1. Profile Header (Desktop & Mobile) */}
-          <InstagramProfileHeader profile={profile} />
+          {/* 1. Profile Header with Filters & Sort button at top-right */}
+          <InstagramProfileHeader
+            profile={profile}
+            filterMode={filterMode}
+            setFilterMode={setFilterMode}
+            postLimit={postLimit}
+            setPostLimit={setPostLimit}
+            dateFilter={dateFilter}
+            setDateFilter={setDateFilter}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
+            onResetFilters={handleResetFilters}
+          />
 
-          {/* 2. Sorting & Filter Toolbar ala SortFeed */}
+          {/* 2. Gallery Header & Toolbar (Matching SortFeed Image 4) */}
           <InstagramSortToolbar
             sortOption={sortOption}
             setSortOption={setSortOption}
@@ -292,11 +363,17 @@ export function InstagramResearchStudio({
             onExport={handleExportCSV}
             totalFiltered={filteredAndSortedPosts.length}
             totalCount={posts.length}
+            filterMode={filterMode}
+            postLimit={postLimit}
+            dateFilter={dateFilter}
+            onClearFilters={handleClearToolbarFilters}
           />
 
-          {/* 3. Instagram Feed Grid with Outlier Badges */}
+          {/* 3. Instagram Feed Grid with 4 columns & Creator Avatar Badge */}
           <InstagramFeedGrid
             posts={filteredAndSortedPosts}
+            profile={profile}
+            sortOption={sortOption}
             onSelectPost={(post) => setSelectedPost(post)}
           />
 

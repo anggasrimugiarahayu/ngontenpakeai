@@ -1,11 +1,36 @@
 "use client";
 
-import React from "react";
-import { InstagramTargetProfile } from "./types";
-import { CheckCircle2, ExternalLink, Flame, TrendingUp, Eye, Heart } from "lucide-react";
+import React, { useState } from "react";
+import {
+  InstagramTargetProfile,
+  SortOption,
+  FilterMode,
+  PostLimit,
+  DateFilter,
+} from "./types";
+import { SortFeedFilterDropdown } from "./SortFeedFilterDropdown";
+import {
+  CheckCircle2,
+  ExternalLink,
+  Flame,
+  TrendingUp,
+  Eye,
+  Heart,
+  SlidersHorizontal,
+  ChevronDown,
+} from "lucide-react";
 
 interface Props {
   profile: InstagramTargetProfile;
+  filterMode: FilterMode;
+  setFilterMode: (val: FilterMode) => void;
+  postLimit: PostLimit;
+  setPostLimit: (val: PostLimit) => void;
+  dateFilter: DateFilter;
+  setDateFilter: (val: DateFilter) => void;
+  sortOption: SortOption;
+  setSortOption: (val: SortOption) => void;
+  onResetFilters: () => void;
 }
 
 function formatNumber(num: number): string {
@@ -18,9 +43,22 @@ function formatNumber(num: number): string {
   return num.toLocaleString("id-ID");
 }
 
-export function InstagramProfileHeader({ profile }: Props) {
+export function InstagramProfileHeader({
+  profile,
+  filterMode,
+  setFilterMode,
+  postLimit,
+  setPostLimit,
+  dateFilter,
+  setDateFilter,
+  sortOption,
+  setSortOption,
+  onResetFilters,
+}: Props) {
+  const [isFilterOpen, setIsFilterOpen] = useState(false);
+
   return (
-    <div className="w-full bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl p-5 sm:p-6 md:p-8 shadow-xs">
+    <div className="w-full bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl p-5 sm:p-6 md:p-8 shadow-xs relative">
       {/* ========================================================================= */}
       {/* DESKTOP LAYOUT (md:flex) */}
       {/* ========================================================================= */}
@@ -38,26 +76,59 @@ export function InstagramProfileHeader({ profile }: Props) {
 
         {/* Info & Bio */}
         <div className="flex-1 min-w-0 space-y-3.5">
-          {/* Baris 1: Username & Link */}
-          <div className="flex items-center gap-3 flex-wrap">
-            <h2 className="text-xl lg:text-2xl font-bold font-heading text-gray-900 dark:text-white flex items-center gap-1.5">
-              @{profile.username}
-              {profile.isVerified && (
-                <CheckCircle2 className="w-5 h-5 text-sky-500 fill-sky-500 shrink-0 inline-block" />
-              )}
-            </h2>
+          {/* Baris 1: Username & Link + Tombol Filter di Kanan Atas */}
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-xl lg:text-2xl font-bold font-heading text-gray-900 dark:text-white flex items-center gap-1.5">
+                @{profile.username}
+                {profile.isVerified && (
+                  <CheckCircle2 className="w-5 h-5 text-sky-500 fill-sky-500 shrink-0 inline-block" />
+                )}
+              </h2>
 
-            {profile.externalUrl && (
-              <a
-                href={profile.externalUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
+              {profile.externalUrl && (
+                <a
+                  href={profile.externalUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  <span>Kunjungi Website</span>
+                </a>
+              )}
+            </div>
+
+            {/* Menu Filter di Bagian Kanan Atas Profil (Sesuai Lampiran Gambar 1, 2, 3) */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFilterOpen((prev) => !prev)}
+                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-900 dark:text-white text-xs sm:text-sm font-bold transition-all shadow-xs cursor-pointer border border-gray-200/80 dark:border-white/10"
               >
-                <ExternalLink className="w-3 h-3" />
-                <span>Kunjungi Website</span>
-              </a>
-            )}
+                <SlidersHorizontal className="w-4 h-4 text-rn-accent" />
+                <span>Filters & Sort</span>
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-gray-400 transition-transform ${
+                    isFilterOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              <SortFeedFilterDropdown
+                isOpen={isFilterOpen}
+                onClose={() => setIsFilterOpen(false)}
+                filterMode={filterMode}
+                setFilterMode={setFilterMode}
+                postLimit={postLimit}
+                setPostLimit={setPostLimit}
+                dateFilter={dateFilter}
+                setDateFilter={setDateFilter}
+                sortOption={sortOption}
+                setSortOption={setSortOption}
+                onReset={onResetFilters}
+              />
+            </div>
           </div>
 
           {/* Baris 2: Metrik Standar IG (Postingan, Pengikut, Mengikuti) */}
@@ -132,14 +203,43 @@ export function InstagramProfileHeader({ profile }: Props) {
 
         {/* Bio & Link */}
         <div className="space-y-1.5 pt-1">
-          <div className="flex items-center gap-1.5">
-            <span className="font-bold text-sm text-gray-900 dark:text-white">
-              @{profile.username}
-            </span>
-            {profile.isVerified && (
-              <CheckCircle2 className="w-4 h-4 text-sky-500 fill-sky-500 inline-block" />
-            )}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-sm text-gray-900 dark:text-white">
+                @{profile.username}
+              </span>
+              {profile.isVerified && (
+                <CheckCircle2 className="w-4 h-4 text-sky-500 fill-sky-500 inline-block" />
+              )}
+            </div>
+
+            {/* Mobile Filter Button */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsFilterOpen((prev) => !prev)}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white text-xs font-bold"
+              >
+                <SlidersHorizontal className="w-3.5 h-3.5 text-rn-accent" />
+                <span>Filter</span>
+              </button>
+
+              <SortFeedFilterDropdown
+                isOpen={isFilterOpen}
+                onClose={() => setIsFilterOpen(false)}
+                filterMode={filterMode}
+                setFilterMode={setFilterMode}
+                postLimit={postLimit}
+                setPostLimit={setPostLimit}
+                dateFilter={dateFilter}
+                setDateFilter={setDateFilter}
+                sortOption={sortOption}
+                setSortOption={setSortOption}
+                onReset={onResetFilters}
+              />
+            </div>
           </div>
+
           <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">
             {profile.fullName}
           </p>

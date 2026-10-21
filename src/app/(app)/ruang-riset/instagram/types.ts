@@ -41,7 +41,13 @@ export type SortOption =
   | "views"
   | "likes"
   | "comments"
-  | "newest"
-  | "oldest";
+  | "oldest"
+  | "newest";
 
 export type FormatFilter = "all" | "reels" | "posts";
+
+export type FilterMode = "posts" | "date";
+
+export type PostLimit = 25 | 50 | 100 | "all";
+
+export type DateFilter = "1w" | "1m" | "3m" | "6m" | "1y" | "all";
