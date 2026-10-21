@@ -427,28 +427,59 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
     const token =
       tokenInput?.trim() ||
       existingAccount?.accessToken ||
+      process.env.META_PAGE_ACCESS_TOKEN ||
       process.env.INSTAGRAM_ACCESS_TOKEN;
 
     if (!token) {
       return { success: false, error: "Token Akses Instagram tidak ditemukan" };
     }
 
-    let res = await fetch(
-      `https://graph.instagram.com/v22.0/me?fields=id,user_id,username,name,profile_picture_url,account_type&access_token=${token}`
-    );
-    if (!res.ok) {
-      res = await fetch(
-        `https://graph.instagram.com/me?fields=id,username,name,profile_picture_url,account_type&access_token=${token}`
-      );
-    }
-    if (!res.ok) {
-      const errText = await res.text();
-      console.error("Meta Graph API error:", res.status, errText);
-      return { success: false, error: "Token Instagram tidak valid atau telah kedaluwarsa dari Meta" };
+    let data: any = null;
+    let isFbGraph = false;
+
+    // A. Jika token Facebook Page / Meta Graph (diawali EAA)
+    if (token.startsWith("EAA") || token.startsWith("EAAG")) {
+      try {
+        const fbRes = await fetch(
+          `https://graph.facebook.com/v22.0/me?fields=id,name,instagram_business_account{id,username,name,profile_picture_url}&access_token=${token}`
+        );
+        if (fbRes.ok) {
+          const fbData = await fbRes.json();
+          if (fbData.instagram_business_account?.id) {
+            data = {
+              id: fbData.id,
+              user_id: fbData.instagram_business_account.id,
+              username: fbData.instagram_business_account.username,
+              name: fbData.instagram_business_account.name || fbData.name,
+              profile_picture_url: fbData.instagram_business_account.profile_picture_url,
+            };
+            isFbGraph = true;
+          }
+        }
+      } catch (fbErr) {
+        console.warn("FB graph fetch error in connect:", fbErr);
+      }
     }
 
-    const data = await res.json();
-    if (!data.id && !data.user_id) {
+    // B. Fallback ke Instagram Graph API standar (untuk token IGAA...)
+    if (!data) {
+      let res = await fetch(
+        `https://graph.instagram.com/v22.0/me?fields=id,user_id,username,name,profile_picture_url,account_type&access_token=${token}`
+      );
+      if (!res.ok) {
+        res = await fetch(
+          `https://graph.instagram.com/me?fields=id,username,name,profile_picture_url,account_type&access_token=${token}`
+        );
+      }
+      if (!res.ok) {
+        const errText = await res.text();
+        console.error("Meta Graph API error:", res.status, errText);
+        return { success: false, error: "Token Instagram tidak valid atau telah kedaluwarsa dari Meta" };
+      }
+      data = await res.json();
+    }
+
+    if (!data || (!data.id && !data.user_id)) {
       return { success: false, error: "Gagal mengambil data Akun Instagram dari Meta" };
     }
 
@@ -456,10 +487,23 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
     const resolvedScopedId = String(data.id || data.user_id);
 
     // 3. Pastikan webhook disubscribe ke Meta untuk akun ini (comments, live_comments, messages, messaging_postbacks)
-    await fetch(
-      `https://graph.instagram.com/v22.0/me/subscribed_apps?subscribed_fields=comments,live_comments,messages,messaging_postbacks&access_token=${token}`,
-      { method: "POST" }
-    ).catch(() => null);
+    if (isFbGraph && resolvedBusinessId) {
+      await fetch(
+        `https://graph.facebook.com/v22.0/${resolvedBusinessId}/subscribed_apps?subscribed_fields=comments,messages,messaging_postbacks&access_token=${token}`,
+        { method: "POST" }
+      ).catch(() => null);
+      if (resolvedScopedId) {
+        await fetch(
+          `https://graph.facebook.com/v22.0/${resolvedScopedId}/subscribed_apps?subscribed_fields=feed,messages&access_token=${token}`,
+          { method: "POST" }
+        ).catch(() => null);
+      }
+    } else {
+      await fetch(
+        `https://graph.instagram.com/v22.0/me/subscribed_apps?subscribed_fields=comments,live_comments,messages,messaging_postbacks&access_token=${token}`,
+        { method: "POST" }
+      ).catch(() => null);
+    }
 
     // Pastikan tidak ada record agen lain yang memegang instagramId yang sama (menghindari bentrok @unique)
     const conflictingAccounts = await (db as any).instagramAccount.findMany({

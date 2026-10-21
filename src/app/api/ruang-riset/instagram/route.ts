@@ -220,7 +220,8 @@ async function fetchFromMetaBusinessDiscovery(targetUsername: string) {
 
     const callerIgId =
       process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID ||
-      process.env.META_APP_ID;
+      process.env.META_PAGE_ID ||
+      "17841445108128356";
 
     if (!token || !callerIgId) {
       return null;
