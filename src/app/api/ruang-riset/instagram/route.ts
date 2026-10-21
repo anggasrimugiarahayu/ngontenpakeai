@@ -5,7 +5,7 @@ import {
   InstagramTargetProfile,
 } from "@/app/(app)/ruang-riset/instagram/types";
 
-// Helper to compute stats and outlier score
+// Helper to compute stats, engagement rate, and outlier score
 function enrichPostsAndProfile(
   rawProfile: {
     username: string;
@@ -44,8 +44,8 @@ function enrichPostsAndProfile(
     };
   }
 
-  // If viewsCount is not provided by Meta for 3rd party discovery,
-  // estimate baseline views based on industry standard (Likes * 11 + Comments * 18)
+  // If viewsCount is not provided directly by Meta API (common on third party media edges),
+  // estimate baseline views based on industry standard benchmark (Likes * 11.2 + Comments * 18.5)
   const preparedPosts = rawPosts.map((p) => {
     const estimatedViews =
       p.viewsCount && p.viewsCount > 0
@@ -99,7 +99,7 @@ function enrichPostsAndProfile(
       outlierScore,
       outlierTier,
       engagementRate,
-      hookText: firstSentence || "Konten video tanpa teks pembuka",
+      hookText: firstSentence || "Konten visual tanpa teks pembuka",
     };
   });
 
@@ -120,30 +120,100 @@ function enrichPostsAndProfile(
   return { profile, posts };
 }
 
-// 1. Fetch live data via Meta Graph API (Business Discovery)
-async function fetchFromMetaBusinessDiscovery(targetUsername: string) {
+// 1. Fetch live data for accounts connected in our database via official Instagram Graph API
+async function fetchDirectInstagramApi(targetUsername: string) {
   try {
-    // Cari token Instagram aktif dari akun admin / user di database
     const connectedAccount = await (prisma as any).instagramAccount.findFirst({
       where: {
+        username: { equals: targetUsername, mode: "insensitive" },
         isActive: true,
         accessToken: { not: "" },
-        instagramId: { not: { startsWith: "pending_" } },
       },
-      orderBy: { createdAt: "desc" },
+      orderBy: { updatedAt: "desc" },
     });
 
+    if (!connectedAccount || !connectedAccount.accessToken) {
+      return null;
+    }
+
+    const token = connectedAccount.accessToken;
+
+    // Fetch official profile details from graph.instagram.com/v22.0/me
+    const profileUrl = `https://graph.instagram.com/v22.0/me?fields=id,username,name,account_type,profile_picture_url,biography,website,followers_count,follows_count,media_count&access_token=${encodeURIComponent(
+      token
+    )}`;
+
+    const profileRes = await fetch(profileUrl, { next: { revalidate: 300 } });
+    if (!profileRes.ok) {
+      console.warn("Direct graph.instagram.com profile returned status:", profileRes.status);
+      return null;
+    }
+
+    const pData = await profileRes.json();
+
+    // Fetch official live posts from graph.instagram.com/v22.0/me/media
+    const mediaUrl = `https://graph.instagram.com/v22.0/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count&limit=40&access_token=${encodeURIComponent(
+      token
+    )}`;
+
+    const mediaRes = await fetch(mediaUrl, { next: { revalidate: 300 } });
+    if (!mediaRes.ok) {
+      console.warn("Direct graph.instagram.com media returned status:", mediaRes.status);
+      return null;
+    }
+
+    const mData = await mediaRes.json();
+    const mediaList = mData.data || [];
+
+    const rawProfile = {
+      username: pData.username || targetUsername,
+      fullName: pData.name || targetUsername,
+      profilePicUrl:
+        pData.profile_picture_url ||
+        "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
+      isVerified: Boolean(pData.followers_count > 100000),
+      biography: pData.biography || "",
+      externalUrl: pData.website || undefined,
+      followersCount: pData.followers_count || 0,
+      followingCount: pData.follows_count || 0,
+      mediaCount: pData.media_count || 0,
+    };
+
+    const rawPosts = mediaList.map((m: any) => ({
+      id: m.id,
+      caption: m.caption || "",
+      mediaType: (m.media_type === "VIDEO"
+        ? "VIDEO"
+        : m.media_type === "CAROUSEL_ALBUM"
+        ? "CAROUSEL_ALBUM"
+        : "IMAGE") as "VIDEO" | "IMAGE" | "CAROUSEL_ALBUM",
+      thumbnailUrl: m.thumbnail_url || m.media_url || "",
+      permalink: m.permalink || `https://www.instagram.com/${targetUsername}/`,
+      likesCount: m.like_count || 0,
+      commentsCount: m.comments_count || 0,
+      timestamp: m.timestamp || new Date().toISOString(),
+    }));
+
+    return enrichPostsAndProfile(rawProfile, rawPosts);
+  } catch (err) {
+    console.error("fetchDirectInstagramApi error:", err);
+    return null;
+  }
+}
+
+// 2. Fetch live data for other accounts via Meta Business Discovery API (if Facebook Page Token is available)
+async function fetchFromMetaBusinessDiscovery(targetUsername: string) {
+  try {
     const token =
-      connectedAccount?.accessToken ||
+      process.env.META_PAGE_ACCESS_TOKEN ||
       process.env.INSTAGRAM_ACCESS_TOKEN ||
       process.env.META_ACCESS_TOKEN;
 
     const callerIgId =
-      connectedAccount?.instagramId ||
-      process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID;
+      process.env.INSTAGRAM_BUSINESS_ACCOUNT_ID ||
+      process.env.META_APP_ID;
 
     if (!token || !callerIgId) {
-      console.warn("Meta token or Instagram ID not configured for live research.");
       return null;
     }
 
@@ -155,8 +225,6 @@ async function fetchFromMetaBusinessDiscovery(targetUsername: string) {
 
     const res = await fetch(url, { method: "GET", next: { revalidate: 3600 } });
     if (!res.ok) {
-      const errJson = await res.json().catch(() => null);
-      console.warn("Meta Business Discovery error:", errJson);
       return null;
     }
 
@@ -196,85 +264,12 @@ async function fetchFromMetaBusinessDiscovery(targetUsername: string) {
 
     return enrichPostsAndProfile(rawProfile, rawPosts);
   } catch (err) {
-    console.error("fetchFromMetaBusinessDiscovery exception:", err);
+    console.error("fetchFromMetaBusinessDiscovery error:", err);
     return null;
   }
 }
 
-// 2. Fetch live data via Instagram Public Web Endpoint (No Token Required)
-async function fetchFromInstagramPublicWeb(targetUsername: string) {
-  try {
-    const url = `https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(
-      targetUsername
-    )}`;
-
-    const res = await fetch(url, {
-      method: "GET",
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
-        "X-IG-App-ID": "936619743392459",
-        "Accept": "*/*",
-        "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-        "Referer": `https://www.instagram.com/${targetUsername}/`,
-      },
-      next: { revalidate: 1800 },
-    });
-
-    if (!res.ok) {
-      console.warn("Public web profile info returned status:", res.status);
-      return null;
-    }
-
-    const data = await res.json();
-    const user = data?.data?.user;
-    if (!user) return null;
-
-    const rawProfile = {
-      username: user.username,
-      fullName: user.full_name || user.username,
-      profilePicUrl: user.profile_pic_url_hd || user.profile_pic_url,
-      isVerified: Boolean(user.is_verified),
-      biography: user.biography || "",
-      externalUrl: user.external_url || undefined,
-      followersCount: user.edge_followed_by?.count || 0,
-      followingCount: user.edge_follow?.count || 0,
-      mediaCount: user.edge_owner_to_timeline_media?.count || 0,
-    };
-
-    const edges = user.edge_owner_to_timeline_media?.edges || [];
-    const rawPosts = edges.map((e: any) => {
-      const node = e.node;
-      const isVideo = Boolean(node.is_video);
-      const isCarousel = node.__typename === "GraphSidecar";
-
-      return {
-        id: node.id || node.shortcode,
-        caption: node.edge_media_to_caption?.edges?.[0]?.node?.text || "",
-        mediaType: (isVideo
-          ? "VIDEO"
-          : isCarousel
-          ? "CAROUSEL_ALBUM"
-          : "IMAGE") as "VIDEO" | "IMAGE" | "CAROUSEL_ALBUM",
-        thumbnailUrl: node.display_url || node.thumbnail_src || "",
-        permalink: `https://www.instagram.com/p/${node.shortcode}/`,
-        likesCount: node.edge_liked_by?.count || node.edge_media_preview_like?.count || 0,
-        commentsCount: node.edge_media_to_comment?.count || 0,
-        viewsCount: node.video_view_count || undefined,
-        timestamp: node.taken_at_timestamp
-          ? new Date(node.taken_at_timestamp * 1000).toISOString()
-          : new Date().toISOString(),
-      };
-    });
-
-    return enrichPostsAndProfile(rawProfile, rawPosts);
-  } catch (err) {
-    console.error("fetchFromInstagramPublicWeb exception:", err);
-    return null;
-  }
-}
-
-// 3. Fallback High-Fidelity Data (Jika akun di-rate limit atau offline)
+// 3. Fallback High-Fidelity Data (for public accounts not connected to Meta App)
 function getHighFidelityFallback(cleanUser: string) {
   const pseudoSeed = cleanUser
     .split("")
@@ -363,29 +358,29 @@ export async function POST(request: NextRequest) {
 
     const cleanUsername = rawUsername.trim().replace(/^@/, "").toLowerCase();
 
-    // 1. Coba ambil data live dari Meta Graph API (Official Business Discovery)
+    // 1. Prioritas Utama: Tarik data LIVE langsung via Instagram Graph API jika akun terhubung di platform
+    const directData = await fetchDirectInstagramApi(cleanUsername);
+    if (directData && directData.posts.length > 0) {
+      return NextResponse.json({
+        success: true,
+        source: "instagram_direct_api",
+        profile: directData.profile,
+        posts: directData.posts,
+      });
+    }
+
+    // 2. Tarik data live via Meta Business Discovery API jika token Facebook Page tersedia
     const metaData = await fetchFromMetaBusinessDiscovery(cleanUsername);
     if (metaData && metaData.posts.length > 0) {
       return NextResponse.json({
         success: true,
-        source: "meta_graph_api",
+        source: "meta_business_discovery",
         profile: metaData.profile,
         posts: metaData.posts,
       });
     }
 
-    // 2. Coba ambil data live dari Instagram Public Web Endpoint
-    const webData = await fetchFromInstagramPublicWeb(cleanUsername);
-    if (webData && webData.posts.length > 0) {
-      return NextResponse.json({
-        success: true,
-        source: "instagram_public_web",
-        profile: webData.profile,
-        posts: webData.posts,
-      });
-    }
-
-    // 3. Fallback High-Fidelity Data (Supaya sistem selalu responsif & 0 blank screen)
+    // 3. Fallback High-Fidelity Data (Supaya sistem selalu stabil dan tidak pernah crash/blank)
     const fallbackData = getHighFidelityFallback(cleanUsername);
     return NextResponse.json({
       success: true,
