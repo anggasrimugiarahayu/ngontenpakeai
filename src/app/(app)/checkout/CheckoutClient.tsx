@@ -330,13 +330,14 @@ export default function CheckoutClient({
       <div className="flex items-center justify-between mb-6">
         <button 
           onClick={() => router.back()} 
-          className="inline-flex items-center gap-2 text-xs font-bold px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:hover:border-[#3b435e] dark:hover:text-white text-gray-700 dark:text-gray-200 transition-all cursor-pointer shadow-xs active:scale-[0.98] w-fit"
+          title="Kembali"
+          aria-label="Kembali"
+          className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95"
         >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Kembali</span>
+          <ArrowLeft className="w-5 h-5" />
         </button>
         <h1 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white absolute left-1/2 -translate-x-1/2">Checkout</h1>
-        <div className="w-20"></div>
+        <div className="w-9"></div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4 lg:gap-6 items-stretch">

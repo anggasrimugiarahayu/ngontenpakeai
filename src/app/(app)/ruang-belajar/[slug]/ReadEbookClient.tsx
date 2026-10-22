@@ -82,10 +82,11 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
               onMouseEnter={() => preload("ruangBelajar", getRuangBelajarDataAction)} 
               onTouchStart={() => preload("ruangBelajar", getRuangBelajarDataAction)} 
               href="/ruang-belajar" 
-              className="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:hover:border-[#3b435e] dark:hover:text-white text-gray-700 dark:text-gray-200 transition-all cursor-pointer shadow-xs active:scale-[0.98] shrink-0"
+              title="Kembali"
+              aria-label="Kembali"
+              className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95 shrink-0"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Kembali</span>
+              <ArrowLeft className="w-5 h-5" />
             </Link>
             <div className="min-w-0">
               <h1 className="font-bold text-sm md:text-base text-gray-900 dark:text-white leading-none flex items-center gap-2 truncate">
@@ -127,10 +128,11 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
            onMouseEnter={() => preload("ruangBelajar", getRuangBelajarDataAction)} 
            onTouchStart={() => preload("ruangBelajar", getRuangBelajarDataAction)} 
            href="/ruang-belajar" 
-           className="inline-flex items-center gap-2 text-xs font-bold px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:hover:border-[#3b435e] dark:hover:text-white text-gray-700 dark:text-gray-200 transition-all cursor-pointer shadow-xs active:scale-[0.98] w-fit mb-8"
+           title="Kembali"
+           aria-label="Kembali"
+           className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95 w-fit mb-8"
          >
-           <ArrowLeft className="w-3.5 h-3.5" />
-           <span>Kembali</span>
+           <ArrowLeft className="w-5 h-5" />
          </Link>
 
          <div className="flex flex-col md:flex-row gap-8 lg:gap-16">

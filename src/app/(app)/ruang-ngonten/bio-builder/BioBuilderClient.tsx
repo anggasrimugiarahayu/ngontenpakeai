@@ -647,10 +647,11 @@ export default function BioBuilderClient() {
               {step > 1 ? (
                 <button 
                   onClick={goToPrevStep} 
-                  className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:hover:border-[#3b435e] dark:hover:text-white text-gray-700 dark:text-gray-200 transition-all cursor-pointer shadow-xs active:scale-[0.98]"
+                  title="Kembali"
+                  aria-label="Kembali"
+                  className="flex items-center justify-center w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95"
                 >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                  <span>Kembali</span>
+                  <ArrowLeft className="w-5 h-5" />
                 </button>
               ) : (
                 <div></div> // Empty div for flex layout
