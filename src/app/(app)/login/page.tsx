@@ -23,17 +23,19 @@ function LoginContent() {
   const isDark = theme === "dark";
 
   return (
-    <main className="flex-1 flex flex-col items-center justify-center p-6">
-      <div className="w-full max-w-sm flex flex-col items-center">
-        <h1 className={`text-2xl font-bold font-heading mb-2 ${isDark ? "text-white" : "text-gray-900"}`}>
-          Sign in
-        </h1>
-        <p className={`text-sm mb-6 ${isDark ? "text-gray-400" : "text-gray-500"}`}>
-          Sign in to your account to continue
-        </p>
+    <div className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 py-8 -mt-6">
+      <div className="w-full max-w-sm space-y-6">
+        <div className="space-y-2 text-center">
+          <h1 className={`text-2xl font-semibold tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}>
+            Sign in
+          </h1>
+          <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+            Sign in to your account to continue
+          </p>
+        </div>
 
         {error && (
-          <div className="w-full mb-6 p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs text-center font-medium animate-in fade-in">
+          <div className="w-full p-3 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs text-center font-medium animate-in fade-in">
             {error === "Configuration"
               ? "Koneksi login sedang diperbarui. Silakan klik tombol di bawah untuk mencoba kembali."
               : `Terjadi kendala autentikasi (${error}). Silakan coba klik login kembali.`}
@@ -42,13 +44,13 @@ function LoginContent() {
 
         <button
           onClick={() => signIn("google", { callbackUrl: redirectUrl || "/" })}
-          className={`w-full flex items-center justify-center gap-3 py-2.5 px-4 rounded-xl border text-sm font-semibold transition-colors
+          className={`w-full inline-flex items-center justify-center gap-2.5 h-10 px-4 py-2 rounded-lg text-sm font-medium transition-colors border cursor-pointer
             ${isDark 
-              ? "bg-transparent border-gray-700 text-gray-200 hover:bg-gray-800" 
-              : "bg-white border-gray-300 text-gray-700 hover:bg-gray-50"
+              ? "border-[#2C3246] bg-[#141B31] text-gray-200 hover:bg-[#1C2442]" 
+              : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50 shadow-sm"
             }`}
         >
-          <svg viewBox="0 0 24 24" className="w-5 h-5" aria-hidden="true">
+          <svg viewBox="0 0 24 24" className="w-5 h-5 shrink-0" aria-hidden="true">
             <path
               d="M12.0003 4.75C13.7703 4.75 15.3553 5.36 16.6053 6.54998L20.0303 3.125C17.9502 1.19 15.2353 0 12.0003 0C7.31028 0 3.25527 2.69 1.28027 6.60998L5.27028 9.70498C6.21525 6.86 8.87028 4.75 12.0003 4.75Z"
               fill="#EA4335"
@@ -69,14 +71,14 @@ function LoginContent() {
           Sign in with Google
         </button>
 
-        <p className={`mt-6 text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
+        <p className={`text-center text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>
           Don't have an account?{" "}
           <Link href={`/signup${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`} className="text-rn-accent hover:underline font-medium">
             Sign up
           </Link>
         </p>
       </div>
-    </main>
+    </div>
   );
 }
 

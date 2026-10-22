@@ -124,7 +124,7 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
           className="flex items-center gap-1.5 sm:gap-2.5 group"
         >
 
-          <span className="font-bold font-heading text-[14px] sm:text-[16px] tracking-tight whitespace-nowrap transition-colors duration-300 text-gray-900 dark:text-white group-hover:opacity-80">
+          <span className="font-bold font-heading text-lg tracking-tight whitespace-nowrap transition-colors duration-300 text-gray-900 dark:text-white group-hover:opacity-80">
             ruangcreativemuslim
           </span>
         </Link>
@@ -138,18 +138,18 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
           </span>
         </div>
         <div className="flex items-center gap-1.5">
-          <User className="w-4 h-4" />{" "}
-          <span className="font-bold transition-colors text-gray-900 dark:text-white">
+          <User className="w-4 h-4 text-gray-400" />{" "}
+          <span className="text-base font-extrabold tabular-nums transition-colors text-gray-900 dark:text-white">
             {followers}
           </span>{" "}
-          Follower
+          <span className="text-sm font-medium text-gray-400">Follower</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <BookOpen className="w-4 h-4" />{" "}
-          <span className="font-bold transition-colors text-gray-900 dark:text-white">
+          <BookOpen className="w-4 h-4 text-gray-400" />{" "}
+          <span className="text-base font-extrabold tabular-nums transition-colors text-gray-900 dark:text-white">
             {memberCount}
           </span>{" "}
-          Member
+          <span className="text-sm font-medium text-gray-400">Member</span>
         </div>
       </div>
 
