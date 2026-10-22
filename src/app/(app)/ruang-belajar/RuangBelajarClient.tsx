@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { BookOpen, Star, Loader2, Heart } from "lucide-react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { EmptyState } from "@/components/ui/EmptyState";
 import useSWR, { preload } from "swr";
 import { getRuangBelajarDataAction, getEbookDetailAction } from "@/app/actions/ruangBelajar";
 
@@ -181,11 +182,11 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
             })}
           </div>
         ) : (
-          <div className="py-16 text-center border-2 border-dashed border-gray-200 dark:border-[#2C3246] rounded-2xl bg-white/50 dark:bg-[#141B31]/50">
-            <BookOpen className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4 opacity-50" />
-            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Belum Ada E-Book</h3>
-            <p className="text-gray-500">Belum ada e-book yang ditambahkan.</p>
-          </div>
+          <EmptyState
+            icon={<BookOpen className="w-8 h-8" />}
+            title="Belum Ada E-Book"
+            description="Belum ada e-book yang ditambahkan pada kategori ini."
+          />
         )}
       </div>
     </div>

@@ -24,6 +24,8 @@ import {
 } from "@/app/actions/adminSettings";
 import { confirmSwal } from "./confirmSwal";
 import { AdminRuangBelajarModals } from "./AdminRuangBelajarModals";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/Button";
 
 export function AdminRuangBelajarTab({
   categories,
@@ -519,17 +521,22 @@ export function AdminRuangBelajarTab({
             );
           })}
           {productList.length === 0 && (
-            <div className="col-span-full py-12 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 dark:border-[#2C3246] rounded-2xl bg-gray-50 dark:bg-[#141B31]">
-              <BookOpen size={40} className="mb-3 opacity-20 text-gray-400" />
-              <p className="font-medium text-gray-500 text-sm">
-                Belum ada produk e-book yang ditambahkan.
-              </p>
-              <button
-                onClick={() => setShowAddProduct(true)}
-                className="mt-3 text-xs font-bold text-rn-accent hover:underline"
-              >
-                + Tambah E-Book Sekarang
-              </button>
+            <div className="col-span-full">
+              <EmptyState
+                icon={<BookOpen size={28} />}
+                title="Belum ada produk e-book yang ditambahkan."
+                description="Mulai tambahkan produk digital pertama Anda ke katalog Ruang Belajar."
+                action={
+                  <Button
+                    onClick={() => setShowAddProduct(true)}
+                    variant="primary"
+                    size="sm"
+                    icon={<Plus size={14} />}
+                  >
+                    Tambah E-Book Sekarang
+                  </Button>
+                }
+              />
             </div>
           )}
         </div>

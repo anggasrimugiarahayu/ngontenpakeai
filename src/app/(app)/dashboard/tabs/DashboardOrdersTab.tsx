@@ -5,6 +5,9 @@ import { format } from "date-fns";
 import { User, ShoppingBag, Settings, Search, Download, Printer, X, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react";
 import { getDashboardOrdersAction } from "@/app/actions/dashboard";
 import CustomSelect from "@/components/ui/CustomSelect";
+import { Pagination } from "@/components/ui/Pagination";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { Button } from "@/components/ui/Button";
 
 interface DashboardOrdersTabProps {
   serverOrders: any[];
@@ -536,9 +539,11 @@ export function DashboardOrdersTab({
             {/* List */}
             <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-3 custom-scrollbar">
               {filteredOrders.length === 0 ? (
-                <div className="text-center py-10 text-gray-500">
-                  Belum ada data transaksi yang sesuai filter.
-                </div>
+                <EmptyState
+                  title="Belum ada transaksi"
+                  description="Belum ada data transaksi yang sesuai filter pencarian atau status."
+                  className="min-h-[200px]"
+                />
               ) : (
                 paginatedOrders.map((order: any) => {
                   const isSelected = selectedOrder?.id === order.id;
@@ -630,83 +635,15 @@ export function DashboardOrdersTab({
             </div>
 
             {/* Pagination UI */}
-            {totalPages > 1 && (
-              <div className="p-4 sm:p-5 border-t border-gray-100 dark:border-[#2C3246] flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-[#141B31] shrink-0">
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  Menampilkan{" "}
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {totalServerOrders > 0 ? (orderPage - 1) * itemsPerPage + 1 : 0}
-                  </span>
-                  –
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {Math.min(orderPage * itemsPerPage, totalServerOrders)}
-                  </span>{" "}
-                  dari{" "}
-                  <span className="font-semibold text-gray-900 dark:text-white">
-                    {totalServerOrders}
-                  </span>{" "}
-                  pesanan
-                </div>
-
-                <div className="flex items-center gap-1.5">
-                  <button
-                    type="button"
-                    onClick={() => setOrderPage((p) => Math.max(1, p - 1))}
-                    disabled={orderPage === 1}
-                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                  >
-                    <ChevronLeft className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Prev</span>
-                  </button>
-
-                  <div className="flex items-center gap-1">
-                    {Array.from({ length: totalPages }, (_, i) => i + 1)
-                      .filter((page) => {
-                        return (
-                          page === 1 ||
-                          page === totalPages ||
-                          Math.abs(page - orderPage) <= 1
-                        );
-                      })
-                      .map((page, idx, arr) => {
-                        const prevPage = arr[idx - 1];
-                        const hasGap = prevPage && page - prevPage > 1;
-
-                        return (
-                          <React.Fragment key={page}>
-                            {hasGap && (
-                              <span className="w-6 h-8 flex items-center justify-center text-gray-400 dark:text-gray-500 text-xs">
-                                ...
-                              </span>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => setOrderPage(page)}
-                              className={`w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-xs font-bold transition-colors cursor-pointer ${
-                                orderPage === page
-                                  ? "bg-orange-500 text-white border border-orange-500 shadow-sm"
-                                  : "border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-300 font-bold"
-                              }`}
-                            >
-                              {page}
-                            </button>
-                          </React.Fragment>
-                        );
-                      })}
-                  </div>
-
-                  <button
-                    type="button"
-                    onClick={() => setOrderPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={orderPage === totalPages}
-                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
-                  >
-                    <span className="hidden sm:inline">Next</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-              </div>
-            )}
+            <div className="p-4 sm:p-5 border-t border-gray-100 dark:border-[#2C3246] bg-white dark:bg-[#141B31] shrink-0">
+              <Pagination
+                currentPage={orderPage}
+                totalPages={totalPages}
+                onPageChange={(p) => setOrderPage(p)}
+                totalItems={totalServerOrders}
+                itemsPerPage={itemsPerPage}
+              />
+            </div>
           </div>
         </div>
 

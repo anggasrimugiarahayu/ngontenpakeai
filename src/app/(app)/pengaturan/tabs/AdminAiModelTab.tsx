@@ -10,6 +10,8 @@ import {
   deleteModel,
 } from "@/app/actions/adminSettings";
 import { confirmSwal } from "./confirmSwal";
+import { Switch } from "@/components/ui/Switch";
+import { Button } from "@/components/ui/Button";
 
 export function AdminAiModelTab({ models }: { models: any[] }) {
   const [newModel, setNewModel] = useState({ name: "", modelId: "", provider: "google" });
@@ -93,25 +95,14 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
               <div className="flex flex-wrap items-center gap-3 sm:gap-2">
                 <div className="flex items-center gap-2 mr-2 sm:mr-4">
                   <span className="text-xs font-bold text-gray-500 dark:text-gray-400">Aktif</span>
-                  <button
-                    onClick={async () => {
-                      await toggleModel(model.id, !model.isActive);
+                  <Switch
+                    size="sm"
+                    checked={Boolean(model.isActive)}
+                    onChange={async (nextVal) => {
+                      await toggleModel(model.id, nextVal);
                       mutate("pengaturan");
                     }}
-                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      model.isActive ? "bg-[#f97316]" : "bg-gray-200 dark:bg-[#141B31] border dark:border-[#2C3246]"
-                    }`}
-                    role="switch"
-                    aria-checked={model.isActive}
-                  >
-                    <span className="sr-only">Toggle Model</span>
-                    <span
-                      aria-hidden="true"
-                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                        model.isActive ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    />
-                  </button>
+                  />
                 </div>
 
                 {!model.isDefault && model.isActive && (

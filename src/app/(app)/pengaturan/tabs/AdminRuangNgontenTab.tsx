@@ -1,6 +1,8 @@
 "use client";
 
 import { toggleFeatureStatus, toggleFeaturePro } from "@/app/actions/adminSettings";
+import { Switch } from "@/components/ui/Switch";
+import { tokens, cn } from "@/lib/design-tokens";
 
 const ORDER = [
   "Master Blueprint",
@@ -55,22 +57,11 @@ export function AdminRuangNgontenTab({ features }: { features: any[] }) {
                 <span className="text-xs font-bold text-gray-600 dark:text-gray-400">
                   Aktifkan
                 </span>
-                <button
-                  onClick={() => toggleFeatureStatus(f.id, !f.isActive)}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    f.isActive ? "bg-[#f97316]" : "bg-gray-200 dark:bg-[#141B31] border dark:border-[#2C3246]"
-                  }`}
-                  role="switch"
-                  aria-checked={f.isActive}
-                >
-                  <span className="sr-only">Toggle Status</span>
-                  <span
-                    aria-hidden="true"
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      f.isActive ? "translate-x-5" : "translate-x-0"
-                    }`}
-                  />
-                </button>
+                <Switch
+                  size="sm"
+                  checked={Boolean(f.isActive)}
+                  onChange={() => toggleFeatureStatus(f.id, !f.isActive)}
+                />
               </div>
 
               <div className="w-px h-6 bg-gray-200 dark:bg-[#2C3246] mx-1"></div>
@@ -80,22 +71,11 @@ export function AdminRuangNgontenTab({ features }: { features: any[] }) {
                 <span className="text-xs font-bold text-orange-600 dark:text-orange-400">
                   PRO Mode
                 </span>
-                <button
-                  onClick={() => toggleFeaturePro(f.id, !f.isProOnly)}
-                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    f.isProOnly ? "bg-[#f97316]" : "bg-gray-200 dark:bg-[#141B31] border dark:border-[#2C3246]"
-                  }`}
-                  role="switch"
-                  aria-checked={f.isProOnly}
-                >
-                  <span className="sr-only">Toggle PRO</span>
-                  <span
-                    aria-hidden="true"
-                    className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                      f.isProOnly ? "translate-x-5" : "translate-x-0"
-                    }`}
-                  />
-                </button>
+                <Switch
+                  size="sm"
+                  checked={Boolean(f.isProOnly)}
+                  onChange={() => toggleFeaturePro(f.id, !f.isProOnly)}
+                />
               </div>
             </div>
           </div>
