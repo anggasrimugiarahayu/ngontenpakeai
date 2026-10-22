@@ -11,6 +11,7 @@ import { Copy, CheckCircle2, AlertCircle, Loader2, UserCircle, Type, AlignLeft,
 import Link from "next/link";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
+import QuotaExceededModal from "@/components/ui/QuotaExceededModal";
 
 interface BioState {
   username: string;
@@ -52,6 +53,7 @@ export default function BioBuilderClient() {
     if (initialData?.username) return 2;
     return 1;
   });
+  const [showQuotaModal, setShowQuotaModal] = useState(false);
 
   
   useEffect(() => {
@@ -147,7 +149,13 @@ export default function BioBuilderClient() {
         body: JSON.stringify({ action: "generate-usernames", payload: {}, blueprintId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) {
+        if (data.code === "QUOTA_EXCEEDED" || res.status === 403) {
+          setShowQuotaModal(true);
+          return;
+        }
+        throw new Error(data.error);
+      }
       
       const newSugg = { ...suggestions, usernames: data.data.usernames, names: null, bios: null };
       setSuggestions(newSugg);
@@ -169,7 +177,13 @@ export default function BioBuilderClient() {
         body: JSON.stringify({ action: "generate-names", payload: { unameToUse }, blueprintId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) {
+        if (data.code === "QUOTA_EXCEEDED" || res.status === 403) {
+          setShowQuotaModal(true);
+          return;
+        }
+        throw new Error(data.error);
+      }
       
       const newSugg = { ...suggestions, names: data.data.names, bios: null };
       setSuggestions(newSugg);
@@ -191,7 +205,13 @@ export default function BioBuilderClient() {
         body: JSON.stringify({ action: "generate-bios", payload: { pnameToUse }, blueprintId }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error);
+      if (!res.ok) {
+        if (data.code === "QUOTA_EXCEEDED" || res.status === 403) {
+          setShowQuotaModal(true);
+          return;
+        }
+        throw new Error(data.error);
+      }
       
       const newSugg = { ...suggestions, bios: data.data.bios };
       setSuggestions(newSugg);
@@ -751,6 +771,11 @@ export default function BioBuilderClient() {
         </div>
       )}
 
+      <QuotaExceededModal
+        isOpen={showQuotaModal}
+        onClose={() => setShowQuotaModal(false)}
+        toolName="Bio Builder"
+      />
     </div>
   );
 }

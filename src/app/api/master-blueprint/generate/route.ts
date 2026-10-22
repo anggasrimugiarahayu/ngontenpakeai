@@ -2,6 +2,7 @@ import { getDefaultAiModel, getFallbackAiModel } from "@/lib/get-ai-model";
 import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
+import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import { GoogleGenAI } from "@google/genai";
 import prisma from "@/lib/prisma";
 import { revalidateTag } from "next/cache";
@@ -11,6 +12,15 @@ export async function POST(req: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const accessCheck = await verifyFeatureAccess(session.user.id, "Master Blueprint", session.user.email);
+    if (!accessCheck.authorized) {
+      return NextResponse.json({
+        error: accessCheck.code === "QUOTA_EXCEEDED" ? "QUOTA_EXCEEDED" : accessCheck.reason,
+        code: accessCheck.code,
+        message: accessCheck.reason
+      }, { status: 403 });
     }
 
     const formData = await req.json();
@@ -188,6 +198,10 @@ Platform Dipilih: ${formData.platform ? (Array.isArray(formData.platform) ? form
     try {
       revalidateTag("blueprint", "default");
     } catch (e) {}
+
+    if (accessCheck.featureId) {
+      await incrementFeatureUsage(session.user.id, accessCheck.featureId);
+    }
 
     return NextResponse.json({ result, id: blueprintId });
 

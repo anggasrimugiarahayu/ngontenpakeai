@@ -4,7 +4,7 @@ import { getDefaultAiModel } from "@/lib/get-ai-model";
 import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { verifyProToolsAccess } from "@/lib/auth-checks";
+import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import { GoogleGenAI } from '@google/genai';
 import prisma from '@/lib/prisma';
 
@@ -31,9 +31,13 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const accessCheck = await verifyProToolsAccess(session.user.id, session.user.email);
+    const accessCheck = await verifyFeatureAccess(session.user.id, "Carousel Prompt Builder", session.user.email);
     if (!accessCheck.authorized) {
-      return NextResponse.json({ error: accessCheck.reason }, { status: 403 });
+      return NextResponse.json({
+        error: accessCheck.code === "QUOTA_EXCEEDED" ? "QUOTA_EXCEEDED" : accessCheck.reason,
+        code: accessCheck.code,
+        message: accessCheck.reason
+      }, { status: 403 });
     }
 
     const body = await req.json();
@@ -244,6 +248,11 @@ Untuk menjaga komposisi adegan agar logis dan tidak aneh:
     }
 
     const data = JSON.parse(jsonMatch[0]);
+
+    if (accessCheck.featureId) {
+      await incrementFeatureUsage(session.user.id, accessCheck.featureId);
+    }
+
     return NextResponse.json(data);
 
   } catch (error: any) {

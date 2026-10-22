@@ -3,7 +3,7 @@ import { getDefaultAiModel } from "@/lib/get-ai-model";
 import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { auth } from "@/auth";
-import { verifyProToolsAccess } from "@/lib/auth-checks";
+import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,9 +12,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const accessCheck = await verifyProToolsAccess(session.user.id, session.user.email);
+    const accessCheck = await verifyFeatureAccess(session.user.id, "Ebook Prompt Builder", session.user.email);
     if (!accessCheck.authorized) {
-      return NextResponse.json({ error: accessCheck.reason }, { status: 403 });
+      return NextResponse.json({
+        error: accessCheck.code === "QUOTA_EXCEEDED" ? "QUOTA_EXCEEDED" : accessCheck.reason,
+        code: accessCheck.code,
+        message: accessCheck.reason
+      }, { status: 403 });
     }
 
     const { 
@@ -181,6 +185,10 @@ Anda beroperasi dalam 3 Mode:
       parsedData = JSON.parse(responseText);
     } catch (e) {
       parsedData = { is_error: true, error_message: "Format JSON tidak valid dari AI." };
+    }
+
+    if (accessCheck.featureId && !parsedData.is_error) {
+      await incrementFeatureUsage(session.user.id, accessCheck.featureId);
     }
 
     return NextResponse.json(parsedData);

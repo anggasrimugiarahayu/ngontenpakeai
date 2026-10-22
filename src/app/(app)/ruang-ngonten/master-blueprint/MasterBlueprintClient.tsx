@@ -13,6 +13,7 @@ import CanvasCell from "@/components/master-blueprint/CanvasCell";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
+import QuotaExceededModal from "@/components/ui/QuotaExceededModal";
 
 
 export default function MasterBlueprintClient({ nicheReferences }: { nicheReferences?: any[] }) {
@@ -45,6 +46,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
   const [toast, setToast] = useState<{ message: string; type: "success" | "error" } | null>(null);
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [showQuotaModal, setShowQuotaModal] = useState(false);
   const router = useRouter();
   const [isBrandOpen, setIsBrandOpen] = useState(true);
   const [isContentOpen, setIsContentOpen] = useState(true);
@@ -208,6 +210,10 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
 
       if (!res.ok) {
         const errorData = await res.json();
+        if (errorData.code === "QUOTA_EXCEEDED" || res.status === 403) {
+          setShowQuotaModal(true);
+          return;
+        }
         throw new Error(errorData.error || "Gagal generate Master Blueprint");
       }
       const data = await res.json();
@@ -843,9 +849,12 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
           </div>
         </div>
       )}
-    
-        
 
+      <QuotaExceededModal
+        isOpen={showQuotaModal}
+        onClose={() => setShowQuotaModal(false)}
+        toolName="Master Blueprint"
+      />
     </div>
   );
 }

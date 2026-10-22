@@ -1,4 +1,5 @@
 import React from 'react';
+import Link from 'next/link';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { Bot, CheckCircle2 } from 'lucide-react';
@@ -77,11 +78,35 @@ export default function GlobalChatBubble({
       ) : (
         <div className="space-y-4 w-full mt-2">
           {isError ? (
-            <div className="flex justify-start">
-              <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-5 py-4 rounded-[20px] rounded-tl-sm border border-red-200 dark:border-red-900/30 inline-block break-words whitespace-pre-wrap max-w-[85%] md:max-w-[75%]">
-                <p className="text-[14px]">{errorMessage}</p>
+            (errorMessage?.includes("QUOTA_EXCEEDED") || errorMessage?.includes("Kuota Percobaan Gratis") || errorMessage?.includes("kuota percobaan gratis")) ? (
+              <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <div className="bg-white dark:bg-[#141B31] border border-orange-500/30 dark:border-orange-500/20 rounded-2xl rounded-tl-sm p-5 md:p-6 shadow-xl max-w-md space-y-3">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">✨</span>
+                    <h4 className="font-bold text-gray-900 dark:text-white text-base">
+                      Kuota Percobaan Gratis Kamu Sudah Habis ✨
+                    </h4>
+                  </div>
+                  <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                    Kamu sudah menggunakan 3x kesempatan coba gratis di fitur ini. Yuk, upgrade ke Paket PRO Tools untuk lanjut generate tanpa batas kuota!
+                  </p>
+                  <div className="pt-2">
+                    <Link
+                      href="/checkout?type=PRO_TOOLS"
+                      className="flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-sm font-bold bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white shadow-sm shadow-orange-500/20 transition-all active:scale-95 cursor-pointer"
+                    >
+                      🚀 Upgrade ke PRO Tools — Rp 99.000 / bln
+                    </Link>
+                  </div>
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="flex justify-start">
+                <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 px-5 py-4 rounded-[20px] rounded-tl-sm border border-red-200 dark:border-red-900/30 inline-block break-words whitespace-pre-wrap max-w-[85%] md:max-w-[75%]">
+                  <p className="text-[14px]">{errorMessage}</p>
+                </div>
+              </div>
+            )
           ) : (
             <>
               {message && (

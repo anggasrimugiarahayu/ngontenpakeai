@@ -78,6 +78,9 @@ export function useAIChat() {
       const data = await response.json();
 
       if (!response.ok || data.error || data.is_error) {
+         if (data.code === "QUOTA_EXCEEDED" || data.error === "QUOTA_EXCEEDED") {
+           return { error: "QUOTA_EXCEEDED", code: "QUOTA_EXCEEDED" };
+         }
          return { error: getFriendlyErrorMessage(data.error || data.message || data.error_message || "Gagal menghubungi AI.") };
       }
 

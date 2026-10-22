@@ -60,17 +60,27 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
       <div className="mb-6">
         <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-3">Kuota AI Tools</h3>
         <div className="space-y-3">
-          {features.map((feature: any) => (
-            <div key={feature.id} className="flex justify-between items-center text-sm border-b border-gray-100 dark:border-[#2C3246] pb-2 last:border-0 last:pb-0">
-              <span className="text-gray-700 dark:text-gray-300">{feature.name}</span>
-              <span className="text-gray-500 dark:text-gray-400 font-medium">
-                {isPro 
-                  ? `${usageMap[feature.id] || 0}x generasi (Unlimited)` 
-                  : `${usageMap[feature.id] || 0} / 3 digunakan`
-                }
-              </span>
-            </div>
-          ))}
+          {features.map((feature: any) => {
+            const usageCount = usageMap[feature.id] || 0;
+            return (
+              <div key={feature.id} className="flex justify-between items-center text-sm border-b border-gray-100 dark:border-[#2C3246] pb-2 last:border-0 last:pb-0">
+                <span className="text-gray-700 dark:text-gray-300">{feature.name}</span>
+                {isPro ? (
+                  <span className="text-emerald-500 font-medium">
+                    {usageCount}x generasi (Unlimited)
+                  </span>
+                ) : feature.isProOnly ? (
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-500/10 text-orange-500 border border-orange-500/20">
+                    PRO Only
+                  </span>
+                ) : (
+                  <span className={`font-medium ${usageCount >= 3 ? "text-red-500 font-bold" : "text-gray-500 dark:text-gray-400"}`}>
+                    {usageCount} / 3 digunakan {usageCount >= 3 ? "(Habis)" : ""}
+                  </span>
+                )}
+              </div>
+            );
+          })}
           {features.length === 0 && (
             <div className="text-sm text-gray-500 dark:text-gray-400 italic">Belum ada fitur AI tersedia.</div>
           )}
