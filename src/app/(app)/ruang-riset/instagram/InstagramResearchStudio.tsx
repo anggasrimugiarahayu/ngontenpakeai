@@ -14,8 +14,8 @@ import { InstagramSortToolbar } from "./InstagramSortToolbar";
 import { InstagramFeedGrid } from "./InstagramFeedGrid";
 import { InstagramPostModal } from "./InstagramPostModal";
 import { exportPostsToCSV } from "./exportUtils";
+import { BackButton } from "@/components/ui/BackButton";
 import {
-  ArrowLeft,
   Search,
   AlertCircle,
   Loader2,
@@ -189,15 +189,7 @@ export function InstagramResearchStudio({
     <div className="w-full space-y-8 animate-in fade-in duration-300">
       {/* Top Navigation: Tombol Kembali Minimalis */}
       <div className="flex items-center justify-start">
-        <button
-          type="button"
-          onClick={onBackToPlatformHub}
-          title="Kembali"
-          aria-label="Kembali"
-          className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
+        <BackButton onClick={onBackToPlatformHub} />
       </div>
 
       {/* Header - EXACT SAME CLEAN STYLE, FONT, & SPACING AS RUANG NGONTEN / RUANG BELAJAR */}

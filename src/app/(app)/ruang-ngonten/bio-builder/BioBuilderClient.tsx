@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { Copy, CheckCircle2, AlertCircle, Loader2, UserCircle, Type, AlignLeft, 
   RefreshCw, Camera, ChevronDown, Trash2, ArrowRight, ArrowLeft, Check, ChevronLeft, Menu, Home, Search, PlusSquare, Video } from "lucide-react";
 import Link from "next/link";
+import { BackButton } from "@/components/ui/BackButton";
 
 interface BioState {
   username: string;
@@ -645,14 +646,7 @@ export default function BioBuilderClient() {
             {/* Navigation Buttons */}
             <div className="mt-4 pt-6 flex items-center justify-between shrink-0">
               {step > 1 ? (
-                <button 
-                  onClick={goToPrevStep} 
-                  title="Kembali"
-                  aria-label="Kembali"
-                  className="flex items-center justify-center w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95"
-                >
-                  <ArrowLeft className="w-5 h-5" />
-                </button>
+                <BackButton onClick={goToPrevStep} />
               ) : (
                 <div></div> // Empty div for flex layout
               )}

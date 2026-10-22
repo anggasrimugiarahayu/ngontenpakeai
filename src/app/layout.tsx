@@ -112,7 +112,12 @@ export default async function RootLayout({
                 <Footer />
               </div>
 
-            <Toaster position="bottom-right" toastOptions={{ style: { background: "#333", color: "#fff" } }} />
+            <Toaster 
+              position="bottom-right" 
+              toastOptions={{ 
+                className: "!bg-white dark:!bg-[#141B31] !text-gray-900 dark:!text-white !border !border-gray-200 dark:!border-[#2C3246] !shadow-xl !rounded-xl !text-xs !font-bold",
+              }} 
+            />
             </ThemeProvider>
           </SWRProvider>
         </AuthProvider>

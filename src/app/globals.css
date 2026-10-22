@@ -20,6 +20,17 @@
   --color-rn-card: #141B31;
   --color-rn-border: #2C3246;
   
+  /* Semantic Design Tokens */
+  --color-primary: #f97316;
+  --color-primary-hover: #ea580c;
+  --color-primary-dark-hover: #fb923c;
+  --color-card-bg: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-card-hover: var(--card-hover);
+  --color-input-bg: var(--input-bg);
+  --color-input-border: var(--input-border);
+  --color-surface-hover: var(--surface-hover);
+  
   --animate-scroll-left: scroll-left 120s linear infinite;
   --animate-scroll-right: scroll-right 120s linear infinite;
   --animate-heartbeat: heartbeat 2s infinite;
@@ -50,10 +61,26 @@
 
 :root {
   --card: #ffffff;
+  --card-bg: #ffffff;
+  --card-border: #e5e7eb;
+  --card-hover: #f9fafb;
+  --input-bg: #ffffff;
+  --input-border: #e5e7eb;
+  --surface-hover: #f3f4f6;
+  --text-main: #111827;
+  --text-muted: #6b7280;
 }
 
 .dark {
   --card: #141B31;
+  --card-bg: #141B31;
+  --card-border: #2C3246;
+  --card-hover: #1f2947;
+  --input-bg: #0A1128;
+  --input-border: #2C3246;
+  --surface-hover: #1f2947;
+  --text-main: #ffffff;
+  --text-muted: #9ca3af;
 }
 
 ::selection {

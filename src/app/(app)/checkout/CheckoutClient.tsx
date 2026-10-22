@@ -5,7 +5,8 @@ import Script from "next/script";
 import { createCheckoutToken, verifyPayment, cancelPayment } from "@/app/actions/payment";
 import { validatePromoCodeAction } from "@/app/actions/checkout";
 import { useRouter } from "next/navigation";
-import { Loader2, CheckCircle2, ArrowLeft, ChevronRight, X, Lock, CreditCard, AlertCircle } from "lucide-react";
+import { Loader2, CheckCircle2, ChevronRight, X, Lock, CreditCard, AlertCircle } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { PAYMENT_METHODS, calculatePaymentFees, PaymentMethodKey } from "@/lib/payment-calc";
@@ -328,14 +329,7 @@ export default function CheckoutClient({
       <Script src={isProduction ? "https://app.midtrans.com/snap/snap.js" : "https://app.sandbox.midtrans.com/snap/snap.js"} data-client-key={clientKey} strategy="afterInteractive" />
 
       <div className="flex items-center justify-between mb-6">
-        <button 
-          onClick={() => router.back()} 
-          title="Kembali"
-          aria-label="Kembali"
-          className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </button>
+        <BackButton />
         <h1 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white absolute left-1/2 -translate-x-1/2">Checkout</h1>
         <div className="w-9"></div>
       </div>

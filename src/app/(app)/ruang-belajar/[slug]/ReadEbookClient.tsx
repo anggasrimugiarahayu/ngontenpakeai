@@ -9,7 +9,8 @@ import { trackProductViewAction, trackProductClickAction } from "@/app/actions/a
 import { useRouter } from "next/navigation";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Lock, Crown, Star, BookOpen, Tag } from "lucide-react";
+import { Lock, Crown, Star, BookOpen, Tag } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 import { createCheckoutToken } from "@/app/actions/payment";
 import EbookActions from "./EbookActions";
 import EbookGallery from "./EbookGallery";
@@ -77,17 +78,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
         {/* Header Toolbar */}
         <div className="flex-shrink-0 h-16 border-b border-gray-200 dark:border-[#2C3246] bg-transparent px-4 md:px-8 flex items-center justify-between z-10">
           <div className="flex items-center gap-3 md:gap-4">
-            <Link 
-              prefetch={true} 
-              onMouseEnter={() => preload("ruangBelajar", getRuangBelajarDataAction)} 
-              onTouchStart={() => preload("ruangBelajar", getRuangBelajarDataAction)} 
-              href="/ruang-belajar" 
-              title="Kembali"
-              aria-label="Kembali"
-              className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95 shrink-0"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </Link>
+            <BackButton href="/ruang-belajar" />
             <div className="min-w-0">
               <h1 className="font-bold text-sm md:text-base text-gray-900 dark:text-white leading-none flex items-center gap-2 truncate">
                 {ebook.title}
@@ -123,17 +114,9 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
     <div className="min-h-[calc(100vh-80px)]">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
          {/* Navigation */}
-         <Link 
-           prefetch={true} 
-           onMouseEnter={() => preload("ruangBelajar", getRuangBelajarDataAction)} 
-           onTouchStart={() => preload("ruangBelajar", getRuangBelajarDataAction)} 
-           href="/ruang-belajar" 
-           title="Kembali"
-           aria-label="Kembali"
-           className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95 w-fit mb-8"
-         >
-           <ArrowLeft className="w-5 h-5" />
-         </Link>
+         <div className="mb-8 w-fit">
+           <BackButton href="/ruang-belajar" />
+         </div>
 
          <div className="flex flex-col md:flex-row gap-8 lg:gap-16">
             

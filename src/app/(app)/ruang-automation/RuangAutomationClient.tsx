@@ -4,10 +4,10 @@ import React, { useState, useEffect, useTransition, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import useSWR from "swr";
+import { BackButton } from "@/components/ui/BackButton";
 import {
   CheckCircle2,
   AlertCircle,
-  ArrowLeft,
   Plus,
   Info,
   Check,
@@ -1796,8 +1796,7 @@ export default function RuangAutomationClient({
         <div className="animate-in fade-in duration-200">
           {/* Top Navigation & Active Agent Header */}
           <div className="mb-6">
-            <button
-              type="button"
+            <BackButton
               onClick={() => {
                 setSelectedAgentId(null);
                 const newUrl = new URL(window.location.href);
@@ -1805,12 +1804,7 @@ export default function RuangAutomationClient({
                 window.history.pushState({}, "", newUrl.toString());
                 window.dispatchEvent(new Event("app-shallow-navigate"));
               }}
-              title="Kembali"
-              aria-label="Kembali"
-              className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95"
-            >
-              <ArrowLeft className="w-5 h-5" />
-            </button>
+            />
           </div>
 
           {/* Header Title */}

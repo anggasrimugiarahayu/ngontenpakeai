@@ -11,6 +11,7 @@ import { Loader2, ArrowLeft, CheckCircle2, Compass, FileJson, Download, FileText
 import HeroCanvasCell from "@/components/master-blueprint/HeroCanvasCell";
 import CanvasCell from "@/components/master-blueprint/CanvasCell";
 import CustomSelect from "@/components/ui/CustomSelect";
+import { BackButton } from "@/components/ui/BackButton";
 
 
 export default function MasterBlueprintClient({ nicheReferences }: { nicheReferences?: any[] }) {
@@ -808,16 +809,10 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
 
         {/* FOOTER NAVIGASI (Sticky di Bawah) */}
         <div className="shrink-0 pt-6 pb-2 mt-4 flex justify-between items-center border-t border-transparent">
-          <button
-            type="button"
+          <BackButton
             onClick={handlePrev}
-            disabled={step === 1 || isSubmitting}
-            title="Kembali"
-            aria-label="Kembali"
-            className="flex items-center justify-center w-9 h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+            className={step === 1 || isSubmitting ? "opacity-30 cursor-not-allowed pointer-events-none" : ""}
+          />
           <button
             type="submit"
             disabled={isSubmitting}

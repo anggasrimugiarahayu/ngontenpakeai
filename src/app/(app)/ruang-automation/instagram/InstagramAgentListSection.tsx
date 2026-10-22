@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { BackButton } from "@/components/ui/BackButton";
 import {
   Bot,
   Filter,
@@ -10,7 +11,6 @@ import {
   Pencil,
   Unlink,
   Trash2,
-  ArrowLeft,
 } from "lucide-react";
 import { InstagramIcon } from "../components/AutomationIcons";
 
@@ -52,15 +52,7 @@ export function InstagramAgentListSection({
       {/* Top Navigation / Breadcrumb to Hub */}
       {onBackToPlatformHub && (
         <div>
-          <button
-            type="button"
-            onClick={onBackToPlatformHub}
-            title="Kembali"
-            aria-label="Kembali"
-            className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
+          <BackButton onClick={onBackToPlatformHub} />
         </div>
       )}
 

@@ -2,7 +2,8 @@
 import toast from "react-hot-toast";
 import { useState } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { MessageSquare, Mic, Loader2, ArrowLeft } from "lucide-react";
+import { MessageSquare, Mic, Loader2 } from "lucide-react";
+import { BackButton } from "@/components/ui/BackButton";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
@@ -172,15 +173,7 @@ export default function FeedbackPage() {
             </div>
             
             <div className="flex justify-between items-center pt-4">
-              <button
-                type="button"
-                onClick={() => setStep(1)}
-                title="Kembali"
-                aria-label="Kembali"
-                className="flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl hover:bg-gray-100 dark:hover:bg-white/10 text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-all cursor-pointer active:scale-95"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
+              <BackButton onClick={() => setStep(1)} />
               
               <button
                 type="submit"
