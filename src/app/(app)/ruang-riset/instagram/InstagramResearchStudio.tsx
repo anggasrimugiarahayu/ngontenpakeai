@@ -190,11 +190,12 @@ export function InstagramResearchStudio({
       {/* Top Navigation: Tombol Kembali Saja (Bersih, Tanpa Badge Tambahan) */}
       <div className="flex items-center justify-start">
         <button
+          type="button"
           onClick={onBackToPlatformHub}
-          className="inline-flex items-center gap-2 text-xs sm:text-sm font-semibold text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors cursor-pointer"
+          className="inline-flex items-center gap-2 text-xs font-bold px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:hover:border-[#3b435e] dark:hover:text-white text-gray-700 dark:text-gray-200 transition-all cursor-pointer shadow-xs active:scale-[0.98] w-fit"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Kembali ke Pilihan Platform</span>
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Kembali</span>
         </button>
       </div>
 

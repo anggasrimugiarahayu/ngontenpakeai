@@ -1805,10 +1805,10 @@ export default function RuangAutomationClient({
                 window.history.pushState({}, "", newUrl.toString());
                 window.dispatchEvent(new Event("app-shallow-navigate"));
               }}
-              className="inline-flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-gray-200 bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] px-3.5 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] transition-colors w-fit cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-2 text-xs font-bold px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:hover:border-[#3b435e] dark:hover:text-white text-gray-700 dark:text-gray-200 transition-all cursor-pointer shadow-xs active:scale-[0.98] w-fit"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Kembali ke Daftar Agen</span>
+              <span>Kembali</span>
             </button>
           </div>
 

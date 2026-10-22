@@ -812,9 +812,10 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
             type="button"
             onClick={handlePrev}
             disabled={step === 1 || isSubmitting}
-            className="px-6 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#1f2947] dark:hover:text-white disabled:opacity-30 transition-colors"
+            className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:hover:border-[#3b435e] dark:hover:text-white text-gray-700 dark:text-gray-200 transition-all cursor-pointer shadow-xs active:scale-[0.98] disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Kembali
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Kembali</span>
           </button>
           <button
             type="submit"

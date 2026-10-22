@@ -328,8 +328,12 @@ export default function CheckoutClient({
       <Script src={isProduction ? "https://app.midtrans.com/snap/snap.js" : "https://app.sandbox.midtrans.com/snap/snap.js"} data-client-key={clientKey} strategy="afterInteractive" />
 
       <div className="flex items-center justify-between mb-6">
-        <button onClick={() => router.back()} className="flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Kembali
+        <button 
+          onClick={() => router.back()} 
+          className="inline-flex items-center gap-2 text-xs font-bold px-3.5 py-1.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:hover:border-[#3b435e] dark:hover:text-white text-gray-700 dark:text-gray-200 transition-all cursor-pointer shadow-xs active:scale-[0.98] w-fit"
+        >
+          <ArrowLeft className="w-3.5 h-3.5" />
+          <span>Kembali</span>
         </button>
         <h1 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white absolute left-1/2 -translate-x-1/2">Checkout</h1>
         <div className="w-20"></div>

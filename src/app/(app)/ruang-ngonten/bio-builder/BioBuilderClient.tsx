@@ -645,8 +645,12 @@ export default function BioBuilderClient() {
             {/* Navigation Buttons */}
             <div className="mt-4 pt-6 flex items-center justify-between shrink-0">
               {step > 1 ? (
-                <button onClick={goToPrevStep} className="px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#1f2947]">
-                  <ArrowLeft className="w-4 h-4" /> Kembali
+                <button 
+                  onClick={goToPrevStep} 
+                  className="inline-flex items-center gap-2 text-xs font-bold px-4 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 hover:border-gray-300 hover:text-gray-900 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:hover:border-[#3b435e] dark:hover:text-white text-gray-700 dark:text-gray-200 transition-all cursor-pointer shadow-xs active:scale-[0.98]"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                  <span>Kembali</span>
                 </button>
               ) : (
                 <div></div> // Empty div for flex layout
