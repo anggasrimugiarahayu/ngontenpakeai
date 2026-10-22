@@ -41,29 +41,9 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
               </span>
             )}
           </div>
-          {isPro && (hasBook || (proExpiredAt && proExpiredAt > new Date()) || (proAutomationExpiredAt && proAutomationExpiredAt > new Date())) ? (
-            <div className="space-y-0.5 mt-1">
-              {hasBook && (
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  • Ruang Belajar (E-Book): Akses Selamanya
-                </p>
-              )}
-              {proExpiredAt && proExpiredAt > new Date() && (
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  • Ruang Ngonten & Riset: Berlaku hingga {format(proExpiredAt, 'd MMMM yyyy', { locale: id })}
-                </p>
-              )}
-              {proAutomationExpiredAt && proAutomationExpiredAt > new Date() && (
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  • Ruang Automation: Berlaku hingga {format(proAutomationExpiredAt, 'd MMMM yyyy', { locale: id })}
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              Status: Paket Free (Terbatas)
-            </p>
-          )}
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Penggunaan fitur dan kuota aktif kamu.
+          </p>
         </div>
         
         {!isPro ? (
