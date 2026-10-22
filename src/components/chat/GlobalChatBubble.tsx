@@ -41,20 +41,20 @@ export default function GlobalChatBubble({
   return (
     <div className={`flex w-full ${role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
       {role === 'user' ? (
-        <div className="bg-gray-100 dark:bg-white/10 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-white/5 p-4 rounded-2xl rounded-tr-sm max-w-[85%] text-[14px] md:text-[15px] leading-relaxed shadow-sm">
+        <div className="bg-gray-100 dark:bg-[#141B31] text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-[#2C3246] p-4 rounded-2xl rounded-tr-sm max-w-[85%] text-[14px] md:text-[15px] leading-relaxed shadow-sm">
           {hasFile && fileData && (
-            <div className="mb-3 rounded-lg overflow-hidden border border-gray-200 dark:border-white/10 max-w-sm">
+            <div className="mb-3 rounded-lg overflow-hidden border border-gray-200 dark:border-[#2C3246] max-w-sm">
               {fileType?.startsWith('image/') ? (
                 <img src={fileData} alt={fileName || 'Attachment'} className="w-full h-auto object-cover max-h-[300px]" />
               ) : fileType?.startsWith('video/') ? (
                 <video src={fileData} controls className="w-full h-auto max-h-[300px] bg-black" />
               ) : fileType?.startsWith('audio/') ? (
-                <div className="p-3 bg-white dark:bg-black">
+                <div className="p-3 bg-white dark:bg-[#0F172A]">
                    <audio src={fileData} controls className="w-full" />
                    <p className="text-xs text-gray-500 mt-2 truncate">{fileName}</p>
                 </div>
               ) : (
-                <div className="p-3 bg-white dark:bg-black flex items-center gap-2">
+                <div className="p-3 bg-white dark:bg-[#0F172A] flex items-center gap-2">
                    <span className="text-xl">📎</span>
                    <p className="text-sm font-medium truncate">{fileName || 'File attached'}</p>
                 </div>

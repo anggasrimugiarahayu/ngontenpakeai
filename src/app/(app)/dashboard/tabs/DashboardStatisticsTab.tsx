@@ -236,7 +236,7 @@ export function DashboardStatisticsTab({
               <input
                 type="text"
                 placeholder="Search..."
-                className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+                className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50"
               />
             </div>
           </div>
@@ -244,7 +244,7 @@ export function DashboardStatisticsTab({
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-gray-50/50 dark:bg-white/[0.02] border-b border-gray-100 dark:border-white/10 text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                <tr className="bg-gray-50/50 dark:bg-white/[0.02] border-b border-gray-100 dark:border-[#2C3246] text-[10px] font-bold text-gray-400 uppercase tracking-wider">
                   <th className="px-6 py-4 font-bold">Product Title</th>
                   <th className="px-6 py-4 font-bold text-center">Views</th>
                   <th className="px-6 py-4 font-bold text-center">Sold</th>

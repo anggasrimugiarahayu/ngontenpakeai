@@ -79,7 +79,7 @@ export function InstagramSortToolbar({
       {/* ========================================================================= */}
       {/* BARIS ATAS: Judul Kiri & Aksi Kanan (Persis Lampiran SortFeed) */}
       {/* ========================================================================= */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-white/5">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-[#2C3246]">
         {/* Kiri: Judul Dinamis & Jumlah Postingan */}
         <div>
           <h3 className="text-xl sm:text-2xl font-bold font-heading text-gray-900 dark:text-white tracking-tight">

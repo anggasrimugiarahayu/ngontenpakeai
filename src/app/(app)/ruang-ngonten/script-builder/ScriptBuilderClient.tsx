@@ -179,35 +179,35 @@ export default function ScriptBuilderClient() {
       </button>
 
       {isScriptMenuOpen && !activeSubMenu?.startsWith('badge_') && (
-        <div className="absolute bottom-full left-0 mb-2 w-[280px] max-w-[calc(100vw-3rem)] md:w-[280px] bg-white dark:bg-[#1c1c1f] border border-gray-200 dark:border-white/10 shadow-lg rounded-xl z-50 py-1.5 animate-in fade-in zoom-in-95 overflow-hidden">
-          <div className="px-4 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-[#1c1c1f] mb-1">Pengaturan Naskah</div>
+        <div className="absolute bottom-full left-0 mb-2 w-[280px] max-w-[calc(100vw-3rem)] md:w-[280px] bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-lg rounded-xl z-50 py-1.5 animate-in fade-in zoom-in-95 overflow-hidden">
+          <div className="px-4 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider border-b border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#141B31] mb-1">Pengaturan Naskah</div>
           
           <div className="flex flex-col">
-            <div onClick={(e) => { e.stopPropagation(); setActiveSubMenu(activeSubMenu === 'format' ? null : 'format'); setActiveDeepMenu(null); }} className="px-4 py-3 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">
+            <div onClick={(e) => { e.stopPropagation(); setActiveSubMenu(activeSubMenu === 'format' ? null : 'format'); setActiveDeepMenu(null); }} className="px-4 py-3 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-[#1f2947] cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">
               Format Konten <ChevronDown size={14} className={`transition-transform text-gray-400 dark:text-gray-400 ${activeSubMenu === 'format' ? 'rotate-180' : ''}`} />
             </div>
             {activeSubMenu === 'format' && (
-              <div className="bg-gray-50 dark:bg-[#1c1c1f] border-y border-gray-200 dark:border-white/10 py-1">
+              <div className="bg-gray-50 dark:bg-[#0F172A] border-y border-gray-200 dark:border-[#2C3246] py-1">
                 <div className="flex flex-col">
-                  <div onClick={(e) => { e.stopPropagation(); setActiveDeepMenu(activeDeepMenu === 'carousel' ? null : 'carousel'); }} className="px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300">
+                  <div onClick={(e) => { e.stopPropagation(); setActiveDeepMenu(activeDeepMenu === 'carousel' ? null : 'carousel'); }} className="px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-[#1f2947] cursor-pointer flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300">
                     Carousel <ChevronDown size={14} className={`transition-transform text-gray-400 dark:text-gray-400 ${activeDeepMenu === 'carousel' ? 'rotate-180' : ''}`}/>
                   </div>
                   {activeDeepMenu === 'carousel' && (
-                    <div className="bg-white dark:bg-white/5 py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
+                    <div className="bg-white dark:bg-[#141B31] py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(i => (
-                        <div key={i} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_carousel', i); setIsScriptMenuOpen(false); }} className="px-9 py-2 hover:bg-gray-50 dark:hover:bg-white/10 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{i} Slide</div>
+                        <div key={i} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_carousel', i); setIsScriptMenuOpen(false); }} className="px-9 py-2 hover:bg-gray-50 dark:hover:bg-[#1f2947] cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{i} Slide</div>
                       ))}
                     </div>
                   )}
                 </div>
                 <div className="flex flex-col">
-                  <div onClick={(e) => { e.stopPropagation(); setActiveDeepMenu(activeDeepMenu === 'reels' ? null : 'reels'); }} className="px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300">
+                  <div onClick={(e) => { e.stopPropagation(); setActiveDeepMenu(activeDeepMenu === 'reels' ? null : 'reels'); }} className="px-5 py-2.5 hover:bg-gray-50 dark:hover:bg-[#1f2947] cursor-pointer flex justify-between items-center text-xs font-bold text-gray-700 dark:text-gray-300">
                     Reels / TikTok <ChevronDown size={14} className={`transition-transform text-gray-400 dark:text-gray-400 ${activeDeepMenu === 'reels' ? 'rotate-180' : ''}`}/>
                   </div>
                   {activeDeepMenu === 'reels' && (
-                    <div className="bg-white dark:bg-white/5 py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
+                    <div className="bg-white dark:bg-[#141B31] py-1 max-h-32 overflow-y-auto custom-table-scrollbar">
                       {[15, 30, 45, 60, 90, 120].map(s => (
-                        <div key={s} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_reels', s); setIsScriptMenuOpen(false); }} className="px-9 py-2 hover:bg-gray-50 dark:hover:bg-white/10 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{s} Detik</div>
+                        <div key={s} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('format_reels', s); setIsScriptMenuOpen(false); }} className="px-9 py-2 hover:bg-gray-50 dark:hover:bg-[#1f2947] cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">{s} Detik</div>
                       ))}
                     </div>
                   )}
@@ -217,13 +217,13 @@ export default function ScriptBuilderClient() {
           </div>
 
           <div className="flex flex-col">
-            <div onClick={(e) => { e.stopPropagation(); setActiveSubMenu(activeSubMenu === 'tone' ? null : 'tone'); setActiveDeepMenu(null); }} className="px-4 py-3 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">
+            <div onClick={(e) => { e.stopPropagation(); setActiveSubMenu(activeSubMenu === 'tone' ? null : 'tone'); setActiveDeepMenu(null); }} className="px-4 py-3 flex justify-between items-center hover:bg-gray-50 dark:hover:bg-[#1f2947] cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">
               Gaya Bahasa <ChevronDown size={14} className={`transition-transform text-gray-400 dark:text-gray-400 ${activeSubMenu === 'tone' ? 'rotate-180' : ''}`} />
             </div>
             {activeSubMenu === 'tone' && (
-              <div className="bg-gray-50 dark:bg-[#1c1c1f] border-y border-gray-200 dark:border-white/10 py-1 max-h-48 overflow-y-auto custom-table-scrollbar">
+              <div className="bg-gray-50 dark:bg-[#0F172A] border-y border-gray-200 dark:border-[#2C3246] py-1 max-h-48 overflow-y-auto custom-table-scrollbar">
                 {['Storytelling', 'Edukatif', 'Profesional', 'Santai', 'Humor', 'Inspiratif', 'Motivasi', 'Blak-blakan & Kritis'].map(tone => (
-                  <div key={tone} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('tone', tone); setIsScriptMenuOpen(false); }} className="px-5 py-2.5 hover:bg-white dark:hover:bg-white/5 cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">
+                  <div key={tone} onClick={(e) => { e.stopPropagation(); handleUpdateSetting('tone', tone); setIsScriptMenuOpen(false); }} className="px-5 py-2.5 hover:bg-white dark:hover:bg-[#1f2947] cursor-pointer text-xs font-bold text-gray-700 dark:text-gray-300">
                     {tone}
                   </div>
                 ))}
@@ -260,7 +260,7 @@ export default function ScriptBuilderClient() {
         <div className="flex flex-nowrap gap-4 w-max md:w-full md:grid md:grid-cols-1 md:gap-6">
           {msg.data.variations.map((ver: any, vidx: number) => (
             <div key={vidx} className="w-[300px] md:w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl overflow-hidden shadow-sm shrink-0 flex flex-col group">
-              <div className="p-4 md:p-5 border-b border-gray-100 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128] relative flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div className="p-4 md:p-5 border-b border-gray-100 dark:border-[#2C3246] bg-gray-50 dark:bg-[#141B31] relative flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="flex-1 pr-0 sm:pr-4">
                   <div className="flex flex-wrap items-center gap-2 mb-3">
                     <span className="px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/30">Var {vidx + 1}</span>
@@ -308,21 +308,21 @@ export default function ScriptBuilderClient() {
               <div className="p-5 space-y-6 text-[13px] md:text-[14px] text-gray-800 dark:text-gray-300 font-medium bg-white dark:bg-[#141B31]">
                 {ver.script_sections ? (
                   ver.script_sections.map((sec: any, secIdx: number) => (
-                    <div key={secIdx} className="pb-4 border-b border-dashed border-gray-200 dark:border-white/20 last:border-0 last:pb-0">
+                    <div key={secIdx} className="pb-4 border-b border-dashed border-gray-200 dark:border-[#2C3246] last:border-0 last:pb-0">
                       <strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">{sec.label}</strong>
                       <p className="whitespace-pre-wrap leading-relaxed">{sec.content}</p>
                     </div>
                   ))
                 ) : (
                   <>
-                    <div className="pb-4 border-b border-dashed border-gray-200 dark:border-white/20"><strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">Hook</strong><p className="whitespace-pre-wrap leading-relaxed">{ver.hook || ''}</p></div>
-                    <div className="pb-4 border-b border-dashed border-gray-200 dark:border-white/20"><strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">Body Konten</strong><p className="whitespace-pre-wrap leading-relaxed">{ver.body || ''}</p></div>
+                    <div className="pb-4 border-b border-dashed border-gray-200 dark:border-[#2C3246]"><strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">Hook</strong><p className="whitespace-pre-wrap leading-relaxed">{ver.hook || ''}</p></div>
+                    <div className="pb-4 border-b border-dashed border-gray-200 dark:border-[#2C3246]"><strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">Body Konten</strong><p className="whitespace-pre-wrap leading-relaxed">{ver.body || ''}</p></div>
                     <div className="pb-4"><strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">CTA</strong><p className="whitespace-pre-wrap leading-relaxed">{ver.cta || ''}</p></div>
                   </>
                 )}
                 
                 {ver.caption && (
-                  <div className="pt-4 border-t border-gray-200 dark:border-white/20">
+                  <div className="pt-4 border-t border-gray-200 dark:border-[#2C3246]">
                     <strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">Caption & Hashtag Sosmed</strong>
                     <p className="whitespace-pre-wrap leading-relaxed">{ver.caption}</p>
                   </div>

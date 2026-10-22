@@ -1805,7 +1805,7 @@ export default function RuangAutomationClient({
                 window.history.pushState({}, "", newUrl.toString());
                 window.dispatchEvent(new Event("app-shallow-navigate"));
               }}
-              className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 bg-gray-100 dark:bg-white/5 hover:bg-orange-500/10 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-white/10 transition-colors w-fit cursor-pointer"
+              className="inline-flex items-center gap-2 text-xs font-bold text-gray-700 dark:text-gray-200 bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] px-3.5 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] transition-colors w-fit cursor-pointer shadow-xs"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Kembali ke Daftar Agen</span>
@@ -1824,10 +1824,10 @@ export default function RuangAutomationClient({
                 <button
                   key={tab.id}
                   onClick={() => setActiveIgTab(tab.id as any)}
-                  className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors rounded-lg border ${
+                  className={`px-4 py-2 text-xs md:text-sm font-bold whitespace-nowrap transition-colors rounded-xl border ${
                     activeIgTab === tab.id
-                      ? "border-orange-500 text-orange-500 font-semibold"
-                      : "border-transparent text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                      ? "border-orange-500/50 bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                      : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-[#1f2947]"
                   }`}
                 >
                   {tab.label}
@@ -1948,7 +1948,7 @@ export default function RuangAutomationClient({
 
                 {/* Sub-Navigation Pill Tabs */}
                 <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
-                  <div className="inline-flex items-center p-1 bg-gray-100 dark:bg-white/5 rounded-xl border border-gray-200/60 dark:border-white/5 overflow-x-auto max-w-full">
+                  <div className="inline-flex items-center p-1 bg-gray-100 dark:bg-[#141B31] rounded-xl border border-gray-200 dark:border-[#2C3246] overflow-x-auto max-w-full">
                     {[
                       { id: "POST", label: "Post Automations" },
                       { id: "STORY", label: "Story Automations" },

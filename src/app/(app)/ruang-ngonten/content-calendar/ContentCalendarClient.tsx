@@ -240,7 +240,7 @@ export default function ContentCalendarClient() {
           </div>
 
           {/* Calendar Card */}
-          <div className="bg-gray-50 dark:bg-[#0A0A0C] rounded-2xl border border-gray-200 dark:border-white/10 p-4 md:p-6 w-full shadow-sm">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl border border-gray-200 dark:border-[#2C3246] p-4 md:p-6 w-full shadow-sm">
             {/* Header Month / Nav */}
             <div className="flex items-center justify-between mb-4 md:mb-5 pb-3 border-b border-gray-200 dark:border-[#2C3246]">
               <h3 className="text-lg md:text-xl font-black font-heading text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
@@ -259,7 +259,7 @@ export default function ContentCalendarClient() {
             </div>
             
             {/* Legend Funneling */}
-            <div className="mt-4 md:mt-5 border-t border-dashed border-gray-200 dark:border-white/10 pt-4 flex flex-wrap items-center justify-center gap-4 md:gap-8">
+            <div className="mt-4 md:mt-5 border-t border-dashed border-gray-200 dark:border-[#2C3246] pt-4 flex flex-wrap items-center justify-center gap-4 md:gap-8">
               <div className="flex items-center gap-2">
                 <div className="w-4 h-4 md:w-5 md:h-5 rounded-md bg-[#3b82f6] shadow-sm"></div>
                 <span className="text-[11px] md:text-xs font-bold text-gray-600 dark:text-gray-400 font-heading tracking-widest uppercase">TOFU (Awareness)</span>
@@ -322,7 +322,7 @@ export default function ContentCalendarClient() {
                   type="text" 
                   value={agendaForm.topic}
                   onChange={(e) => setAgendaForm({...agendaForm, topic: e.target.value})}
-                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#0A1128] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all text-sm"
+                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all text-sm"
                   placeholder="Contoh: 3 Rahasia Kenapa Gaji Rp 10 Juta..."
                 />
               </div>
@@ -332,7 +332,7 @@ export default function ContentCalendarClient() {
                 <textarea 
                   value={agendaForm.script}
                   onChange={(e) => setAgendaForm({...agendaForm, script: e.target.value})}
-                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#0A1128] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all min-h-[150px] text-sm resize-none"
+                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all min-h-[150px] text-sm resize-none"
                   placeholder="Isi skrip detail di sini..."
                 ></textarea>
                 {agendaForm.script.startsWith('[') && (
@@ -345,13 +345,13 @@ export default function ContentCalendarClient() {
                 <textarea 
                   value={agendaForm.caption}
                   onChange={(e) => setAgendaForm({...agendaForm, caption: e.target.value})}
-                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#0A1128] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all min-h-[80px] text-sm resize-none"
+                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all min-h-[80px] text-sm resize-none"
                   placeholder="Tulis caption & hashtag..."
                 ></textarea>
               </div>
             </div>
 
-            <div className="p-5 border-t border-gray-200 dark:border-[#2C3246] flex items-center justify-between bg-gray-50 dark:bg-[#0A1128] shrink-0">
+            <div className="p-5 border-t border-gray-200 dark:border-[#2C3246] flex items-center justify-between bg-gray-50 dark:bg-[#141B31] shrink-0">
               <button 
                 onClick={handleDeleteAgenda}
                 className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-900/40 transition-colors text-sm cursor-pointer"

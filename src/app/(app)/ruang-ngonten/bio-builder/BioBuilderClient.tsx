@@ -464,7 +464,7 @@ export default function BioBuilderClient() {
                   <h1 className="text-xl md:text-3xl font-bold font-heading whitespace-nowrap text-gray-900 dark:text-white">
                     Bio Builder
                   </h1>
-                  <div className="w-7 h-7 md:w-8 md:h-8 shrink-0 rounded-full flex items-center justify-center bg-orange-50 text-orange-500 dark:bg-[#27272a]">
+                  <div className="w-7 h-7 md:w-8 md:h-8 shrink-0 rounded-full flex items-center justify-center bg-orange-50 text-orange-500 dark:bg-orange-500/10 dark:text-orange-400">
                     <UserCircle className="w-4 h-4 md:w-5 md:h-5" />
                   </div>
                 </div>
@@ -623,7 +623,7 @@ export default function BioBuilderClient() {
                       })}
                     </div>
                     
-                    <div className="border-t border-gray-100 dark:border-white/10 pt-6 mb-2">
+                    <div className="border-t border-gray-100 dark:border-[#2C3246] pt-6 mb-2">
                       <div className="flex justify-between items-center mb-2">
                         <label className="text-sm font-bold text-gray-900 dark:text-white">Atau edit kustom:</label>
                         <span className={`text-xs ${selectedBio.bioText.length > 150 ? "text-red-500 font-bold" : "text-gray-500"}`}>{selectedBio.bioText.length} / 150</span>

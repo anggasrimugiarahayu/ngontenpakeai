@@ -50,7 +50,7 @@ export function InstagramFeedGrid({
           <div
             key={post.id}
             onClick={() => onSelectPost(post)}
-            className="group relative aspect-[4/5] rounded-xl md:rounded-2xl overflow-hidden bg-gray-100 dark:bg-zinc-800 border border-gray-200 dark:border-white/10 cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+            className="group relative aspect-[4/5] rounded-xl md:rounded-2xl overflow-hidden bg-gray-100 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] cursor-pointer shadow-xs hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
           >
             {/* Thumbnail Image */}
             <img

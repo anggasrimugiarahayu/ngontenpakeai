@@ -180,7 +180,7 @@ export function DmRuleCard({
                       setActiveDropdownRuleId(null);
                       handleDeleteRule(rule.id, rule.name);
                     }}
-                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2.5 transition-colors border-t border-gray-100 dark:border-white/5 cursor-pointer"
+                    className="w-full px-3.5 py-2 text-left text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 flex items-center gap-2.5 transition-colors border-t border-gray-100 dark:border-[#2C3246] cursor-pointer"
                   >
                     <Trash2 className="w-3.5 h-3.5 text-rose-500" />
                     <span>Hapus</span>
@@ -311,14 +311,14 @@ export function DmRuleCard({
                 window.open("https://instagram.com", "_blank");
               }
             }}
-            className="px-3 sm:px-3.5 py-1.5 rounded-xl bg-[#222226] hover:bg-black dark:bg-[#222226] dark:hover:bg-[#2c2c31] text-white text-xs font-semibold whitespace-nowrap transition-all shadow-xs active:scale-[0.98] cursor-pointer shrink-0"
+            className="px-3 sm:px-3.5 py-1.5 rounded-xl bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-bold dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 text-xs whitespace-nowrap transition-all shadow-xs active:scale-[0.98] cursor-pointer shrink-0"
           >
             Lihat Profile
           </button>
           <button
             type="button"
             onClick={() => setDetailRuleId(rule.id)}
-            className="px-3.5 sm:px-4 py-1.5 rounded-xl bg-[#222226] hover:bg-black dark:bg-[#222226] dark:hover:bg-[#2c2c31] text-white text-xs font-semibold whitespace-nowrap transition-all shadow-xs active:scale-[0.98] cursor-pointer shrink-0"
+            className="px-3.5 sm:px-4 py-1.5 rounded-xl bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-bold dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 text-xs whitespace-nowrap transition-all shadow-xs active:scale-[0.98] cursor-pointer shrink-0"
           >
             Detail
           </button>

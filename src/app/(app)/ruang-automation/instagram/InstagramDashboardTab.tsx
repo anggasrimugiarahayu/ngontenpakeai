@@ -139,16 +139,16 @@ export function InstagramDashboardTab({
         </div>
 
         {recent14dLogs.length === 0 ? (
-          <div className="py-10 text-center text-xs text-gray-400 border border-dashed border-gray-200 dark:border-white/10 rounded-xl">
+          <div className="py-10 text-center text-xs text-gray-400 border border-dashed border-gray-200 dark:border-[#2C3246] rounded-xl">
             Belum ada komentar dalam 14 hari terakhir yang memicu otomatisasi.
           </div>
         ) : (
           <div className="space-y-3">
             {/* Tabel Log */}
-            <div className="overflow-x-auto border border-gray-200 dark:border-white/10 rounded-xl">
+            <div className="overflow-x-auto border border-gray-200 dark:border-[#2C3246] rounded-xl">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-white/10 text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <tr className="bg-gray-50 dark:bg-[#141B31] border-b border-gray-200 dark:border-[#2C3246] text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     <th className="py-3 px-4">Komentar</th>
                     <th className="py-3 px-4">Pesan</th>
                     <th className="py-3 px-4">Balasan Komentar</th>
@@ -244,7 +244,7 @@ export function InstagramDashboardTab({
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-white/5 text-xs text-gray-500">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-[#2C3246] text-xs text-gray-500">
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   Menampilkan{" "}
                   <span className="font-semibold text-gray-900 dark:text-white">{startIndex + 1}</span>–

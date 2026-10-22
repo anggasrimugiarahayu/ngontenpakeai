@@ -468,21 +468,21 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG SESUAI KONFIGURASI INI.`;
                   </div>
                   
                   {/* Visual Rec */}
-                  <div className="pt-2 border-t border-gray-100 dark:border-white/5 space-y-1.5">
+                  <div className="pt-2 border-t border-gray-100 dark:border-[#2C3246] space-y-1.5">
                     <span className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 block tracking-wider font-heading">Rekomendasi Visual</span>
                     <p className="text-[11px] text-gray-800 dark:text-gray-300 font-medium">Style: <span className="font-bold">{ide.recommended_style_art}</span></p>
                     <p className="text-[11px] text-gray-800 dark:text-gray-300 font-medium">Font: <span className="font-bold">{ide.typography}</span></p>
                   </div>
 
                   {/* Unique Angle */}
-                  <div className="pt-2 border-t border-gray-100 dark:border-white/5">
+                  <div className="pt-2 border-t border-gray-100 dark:border-[#2C3246]">
                     <span className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 block mb-1 tracking-wider font-heading">Unique Angle</span>
                     <p className="text-[12px] text-gray-800 dark:text-gray-300 font-medium leading-relaxed whitespace-normal">{ide.angle || ide.unique_angle}</p>
                   </div>
 
                   {/* Alternatif */}
                   {ide.alternative_angles && (
-                    <div className="bg-gray-50 dark:bg-white/5 p-2.5 rounded-lg border border-gray-200 dark:border-white/20 text-[11px] text-gray-700 dark:text-gray-400 font-medium whitespace-normal mt-2">
+                    <div className="bg-gray-50 dark:bg-[#0F172A] p-2.5 rounded-lg border border-gray-200 dark:border-[#2C3246] text-[11px] text-gray-700 dark:text-gray-400 font-medium whitespace-normal mt-2">
                       <span className="font-bold block mb-1 text-gray-900 dark:text-white uppercase tracking-wider text-[9px] font-heading">Alternatif:</span>
                       {ide.alternative_angles}
                     </div>
@@ -643,7 +643,7 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG SESUAI KONFIGURASI INI.`;
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-gray-100 dark:border-white/10 mt-2">
+              <div className="pt-2 border-t border-gray-100 dark:border-[#2C3246] mt-2">
                 <h4 className="text-[13px] font-bold text-gray-900 dark:text-white mb-4 tracking-wide font-heading">Pengaturan Karakter & Teks</h4>
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   <div>

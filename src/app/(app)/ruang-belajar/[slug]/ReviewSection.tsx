@@ -39,7 +39,7 @@ export default function ReviewSection({
   };
 
   return (
-    <div className="mt-12 pt-10 border-t border-gray-200 dark:border-white/10">
+    <div className="mt-12 pt-10 border-t border-gray-200 dark:border-[#2C3246]">
       <div className="flex items-center justify-between mb-8">
         <h3 className="text-xl font-bold text-gray-900 dark:text-white">Ulasan Pembaca</h3>
         {canReview && !showForm && (
@@ -117,7 +117,7 @@ export default function ReviewSection({
           </p>
         ) : (
           reviews.map((rev) => (
-            <div key={rev.id} className="border-b border-gray-100 dark:border-white/5 pb-6 last:border-0">
+            <div key={rev.id} className="border-b border-gray-100 dark:border-[#2C3246] pb-6 last:border-0">
               <div className="flex items-center gap-3 mb-3">
                 <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10 flex items-center justify-center font-bold text-gray-500 text-xs overflow-hidden">
                   {rev.user?.image ? (

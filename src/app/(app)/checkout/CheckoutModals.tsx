@@ -139,7 +139,7 @@ export default function CheckoutModals({
                 placeholder="Contoh: DISKON50"
                 value={promoCodeInput}
                 onChange={(e) => setPromoCodeInput(e.target.value)}
-                className="w-full px-4 py-3 bg-gray-50 dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-xl text-base font-bold uppercase focus:ring-2 focus:ring-rn-accent/50 focus:border-rn-accent outline-none dark:text-white transition-all text-center"
+                className="w-full px-4 py-3 bg-gray-50 dark:bg-[#0F172A] border border-gray-300 dark:border-[#2C3246] rounded-xl text-base font-bold uppercase focus:ring-2 focus:ring-rn-accent/50 focus:border-rn-accent outline-none dark:text-white transition-all text-center"
               />
               {promoError && <p className="text-red-500 text-xs font-medium text-center">{promoError}</p>}
               <button

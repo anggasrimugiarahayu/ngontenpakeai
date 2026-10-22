@@ -116,7 +116,7 @@ export function DashboardMainTab({
 
           <div>
             <div className="flex gap-3 items-center">
-              <div className="w-12 h-12 bg-white/50 dark:bg-black/20 backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/40 dark:border-white/10 shadow-sm">
+              <div className="w-12 h-12 bg-white/50 dark:bg-[#141B31] backdrop-blur-sm rounded-xl flex items-center justify-center border border-white/40 dark:border-[#2C3246] shadow-sm">
                 <div className="w-6 h-6 rounded-full border-[3px] border-gray-300 dark:border-gray-500"></div>
               </div>
               <div>

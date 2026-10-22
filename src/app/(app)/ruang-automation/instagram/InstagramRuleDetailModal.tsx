@@ -527,7 +527,7 @@ export function InstagramRuleDetailModal({
               ].map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 flex flex-col justify-between"
+                  className="p-4 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246] flex flex-col justify-between"
                 >
                   {/* Waffle Grid 10x10 (100 Kotak) */}
                   <div className="grid grid-cols-10 gap-1 w-full max-w-[140px] aspect-square mx-auto mb-4">
@@ -592,7 +592,7 @@ export function InstagramRuleDetailModal({
               {buttonWaffleItems.map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-white/[0.02] border border-gray-100 dark:border-white/5 flex flex-col justify-between"
+                  className="p-4 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246] flex flex-col justify-between"
                 >
                   {/* Waffle Grid 10x10 (100 Kotak) */}
                   <div className="grid grid-cols-10 gap-1 w-full max-w-[140px] aspect-square mx-auto mb-4">
@@ -690,7 +690,7 @@ export function InstagramRuleDetailModal({
               </div>
 
               <div className="space-y-3 text-xs">
-                <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0F172A] border border-gray-100 dark:border-[#2C3246]">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1.5">
                     Kata Kunci Pemicu
                   </span>
@@ -703,7 +703,7 @@ export function InstagramRuleDetailModal({
                       detailKeywords.map((kw: string, i: number) => (
                         <span
                           key={i}
-                          className="px-2.5 py-0.5 rounded-md bg-white dark:bg-white/10 border border-gray-200 dark:border-[#2C3246] font-bold text-gray-800 dark:text-gray-200"
+                          className="px-2.5 py-0.5 rounded-md bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] font-bold text-gray-800 dark:text-gray-200"
                         >
                           {kw}
                         </span>
@@ -712,7 +712,7 @@ export function InstagramRuleDetailModal({
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0F172A] border border-gray-100 dark:border-[#2C3246]">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
                     Variasi Balasan Komentar ({detailCommentReplies.length})
                   </span>
@@ -731,7 +731,7 @@ export function InstagramRuleDetailModal({
                   )}
                 </div>
 
-                <div className="p-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5">
+                <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0F172A] border border-gray-100 dark:border-[#2C3246]">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
                     Pesan DM Utama & Tautan
                   </span>
@@ -962,7 +962,7 @@ export function InstagramRuleDetailModal({
 
             {/* Pagination Controls */}
             {totalLogPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-white/5 text-xs text-gray-500">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-gray-100 dark:border-[#2C3246] text-xs text-gray-500">
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   Menampilkan{" "}
                   <span className="font-semibold text-gray-900 dark:text-white">{startLogIdx + 1}</span>–

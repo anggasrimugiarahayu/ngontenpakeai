@@ -165,7 +165,7 @@ export default function AtmBuilderClient() {
       return (
         <div className="w-full space-y-4 md:space-y-6 mt-2">
           {msg.data.transkrip_sumber && (
-             <div className="bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 p-4 md:p-5 rounded-2xl">
+             <div className="bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] p-4 md:p-5 rounded-2xl">
                 <h4 className="font-bold text-[10px] md:text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-2 font-heading">Transkrip Sumber Konten</h4>
                 <div className="text-[12px] md:text-[13px] text-gray-700 dark:text-gray-300 whitespace-pre-wrap leading-relaxed max-h-[150px] overflow-y-auto custom-scrollbar pr-2 italic">
                   "{msg.data.transkrip_sumber}"
@@ -176,7 +176,7 @@ export default function AtmBuilderClient() {
           {(msg.data.blueprint_match || msg.data.viral_dna) && (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {msg.data.viral_dna && (
-                <div className="bg-white dark:bg-black border border-gray-200 dark:border-white/10 p-4 md:p-5 rounded-2xl shadow-sm">
+                <div className="bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] p-4 md:p-5 rounded-2xl shadow-sm">
                   <h4 className="font-bold text-gray-900 dark:text-white font-heading text-sm md:text-base mb-3 flex items-center gap-2"><Target size={16} className="text-purple-500" /> Viral DNA</h4>
                   <ul className="space-y-2.5 text-[12px] md:text-[13px] text-gray-600 dark:text-gray-400">
                     <li className="flex gap-2.5 items-start"><strong className="text-gray-900 dark:text-gray-200 min-w-[70px]">Format:</strong> <span>{msg.data.viral_dna.framework}</span></li>
@@ -187,7 +187,7 @@ export default function AtmBuilderClient() {
                 </div>
               )}
               {msg.data.blueprint_match && (
-                <div className="bg-white dark:bg-black border border-gray-200 dark:border-white/10 p-4 md:p-5 rounded-2xl shadow-sm">
+                <div className="bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] p-4 md:p-5 rounded-2xl shadow-sm">
                   <h4 className="font-bold text-gray-900 dark:text-white font-heading text-sm md:text-base mb-3 flex items-center gap-2"><Search size={16} className="text-blue-500" /> Blueprint Match</h4>
                   <p className="text-[12px] md:text-[13px] text-gray-600 dark:text-gray-400 leading-relaxed">
                     {msg.data.blueprint_match.alignment}
@@ -205,7 +205,7 @@ export default function AtmBuilderClient() {
           <div className="grid grid-cols-1 gap-5">
             {(msg.data.versions || []).map((ver: any, i: number) => (
               <div key={i} className="bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-[12px] overflow-hidden shadow-none hover:border-gray-900 dark:hover:border-white transition-all">
-                <div className="bg-gray-50 dark:bg-[#0A1128] px-4 md:px-5 py-3.5 border-b border-gray-200 dark:border-[#2C3246] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+                <div className="bg-gray-50 dark:bg-[#141B31] px-4 md:px-5 py-3.5 border-b border-gray-200 dark:border-[#2C3246] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                   <span className="font-bold font-heading text-gray-900 dark:text-white text-sm md:text-base block">Versi {i+1}: {ver.judul_internal?.replace(/^Versi\s*\d+\s*[-:]*\s*/i, '') || ver.judul_internal}</span>
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3 self-end sm:self-auto shrink-0">
                     <button 
@@ -255,22 +255,22 @@ export default function AtmBuilderClient() {
                 <div className="p-5 space-y-6 text-[13px] md:text-[14px] text-gray-800 dark:text-gray-300 font-medium bg-white dark:bg-[#141B31]">
                   {ver.sections ? (
                     ver.sections.map((sec: any, secIdx: number) => (
-                      <div key={secIdx} className="pb-4 border-b border-dashed border-gray-200 dark:border-white/20 last:border-0 last:pb-0">
+                      <div key={secIdx} className="pb-4 border-b border-dashed border-gray-200 dark:border-[#2C3246] last:border-0 last:pb-0">
                         <strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">{sec.label}</strong>
                         <p className="whitespace-pre-wrap leading-relaxed">{sec.content}</p>
                       </div>
                     ))
                   ) : (
                     <>
-                      <div className="pb-4 border-b border-dashed border-gray-200 dark:border-white/20"><strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">Hook</strong><p className="whitespace-pre-wrap leading-relaxed">{ver.hook}</p></div>
-                      <div className="pb-4 border-b border-dashed border-gray-200 dark:border-white/20"><strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">Bridge</strong><p className="whitespace-pre-wrap leading-relaxed">{ver.bridge}</p></div>
-                      <div className="pb-4 border-b border-dashed border-gray-200 dark:border-white/20"><strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">Body Konten</strong><p className="whitespace-pre-wrap leading-relaxed">{ver.body}</p></div>
+                      <div className="pb-4 border-b border-dashed border-gray-200 dark:border-[#2C3246]"><strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">Hook</strong><p className="whitespace-pre-wrap leading-relaxed">{ver.hook}</p></div>
+                      <div className="pb-4 border-b border-dashed border-gray-200 dark:border-[#2C3246]"><strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">Bridge</strong><p className="whitespace-pre-wrap leading-relaxed">{ver.bridge}</p></div>
+                      <div className="pb-4 border-b border-dashed border-gray-200 dark:border-[#2C3246]"><strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">Body Konten</strong><p className="whitespace-pre-wrap leading-relaxed">{ver.body}</p></div>
                       <div className="pb-4"><strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">CTA</strong><p className="whitespace-pre-wrap leading-relaxed">{ver.cta}</p></div>
                     </>
                   )}
                   
                   {ver.caption && (
-                    <div className="pt-4 border-t border-gray-200 dark:border-white/20">
+                    <div className="pt-4 border-t border-gray-200 dark:border-[#2C3246]">
                       <strong className="block text-[10px] uppercase font-bold tracking-wider text-gray-500 dark:text-gray-400 mb-1 font-heading">Caption & Hashtag Sosmed</strong>
                       <p className="whitespace-pre-wrap leading-relaxed">{ver.caption}</p>
                     </div>
@@ -322,7 +322,7 @@ export default function AtmBuilderClient() {
     if (!atmAttachedFile) return null;
     return (
       <div className="px-4 pt-4 pb-0 flex flex-wrap gap-2">
-        <div className="relative inline-flex items-center justify-center border border-gray-300 dark:border-white/40 rounded-xl overflow-hidden bg-white dark:bg-black max-w-[150px] max-h-[150px] group shadow-none">
+        <div className="relative inline-flex items-center justify-center border border-gray-300 dark:border-[#2C3246] rounded-xl overflow-hidden bg-white dark:bg-[#141B31] max-w-[150px] max-h-[150px] group shadow-none">
           <button 
             onClick={() => setAtmAttachedFile(null)} 
             className="absolute top-1.5 right-1.5 bg-gray-900 text-white border-2 border-white rounded-full p-1 opacity-0 group-hover:opacity-100 hover:bg-red-500 z-10 transition-all shadow-sm"

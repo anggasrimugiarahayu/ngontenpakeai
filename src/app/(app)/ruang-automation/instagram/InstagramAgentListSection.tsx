@@ -161,7 +161,7 @@ export function InstagramAgentListSection({
 
       {/* List Agen: Empty State vs Cards Grid */}
       {agents.length === 0 ? (
-        <div className="rounded-[24px] border-2 border-dashed border-gray-200 dark:border-white/10 p-8 sm:p-12 text-center bg-gray-50/50 dark:bg-white/[0.02] flex flex-col items-center justify-center max-w-xl mx-auto my-8">
+        <div className="rounded-[24px] border-2 border-dashed border-gray-200 dark:border-[#2C3246] p-8 sm:p-12 text-center bg-gray-50/50 dark:bg-white/[0.02] flex flex-col items-center justify-center max-w-xl mx-auto my-8">
           <div className="w-16 h-16 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center mb-4 shadow-sm">
             <Bot className="w-8 h-8" />
           </div>
@@ -322,7 +322,7 @@ export function InstagramAgentListSection({
                           setActiveDropdownAgentId(null);
                           onDeleteAgent(agent.id, agent.name);
                         }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 border-t border-gray-100 dark:border-white/5 cursor-pointer text-left"
+                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 border-t border-gray-100 dark:border-[#2C3246] cursor-pointer text-left"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                         <span>Hapus Agen</span>

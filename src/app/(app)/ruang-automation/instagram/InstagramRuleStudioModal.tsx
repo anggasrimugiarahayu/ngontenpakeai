@@ -117,7 +117,7 @@ export function InstagramRuleStudioModal({
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="w-full max-w-6xl h-[92vh] max-h-[860px] bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
             {/* Top Header Mobile / Tablet Close */}
-            <div className="lg:hidden flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-white/10">
+            <div className="lg:hidden flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-[#2C3246]">
               <h3 className="font-bold text-sm text-gray-900 dark:text-white">
                 {editingRule ? "Edit Otomasi" : "Buat Otomasi Baru"}
               </h3>
@@ -294,12 +294,12 @@ export function InstagramRuleStudioModal({
                           </div>
                         </div>
                       ) : isLoadingFeed ? (
-                        <div className="p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 flex items-center justify-center gap-2 text-xs text-gray-500">
+                        <div className="p-4 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] flex items-center justify-center gap-2 text-xs text-gray-500">
                           <RefreshCw className="w-4 h-4 animate-spin text-gray-400" />
                           <span>Memuat postingan feed Instagram Anda...</span>
                         </div>
                       ) : feedPosts.length === 0 ? (
-                        <div className="p-3.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-center text-xs text-gray-500 space-y-1">
+                        <div className="p-3.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-center text-xs text-gray-500 space-y-1">
                           <p className="font-semibold text-gray-700 dark:text-gray-300">Belum Ada Postingan Ditemukan</p>
                           <p className="text-[11px] text-gray-400">Pastikan akun Instagram Anda sudah memiliki postingan feed atau Reels publik.</p>
                         </div>
@@ -377,7 +377,7 @@ export function InstagramRuleStudioModal({
                           </div>
                         </div>
                       ) : isLoadingStories ? (
-                        <div className="p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 flex items-center justify-center gap-2 text-xs text-gray-500">
+                        <div className="p-4 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] flex items-center justify-center gap-2 text-xs text-gray-500">
                           <RefreshCw className="w-4 h-4 animate-spin text-gray-400" />
                           <span>Memeriksa story aktif dari Meta API...</span>
                         </div>
@@ -533,7 +533,7 @@ export function InstagramRuleStudioModal({
 
                   {/* Progressive Disclosure Guide when basic info is not yet filled */}
                   {!isBasicInfoFilled && !editingRule && (
-                    <div className="p-4 rounded-xl border border-dashed border-gray-200 dark:border-white/10 bg-gray-50/50 dark:bg-white/[0.02] text-center space-y-1 animate-in fade-in duration-200">
+                    <div className="p-4 rounded-xl border border-dashed border-gray-200 dark:border-[#2C3246] bg-gray-50/50 dark:bg-white/[0.02] text-center space-y-1 animate-in fade-in duration-200">
                       <p className="text-xs font-semibold text-gray-700 dark:text-gray-200">
                         Lengkapi Nama Otomasi di atas
                       </p>
@@ -608,7 +608,7 @@ export function InstagramRuleStudioModal({
                                             setRuleFormData({ ...ruleFormData, liveContents: next });
                                           }}
                                           placeholder="Masukkan kata"
-                                          className="w-full px-3.5 py-2.5 pr-14 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+                                          className="w-full px-3.5 py-2.5 pr-14 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
                                         />
                                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-400 font-mono">
                                           {content.keywords.length}/200
@@ -773,7 +773,7 @@ export function InstagramRuleStudioModal({
                       {!isLiveTarget && (
                         <div
                           onClick={() => setActivePreviewTab("DM")}
-                          className="space-y-4 pt-4 border-t border-gray-200 dark:border-white/10"
+                          className="space-y-4 pt-4 border-t border-gray-200 dark:border-[#2C3246]"
                         >
                           <div className="flex items-center justify-between">
                             <h3 className="text-sm font-bold text-gray-900 dark:text-white">
@@ -863,7 +863,7 @@ export function InstagramRuleStudioModal({
       {showAllPostsModal && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
           <div className="bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl p-5 sm:p-6 max-w-2xl w-full shadow-2xl space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/10">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#2C3246]">
               <div>
                 <h4 className="font-bold text-base text-gray-900 dark:text-white">
                   Pilih Postingan Instagram

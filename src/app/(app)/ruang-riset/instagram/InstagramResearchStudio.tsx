@@ -328,7 +328,7 @@ export function InstagramResearchStudio({
 
           {/* 2. Kartu Panduan Sebelum Membuka Feed */}
           {!hasAppliedFilter && (
-            <div className="w-full p-8 sm:p-10 rounded-2xl border border-dashed border-gray-300 dark:border-white/15 bg-gray-50/50 dark:bg-white/5 text-center space-y-4 animate-in fade-in duration-200">
+            <div className="w-full p-8 sm:p-10 rounded-2xl border border-dashed border-gray-300 dark:border-[#2C3246] bg-gray-50/50 dark:bg-[#141B31] text-center space-y-4 animate-in fade-in duration-200">
               <div className="w-12 h-12 rounded-2xl bg-orange-500/10 text-rn-accent flex items-center justify-center mx-auto shadow-xs">
                 <SlidersHorizontal className="w-6 h-6" />
               </div>

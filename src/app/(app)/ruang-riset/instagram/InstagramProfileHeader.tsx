@@ -278,9 +278,9 @@ export function InstagramProfileHeader({
       {/* ========================================================================= */}
       {/* ANALYTICAL SUPER-CARDS STANDAR (Bersih, Rapi, Harmonis) */}
       {/* ========================================================================= */}
-      <div className="mt-6 pt-5 border-t border-gray-100 dark:border-white/10 grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="mt-6 pt-5 border-t border-gray-100 dark:border-[#2C3246] grid grid-cols-2 lg:grid-cols-4 gap-3">
         {/* Card 1: Rata-rata Views Baseline */}
-        <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+        <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246]">
           <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
             <span>Rata-rata Views</span>
             <div className="w-6 h-6 rounded-md bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
@@ -296,7 +296,7 @@ export function InstagramProfileHeader({
         </div>
 
         {/* Card 2: Puncak Viralitas (Outlier Terbesar) */}
-        <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+        <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246]">
           <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
             <span>Puncak Viral</span>
             <div className="w-6 h-6 rounded-md bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
@@ -312,7 +312,7 @@ export function InstagramProfileHeader({
         </div>
 
         {/* Card 3: Rata-rata Likes */}
-        <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+        <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246]">
           <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
             <span>Rata-rata Likes</span>
             <div className="w-6 h-6 rounded-md bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
@@ -328,7 +328,7 @@ export function InstagramProfileHeader({
         </div>
 
         {/* Card 4: Engagement Rate */}
-        <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-white/5 border border-gray-200 dark:border-white/10">
+        <div className="p-4 rounded-xl bg-gray-50/70 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246]">
           <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1.5">
             <span>Engagement Rate</span>
             <div className="w-6 h-6 rounded-md bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">

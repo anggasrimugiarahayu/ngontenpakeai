@@ -190,7 +190,7 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
                   required
                   value={agendaForm.topic}
                   onChange={e => setAgendaForm({...agendaForm, topic: e.target.value})}
-                  className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none transition-all text-sm"
+                  className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none transition-all text-sm"
                   placeholder="Judul konten"
                 />
               </div>
@@ -203,7 +203,7 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
                       key={stage}
                       type="button"
                       onClick={() => setAgendaForm({...agendaForm, funnelStage: stage})}
-                      className={`py-2 rounded-xl text-xs font-bold border-2 transition-all ${agendaForm.funnelStage === stage ? (stage === 'TOFU' ? 'border-[#3b82f6] bg-[#3b82f6] text-white' : stage === 'MOFU' ? 'border-[#eab308] bg-[#eab308] text-white' : 'border-[#f97316] bg-[#f97316] text-white') : 'border-gray-200 dark:border-white/10 bg-transparent text-gray-500 hover:border-gray-300'}`}
+                      className={`py-2 rounded-xl text-xs font-bold border-2 transition-all ${agendaForm.funnelStage === stage ? (stage === 'TOFU' ? 'border-[#3b82f6] bg-[#3b82f6] text-white' : stage === 'MOFU' ? 'border-[#eab308] bg-[#eab308] text-white' : 'border-[#f97316] bg-[#f97316] text-white') : 'border-gray-200 dark:border-[#2C3246] bg-transparent text-gray-500 hover:border-gray-300'}`}
                     >
                       {stage}
                     </button>
@@ -217,7 +217,7 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
                   required
                   value={agendaForm.script}
                   onChange={e => setAgendaForm({...agendaForm, script: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all min-h-[120px] text-sm resize-none custom-scrollbar"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all min-h-[120px] text-sm resize-none custom-scrollbar"
                   placeholder="Isi skrip..."
                 />
               </div>

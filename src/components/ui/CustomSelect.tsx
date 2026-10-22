@@ -106,7 +106,7 @@ export function CustomSelect({
   // Variant styles
   const variantStyles =
     variant === "subtle"
-      ? "bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
+      ? "bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246]"
       : "bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246]";
 
   return (
@@ -132,7 +132,7 @@ export function CustomSelect({
         className={`w-full ${sizeStyles} ${variantStyles} text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
           isOpen
             ? "border-orange-500 ring-2 ring-orange-500/20"
-            : "hover:border-gray-300 dark:hover:border-white/20"
+            : "hover:border-gray-300 dark:hover:border-orange-500/50"
         } ${disabled ? "opacity-50 cursor-not-allowed" : ""} ${className}`}
       >
         <span
@@ -176,7 +176,7 @@ export function CustomSelect({
                       className={`w-full px-4 py-2.5 text-left text-xs sm:text-sm font-medium flex items-center justify-between transition-colors cursor-pointer ${
                         isSelected
                           ? "bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
-                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                          : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
                       } ${opt.disabled ? "opacity-40 cursor-not-allowed" : ""}`}
                     >
                       <span className="truncate mr-2">{opt.label}</span>

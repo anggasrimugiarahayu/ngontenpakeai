@@ -352,7 +352,7 @@ export function AdminRuangBelajarTab({
                               onClick={() => setOpenMenuProductId(null)}
                             />
                             <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] p-2 z-40 text-xs animate-in fade-in zoom-in-95 duration-150">
-                              <div className="px-2.5 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-white/5 mb-1">
+                              <div className="px-2.5 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-[#2C3246] mb-1">
                                 Status E-Book
                               </div>
                               <button

@@ -83,7 +83,7 @@ export default function EbookGallery({ title, images }: EbookGalleryProps) {
            <button 
              key={idx}
              onClick={() => setActiveIndex(idx)}
-             className={`relative w-20 aspect-[3/4] rounded-lg overflow-hidden shrink-0 transition-all duration-200 ${activeIndex === idx ? 'border-2 border-rn-accent opacity-100 ring-2 ring-orange-500/20 shadow-md transform scale-105' : 'border border-gray-200 dark:border-white/10 opacity-50 hover:opacity-100 hover:scale-100'}`}
+             className={`relative w-20 aspect-[3/4] rounded-lg overflow-hidden shrink-0 transition-all duration-200 ${activeIndex === idx ? 'border-2 border-rn-accent opacity-100 ring-2 ring-orange-500/20 shadow-md transform scale-105' : 'border border-gray-200 dark:border-[#2C3246] opacity-50 hover:opacity-100 hover:scale-100'}`}
            >
               <Image
                 src={img}

@@ -328,7 +328,7 @@ export function MessagePayloadBuilder({
                       onSelectSimulatedQr?.(qr.id);
                       onFocusPreviewDm?.();
                     }}
-                    className="p-3.5 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50/40 dark:bg-white/[0.02] space-y-3 transition-colors"
+                    className="p-3.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50/40 dark:bg-[#141B31] space-y-3 transition-colors"
                   >
                     {/* Header Quick Reply N + Trash */}
                     <div className="flex items-center justify-between">
@@ -607,7 +607,7 @@ export function MessagePayloadBuilder({
                       onChange({ ...value, buttons: nextBtns });
                     }}
                     placeholder={`Button ${bIdx + 1}`}
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
                   />
                   {!(btn.label || "").trim() && (
                     <p className="text-[10px] text-rose-500 font-medium">
@@ -726,7 +726,7 @@ export function MessagePayloadBuilder({
                       onChange({ ...value, buttons: nextBtns });
                     }}
                     placeholder="https://ruangcreativemuslim.com"
-                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono"
+                    className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-mono"
                   />
                   {!(btn.url || "").trim() && (
                     <p className="text-[10px] text-rose-500 font-medium">
@@ -762,7 +762,7 @@ export function MessagePayloadBuilder({
                         onSelectSimulatedButton?.(btn.id);
                       }}
                       placeholder="Masukkan teks balasan saat tombol diklik"
-                      className="w-full px-3 py-2 pb-6 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium leading-relaxed resize-none"
+                      className="w-full px-3 py-2 pb-6 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium leading-relaxed resize-none"
                     />
                     <div className="absolute right-2.5 bottom-1.5 text-[10px] text-gray-400 font-mono">
                       {(btn.text ?? "").length}/1000
@@ -910,7 +910,7 @@ export function MessagePayloadBuilder({
                     onChange({ ...value, carouselSlides: nextSlides });
                   }}
                   placeholder="Atau tempel URL gambar (https://...)"
-                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-[11px] text-gray-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-[11px] text-gray-900 dark:text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
 
@@ -937,7 +937,7 @@ export function MessagePayloadBuilder({
                     onChange({ ...value, carouselSlides: nextSlides });
                   }}
                   placeholder="Judul Slide"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-xs text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
                 {!(slide.title || "").trim() && (
                   <p className="text-[10px] text-rose-500 font-medium">
@@ -969,12 +969,12 @@ export function MessagePayloadBuilder({
                     onChange({ ...value, carouselSlides: nextSlides });
                   }}
                   placeholder="Subjudul Slide"
-                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  className="w-full px-3 py-2 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-xs text-gray-900 dark:text-white font-medium focus:outline-none focus:ring-2 focus:ring-blue-500/20"
                 />
               </div>
 
               {/* Tombol Slide */}
-              <div className="space-y-2 pt-1 border-t border-gray-100 dark:border-white/5">
+              <div className="space-y-2 pt-1 border-t border-gray-100 dark:border-[#2C3246]">
                 <label className="block text-[11px] font-semibold text-gray-600 dark:text-gray-400">
                   Tombol Slide
                 </label>
@@ -982,7 +982,7 @@ export function MessagePayloadBuilder({
                 {(slide.buttons || []).map((sBtn, sbIdx) => (
                   <div
                     key={sBtn.id}
-                    className="p-2.5 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50/70 dark:bg-white/[0.02] space-y-2"
+                    className="p-2.5 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-gray-50/70 dark:bg-[#141B31] space-y-2"
                   >
                     <div className="flex items-center justify-between">
                       <span className="text-[11px] font-bold text-gray-700 dark:text-gray-300">
@@ -1026,7 +1026,7 @@ export function MessagePayloadBuilder({
                         onChange({ ...value, carouselSlides: nextSlides });
                       }}
                       placeholder="Label Tombol"
-                      className="w-full px-2.5 py-1.5 rounded-md border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs text-gray-900 dark:text-white"
+                      className="w-full px-2.5 py-1.5 rounded-md border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-xs text-gray-900 dark:text-white"
                     />
                     <input
                       type="text"
@@ -1045,7 +1045,7 @@ export function MessagePayloadBuilder({
                         onChange({ ...value, carouselSlides: nextSlides });
                       }}
                       placeholder="https://ruangcreativemuslim.com"
-                      className="w-full px-2.5 py-1.5 rounded-md border border-gray-200 dark:border-white/10 bg-white dark:bg-[#202024] text-xs text-gray-900 dark:text-white font-mono"
+                      className="w-full px-2.5 py-1.5 rounded-md border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-xs text-gray-900 dark:text-white font-mono"
                     />
                   </div>
                 ))}

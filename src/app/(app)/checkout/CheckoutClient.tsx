@@ -342,7 +342,7 @@ export default function CheckoutClient({
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-4">
                 <span className="text-sm font-semibold text-gray-500 dark:text-gray-400 mt-1">1x</span>
-                <div className="w-16 h-16 bg-gray-50 dark:bg-black/20 rounded-xl overflow-hidden flex items-center justify-center shrink-0 border border-gray-100 dark:border-white/5 p-1">
+                <div className="w-16 h-16 bg-gray-50 dark:bg-[#0F172A] rounded-xl overflow-hidden flex items-center justify-center shrink-0 border border-gray-100 dark:border-[#2C3246] p-1">
                   {productImage ? <img src={productImage} alt={itemName} className="w-full h-full object-contain" /> : <CreditCard className="w-6 h-6 text-gray-300 dark:text-gray-600" />}
                 </div>
                 <div>
@@ -358,7 +358,7 @@ export default function CheckoutClient({
 
             {/* Addons Section */}
             {availableAddons && availableAddons.length > 0 && (
-              <div className="mt-5 pt-4 border-t border-gray-100 dark:border-white/10">
+              <div className="mt-5 pt-4 border-t border-gray-100 dark:border-[#2C3246]">
                 <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-3 uppercase">ADD-ON PRODUK LAIN</h3>
                 <div className="space-y-3">
                   {includedAddons.length > 0 && (
@@ -429,7 +429,7 @@ export default function CheckoutClient({
                   value={customerEmail}
                   onChange={(e) => setCustomerEmail(e.target.value)}
                   disabled={isPending}
-                  className="w-full px-3 py-2 bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 bg-white dark:bg-[#0F172A] border border-gray-300 dark:border-[#2C3246] rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <div className="space-y-1">
@@ -441,7 +441,7 @@ export default function CheckoutClient({
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   disabled={isPending}
-                  className="w-full px-3 py-2 bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 bg-white dark:bg-[#0F172A] border border-gray-300 dark:border-[#2C3246] rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
               <div className="space-y-1">
@@ -453,7 +453,7 @@ export default function CheckoutClient({
                   value={customerPhone}
                   onChange={(e) => setCustomerPhone(e.target.value)}
                   disabled={isPending}
-                  className="w-full px-3 py-2 bg-white dark:bg-black/20 border border-gray-300 dark:border-white/10 rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full px-3 py-2 bg-white dark:bg-[#0F172A] border border-gray-300 dark:border-[#2C3246] rounded-lg text-sm focus:ring-1 focus:ring-rn-accent focus:border-rn-accent outline-none dark:text-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 />
               </div>
             </div>
@@ -524,7 +524,7 @@ export default function CheckoutClient({
               </div>
               <ChevronRight className="w-4 h-4 text-rn-accent" />
             </button>
-            <div className="bg-gray-50 dark:bg-black/20 p-2.5 border-t border-gray-100 dark:border-white/10 flex items-start gap-2.5">
+            <div className="bg-gray-50 dark:bg-[#0F172A] p-2.5 border-t border-gray-100 dark:border-[#2C3246] flex items-start gap-2.5">
               <div className="mt-0.5 text-rn-accent">
                 <Lock className="w-4 h-4" />
               </div>

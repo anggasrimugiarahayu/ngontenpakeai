@@ -139,7 +139,7 @@ export default function IdeaRoomsClient() {
             else if (isBofu) funnelClass = "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-900/50";
 
             return (
-              <div key={i} className="w-full bg-white dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] rounded-2xl overflow-hidden shadow-sm shrink-0 flex flex-col group">
+              <div key={i} className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl overflow-hidden shadow-sm shrink-0 flex flex-col group">
                 <div className="p-4 md:p-5 border-b border-gray-100 dark:border-[#2C3246] bg-gray-50 dark:bg-[#141B31] relative flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="flex-1 pr-0 sm:pr-4">
                     <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -169,7 +169,7 @@ export default function IdeaRoomsClient() {
                   </div>
                 </div>
                 
-                <div className="p-5 space-y-4 text-[13px] md:text-[14px] text-gray-800 dark:text-gray-300 font-medium bg-white dark:bg-[#0F172A]">
+                <div className="p-5 space-y-4 text-[13px] md:text-[14px] text-gray-800 dark:text-gray-300 font-medium bg-white dark:bg-[#141B31]">
                   <div className="pb-4 border-b border-dashed border-gray-200 dark:border-[#2C3246]">
                     <h5 className="text-[10px] md:text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 font-bold mb-1.5">Unique Angle</h5>
                     <p className="leading-relaxed">{ide.angle}</p>

@@ -94,7 +94,7 @@ export default function FeedbackPage() {
             <h1 className={`text-2xl md:text-3xl font-bold font-heading ${isDark ? "text-white" : "text-gray-900"}`}>
               Feedback
             </h1>
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isDark ? "bg-[#27272a] text-orange-500" : "bg-orange-50 text-orange-500"}`}>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isDark ? "bg-orange-500/10 text-orange-400" : "bg-orange-50 text-orange-500"}`}>
               <MessageSquare className="w-4 h-4" />
             </div>
           </div>
@@ -142,7 +142,7 @@ export default function FeedbackPage() {
               <button
                 type="submit"
                 disabled={!improveText.trim()}
-                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 disabled:hover:bg-orange-500 text-white font-bold rounded-xl transition-colors"
+                className="px-6 py-2.5 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] disabled:opacity-50 text-white font-bold rounded-xl transition-all shadow-sm shadow-orange-500/20 cursor-pointer"
               >
                 Lanjut
               </button>
@@ -163,7 +163,7 @@ export default function FeedbackPage() {
                 onChange={(e) => setFeatureText(e.target.value)}
                 placeholder="Fitur yang bikin kerjaan kamu lebih gampang..."
                 className={`w-full h-40 p-4 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none ${
-                  isDark ? "bg-[#141B31] border-[#2C3246] text-white placeholder:text-gray-600" : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
+                  isDark ? "bg-[#0F172A] border-[#2C3246] text-white placeholder:text-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                 }`}
               />
               <button type="button" className={`absolute bottom-4 right-4 p-2 rounded-full transition-colors ${isDark ? "hover:bg-white/10 text-gray-400" : "hover:bg-gray-100 text-gray-400"}`}>
@@ -183,7 +183,7 @@ export default function FeedbackPage() {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold rounded-xl transition-colors flex items-center gap-2 shadow-sm"
+                className="px-6 py-2.5 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] disabled:opacity-50 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-orange-500/20 cursor-pointer"
               >
                 {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 Kirim Feedback

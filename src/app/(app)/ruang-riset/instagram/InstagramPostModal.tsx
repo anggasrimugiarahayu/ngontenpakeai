@@ -107,11 +107,11 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
         {/* ===================================================================== */}
         <div className="w-full md:w-1/2 flex flex-col p-4 sm:p-6 overflow-y-auto max-h-[55vh] md:max-h-[92vh]">
           {/* Header Akun */}
-          <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-white/10">
+          <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-[#2C3246]">
             <img
               src={profile.profilePicUrl}
               alt={profile.username}
-              className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-white/10"
+              className="w-10 h-10 rounded-full object-cover border border-gray-200 dark:border-[#2C3246]"
             />
             <div className="min-w-0 flex-1">
               <p className="font-bold text-sm text-gray-900 dark:text-white truncate">
@@ -127,7 +127,7 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
               href={post.permalink}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
+              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-[#141B31] dark:hover:bg-[#1f2947] border border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-300 transition-colors"
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span>Buka IG</span>
@@ -135,7 +135,7 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
           </div>
 
           {/* Grid Metrik Detail */}
-          <div className="grid grid-cols-3 gap-2 py-4 border-b border-gray-100 dark:border-white/10 text-center">
+          <div className="grid grid-cols-3 gap-2 py-4 border-b border-gray-100 dark:border-[#2C3246] text-center">
             <div className="p-2.5 rounded-xl bg-orange-50/60 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20">
               <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-orange-600 dark:text-orange-400">
                 <Play className="w-3 h-3 fill-orange-500" />
@@ -202,7 +202,7 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
               </button>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-xs sm:text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed max-h-[220px] overflow-y-auto">
+            <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] text-xs sm:text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed max-h-[220px] overflow-y-auto">
               {post.caption}
             </div>
           </div>

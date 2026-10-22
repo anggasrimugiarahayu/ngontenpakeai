@@ -75,7 +75,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
     return (
       <div className="flex flex-col h-[calc(100vh-148px)] md:h-[calc(100vh-164px)] overflow-hidden bg-transparent">
         {/* Header Toolbar */}
-        <div className="flex-shrink-0 h-16 border-b border-gray-200 dark:border-white/10 bg-transparent px-4 md:px-8 flex items-center justify-between z-10">
+        <div className="flex-shrink-0 h-16 border-b border-gray-200 dark:border-[#2C3246] bg-transparent px-4 md:px-8 flex items-center justify-between z-10">
           <div className="flex items-center gap-3 md:gap-4">
             <Link prefetch={true} onMouseEnter={() => preload("ruangBelajar", getRuangBelajarDataAction)} onTouchStart={() => preload("ruangBelajar", getRuangBelajarDataAction)} href="/ruang-belajar" className="flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white shrink-0">
               <ArrowLeft size={20} />
@@ -137,7 +137,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                    {ebook.title}
                  </h1>
                  
-                 <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 dark:border-white/10 pb-6">
+                 <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 dark:border-[#2C3246] pb-6">
                     <div className="flex items-center gap-6">
                       <div className="flex items-center gap-1 text-sm font-bold text-gray-900 dark:text-white">
                         <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />

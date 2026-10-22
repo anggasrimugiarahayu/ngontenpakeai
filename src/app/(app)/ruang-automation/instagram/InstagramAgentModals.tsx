@@ -71,7 +71,7 @@ export function InstagramAgentModals({
                   value={newAgentName}
                   onChange={(e) => setNewAgentName(e.target.value)}
                   placeholder="Misal: Agen CS Ruang Creative, Agen Toko Fashion"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
                   autoFocus
                   required
                 />
@@ -81,7 +81,7 @@ export function InstagramAgentModals({
                 </p>
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-gray-100 dark:border-white/5">
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-gray-100 dark:border-[#2C3246]">
                 <button
                   type="button"
                   onClick={() => setIsCreateAgentModalOpen(false)}
@@ -150,13 +150,13 @@ export function InstagramAgentModals({
                   value={editAgentName}
                   onChange={(e) => setEditAgentName(e.target.value)}
                   placeholder="Nama agen"
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-sm text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500/30 focus:border-orange-500"
                   autoFocus
                   required
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-gray-100 dark:border-white/5">
+              <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-gray-100 dark:border-[#2C3246]">
                 <button
                   type="button"
                   onClick={() => setIsEditAgentModalOpen(false)}

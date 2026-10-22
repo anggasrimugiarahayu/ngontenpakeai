@@ -176,7 +176,7 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
             <div className={`px-2 py-1 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-sm font-bold shrink-0 transition-colors ${
               isPro 
                 ? "bg-orange-500/10 text-orange-500" 
-                : "bg-gray-200 dark:bg-[#27272a] text-gray-700 dark:text-gray-300"
+                : "bg-gray-100 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-300"
             }`}>
               {badgeName}
             </div>

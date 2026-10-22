@@ -559,7 +559,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
               <h1 className={`text-xl md:text-3xl font-bold font-heading whitespace-nowrap ${isDark ? "text-white" : "text-gray-900"}`}>
                 Master Blueprint
               </h1>
-              <div className={`w-7 h-7 md:w-8 md:h-8 shrink-0 rounded-full flex items-center justify-center ${isDark ? "bg-[#27272a] text-orange-500" : "bg-orange-50 text-orange-500"}`}>
+              <div className={`w-7 h-7 md:w-8 md:h-8 shrink-0 rounded-full flex items-center justify-center ${isDark ? "bg-orange-500/10 text-orange-400" : "bg-orange-50 text-orange-500"}`}>
                 <Compass className="w-4 h-4 md:w-5 md:h-5" />
               </div>
             </div>

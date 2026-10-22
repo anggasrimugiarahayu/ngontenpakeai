@@ -241,7 +241,7 @@ export function DashboardOrdersTab({
                 </div>
               </div>
               <span
-                className={`font-bold text-xs uppercase tracking-wide px-3 py-1.5 rounded-md bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-[#2C3246]/50 ${
+                className={`font-bold text-xs uppercase tracking-wide px-3 py-1.5 rounded-md bg-gray-50 dark:bg-[#0F172A] border border-gray-100 dark:border-[#2C3246] ${
                   order.status === "SUCCESS"
                     ? "text-orange-500"
                     : order.status === "FAILED"
@@ -383,7 +383,7 @@ export function DashboardOrdersTab({
                 <span className="font-medium text-emerald-500">- Rp. 0</span>
               </div>
 
-              <div className="pt-3 mt-3 border-t border-gray-100 dark:border-white/10 flex justify-between items-center">
+              <div className="pt-3 mt-3 border-t border-gray-100 dark:border-[#2C3246] flex justify-between items-center">
                 <span className="font-bold text-gray-900 dark:text-white">Total</span>
                 <span className="font-bold text-gray-900 dark:text-white text-base">
                   {formatIDR(order.amount)}
@@ -552,7 +552,7 @@ export function DashboardOrdersTab({
                           : "border-gray-200 dark:border-[#2C3246] hover:border-orange-500/50 bg-white dark:bg-[#141B31]"
                       }`}
                     >
-                      <div className="flex justify-between items-center p-3 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-black/20">
+                      <div className="flex justify-between items-center p-3 border-b border-gray-100 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A]">
                         <span className="text-xs font-medium text-gray-500 flex items-center gap-2">
                           <input
                             type="checkbox"

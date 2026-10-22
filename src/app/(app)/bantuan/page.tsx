@@ -104,7 +104,7 @@ export default function BantuanPage() {
                     required
                     value={formData.name}
                     onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none bg-gray-50 dark:bg-[#27272a] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none bg-gray-50 dark:bg-[#0F172A] border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     placeholder="Nama Anda"
                   />
                 </div>
@@ -115,7 +115,7 @@ export default function BantuanPage() {
                     required
                     value={formData.replyTo}
                     onChange={(e) => setFormData({ ...formData, replyTo: e.target.value })}
-                    className="w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none bg-gray-50 dark:bg-[#27272a] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                    className="w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none bg-gray-50 dark:bg-[#0F172A] border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                     placeholder="nama@email.com"
                   />
                 </div>
@@ -129,7 +129,7 @@ export default function BantuanPage() {
                 required
                 value={formData.subject}
                 onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none bg-gray-50 dark:bg-[#27272a] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none bg-gray-50 dark:bg-[#0F172A] border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 placeholder="Misal: Kendala login akun"
               />
             </div>
@@ -141,7 +141,7 @@ export default function BantuanPage() {
                 rows={4}
                 value={formData.message}
                 onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                className="w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none bg-gray-50 dark:bg-[#27272a] border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
+                className="w-full px-4 py-2.5 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none bg-gray-50 dark:bg-[#0F172A] border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white placeholder:text-gray-400 dark:placeholder:text-gray-500"
                 placeholder="Ceritakan detail pertanyaan atau kendala yang dialami..."
               />
             </div>
@@ -153,10 +153,10 @@ export default function BantuanPage() {
             <button
               type="submit"
               disabled={isSubmitting}
-              className={`w-full mt-4 flex items-center justify-center gap-2 font-bold py-3 px-6 rounded-xl transition-all shadow-md ${
+              className={`w-full mt-4 flex items-center justify-center gap-2 font-bold py-3 px-6 rounded-xl transition-all shadow-sm ${
                 isSubmitting 
                   ? "bg-gray-500/50 text-gray-300 cursor-not-allowed" 
-                  : "bg-orange-500 hover:bg-orange-600 text-white hover:shadow-orange-500/25"
+                  : "bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white shadow-orange-500/20 active:scale-[0.99] cursor-pointer"
               }`}
             >
               {isSubmitting ? (
