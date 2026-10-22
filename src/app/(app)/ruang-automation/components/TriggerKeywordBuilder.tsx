@@ -256,7 +256,7 @@ export function TriggerKeywordBuilder({
                               }
                             }
                           }}
-                          className="w-8 h-8 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 flex items-center justify-center text-base transition-transform hover:scale-110 active:scale-95 cursor-pointer shadow-2xs"
+                          className="w-8 h-8 rounded-lg bg-white hover:bg-gray-50 border border-gray-200 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] flex items-center justify-center text-base transition-transform hover:scale-110 active:scale-95 cursor-pointer shadow-2xs"
                           title={`Tambahkan emoji ${emoji}`}
                         >
                           {emoji}

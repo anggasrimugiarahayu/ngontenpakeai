@@ -55,7 +55,7 @@ export function InstagramAgentListSection({
           <button
             type="button"
             onClick={onBackToPlatformHub}
-            className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 bg-gray-100 dark:bg-white/5 hover:bg-orange-500/10 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-white/10 transition-colors w-fit cursor-pointer"
+            className="inline-flex items-center gap-2 text-xs font-bold text-gray-600 dark:text-gray-300 hover:text-orange-500 dark:hover:text-orange-400 bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] px-3 py-1.5 rounded-xl border border-gray-200 dark:border-[#2C3246] transition-colors w-fit cursor-pointer"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Pilihan Platform</span>
@@ -82,8 +82,8 @@ export function InstagramAgentListSection({
               onClick={() => setIsAgentFilterOpen(!isAgentFilterOpen)}
               className={`px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors cursor-pointer ${
                 agentFilterStatus !== "ALL"
-                  ? "border-gray-900 dark:border-white bg-gray-900 text-white dark:bg-white dark:text-gray-900"
-                  : "border-gray-200 dark:border-white/10 bg-white dark:bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                  ? "border-orange-500 bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                  : "border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
               }`}
             >
               <Filter className="w-4 h-4" />
@@ -338,7 +338,7 @@ export function InstagramAgentListSection({
                     e.stopPropagation();
                     onSelectAgent(agent.id);
                   }}
-                  className="whitespace-nowrap shrink-0 bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 rounded-lg px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold shadow-sm transition-colors cursor-pointer"
+                  className="whitespace-nowrap shrink-0 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white rounded-lg px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all cursor-pointer"
                 >
                   Buka
                 </button>

@@ -163,14 +163,14 @@ export default function EbookActions({
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#141B31] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden relative border border-gray-100 dark:border-[#2C3246] animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A]">
               <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                 Ulasan Anda
               </h3>
               <button 
                 onClick={() => setShowModal(false)}
-                className="w-8 h-8 rounded-full bg-gray-200 dark:bg-white/10 hover:bg-gray-300 dark:hover:bg-white/20 flex items-center justify-center text-gray-600 dark:text-gray-300 transition-colors"
+                className="w-8 h-8 rounded-full bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] border border-gray-200 dark:border-[#2C3246] flex items-center justify-center text-gray-600 dark:text-gray-300 transition-colors"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -210,14 +210,14 @@ export default function EbookActions({
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   placeholder="Ceritakan pengalaman Anda belajar dari e-book ini..."
-                  className="w-full bg-gray-50 dark:bg-black/50 border border-gray-200 dark:border-white/10 rounded-xl p-4 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none min-h-[120px] resize-none"
+                  className="w-full bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] rounded-xl p-4 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none min-h-[120px] resize-none"
                 />
               </div>
 
               <button 
                 type="submit"
                 disabled={isSubmittingReview || rating === 0}
-                className="w-full py-3.5 bg-rn-accent text-white font-bold rounded-xl hover:bg-orange-600 disabled:opacity-50 transition-colors shadow-lg shadow-rn-accent/20 flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold rounded-xl disabled:opacity-50 transition-all shadow-sm shadow-orange-500/20 flex items-center justify-center gap-2"
               >
                 {isSubmittingReview ? "Menyimpan..." : "Kirim Ulasan"}
               </button>

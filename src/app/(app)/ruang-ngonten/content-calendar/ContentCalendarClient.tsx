@@ -242,14 +242,14 @@ export default function ContentCalendarClient() {
           {/* Calendar Card */}
           <div className="bg-gray-50 dark:bg-[#0A0A0C] rounded-2xl border border-gray-200 dark:border-white/10 p-4 md:p-6 w-full shadow-sm">
             {/* Header Month / Nav */}
-            <div className="flex items-center justify-between mb-4 md:mb-5 pb-3 border-b border-gray-200 dark:border-white/10">
+            <div className="flex items-center justify-between mb-4 md:mb-5 pb-3 border-b border-gray-200 dark:border-[#2C3246]">
               <h3 className="text-lg md:text-xl font-black font-heading text-gray-900 dark:text-white uppercase tracking-widest flex items-center gap-2">
                 <Calendar className="text-rn-accent" size={20} />
                 {["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"][currentCalDate.getMonth()]} {currentCalDate.getFullYear()}
               </h3>
               <div className="flex gap-2">
-                <button onClick={handlePrevMonth} className="p-2 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 text-gray-900 dark:text-white transition-colors shadow-sm"><ChevronLeft size={18} strokeWidth={2.5} /></button>
-                <button onClick={handleNextMonth} className="p-2 rounded-xl bg-white dark:bg-[#1A1A1A] border border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 text-gray-900 dark:text-white transition-colors shadow-sm"><ChevronRight size={18} strokeWidth={2.5} /></button>
+                <button onClick={handlePrevMonth} className="p-2 rounded-xl bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors shadow-sm"><ChevronLeft size={18} strokeWidth={2.5} /></button>
+                <button onClick={handleNextMonth} className="p-2 rounded-xl bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors shadow-sm"><ChevronRight size={18} strokeWidth={2.5} /></button>
               </div>
             </div>
 
@@ -283,10 +283,10 @@ export default function ContentCalendarClient() {
           <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
             <div className="px-5 py-4 border-b border-gray-200 dark:border-[#2C3246] flex items-center justify-between shrink-0 bg-gray-50 dark:bg-white/5">
               <h3 className="font-bold text-gray-900 dark:text-white font-heading text-lg flex items-center gap-2">
-                <FileText className="text-rn-accent" size={18} /> 
-                Agenda: <span className="text-rn-accent">{selectedCalDate}</span>
+                <FileText className="text-orange-500" size={18} /> 
+                Agenda: <span className="text-orange-500">{selectedCalDate}</span>
               </h3>
-              <button onClick={() => setIsAgendaOpen(false)} className="p-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-lg hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">
+              <button onClick={() => setIsAgendaOpen(false)} className="p-1.5 text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-lg hover:bg-gray-100 dark:hover:bg-[#1f2947] transition-colors cursor-pointer">
                 <X size={20} strokeWidth={2.5}/>
               </button>
             </div>
@@ -306,7 +306,7 @@ export default function ContentCalendarClient() {
                       className={`py-2 px-2 md:px-4 rounded-xl text-xs md:text-sm font-bold border-2 transition-all flex flex-col items-center justify-center gap-1 ${
                         agendaForm.funnelStage === f.val 
                           ? `${f.border} ${f.color} text-white shadow-sm` 
-                          : `border-gray-200 dark:border-white/10 bg-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-white/20`
+                          : `border-gray-200 dark:border-[#2C3246] bg-transparent text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-orange-500/50`
                       }`}
                     >
                       <span className="font-heading tracking-widest">{f.val}</span>
@@ -322,7 +322,7 @@ export default function ContentCalendarClient() {
                   type="text" 
                   value={agendaForm.topic}
                   onChange={(e) => setAgendaForm({...agendaForm, topic: e.target.value})}
-                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none transition-all text-sm"
+                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#0A1128] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all text-sm"
                   placeholder="Contoh: 3 Rahasia Kenapa Gaji Rp 10 Juta..."
                 />
               </div>
@@ -332,7 +332,7 @@ export default function ContentCalendarClient() {
                 <textarea 
                   value={agendaForm.script}
                   onChange={(e) => setAgendaForm({...agendaForm, script: e.target.value})}
-                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none transition-all min-h-[150px] text-sm resize-none"
+                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#0A1128] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all min-h-[150px] text-sm resize-none"
                   placeholder="Isi skrip detail di sini..."
                 ></textarea>
                 {agendaForm.script.startsWith('[') && (
@@ -345,16 +345,16 @@ export default function ContentCalendarClient() {
                 <textarea 
                   value={agendaForm.caption}
                   onChange={(e) => setAgendaForm({...agendaForm, caption: e.target.value})}
-                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#1A1A1A] text-gray-900 dark:text-white focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none transition-all min-h-[80px] text-sm resize-none"
+                  className="w-full p-3 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#0A1128] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all min-h-[80px] text-sm resize-none"
                   placeholder="Tulis caption & hashtag..."
                 ></textarea>
               </div>
             </div>
 
-            <div className="p-5 border-t border-gray-200 dark:border-white/10 flex items-center justify-between bg-gray-50 dark:bg-white/5 shrink-0">
+            <div className="p-5 border-t border-gray-200 dark:border-[#2C3246] flex items-center justify-between bg-gray-50 dark:bg-[#0A1128] shrink-0">
               <button 
                 onClick={handleDeleteAgenda}
-                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 border border-transparent hover:border-red-200 dark:hover:border-red-900/50 transition-colors text-sm"
+                className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-red-600 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-900/40 transition-colors text-sm cursor-pointer"
               >
                 <Trash2 size={16} /> <span className="hidden sm:inline">Hapus Agenda</span>
               </button>
@@ -362,7 +362,7 @@ export default function ContentCalendarClient() {
               <button 
                 onClick={handleSaveAgenda}
                 disabled={isSaving}
-                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all text-sm shadow-sm ${savedSuccess ? 'bg-green-500 text-white border-green-500' : 'bg-rn-accent text-white border-rn-accent hover:bg-orange-600'} border disabled:opacity-70`}
+                className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all text-sm shadow-sm ${savedSuccess ? 'bg-green-500 text-white border-green-500' : 'bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white border-transparent shadow-orange-500/20'} border disabled:opacity-70 cursor-pointer`}
               >
                 {isSaving ? (
                   <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>

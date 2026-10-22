@@ -1724,7 +1724,7 @@ export default function RuangAutomationClient({
               <button
                 type="button"
                 onClick={() => setConfirmModal(null)}
-                className="px-5 py-2.5 rounded-xl font-bold text-sm transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-white/10 dark:text-white dark:hover:bg-white/20 cursor-pointer"
+                className="px-5 py-2.5 rounded-xl font-bold text-sm transition-colors bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 cursor-pointer"
               >
                 {confirmModal.cancelText || "Batal"}
               </button>
@@ -1873,8 +1873,8 @@ export default function RuangAutomationClient({
                         onClick={() => setIsFilterOpen(!isFilterOpen)}
                         className={`px-3.5 py-2.5 rounded-lg border text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors ${
                           filterStatus !== "ALL"
-                            ? "border-gray-900 dark:border-white bg-gray-900 text-white dark:bg-white dark:text-gray-900"
-                            : "border-gray-200 dark:border-[#2C3246] bg-white dark:bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                            ? "border-orange-500 bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                            : "border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
                         }`}
                       >
                         <Filter className="w-4 h-4" />
@@ -1938,7 +1938,7 @@ export default function RuangAutomationClient({
                     {/* Buat Automation Button */}
                     <button
                       onClick={handleOpenAddRuleModal}
-                      className="justify-center bg-rn-accent hover:opacity-90 text-white px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold shadow-sm transition-opacity flex items-center gap-1.5 whitespace-nowrap"
+                      className="justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-1.5 whitespace-nowrap"
                     >
                       <Plus className="w-4 h-4" />
                       Buat Automation

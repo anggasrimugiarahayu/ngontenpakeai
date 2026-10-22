@@ -301,7 +301,7 @@ export default function DashboardClient({
               className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all rounded-lg border ${
                 activeTab === tab.id
                   ? "border-orange-500/50 bg-orange-500/10 text-orange-600 dark:text-orange-400"
-                  : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
+                  : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-[#1f2947]"
               }`}
             >
               {tab.label}

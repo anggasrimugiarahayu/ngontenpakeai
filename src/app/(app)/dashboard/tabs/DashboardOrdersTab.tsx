@@ -653,7 +653,7 @@ export function DashboardOrdersTab({
                     type="button"
                     onClick={() => setOrderPage((p) => Math.max(1, p - 1))}
                     disabled={orderPage === 1}
-                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">Prev</span>
@@ -685,7 +685,7 @@ export function DashboardOrdersTab({
                               className={`w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                                 orderPage === page
                                   ? "bg-orange-500 text-white border border-orange-500 shadow-sm"
-                                  : "border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-medium"
+                                  : "border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-300 font-bold"
                               }`}
                             >
                               {page}
@@ -699,7 +699,7 @@ export function DashboardOrdersTab({
                     type="button"
                     onClick={() => setOrderPage((p) => Math.min(totalPages, p + 1))}
                     disabled={orderPage === totalPages}
-                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <span className="hidden sm:inline">Next</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -728,7 +728,7 @@ export function DashboardOrdersTab({
               <div className="sticky top-0 right-0 p-4 flex justify-end bg-gradient-to-b from-white dark:from-[#141B31] to-transparent z-10 pointer-events-none">
                 <button
                   onClick={() => setIsMobileModalOpen(false)}
-                  className="p-2 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white rounded-full hover:bg-gray-200 dark:hover:bg-white/20 transition-colors pointer-events-auto shadow-sm"
+                  className="p-2 bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] border border-gray-200 dark:border-[#2C3246] text-gray-600 dark:text-gray-300 rounded-full transition-colors pointer-events-auto shadow-sm"
                 >
                   <X className="w-5 h-5" />
                 </button>

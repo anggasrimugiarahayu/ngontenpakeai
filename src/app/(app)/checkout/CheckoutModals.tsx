@@ -76,7 +76,7 @@ export default function CheckoutModals({
           <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-[#2C3246]">
             <div className="p-4 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between shrink-0">
               <h3 className="font-bold text-gray-900 dark:text-white">Pilih Add-on</h3>
-              <button onClick={() => setShowAddonModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-gray-500">
+              <button onClick={() => setShowAddonModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-[#1f2947] rounded-full transition-colors text-gray-500 dark:text-gray-400 dark:hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -101,7 +101,7 @@ export default function CheckoutModals({
                           setSelectedAddons((prev) => [...prev, addon.id]);
                           setShowAddonModal(false);
                         }}
-                        className="shrink-0 px-4 py-2 rounded-lg text-xs font-bold transition-all bg-rn-accent text-white hover:bg-rn-accent/90"
+                        className="shrink-0 px-4 py-2 rounded-lg text-xs font-bold transition-all bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white shadow-sm shadow-orange-500/20"
                       >
                         + Tambah
                       </button>
@@ -127,7 +127,7 @@ export default function CheckoutModals({
                   setPromoError("");
                   setPromoCodeInput("");
                 }}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-gray-500"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-[#1f2947] rounded-full transition-colors text-gray-500 dark:text-gray-400 dark:hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -145,7 +145,7 @@ export default function CheckoutModals({
               <button
                 onClick={handleApplyPromo}
                 disabled={isVerifyingPromo || !promoCodeInput.trim()}
-                className="w-full bg-rn-accent text-white font-bold py-3 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                className="w-full bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold py-3 rounded-xl shadow-sm shadow-orange-500/20 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
               >
                 {isVerifyingPromo ? <Loader2 className="w-5 h-5 animate-spin" /> : "Gunakan Kode"}
               </button>
@@ -159,7 +159,7 @@ export default function CheckoutModals({
           <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-[#2C3246]">
             <div className="p-4 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between shrink-0">
               <h3 className="font-bold text-gray-900 dark:text-white">Select Payment Method</h3>
-              <button onClick={() => setShowPaymentModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-gray-500">
+              <button onClick={() => setShowPaymentModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-[#1f2947] rounded-full transition-colors text-gray-500 dark:text-gray-400 dark:hover:text-white">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -249,7 +249,7 @@ export default function CheckoutModals({
                     window.location.href = targetUrl;
                   }}
                   disabled={isRedirecting}
-                  className="flex items-center justify-center gap-2 w-full bg-rn-accent text-white font-bold py-3.5 rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity cursor-pointer shadow-lg shadow-rn-accent/25"
+                  className="flex items-center justify-center gap-2 w-full bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold py-3.5 rounded-xl disabled:opacity-50 transition-all cursor-pointer shadow-sm shadow-orange-500/20"
                 >
                   {isRedirecting ? (
                     <>
@@ -278,7 +278,7 @@ export default function CheckoutModals({
                   e.preventDefault();
                   setIsIncludedModalOpen(false);
                 }}
-                className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-gray-500"
+                className="p-2 hover:bg-gray-100 dark:hover:bg-[#1f2947] rounded-full transition-colors text-gray-500 dark:text-gray-400 dark:hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>

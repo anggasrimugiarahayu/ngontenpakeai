@@ -96,19 +96,19 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
           <>
             <div className="px-5 py-4 border-b border-gray-200 dark:border-[#2C3246] flex items-center justify-between bg-gray-50 dark:bg-white/5 shrink-0">
                <h3 className="text-sm md:text-base font-bold font-heading text-gray-900 dark:text-white flex items-center gap-2">
-                 <Calendar size={18} strokeWidth={2.5} className="text-rn-accent"/> Pilih Tanggal Tayang
+                 <Calendar size={18} strokeWidth={2.5} className="text-orange-500"/> Pilih Tanggal Tayang
                </h3>
-               <button onClick={onClose} className="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-full p-1.5 transition-colors"><X size={16} strokeWidth={2.5}/></button>
+               <button onClick={onClose} className="text-gray-400 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] hover:bg-gray-200 dark:hover:bg-[#1f2947] rounded-full p-1.5 transition-colors cursor-pointer"><X size={16} strokeWidth={2.5}/></button>
             </div>
             
             <div className="p-5 overflow-y-auto no-scrollbar bg-white dark:bg-transparent">
                <div className="flex items-center justify-between mb-6">
                  <h4 className="font-bold font-heading text-gray-900 dark:text-white flex items-center gap-2 text-lg">
-                   <Calendar size={18} className="text-rn-accent"/> {MONTH_NAMES[currentCalDate.getMonth()]} {currentCalDate.getFullYear()}
+                   <Calendar size={18} className="text-orange-500"/> {MONTH_NAMES[currentCalDate.getMonth()]} {currentCalDate.getFullYear()}
                  </h4>
                  <div className="flex items-center gap-2">
-                   <button onClick={handlePrevMonth} className="p-2 border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-colors dark:text-white"><ChevronLeft size={16}/></button>
-                   <button onClick={handleNextMonth} className="p-2 border border-gray-200 dark:border-white/10 rounded-lg hover:bg-gray-50 dark:hover:bg-white/5 transition-colors dark:text-white"><ChevronRight size={16}/></button>
+                   <button onClick={handlePrevMonth} className="p-2 border border-gray-200 dark:border-[#2C3246] rounded-lg hover:bg-gray-50 dark:hover:bg-[#1f2947] transition-colors text-gray-700 dark:text-white cursor-pointer"><ChevronLeft size={16}/></button>
+                   <button onClick={handleNextMonth} className="p-2 border border-gray-200 dark:border-[#2C3246] rounded-lg hover:bg-gray-50 dark:hover:bg-[#1f2947] transition-colors text-gray-700 dark:text-white cursor-pointer"><ChevronRight size={16}/></button>
                  </div>
                </div>
                
@@ -138,13 +138,13 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
                        let btnClass = "h-8 md:h-10 rounded-xl flex items-center justify-center text-[13px] font-bold transition-all duration-200 border ";
                        
                        if (hasContent) {
-                          btnClass += "bg-green-500 border-green-500 text-white shadow-sm hover:bg-green-600";
+                          btnClass += "bg-green-500 border-green-500 text-white shadow-sm hover:bg-green-600 cursor-pointer";
                        } else if (isPast) {
-                          btnClass += "bg-gray-50 dark:bg-white/5 border-transparent text-gray-400 dark:text-gray-500 opacity-50 cursor-not-allowed";
+                          btnClass += "bg-gray-50 dark:bg-[#0A1128] border-transparent text-gray-400 dark:text-gray-600 opacity-50 cursor-not-allowed";
                        } else if (isToday) {
-                          btnClass += "bg-orange-50 dark:bg-orange-500/10 border-orange-500 text-rn-accent shadow-sm ring-2 ring-orange-500/20";
+                          btnClass += "bg-orange-50 dark:bg-orange-500/10 border-orange-500 text-orange-600 dark:text-orange-400 shadow-sm ring-2 ring-orange-500/20 cursor-pointer";
                        } else {
-                          btnClass += "bg-white dark:bg-transparent border-gray-200 dark:border-white/10 text-gray-700 dark:text-gray-300 hover:border-rn-accent hover:text-rn-accent";
+                          btnClass += "bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-300 hover:border-orange-500 hover:text-orange-500 cursor-pointer";
                        }
                        
                        cells.push(
@@ -171,11 +171,11 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
 
         {step === "form" && (
           <>
-            <div className="px-5 py-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between bg-gray-50 dark:bg-white/5 shrink-0">
+            <div className="px-5 py-4 border-b border-gray-200 dark:border-[#2C3246] flex items-center justify-between bg-gray-50 dark:bg-white/5 shrink-0">
                <h3 className="text-sm md:text-base font-bold font-heading text-gray-900 dark:text-white flex items-center gap-2">
-                 <Calendar size={18} strokeWidth={2.5} className="text-rn-accent"/> Konfirmasi Agenda Publikasi
+                 <Calendar size={18} strokeWidth={2.5} className="text-orange-500"/> Konfirmasi Agenda Publikasi
                </h3>
-               <button onClick={() => { if (!isSavingAgenda) onClose(); }} disabled={isSavingAgenda} className="text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 rounded-full p-1.5 transition-colors disabled:opacity-50"><X size={16} strokeWidth={2.5}/></button>
+               <button onClick={() => { if (!isSavingAgenda) onClose(); }} disabled={isSavingAgenda} className="text-gray-400 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white bg-gray-100 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] hover:bg-gray-200 dark:hover:bg-[#1f2947] rounded-full p-1.5 transition-colors disabled:opacity-50 cursor-pointer"><X size={16} strokeWidth={2.5}/></button>
             </div>
             
             <form onSubmit={(e) => { e.preventDefault(); handleSaveAgenda(); }} className="flex-1 overflow-y-auto no-scrollbar p-5 space-y-4">
@@ -217,7 +217,7 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
                   required
                   value={agendaForm.script}
                   onChange={e => setAgendaForm({...agendaForm, script: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none transition-all min-h-[120px] text-sm resize-none custom-scrollbar"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all min-h-[120px] text-sm resize-none custom-scrollbar"
                   placeholder="Isi skrip..."
                 />
               </div>
@@ -227,7 +227,7 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
                 <textarea 
                   value={agendaForm.caption}
                   onChange={e => setAgendaForm({...agendaForm, caption: e.target.value})}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none transition-all min-h-[80px] text-sm resize-none custom-scrollbar"
+                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none transition-all min-h-[80px] text-sm resize-none custom-scrollbar"
                   placeholder="Caption instagram/tiktok..."
                 />
               </div>
@@ -237,14 +237,14 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
                   type="button" 
                   disabled={isSavingAgenda}
                   onClick={() => setStep("calendar")}
-                  className="px-4 py-3.5 bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 rounded-xl font-bold font-heading hover:bg-gray-200 dark:hover:bg-white/20 transition-colors disabled:opacity-50"
+                  className="px-4 py-3.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-200 rounded-xl font-bold font-heading hover:bg-gray-50 dark:hover:bg-[#1f2947] transition-colors disabled:opacity-50 cursor-pointer"
                 >
                   <ChevronLeft size={16} />
                 </button>
                 <button 
                   type="submit" 
                   disabled={isSavingAgenda}
-                  className="flex-1 py-3.5 bg-rn-accent text-white rounded-xl font-bold font-heading hover:bg-orange-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  className="flex-1 py-3.5 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white rounded-xl font-bold font-heading transition-colors flex items-center justify-center gap-2 shadow-sm shadow-orange-500/20 disabled:opacity-50 cursor-pointer"
                 >
                   {isSavingAgenda ? <><Square size={16} className="animate-spin" /> Menyimpan...</> : <><Save size={16} /> Simpan ke Kalender</>}
                 </button>

@@ -204,7 +204,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                                mutate();
                                setIsSubmitting(false);
                              }} className="w-full flex flex-col gap-3">
-                               <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center gap-2 bg-rn-accent hover:bg-orange-600 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-rn-accent/20 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}">
+                               <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm shadow-orange-500/20 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}">
                                  Klaim Gratis (Khusus Member Paket E-Book)
                                </button>
                              </form>

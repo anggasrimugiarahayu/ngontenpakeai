@@ -23,7 +23,7 @@ const HeroCanvasCell: React.FC<HeroCanvasCellProps> = ({ title, dataKey, content
     <div className="bg-white dark:bg-[#141B31] p-6 md:p-8 lg:p-10 rounded-[12px] border-2 border-gray-200 dark:border-[#2C3246] outline-none transition-all duration-200 relative mb-8 md:mb-10 text-gray-900 dark:text-white flex flex-col shadow-gray-200 dark:shadow-black/50 hover:shadow-xl">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 md:mb-6">
         <h2 className="text-xl md:text-2xl font-extrabold text-gray-900 dark:text-white font-heading">{title}</h2>
-        <button onClick={() => isEditing ? handleSave() : setIsEditing(true)} className="px-5 py-2 rounded-xl font-bold text-sm shrink-0 transition-all bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-white/20 shadow-sm flex items-center gap-2 self-start sm:self-auto">
+        <button onClick={() => isEditing ? handleSave() : setIsEditing(true)} className="px-5 py-2 rounded-xl font-bold text-sm shrink-0 transition-all bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 shadow-sm flex items-center gap-2 self-start sm:self-auto">
           {isEditing ? (
             <><Save size={16} /> <span className="text-xs font-bold font-heading">Simpan</span></>
           ) : (

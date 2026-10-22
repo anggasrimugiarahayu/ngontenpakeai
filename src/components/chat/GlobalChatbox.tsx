@@ -168,13 +168,13 @@ export default function GlobalChatbox({
           {/* Plus Menu Injection */}
           {renderPlusMenu && renderPlusMenu()}
           
-          {renderPlusMenu && <div className="h-4 w-px bg-gray-200 dark:bg-white/10 hidden sm:block"></div>}
+          {renderPlusMenu && <div className="h-4 w-px bg-gray-200 dark:bg-[#2C3246] hidden sm:block"></div>}
           
           {/* Model Selector */}
           <div className="relative shrink-0 flex items-center">
             <button 
               onClick={(e) => { e.stopPropagation(); setIsModelMenuOpen(!isModelMenuOpen); }}
-              className="flex items-center gap-1.5 px-3 py-1.5 md:py-1.5 rounded-lg border border-gray-200 dark:border-white/10 text-[10px] md:text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 px-3 py-1.5 md:py-1.5 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] text-[10px] md:text-xs font-bold text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
             >
               <span>AI:</span>
               <span className="text-gray-900 dark:text-white whitespace-nowrap">
@@ -196,7 +196,7 @@ export default function GlobalChatbox({
                       <button 
                         key={val} 
                         onClick={(e) => { e.stopPropagation(); onModelChange(val); setIsModelMenuOpen(false); }} 
-                        className={`w-full text-left px-3 py-2 text-xs font-bold transition-colors cursor-pointer ${selectedModel === val ? 'text-orange-600 dark:text-orange-400 bg-orange-500/10' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5'}`}
+                        className={`w-full text-left px-3 py-2 text-xs font-bold transition-colors cursor-pointer ${selectedModel === val ? 'text-orange-600 dark:text-orange-400 bg-orange-500/10' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]'}`}
                       >
                         {name}
                       </button>
@@ -223,7 +223,7 @@ export default function GlobalChatbox({
           )}
           <button 
             onClick={toggleListening}
-            className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0 transition-colors border ${isListening ? 'bg-orange-50 dark:bg-rn-accent/20 text-rn-accent border-rn-accent/30 dark:border-rn-accent/50 animate-pulse' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 border-transparent'}`}
+            className={`w-8 h-8 md:w-9 md:h-9 rounded-full flex items-center justify-center shrink-0 transition-colors border ${isListening ? 'bg-orange-50 dark:bg-orange-500/20 text-orange-600 dark:text-orange-400 border-orange-500/30 dark:border-orange-500/50 animate-pulse' : 'bg-transparent text-gray-400 hover:bg-gray-50 dark:hover:bg-[#1f2947] border-transparent'}`}
             title={isListening ? "Hentikan merekam" : "Input menggunakan suara"}
           >
             <Mic size={18} />
@@ -237,7 +237,7 @@ export default function GlobalChatbox({
               }
             }}
             disabled={!isLoading && (textLength < 20 && !hasAttachment)}
-            className={`w-8 h-8 md:w-9 md:h-9 rounded-full text-white flex items-center justify-center shrink-0 transition-colors shadow-sm ${isLoading ? "bg-red-500 hover:bg-red-600" : "bg-rn-accent hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed"}`}
+            className={`w-8 h-8 md:w-9 md:h-9 rounded-full text-white flex items-center justify-center shrink-0 transition-colors shadow-sm shadow-orange-500/20 ${isLoading ? "bg-red-500 hover:bg-red-600" : "bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] disabled:opacity-50 disabled:cursor-not-allowed"}`}
           >
             {isLoading ? <Square size={14} className="fill-current" strokeWidth={2.5} /> : <Send size={14} className="-ml-0.5" strokeWidth={2.5}/>}
           </button>

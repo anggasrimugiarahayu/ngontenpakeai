@@ -204,8 +204,8 @@ export default function AtmBuilderClient() {
           <h4 className="font-bold text-gray-900 dark:text-white font-heading flex items-center gap-2 text-sm md:text-base mb-3 mt-6"><CheckCircle2 size={18} className="text-orange-500" strokeWidth={2.5}/> 3 Versi Adaptasi (Original)</h4>
           <div className="grid grid-cols-1 gap-5">
             {(msg.data.versions || []).map((ver: any, i: number) => (
-              <div key={i} className="bg-white dark:bg-black border border-gray-300 dark:border-white/20 rounded-[12px] overflow-hidden shadow-none hover:border-gray-900 dark:hover:border-white transition-all">
-                <div className="bg-gray-50 dark:bg-white/5 px-4 md:px-5 py-3.5 border-b border-gray-200 dark:border-white/20 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+              <div key={i} className="bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-[12px] overflow-hidden shadow-none hover:border-gray-900 dark:hover:border-white transition-all">
+                <div className="bg-gray-50 dark:bg-[#0A1128] px-4 md:px-5 py-3.5 border-b border-gray-200 dark:border-[#2C3246] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                   <span className="font-bold font-heading text-gray-900 dark:text-white text-sm md:text-base block">Versi {i+1}: {ver.judul_internal?.replace(/^Versi\s*\d+\s*[-:]*\s*/i, '') || ver.judul_internal}</span>
                   <div className="flex flex-wrap items-center gap-2 sm:gap-3 self-end sm:self-auto shrink-0">
                     <button 
@@ -231,7 +231,7 @@ export default function AtmBuilderClient() {
                         setIsScheduleModalOpen(true);
                       }, 200);
                         }}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${atmActionState === `schedule-${msg.id}-${i}` ? 'border-rn-accent bg-rn-accent text-white shadow-sm' : 'bg-white dark:bg-[#1A1A1A] border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'}`}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${atmActionState === `schedule-${msg.id}-${i}` ? 'border-orange-500 bg-[#f97316] text-white shadow-sm' : 'bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-200 hover:border-gray-300 dark:hover:border-orange-500/50 hover:bg-gray-50 dark:hover:bg-[#1f2947] hover:text-gray-900 dark:hover:text-white'}`}
                     ><Calendar size={14} /> Jadwalkan</button>
                     
                     <button 
@@ -245,14 +245,14 @@ export default function AtmBuilderClient() {
                           if(ver.caption) fullCopy += `=== CAPTION ===\n${ver.caption}`;
                           handleCopyBlock(fullCopy, `copy-${msg.id}-${i}`);
                         }}
-                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${copiedId === `copy-${msg.id}-${i}` ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-600 shadow-sm' : 'bg-white dark:bg-[#1A1A1A] border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'}`}
+                        className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${copiedId === `copy-${msg.id}-${i}` ? 'border-green-500 bg-green-50 dark:bg-green-950/30 text-green-600 shadow-sm' : 'bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-200 hover:border-gray-300 dark:hover:border-orange-500/50 hover:bg-gray-50 dark:hover:bg-[#1f2947] hover:text-gray-900 dark:hover:text-white'}`}
                     >
                       {copiedId === `copy-${msg.id}-${i}` ? <Check size={14} /> : <Copy size={14} />} 
                       {copiedId === `copy-${msg.id}-${i}` ? "Tersalin" : "Salin Skrip"}
                     </button>
                   </div>
                 </div>
-                <div className="p-5 space-y-6 text-[13px] md:text-[14px] text-gray-800 dark:text-gray-300 font-medium bg-white dark:bg-black">
+                <div className="p-5 space-y-6 text-[13px] md:text-[14px] text-gray-800 dark:text-gray-300 font-medium bg-white dark:bg-[#141B31]">
                   {ver.sections ? (
                     ver.sections.map((sec: any, secIdx: number) => (
                       <div key={secIdx} className="pb-4 border-b border-dashed border-gray-200 dark:border-white/20 last:border-0 last:pb-0">
@@ -289,7 +289,7 @@ export default function AtmBuilderClient() {
     <div className="relative shrink-0 flex items-center" ref={atmPlusMenuRef}>
       <button 
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsAtmPlusMenuOpen(!isAtmPlusMenuOpen); }} 
-        className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${isAtmPlusMenuOpen ? 'bg-gray-100 dark:bg-white/10' : ''}`}
+        className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full border border-gray-200 dark:border-[#2C3246] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#141B31] transition-colors ${isAtmPlusMenuOpen ? 'bg-gray-100 dark:bg-[#141B31]' : ''}`}
       >
         <Plus size={18} className={`transition-transform duration-200 ${isAtmPlusMenuOpen ? 'rotate-45' : ''}`} />
       </button>

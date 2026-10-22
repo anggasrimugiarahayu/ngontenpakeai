@@ -800,7 +800,7 @@ export function InstagramRuleDetailModal({
                       setIsRetryingFailed(false);
                     }
                   }}
-                  className="px-3 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50 text-xs font-bold text-gray-700 dark:text-gray-200 inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                  className="px-3 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50 text-xs font-bold text-gray-700 dark:text-gray-200 inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:cursor-not-allowed"
                 >
                   {isRetryingFailed ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
@@ -975,7 +975,7 @@ export function InstagramRuleDetailModal({
                     type="button"
                     disabled={logPage === 1}
                     onClick={() => setLogPage((p) => Math.max(1, p - 1))}
-                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">Prev</span>
@@ -1007,7 +1007,7 @@ export function InstagramRuleDetailModal({
                               className={`w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                                 logPage === page
                                   ? "bg-orange-500 text-white border border-orange-500 shadow-sm"
-                                  : "border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-medium"
+                                  : "border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-300 font-bold"
                               }`}
                             >
                               {page}
@@ -1021,7 +1021,7 @@ export function InstagramRuleDetailModal({
                     type="button"
                     disabled={logPage === totalLogPages}
                     onClick={() => setLogPage((p) => Math.min(totalLogPages, p + 1))}
-                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <span className="hidden sm:inline">Next</span>
                     <ChevronRight className="w-3.5 h-3.5" />

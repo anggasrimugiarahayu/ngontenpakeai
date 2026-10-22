@@ -207,13 +207,13 @@ export function AdminRuangBelajarTab({
             </button>
             <button
               onClick={() => setShowGlobalVoucherModal(true)}
-              className="justify-center border border-rn-accent/30 hover:border-rn-accent/60 bg-white dark:bg-transparent text-rn-accent px-3 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap"
+              className="justify-center border border-orange-500/30 hover:border-orange-500/60 bg-white dark:bg-[#141B31] text-orange-600 dark:text-orange-400 px-3 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap"
             >
               <Ticket className="w-4 h-4" /> Voucher
             </button>
             <button
               onClick={() => setShowAddProduct(true)}
-              className="col-span-2 md:col-span-1 justify-center bg-rn-accent hover:opacity-90 text-white px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold shadow-sm transition-opacity flex items-center gap-1.5 whitespace-nowrap"
+              className="col-span-2 md:col-span-1 justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-1.5 whitespace-nowrap"
             >
               <Plus className="w-4 h-4" /> Tambah E-Book
             </button>
@@ -493,7 +493,7 @@ export function AdminRuangBelajarTab({
                     >
                       <button
                         onClick={() => setEditingProduct(prod)}
-                        className="flex items-center justify-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
+                        className="flex items-center justify-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
                       >
                         <Edit className="w-3 h-3" />{" "}
                         <span className="hidden sm:inline">Edit</span>
@@ -507,7 +507,7 @@ export function AdminRuangBelajarTab({
                             setLoading(false);
                           }
                         }}
-                        className="flex items-center justify-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 text-red-600 dark:text-red-400 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
+                        className="flex items-center justify-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 dark:bg-red-950/30 dark:hover:bg-red-900/40 dark:border-red-900/40 dark:text-red-400 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
                       >
                         <Trash2 className="w-3 h-3" />{" "}
                         <span className="hidden sm:inline">Hapus</span>

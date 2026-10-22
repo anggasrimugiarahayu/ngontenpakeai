@@ -249,16 +249,16 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
                   </Link>
                   <button
                     onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                    className="w-full flex items-center justify-start gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors text-left"
+                    className="w-full flex items-center justify-start gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#1f2947] hover:text-gray-900 dark:hover:text-white transition-colors text-left"
                   >
                     {mounted && theme === "dark" ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
                     {mounted && theme === "dark" ? "Light mode" : "Dark mode"}
                   </button>
                 </div>
-                <div className="py-1 border-t border-gray-200 dark:border-white/5">
+                <div className="py-1 border-t border-gray-200 dark:border-[#2C3246]">
                   <button
                     onClick={() => signOut({ callbackUrl: "/" })}
-                    className="w-full flex items-center justify-start gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors text-left"
+                    className="w-full flex items-center justify-start gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-[#1f2947] hover:text-gray-900 dark:hover:text-white transition-colors text-left"
                   >
                     <LogOut className="w-4 h-4" />
                     Sign out

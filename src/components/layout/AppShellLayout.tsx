@@ -317,7 +317,7 @@ export default function AppShellLayout({
         <div className="flex items-center justify-end p-2 border-b border-gray-100 dark:border-[#2C3246]/60">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-colors"
+            className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-[#1f2947] hover:text-gray-900 dark:hover:text-white transition-colors"
             title={isExpanded ? "Tutup Sidebar" : "Buka Sidebar"}
           >
             {isExpanded ? <ChevronLeft size={20} /> : <Menu size={20} />}
@@ -452,7 +452,7 @@ export default function AppShellLayout({
             <span className="font-bold text-gray-900 dark:text-white">{drawerTitle}</span>
             <button
               onClick={() => setIsOpen(false)}
-              className="p-2 rounded-lg bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300"
+              className="p-2 rounded-lg bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] border border-gray-200 dark:border-[#2C3246] text-gray-600 dark:text-gray-300 transition-colors"
             >
               <X size={20} />
             </button>

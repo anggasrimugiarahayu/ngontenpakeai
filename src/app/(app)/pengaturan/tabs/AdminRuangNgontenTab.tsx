@@ -58,7 +58,7 @@ export function AdminRuangNgontenTab({ features }: { features: any[] }) {
                 <button
                   onClick={() => toggleFeatureStatus(f.id, !f.isActive)}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    f.isActive ? "bg-rn-accent" : "bg-gray-200 dark:bg-white/10"
+                    f.isActive ? "bg-[#f97316]" : "bg-gray-200 dark:bg-[#141B31] border dark:border-[#2C3246]"
                   }`}
                   role="switch"
                   aria-checked={f.isActive}
@@ -83,7 +83,7 @@ export function AdminRuangNgontenTab({ features }: { features: any[] }) {
                 <button
                   onClick={() => toggleFeaturePro(f.id, !f.isProOnly)}
                   className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                    f.isProOnly ? "bg-rn-accent" : "bg-gray-200 dark:bg-white/10"
+                    f.isProOnly ? "bg-[#f97316]" : "bg-gray-200 dark:bg-[#141B31] border dark:border-[#2C3246]"
                   }`}
                   role="switch"
                   aria-checked={f.isProOnly}

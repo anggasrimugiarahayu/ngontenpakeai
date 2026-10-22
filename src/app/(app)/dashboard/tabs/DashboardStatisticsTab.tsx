@@ -340,7 +340,7 @@ export function DashboardStatisticsTab({
               </h3>
               <button
                 onClick={() => setIsPackageModalOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/5 transition-colors text-gray-500"
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1f2947] transition-colors text-gray-500 dark:text-gray-400 dark:hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -370,7 +370,7 @@ export function DashboardStatisticsTab({
               </div>
             </div>
 
-            <div className="space-y-3 bg-gray-50 dark:bg-white/5 p-4 rounded-xl mb-6 border border-gray-100 dark:border-white/5">
+            <div className="space-y-3 bg-gray-50 dark:bg-[#0F172A] p-4 rounded-xl mb-6 border border-gray-100 dark:border-[#2C3246]">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-500">Total Views</span>
                 <span className="font-bold text-gray-900 dark:text-white">
@@ -394,13 +394,13 @@ export function DashboardStatisticsTab({
             <div className="flex gap-3">
               <button
                 onClick={() => setIsPackageModalOpen(false)}
-                className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+                className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors"
               >
                 Tutup
               </button>
               <NextLink
                 href="/?pricing=true"
-                className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-orange-500 hover:bg-orange-600 text-white text-center transition-colors shadow-lg shadow-orange-500/20"
+                className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white text-center transition-colors shadow-sm shadow-orange-500/20"
               >
                 Lihat Halaman Promo
               </NextLink>

@@ -234,7 +234,7 @@ export function InstagramResearchStudio({
             <button
               type="submit"
               disabled={isLoading || !usernameInput.trim()}
-              className="px-6 py-3 rounded-xl bg-rn-accent hover:bg-orange-600 text-white font-bold text-sm shadow-sm transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 shrink-0"
+              className="px-6 py-3 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold text-sm shadow-sm shadow-orange-500/20 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 shrink-0"
             >
               {isLoading ? (
                 <>
@@ -261,7 +261,7 @@ export function InstagramResearchStudio({
                   setUsernameInput(acc);
                   handleSearch(acc);
                 }}
-                className="px-2.5 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-600 dark:text-gray-300 font-medium transition-colors cursor-pointer"
+                className="px-2.5 py-1 rounded-lg bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 font-bold transition-colors cursor-pointer"
               >
                 @{acc}
               </button>
@@ -343,7 +343,7 @@ export function InstagramResearchStudio({
               <button
                 type="button"
                 onClick={() => setHasAppliedFilter(true)}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-rn-accent hover:bg-orange-600 text-white font-bold text-xs sm:text-sm shadow-sm transition-all transform active:scale-95 cursor-pointer"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold text-xs sm:text-sm shadow-sm shadow-orange-500/20 transition-all transform active:scale-95 cursor-pointer"
               >
                 <SlidersHorizontal className="w-4 h-4" />
                 <span>Tampilkan Feed Konten ({filteredAndSortedPosts.length} Post)</span>

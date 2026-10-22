@@ -38,11 +38,11 @@ export default function CanvasCell({ title, badge, dataKey, content, icon: Icon,
         
         <div className="flex items-center gap-2 shrink-0">
           {badge && (
-            <span className="bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-widest">
+            <span className="bg-gray-100 dark:bg-[#0F172A] text-gray-500 dark:text-gray-400 border border-transparent dark:border-[#2C3246] text-[10px] px-2 py-0.5 rounded-md font-bold uppercase tracking-widest">
               {badge}
             </span>
           )}
-          <button onClick={() => { isEditing ? handleSave() : setIsEditing(true); }} className="text-gray-400 hover:text-orange-500 p-1.5 bg-gray-50 dark:bg-white/5 hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded-xl transition-colors">
+          <button onClick={() => { isEditing ? handleSave() : setIsEditing(true); }} className="text-gray-400 hover:text-orange-500 p-1.5 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] hover:bg-orange-50 dark:hover:bg-orange-500/10 rounded-xl transition-colors">
             {isEditing ? <Save size={16} /> : <Edit2 size={16} />}
           </button>
         </div>

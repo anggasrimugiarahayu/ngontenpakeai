@@ -186,7 +186,7 @@ export function DashboardMainTab({
           <div className="relative">
             <button
               onClick={() => setShowDatePicker(!showDatePicker)}
-              className="flex items-center bg-white dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-4 py-2 hover:bg-gray-50 dark:hover:bg-[#1C2542] text-gray-700 dark:text-gray-200 transition-colors shadow-2xs cursor-pointer"
+              className="flex items-center bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl px-4 py-2 hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-200 transition-colors shadow-2xs cursor-pointer"
             >
               <CalendarIcon size={16} className="text-gray-500 mr-2" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">

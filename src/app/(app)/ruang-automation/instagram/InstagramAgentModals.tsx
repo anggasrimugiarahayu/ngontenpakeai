@@ -86,14 +86,14 @@ export function InstagramAgentModals({
                   type="button"
                   onClick={() => setIsCreateAgentModalOpen(false)}
                   disabled={isSubmittingAgent}
-                  className="px-4 py-2 rounded-xl border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                  className="px-4 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] text-xs font-bold text-gray-700 dark:text-gray-200 transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingAgent || !newAgentName.trim()}
-                  className="px-5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold text-xs shadow-md shadow-orange-500/20 flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] disabled:opacity-50 text-white font-bold text-xs shadow-sm shadow-orange-500/20 flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   {isSubmittingAgent ? (
                     <>
@@ -161,14 +161,14 @@ export function InstagramAgentModals({
                   type="button"
                   onClick={() => setIsEditAgentModalOpen(false)}
                   disabled={isSubmittingAgent}
-                  className="px-4 py-2 rounded-xl border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                  className="px-4 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] text-xs font-bold text-gray-700 dark:text-gray-200 transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingAgent || !editAgentName.trim()}
-                  className="px-5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold text-xs shadow-md shadow-orange-500/20 flex items-center gap-1.5 transition-all cursor-pointer"
+                  className="px-5 py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] disabled:opacity-50 text-white font-bold text-xs shadow-sm shadow-orange-500/20 flex items-center gap-1.5 transition-all cursor-pointer"
                 >
                   {isSubmittingAgent ? (
                     <>

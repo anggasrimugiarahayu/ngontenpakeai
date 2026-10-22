@@ -113,8 +113,8 @@ export function InstagramProfileHeader({
                 }}
                 className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm cursor-pointer border ${
                   !hasAppliedFilter
-                    ? "bg-rn-accent text-white hover:bg-orange-600 border-orange-500 ring-2 ring-orange-500/20"
-                    : "bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-900 dark:text-white border-gray-200/80 dark:border-white/10"
+                    ? "bg-[#f97316] text-white hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] border-orange-500 ring-2 ring-orange-500/20"
+                    : "bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200"
                 }`}
               >
                 <SlidersHorizontal className={`w-4 h-4 ${!hasAppliedFilter ? "text-white" : "text-rn-accent"}`} />
@@ -220,8 +220,8 @@ export function InstagramProfileHeader({
                 }}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold ${
                   !hasAppliedFilter
-                    ? "bg-rn-accent text-white"
-                    : "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
+                    ? "bg-[#f97316] text-white hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c]"
+                    : "bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200"
                 }`}
               >
                 <SlidersHorizontal className="w-3.5 h-3.5" />

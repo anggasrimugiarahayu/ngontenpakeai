@@ -102,7 +102,7 @@ export default function ReviewSection({
             <button 
               type="submit"
               disabled={isSubmitting || rating === 0}
-              className="px-6 py-2 bg-rn-accent text-white font-bold rounded-lg hover:bg-orange-600 disabled:opacity-50"
+              className="px-6 py-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold rounded-lg shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all"
             >
               {isSubmitting ? "Menyimpan..." : "Simpan Ulasan"}
             </button>

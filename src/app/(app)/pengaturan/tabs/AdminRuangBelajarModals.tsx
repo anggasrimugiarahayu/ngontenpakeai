@@ -127,7 +127,7 @@ export function AdminRuangBelajarModals({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-rn-accent hover:bg-orange-600 text-white py-2.5 mt-2 rounded-xl text-sm font-bold disabled:opacity-50 transition-colors"
+                className="w-full bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white py-2.5 mt-2 rounded-xl text-sm font-bold shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-colors"
               >
                 Simpan Kategori Baru
               </button>
@@ -275,7 +275,7 @@ export function AdminRuangBelajarModals({
                     setLoading(false);
                   }}
                   disabled={loading}
-                  className="w-full bg-rn-accent text-white font-bold py-2.5 rounded-xl hover:opacity-90 disabled:opacity-50 transition-opacity"
+                  className="w-full bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold py-2.5 rounded-xl shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all"
                 >
                   Simpan Voucher Baru
                 </button>
@@ -621,14 +621,14 @@ export function AdminRuangBelajarModals({
                 <button
                   type="button"
                   onClick={() => setShowAddProduct(false)}
-                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="bg-rn-accent hover:bg-orange-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50 hover:scale-105 transition-transform"
+                  className="bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm shadow-orange-500/20 disabled:opacity-50 hover:scale-105 transition-transform"
                 >
                   Simpan E-Book
                 </button>
@@ -739,7 +739,7 @@ export function AdminRuangBelajarModals({
                     setLoading(false);
                   }}
                   disabled={loading}
-                  className="w-full bg-rn-accent text-white font-bold py-2.5 rounded-xl hover:opacity-90 disabled:opacity-50"
+                  className="w-full bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold py-2.5 rounded-xl shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all"
                 >
                   Simpan Voucher
                 </button>
@@ -1071,14 +1071,14 @@ export function AdminRuangBelajarModals({
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}
-                  className="px-5 py-2.5 rounded-xl text-sm font-bold text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors"
+                  className="px-5 py-2.5 rounded-xl text-sm font-bold bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={loading}
-                  className="bg-rn-accent hover:bg-orange-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50 hover:scale-105 transition-transform"
+                  className="bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm shadow-orange-500/20 disabled:opacity-50 hover:scale-105 transition-transform"
                 >
                   Simpan Perubahan
                 </button>

@@ -285,7 +285,7 @@ export function MessagePayloadBuilder({
                     message: curMsg ? `${curMsg} ${v.token} ` : `${v.token} `,
                   });
                 }}
-                className="px-2.5 py-1 rounded-lg border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 text-xs font-medium text-gray-700 dark:text-gray-300 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
+                className="px-2.5 py-1 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] text-xs font-bold text-gray-700 dark:text-gray-200 transition-colors cursor-pointer shrink-0 whitespace-nowrap"
               >
                 {v.label}
               </button>

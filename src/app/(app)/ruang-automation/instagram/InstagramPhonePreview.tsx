@@ -107,7 +107,7 @@ export function InstagramPhonePreview({
           <button
             type="button"
             onClick={() => setIsRuleModalOpen(false)}
-            className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-white/10 text-xs font-bold text-gray-600 dark:text-gray-400 hover:bg-white dark:hover:bg-white/5 transition-colors cursor-pointer"
+            className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] text-xs font-bold text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
           >
             Batal
           </button>
@@ -115,7 +115,7 @@ export function InstagramPhonePreview({
             type="button"
             onClick={handleSaveRule}
             disabled={isPending || !ruleFormData.name.trim()}
-            className="px-4 py-1.5 rounded-xl bg-gray-900 hover:bg-black dark:bg-white dark:hover:bg-gray-200 text-white dark:text-gray-900 text-xs font-bold shadow-md transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+            className="px-4 py-1.5 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white text-xs font-bold shadow-sm shadow-orange-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
           >
             {isPending ? "Menyimpan..." : editingRule ? "Simpan Perubahan" : "Buat Otomasi"}
           </button>

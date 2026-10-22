@@ -475,7 +475,7 @@ export default function BioBuilderClient() {
             </div>
             
             <div className="flex items-center gap-2">
-              <button onClick={() => setIsDeleteModalOpen(true)} className="px-3 py-2 bg-gray-100 dark:bg-white/10 hover:bg-red-100 dark:hover:bg-red-500/20 text-gray-700 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
+              <button onClick={() => setIsDeleteModalOpen(true)} className="px-3 py-2 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-900/40 text-red-600 dark:text-red-400 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap">
                 <Trash2 className="w-4 h-4" /> <span>Reset Bio</span>
               </button>
             </div>
@@ -494,7 +494,7 @@ export default function BioBuilderClient() {
                 
                 {!suggestions.usernames ? (
                   <div className="text-center py-10">
-                    <button onClick={generateUsernames} disabled={loadingStep !== null} className="px-6 py-3 bg-rn-accent hover:bg-orange-600 text-white font-bold rounded-xl text-sm transition-all shadow-md flex items-center gap-2 mx-auto disabled:opacity-50">
+                    <button onClick={generateUsernames} disabled={loadingStep !== null} className="px-6 py-3 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold rounded-xl text-sm transition-all shadow-sm shadow-orange-500/20 flex items-center gap-2 mx-auto disabled:opacity-50">
                       {loadingStep === "username" ? <Loader2 className="w-4 h-4 animate-spin" /> : <UserCircle className="w-4 h-4" />}
                       Generate Username dengan AI
                     </button>
@@ -503,20 +503,20 @@ export default function BioBuilderClient() {
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-bold text-gray-900 dark:text-white">Rekomendasi AI</span>
-                      <button onClick={generateUsernames} disabled={loadingStep !== null} className="text-xs font-bold text-rn-accent flex items-center gap-1 hover:underline">
+                      <button onClick={generateUsernames} disabled={loadingStep !== null} className="text-xs font-bold text-orange-600 dark:text-orange-400 flex items-center gap-1 hover:underline">
                         <RefreshCw className={`w-3 h-3 ${loadingStep === "username" ? "animate-spin" : ""}`} /> Regenerate
                       </button>
                     </div>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
                       {suggestions.usernames.map((uname, idx) => (
-                        <button key={idx} onClick={() => handleSelectUsername(uname)} className={`p-3.5 rounded-xl border text-left flex items-center justify-between transition-all ${selectedBio.username === uname.toLowerCase().replace(/[^a-z0-9_.]/g, '') ? "border-rn-accent bg-rn-accent/10 shadow-[0_0_0_1px_rgba(249,115,22,1)]" : "border-gray-200 hover:border-rn-accent/50 dark:border-white/10 dark:hover:border-rn-accent/50"}`}>
+                        <button key={idx} onClick={() => handleSelectUsername(uname)} className={`p-3.5 rounded-xl border text-left flex items-center justify-between transition-all ${selectedBio.username === uname.toLowerCase().replace(/[^a-z0-9_.]/g, '') ? "border-orange-500 bg-orange-500/10 dark:border-orange-500/50 shadow-sm" : "border-gray-200 hover:border-orange-500/50 dark:border-[#2C3246] dark:hover:border-orange-500/50 bg-white dark:bg-[#141B31]"}`}>
                           <span className="font-medium text-sm text-gray-800 dark:text-gray-200">@{uname}</span>
-                          {selectedBio.username === uname.toLowerCase().replace(/[^a-z0-9_.]/g, '') && <CheckCircle2 className="w-5 h-5 text-rn-accent" />}
+                          {selectedBio.username === uname.toLowerCase().replace(/[^a-z0-9_.]/g, '') && <CheckCircle2 className="w-5 h-5 text-orange-500" />}
                         </button>
                       ))}
                     </div>
                     
-                    <div className="border-t border-gray-100 dark:border-white/10 pt-6 mb-2">
+                    <div className="border-t border-gray-100 dark:border-[#2C3246] pt-6 mb-2">
                       <label className="text-sm font-bold mb-2 block text-gray-900 dark:text-white">Atau ketik sendiri:</label>
                       <div className="relative">
                         <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 font-bold">@</span>
@@ -546,7 +546,7 @@ export default function BioBuilderClient() {
                 
                 {!suggestions.names ? (
                   <div className="text-center py-10">
-                    <button onClick={() => generateNames(selectedBio.username, selectedBio)} disabled={loadingStep !== null} className="px-6 py-3 bg-rn-accent hover:bg-orange-600 text-white font-bold rounded-xl text-sm transition-all shadow-md flex items-center gap-2 mx-auto disabled:opacity-50">
+                    <button onClick={() => generateNames(selectedBio.username, selectedBio)} disabled={loadingStep !== null} className="px-6 py-3 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold rounded-xl text-sm transition-all shadow-sm shadow-orange-500/20 flex items-center gap-2 mx-auto disabled:opacity-50">
                       {loadingStep === "name" ? <Loader2 className="w-4 h-4 animate-spin" /> : <Type className="w-4 h-4" />}
                       Generate Headline dengan AI
                     </button>
@@ -555,20 +555,20 @@ export default function BioBuilderClient() {
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-bold text-gray-900 dark:text-white">Rekomendasi AI</span>
-                      <button onClick={() => generateNames(selectedBio.username, selectedBio)} disabled={loadingStep !== null} className="text-xs font-bold text-rn-accent flex items-center gap-1 hover:underline">
+                      <button onClick={() => generateNames(selectedBio.username, selectedBio)} disabled={loadingStep !== null} className="text-xs font-bold text-orange-600 dark:text-orange-400 flex items-center gap-1 hover:underline">
                         <RefreshCw className={`w-3 h-3 ${loadingStep === "name" ? "animate-spin" : ""}`} /> Regenerate
                       </button>
                     </div>
                     <div className="grid grid-cols-1 gap-3 mb-6">
                       {suggestions.names.map((pname, idx) => (
-                        <button key={idx} onClick={() => handleSelectName(pname)} className={`p-4 rounded-xl border text-left flex items-center justify-between transition-all ${selectedBio.name === pname ? "border-rn-accent bg-rn-accent/10 shadow-[0_0_0_1px_rgba(249,115,22,1)]" : "border-gray-200 hover:border-rn-accent/50 dark:border-white/10 dark:hover:border-rn-accent/50"}`}>
+                        <button key={idx} onClick={() => handleSelectName(pname)} className={`p-4 rounded-xl border text-left flex items-center justify-between transition-all ${selectedBio.name === pname ? "border-orange-500 bg-orange-500/10 dark:border-orange-500/50 shadow-sm" : "border-gray-200 hover:border-orange-500/50 dark:border-[#2C3246] dark:hover:border-orange-500/50 bg-white dark:bg-[#141B31]"}`}>
                           <span className="font-medium text-sm text-gray-800 dark:text-gray-200">{pname}</span>
-                          {selectedBio.name === pname && <CheckCircle2 className="w-5 h-5 text-rn-accent" />}
+                          {selectedBio.name === pname && <CheckCircle2 className="w-5 h-5 text-orange-500" />}
                         </button>
                       ))}
                     </div>
                     
-                    <div className="border-t border-gray-100 dark:border-white/10 pt-6 mb-2">
+                    <div className="border-t border-gray-100 dark:border-[#2C3246] pt-6 mb-2">
                       <div className="flex justify-between items-center mb-2">
                         <label className="text-sm font-bold text-gray-900 dark:text-white">Atau ketik sendiri:</label>
                         <span className={`text-xs ${selectedBio.name.length > 30 ? "text-red-500 font-bold" : "text-gray-500"}`}>{selectedBio.name.length} / 30</span>
@@ -595,7 +595,7 @@ export default function BioBuilderClient() {
                 
                 {!suggestions.bios ? (
                   <div className="text-center py-10">
-                    <button onClick={() => generateBios(selectedBio.name, selectedBio)} disabled={loadingStep !== null} className="px-6 py-3 bg-rn-accent hover:bg-orange-600 text-white font-bold rounded-xl text-sm transition-all shadow-md flex items-center gap-2 mx-auto disabled:opacity-50">
+                    <button onClick={() => generateBios(selectedBio.name, selectedBio)} disabled={loadingStep !== null} className="px-6 py-3 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold rounded-xl text-sm transition-all shadow-sm shadow-orange-500/20 flex items-center gap-2 mx-auto disabled:opacity-50">
                       {loadingStep === "bio" ? <Loader2 className="w-4 h-4 animate-spin" /> : <AlignLeft className="w-4 h-4" />}
                       Generate Bio dengan AI
                     </button>
@@ -604,7 +604,7 @@ export default function BioBuilderClient() {
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-sm font-bold text-gray-900 dark:text-white">Rekomendasi AI</span>
-                      <button onClick={() => generateBios(selectedBio.name, selectedBio)} disabled={loadingStep !== null} className="text-xs font-bold text-rn-accent flex items-center gap-1 hover:underline">
+                      <button onClick={() => generateBios(selectedBio.name, selectedBio)} disabled={loadingStep !== null} className="text-xs font-bold text-orange-600 dark:text-orange-400 flex items-center gap-1 hover:underline">
                         <RefreshCw className={`w-3 h-3 ${loadingStep === "bio" ? "animate-spin" : ""}`} /> Regenerate
                       </button>
                     </div>
@@ -613,11 +613,11 @@ export default function BioBuilderClient() {
                         const fullStr = `${bioObj.line1}\n${bioObj.line2}\n${bioObj.line3}`;
                         const isSelected = selectedBio.bioText === fullStr;
                         return (
-                          <button key={idx} onClick={() => handleSelectBio(bioObj)} className={`p-4 rounded-xl border text-left flex items-start justify-between gap-4 transition-all ${isSelected ? "border-rn-accent bg-rn-accent/10 shadow-[0_0_0_1px_rgba(249,115,22,1)]" : "border-gray-200 hover:border-rn-accent/50 dark:border-white/10 dark:hover:border-rn-accent/50"}`}>
+                          <button key={idx} onClick={() => handleSelectBio(bioObj)} className={`p-4 rounded-xl border text-left flex items-start justify-between gap-4 transition-all ${isSelected ? "border-orange-500 bg-orange-500/10 dark:border-orange-500/50 shadow-sm" : "border-gray-200 hover:border-orange-500/50 dark:border-[#2C3246] dark:hover:border-orange-500/50 bg-white dark:bg-[#141B31]"}`}>
                             <div className="text-sm whitespace-pre-wrap leading-relaxed text-gray-800 dark:text-gray-200">
                               {fullStr}
                             </div>
-                            {isSelected && <CheckCircle2 className="w-5 h-5 text-rn-accent shrink-0 mt-1" />}
+                            {isSelected && <CheckCircle2 className="w-5 h-5 text-orange-500 shrink-0 mt-1" />}
                           </button>
                         );
                       })}
@@ -645,7 +645,7 @@ export default function BioBuilderClient() {
             {/* Navigation Buttons */}
             <div className="mt-4 pt-6 flex items-center justify-between shrink-0">
               {step > 1 ? (
-                <button onClick={goToPrevStep} className="px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-white/10 dark:text-white dark:hover:bg-white/20">
+                <button onClick={goToPrevStep} className="px-5 py-2.5 rounded-xl font-bold text-sm flex items-center gap-2 transition-colors bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#1f2947]">
                   <ArrowLeft className="w-4 h-4" /> Kembali
                 </button>
               ) : (
@@ -656,7 +656,7 @@ export default function BioBuilderClient() {
                 <button 
                   onClick={goToNextStep} 
                   disabled={(step === 1 && !selectedBio.username) || (step === 2 && !selectedBio.name)}
-                  className="px-6 py-2.5 rounded-xl font-bold text-sm bg-rn-accent hover:bg-orange-600 text-white flex items-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white flex items-center gap-2 transition-colors shadow-sm shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                 >
                   Lanjut <ArrowRight className="w-4 h-4" />
                 </button>
@@ -666,7 +666,7 @@ export default function BioBuilderClient() {
                     autoSave(id, selectedBio, suggestions, avatarUrl);
                     showToast("Bio berhasil disimpan!", "success");
                   }}
-                  className="px-6 py-2.5 rounded-xl font-bold text-sm bg-rn-accent hover:bg-orange-600 text-white flex items-center gap-2 transition-colors shadow-lg shadow-rn-accent/20"
+                  className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white flex items-center gap-2 transition-colors shadow-sm shadow-orange-500/20 cursor-pointer"
                 >
                   Simpan <CheckCircle2 className="w-4 h-4" />
                 </button>
@@ -686,7 +686,7 @@ export default function BioBuilderClient() {
             <div className="w-full max-w-[350px] mt-4">
               <button 
                 onClick={copyProfile}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm bg-rn-accent hover:bg-orange-600 text-white transition-colors shadow-lg shadow-rn-accent/20"
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold text-sm bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white transition-colors shadow-sm shadow-orange-500/20 cursor-pointer"
               >
                 <Copy className="w-4 h-4" /> Copy Profile IG
               </button>
@@ -730,7 +730,7 @@ export default function BioBuilderClient() {
             <div className="flex items-center justify-end gap-3 mt-8">
               <button 
                 onClick={() => setIsDeleteModalOpen(false)}
-                className="px-5 py-2.5 rounded-xl font-bold text-sm transition-colors bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-white/10 dark:text-white dark:hover:bg-white/20"
+                className="px-5 py-2.5 rounded-xl font-bold text-sm transition-colors bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
               >
                 Batal
               </button>

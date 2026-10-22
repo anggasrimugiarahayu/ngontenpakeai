@@ -100,7 +100,7 @@ export function InstagramSortToolbar({
           {/* Similar Button */}
           <button
             type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors cursor-pointer"
           >
             <Users className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
             <span>Similar</span>
@@ -114,7 +114,7 @@ export function InstagramSortToolbar({
             type="button"
             onClick={onExport}
             disabled={totalFiltered === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-white/5 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors cursor-pointer disabled:opacity-50"
+            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors cursor-pointer disabled:opacity-50"
           >
             <Download className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
             <span>Download {totalFiltered}</span>
@@ -125,7 +125,7 @@ export function InstagramSortToolbar({
             type="button"
             onClick={onExport}
             disabled={totalFiltered === 0}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-rn-accent hover:bg-orange-600 text-white font-bold text-xs sm:text-sm shadow-sm transition-all transform active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold text-xs sm:text-sm shadow-sm shadow-orange-500/20 transition-all transform active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
           >
             <Download className="w-4 h-4" />
             <span>Export {totalFiltered}</span>

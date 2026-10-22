@@ -280,7 +280,7 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
 
       {isPlusMenuOpen && (
         <div className="absolute bottom-full left-0 mb-3 w-[260px] md:w-[280px] max-w-[calc(100vw-2rem)] bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-xl rounded-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 py-1.5">
-          <div className="px-4 py-2.5 text-[10px] md:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 border-b border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-white/5 font-heading">Menu Diskusi Cepat</div>
+          <div className="px-4 py-2.5 text-[10px] md:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 border-b border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] font-heading">Menu Diskusi Cepat</div>
           <div className="max-h-60 overflow-y-auto no-scrollbar pt-1">
             {[
               { icon: Lightbulb, label: 'Carikan 5 Ide Ebook', command: 'Carikan saya 5 Ide Ebook spesifik yang sangat relevan dengan audiens Blueprint saya.' },
@@ -293,7 +293,7 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
                   e.preventDefault();
                   setIsPlusMenuOpen(false);
                   generateContent(action.command);
-                }} className="w-full text-left px-4 py-3 md:py-3.5 text-[13px] md:text-sm text-gray-700 dark:text-white font-bold hover:bg-gray-100 dark:hover:bg-white/5 flex items-center gap-3 transition-colors border-b border-gray-100/50 dark:border-white/5 last:border-0">
+                }} className="w-full text-left px-4 py-3 md:py-3.5 text-[13px] md:text-sm text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-100 dark:hover:bg-[#1f2947] hover:text-gray-900 dark:hover:text-white flex items-center gap-3 transition-colors border-b border-gray-100 dark:border-[#2C3246]/50 last:border-0">
                   <Icon size={16} className="text-gray-500" strokeWidth={2.5}/> {action.label}
                 </button>
               );

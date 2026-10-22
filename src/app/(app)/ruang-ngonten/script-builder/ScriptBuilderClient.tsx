@@ -173,7 +173,7 @@ export default function ScriptBuilderClient() {
     <div className="relative shrink-0 flex items-center" ref={scriptMenuRef}>
       <button 
         onClick={(e) => { e.stopPropagation(); setIsScriptMenuOpen(!isScriptMenuOpen); setActiveSubMenu(null); setActiveDeepMenu(null); }} 
-        className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${isScriptMenuOpen && !activeSubMenu?.startsWith('badge_') ? 'bg-gray-100 dark:bg-white/10' : ''}`}
+        className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full border border-gray-200 dark:border-[#2C3246] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#141B31] transition-colors ${isScriptMenuOpen && !activeSubMenu?.startsWith('badge_') ? 'bg-gray-100 dark:bg-[#141B31]' : ''}`}
       >
         <Plus size={18} className={`transition-transform duration-200 ${isScriptMenuOpen && !activeSubMenu?.startsWith('badge_') ? 'rotate-45' : ''}`} />
       </button>
@@ -259,11 +259,11 @@ export default function ScriptBuilderClient() {
       <div className="w-full overflow-x-auto pb-4 custom-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
         <div className="flex flex-nowrap gap-4 w-max md:w-full md:grid md:grid-cols-1 md:gap-6">
           {msg.data.variations.map((ver: any, vidx: number) => (
-            <div key={vidx} className="w-[300px] md:w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm shrink-0 flex flex-col group">
-              <div className="p-4 md:p-5 border-b border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 relative flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+            <div key={vidx} className="w-[300px] md:w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl overflow-hidden shadow-sm shrink-0 flex flex-col group">
+              <div className="p-4 md:p-5 border-b border-gray-100 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128] relative flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                 <div className="flex-1 pr-0 sm:pr-4">
                   <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <span className="px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold bg-rn-accent/10 text-rn-accent border border-rn-accent/20">Var {vidx + 1}</span>
+                    <span className="px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold bg-orange-50 dark:bg-orange-950/30 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/30">Var {vidx + 1}</span>
                     <span className="px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/30">{ver.framework_digunakan || 'Storytelling'}</span>
                   </div>
                   <h4 className="font-bold font-heading text-[15px] md:text-[16px] text-gray-900 dark:text-white leading-tight mb-2">{ver.judul || 'Variasi Naskah'}</h4>
@@ -285,7 +285,7 @@ export default function ScriptBuilderClient() {
                         setIsScheduleModalOpen(true);
                       }, 200);
                     }}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${scriptActionState === `schedule-${msg.id}-${vidx}` ? 'border-rn-accent bg-rn-accent text-white shadow-sm' : 'bg-white dark:bg-[#1A1A1A] border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'}`}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${scriptActionState === `schedule-${msg.id}-${vidx}` ? 'border-orange-500 bg-[#f97316] text-white shadow-sm' : 'bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-200 hover:border-gray-300 dark:hover:border-orange-500/50 hover:bg-gray-50 dark:hover:bg-[#1f2947] hover:text-gray-900 dark:hover:text-white'}`}
                   >
                     <Calendar size={14} /> Jadwalkan
                   </button>
@@ -297,7 +297,7 @@ export default function ScriptBuilderClient() {
                         copyScriptToClipboard(ver, `${msg.id}-${vidx}`);
                       }, 200);
                     }}
-                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${scriptActionState === `copy-${msg.id}-${vidx}` || copiedId === `${msg.id}-${vidx}` ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-600 shadow-sm' : 'bg-white dark:bg-[#1A1A1A] border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'}`}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${scriptActionState === `copy-${msg.id}-${vidx}` || copiedId === `${msg.id}-${vidx}` ? 'border-green-500 bg-green-50 dark:bg-green-950/30 text-green-600 shadow-sm' : 'bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-200 hover:border-gray-300 dark:hover:border-orange-500/50 hover:bg-gray-50 dark:hover:bg-[#1f2947] hover:text-gray-900 dark:hover:text-white'}`}
                   >
                     {copiedId === `${msg.id}-${vidx}` ? <Check size={14} className="text-green-500" /> : <Copy size={14} />} 
                     {copiedId === `${msg.id}-${vidx}` ? 'Tersalin' : 'Salin Skrip'}
@@ -305,7 +305,7 @@ export default function ScriptBuilderClient() {
                 </div>
               </div>
               
-              <div className="p-5 space-y-6 text-[13px] md:text-[14px] text-gray-800 dark:text-gray-300 font-medium bg-white dark:bg-black">
+              <div className="p-5 space-y-6 text-[13px] md:text-[14px] text-gray-800 dark:text-gray-300 font-medium bg-white dark:bg-[#141B31]">
                 {ver.script_sections ? (
                   ver.script_sections.map((sec: any, secIdx: number) => (
                     <div key={secIdx} className="pb-4 border-b border-dashed border-gray-200 dark:border-white/20 last:border-0 last:pb-0">

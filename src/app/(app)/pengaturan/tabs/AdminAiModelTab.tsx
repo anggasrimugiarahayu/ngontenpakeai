@@ -99,7 +99,7 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
                       mutate("pengaturan");
                     }}
                     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
-                      model.isActive ? "bg-rn-accent" : "bg-gray-200 dark:bg-white/10"
+                      model.isActive ? "bg-[#f97316]" : "bg-gray-200 dark:bg-[#141B31] border dark:border-[#2C3246]"
                     }`}
                     role="switch"
                     aria-checked={model.isActive}

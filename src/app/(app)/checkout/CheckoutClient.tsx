@@ -369,7 +369,7 @@ export default function CheckoutClient({
                           e.preventDefault();
                           setIsIncludedModalOpen(true);
                         }}
-                        className="w-full flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-white/10 bg-green-50/50 dark:bg-green-900/10 hover:bg-green-100/50 dark:hover:bg-green-900/20 transition-colors"
+                        className="w-full flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#2C3246] bg-green-50/50 dark:bg-green-900/10 hover:bg-green-100/50 dark:hover:bg-green-900/20 transition-colors"
                       >
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-green-500" />
@@ -384,7 +384,7 @@ export default function CheckoutClient({
                     const addon = availableAddons.find((a) => a.id === addonId);
                     if (!addon) return null;
                     return (
-                      <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/10">
+                      <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#2C3246] bg-gray-50/50 dark:bg-black/10">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-white dark:bg-[#141B31] rounded-lg p-0.5 border border-gray-100 dark:border-[#2C3246] shrink-0 flex items-center justify-center overflow-hidden">
                             {addon.coverUrl ? <img src={addon.coverUrl} className="w-full h-full object-contain" alt="" /> : <CreditCard className="w-4 h-4 text-gray-300" />}
@@ -397,7 +397,7 @@ export default function CheckoutClient({
                         <button
                           onClick={() => setSelectedAddons((prev) => prev.filter((id) => id !== addon.id))}
                           disabled={isPending}
-                          className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20"
+                          className="shrink-0 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 dark:bg-red-950/30 dark:hover:bg-red-900/40 dark:border-red-900/40 dark:text-red-400 font-bold"
                         >
                           Batal
                         </button>
@@ -408,7 +408,7 @@ export default function CheckoutClient({
                   <button
                     onClick={() => setShowAddonModal(true)}
                     disabled={isPending}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-rn-accent/50 text-rn-accent text-sm font-bold hover:bg-rn-accent/5 dark:hover:bg-rn-accent/10 transition-colors disabled:opacity-50"
+                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-orange-500/50 text-orange-600 dark:text-orange-400 text-sm font-bold hover:bg-orange-500/5 dark:hover:bg-orange-500/10 transition-colors disabled:opacity-50"
                   >
                     + Add on
                   </button>
@@ -499,7 +499,7 @@ export default function CheckoutClient({
             <button
               onClick={() => setShowVoucherModal(true)}
               disabled={isPending}
-              className="w-full flex items-center justify-center gap-2 py-3 mb-4 rounded-xl border border-dashed border-rn-accent/50 text-rn-accent text-sm font-bold hover:bg-rn-accent/5 dark:hover:bg-rn-accent/10 transition-colors disabled:opacity-50"
+              className="w-full flex items-center justify-center gap-2 py-3 mb-4 rounded-xl border border-dashed border-orange-500/50 text-orange-600 dark:text-orange-400 text-sm font-bold hover:bg-orange-500/5 dark:hover:bg-orange-500/10 transition-colors disabled:opacity-50"
             >
               + Add Voucher
             </button>
@@ -591,7 +591,7 @@ export default function CheckoutClient({
                 <button
                   onClick={handleCancelPayment}
                   disabled={isCancelLoading}
-                  className="flex-1 text-red-500 bg-red-50 hover:bg-red-100 dark:bg-red-500/10 dark:hover:bg-red-500/20 font-bold py-3.5 px-2 rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="flex-1 text-red-600 dark:text-red-400 bg-red-50 hover:bg-red-100 dark:bg-red-950/30 dark:hover:bg-red-900/40 border border-red-200 dark:border-red-900/40 font-bold py-3.5 px-2 rounded-xl transition-all flex items-center justify-center gap-2 shadow-xs"
                 >
                   {isCancelLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <X className="w-5 h-5" />}
                   <span className="text-[15px] sm:text-base">Cancel Order</span>
@@ -613,7 +613,7 @@ export default function CheckoutClient({
                     openSnap(currentToken, currentOrderId);
                   }}
                   disabled={isCancelLoading}
-                  className="flex-1 text-white font-bold py-3.5 px-2 rounded-xl transition-all flex items-center justify-center gap-2 shadow-md bg-rn-accent hover:bg-rn-accent/90"
+                  className="flex-1 text-white font-bold py-3.5 px-2 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm shadow-orange-500/20 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c]"
                 >
                   <span className="text-[15px] sm:text-base">Continue Payment</span>
                 </button>
@@ -631,7 +631,7 @@ export default function CheckoutClient({
                       : handlePay
                   }
                   disabled={loading || isCancelLoading}
-                  className="w-full text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-md bg-rn-accent hover:bg-rn-accent/90"
+                  className="w-full text-white font-bold py-3.5 rounded-xl transition-all flex items-center justify-center gap-2 shadow-sm shadow-orange-500/20 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c]"
                 >
                   {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
                   {loading ? "Processing..." : `Buy Now - IDR ${formatRupiah(grossAmount)}`}

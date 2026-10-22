@@ -356,21 +356,21 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <div className="relative">
-              <button onClick={() => setIsExportOpen(!isExportOpen)} className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm shrink-0 transition-all bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-white/20">
+              <button onClick={() => setIsExportOpen(!isExportOpen)} className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm shrink-0 transition-all bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200">
                 <Download className="w-4 h-4" /> Export
               </button>
               {isExportOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 py-2 z-50">
-                  <button onClick={() => { exportJSON(); setIsExportOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
+                <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#141B31] rounded-xl shadow-lg border border-gray-100 dark:border-[#2C3246] py-2 z-50">
+                  <button onClick={() => { exportJSON(); setIsExportOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#1f2947] flex items-center gap-2">
                     <FileJson className="w-4 h-4" /> Export JSON
                   </button>
-                  <button onClick={() => { exportTXT(); setIsExportOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 flex items-center gap-2">
+                  <button onClick={() => { exportTXT(); setIsExportOpen(false); }} className="w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-[#1f2947] flex items-center gap-2">
                     <FileText className="w-4 h-4" /> Export TXT
                   </button>
                 </div>
               )}
             </div>
-            <button onClick={(e) => { e.preventDefault(); saveUpdatesToDB(); }} disabled={isSaving} className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm shrink-0 transition-all bg-orange-500 text-white hover:bg-orange-600 shadow-sm disabled:opacity-50">
+            <button onClick={(e) => { e.preventDefault(); saveUpdatesToDB(); }} disabled={isSaving} className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm shrink-0 transition-all bg-[#f97316] text-white hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] shadow-sm shadow-orange-500/20 disabled:opacity-50">
                 {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Simpan
               </button>
           </div>
@@ -482,10 +482,10 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
               
               <div className="mt-8 flex flex-col items-center pb-4">
                 <div className="flex flex-col sm:flex-row items-center gap-4">
-                  <button onClick={handleBuatUlang} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm shrink-0 transition-all bg-gray-100 text-gray-700 dark:bg-white/10 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-white/20 shadow-sm w-full sm:w-auto">
+                  <button onClick={handleBuatUlang} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm shrink-0 transition-all bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 shadow-sm w-full sm:w-auto">
                     <RefreshCw className="w-4 h-4" /> Buat Ulang Blueprint
                   </button>
-                  <button onClick={handleDeleteBlueprint} disabled={isSaving} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm shrink-0 transition-all bg-red-100 text-red-600 dark:bg-red-500/10 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-500/20 shadow-sm w-full sm:w-auto disabled:opacity-50">
+                  <button onClick={handleDeleteBlueprint} disabled={isSaving} className="flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl font-bold text-sm shrink-0 transition-all bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 dark:bg-red-950/30 dark:hover:bg-red-900/40 dark:border-red-900/40 dark:text-red-400 shadow-sm w-full sm:w-auto disabled:opacity-50">
                     <Trash2 className="w-4 h-4" /> Hapus Blueprint
                   </button>
                 </div>
@@ -530,7 +530,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
               <div className="flex items-center justify-end gap-3 mt-8">
                 <button 
                   onClick={() => setIsDeleteModalOpen(false)}
-                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors ${isDark ? "bg-white/10 text-white hover:bg-white/20" : "bg-gray-100 text-gray-700 hover:bg-gray-200"}`}
+                  className={`px-5 py-2.5 rounded-xl font-bold text-sm transition-colors ${isDark ? "bg-[#141B31] hover:bg-[#1f2947] border border-[#2C3246] text-gray-200" : "bg-white hover:bg-gray-50 border border-gray-200 text-gray-700"}`}
                 >
                   Batal
                 </button>
@@ -585,7 +585,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
             variant="subtle"
             containerClassName="w-44 md:w-52 shrink-0"
           />
-          <button onClick={() => fileInputRef.current?.click()} className="px-3 py-2 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 hover:bg-gray-100 dark:hover:bg-white/10 text-sm font-bold text-gray-700 dark:text-gray-300 rounded-xl transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer">
+          <button onClick={() => fileInputRef.current?.click()} className="px-3 py-2 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 text-sm font-bold rounded-xl transition-colors flex items-center gap-2 shrink-0 whitespace-nowrap cursor-pointer">
             <Upload className="w-4 h-4" /> Import JSON
           </button>
         </div>
@@ -812,14 +812,14 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
             type="button"
             onClick={handlePrev}
             disabled={step === 1 || isSubmitting}
-            className="px-6 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-30 transition-colors"
+            className="px-6 py-2.5 rounded-xl text-sm font-bold text-gray-500 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-[#1f2947] dark:hover:text-white disabled:opacity-30 transition-colors"
           >
             Kembali
           </button>
           <button
             type="submit"
             disabled={isSubmitting}
-            className="px-8 py-2.5 rounded-xl text-sm font-bold text-white bg-orange-600 hover:bg-orange-700 disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+            className="px-8 py-2.5 rounded-xl text-sm font-bold text-white bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
           >
             {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
             {step === 4 ? (isSubmitting ? "Generating..." : "Generate") : "Lanjut"}

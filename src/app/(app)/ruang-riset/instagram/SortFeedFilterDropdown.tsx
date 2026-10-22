@@ -100,7 +100,7 @@ export function SortFeedFilterDropdown({
         className="absolute top-full right-0 mt-2 z-50 w-80 sm:w-88 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl p-4 sm:p-5 text-gray-900 dark:text-white animate-in zoom-in-95 fade-in duration-150"
       >
         {/* Header Dropdown */}
-        <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/10">
+        <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#2C3246]">
           <div className="flex items-center gap-2">
             <div className="w-7 h-7 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center font-bold text-xs">
               <SlidersHorizontal className="w-4 h-4" />
@@ -113,7 +113,7 @@ export function SortFeedFilterDropdown({
               e.stopPropagation();
               onClose();
             }}
-            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer"
+            className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1f2947] text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -126,7 +126,7 @@ export function SortFeedFilterDropdown({
           </p>
 
           {/* Tab Switcher: [ ⊞ Posts ] | [ 📅 Date ] */}
-          <div className="grid grid-cols-2 gap-1 p-1 bg-gray-100 dark:bg-white/5 rounded-xl border border-gray-200/60 dark:border-white/5">
+          <div className="grid grid-cols-2 gap-1 p-1 bg-gray-100 dark:bg-[#0F172A] rounded-xl border border-gray-200/60 dark:border-[#2C3246]">
             <button
               type="button"
               onClick={(e) => {
@@ -136,7 +136,7 @@ export function SortFeedFilterDropdown({
               }}
               className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 filterMode === "posts"
-                  ? "bg-white dark:bg-[#202023] text-gray-900 dark:text-white shadow-xs"
+                  ? "bg-white dark:bg-[#141B31] text-gray-900 dark:text-white shadow-xs"
                   : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
               }`}
             >
@@ -152,7 +152,7 @@ export function SortFeedFilterDropdown({
               }}
               className={`flex items-center justify-center gap-1.5 py-1.5 px-3 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                 filterMode === "date"
-                  ? "bg-white dark:bg-[#202023] text-gray-900 dark:text-white shadow-xs"
+                  ? "bg-white dark:bg-[#141B31] text-gray-900 dark:text-white shadow-xs"
                   : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
               }`}
             >
@@ -169,7 +169,7 @@ export function SortFeedFilterDropdown({
                 e.stopPropagation();
                 setIsDropdownOpen((prev) => !prev);
               }}
-              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-orange-500/80 ring-2 ring-orange-500/20 bg-white dark:bg-[#202023] text-xs font-semibold text-gray-900 dark:text-white cursor-pointer"
+              className="w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl border border-orange-500/80 ring-2 ring-orange-500/20 bg-white dark:bg-[#141B31] text-xs font-semibold text-gray-900 dark:text-white cursor-pointer"
             >
               <span>{currentSelectLabel}</span>
               <ChevronDown
@@ -181,7 +181,7 @@ export function SortFeedFilterDropdown({
 
             {/* Expanded Dropdown List */}
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-[#202023] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-100">
+              <div className="absolute top-full left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-xl overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-100">
                 {filterMode === "posts"
                   ? postLimitOptions.map((opt) => (
                       <button
@@ -192,7 +192,7 @@ export function SortFeedFilterDropdown({
                           setPostLimit(opt.value);
                           setIsDropdownOpen(false);
                         }}
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-50 dark:border-white/5 last:border-0"
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-medium hover:bg-gray-50 dark:hover:bg-[#1f2947] transition-colors cursor-pointer border-b border-gray-50 dark:border-[#2C3246]/50 last:border-0"
                       >
                         <span
                           className={
@@ -217,7 +217,7 @@ export function SortFeedFilterDropdown({
                           setDateFilter(opt.value);
                           setIsDropdownOpen(false);
                         }}
-                        className="w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-medium hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer border-b border-gray-50 dark:border-white/5 last:border-0"
+                        className="w-full flex items-center justify-between px-3.5 py-2.5 text-xs font-medium hover:bg-gray-50 dark:hover:bg-[#1f2947] transition-colors cursor-pointer border-b border-gray-50 dark:border-[#2C3246]/50 last:border-0"
                       >
                         <span
                           className={
@@ -239,7 +239,7 @@ export function SortFeedFilterDropdown({
         </div>
 
         {/* Section 2: Sort by (Gambar 2 & 3) */}
-        <div className="pt-3 border-t border-gray-100 dark:border-white/10 space-y-2">
+        <div className="pt-3 border-t border-gray-100 dark:border-[#2C3246] space-y-2">
           <p className="text-xs font-semibold text-gray-500 dark:text-gray-400">
             Sort by
           </p>
@@ -255,7 +255,7 @@ export function SortFeedFilterDropdown({
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                 sortOption === "outlier"
                   ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
               }`}
             >
               <div className="flex items-center gap-2.5">
@@ -275,7 +275,7 @@ export function SortFeedFilterDropdown({
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                 sortOption === "likes"
                   ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
               }`}
             >
               <div className="flex items-center gap-2.5">
@@ -295,7 +295,7 @@ export function SortFeedFilterDropdown({
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                 sortOption === "views"
                   ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
               }`}
             >
               <div className="flex items-center gap-2.5">
@@ -315,7 +315,7 @@ export function SortFeedFilterDropdown({
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                 sortOption === "comments"
                   ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
               }`}
             >
               <div className="flex items-center gap-2.5">
@@ -335,7 +335,7 @@ export function SortFeedFilterDropdown({
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                 sortOption === "newest"
                   ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
               }`}
             >
               <div className="flex items-center gap-2.5">
@@ -355,7 +355,7 @@ export function SortFeedFilterDropdown({
               className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                 sortOption === "oldest"
                   ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
               }`}
             >
               <div className="flex items-center gap-2.5">
@@ -368,7 +368,7 @@ export function SortFeedFilterDropdown({
         </div>
 
         {/* Footer / Reset & Apply Action */}
-        <div className="mt-4 pt-3 border-t border-gray-100 dark:border-white/10 flex items-center justify-between gap-3">
+        <div className="mt-4 pt-3 border-t border-gray-100 dark:border-[#2C3246] flex items-center justify-between gap-3">
           <button
             type="button"
             onClick={(e) => {
@@ -382,7 +382,7 @@ export function SortFeedFilterDropdown({
           <button
             type="button"
             onClick={handleApply}
-            className="px-4 py-2 rounded-xl bg-rn-accent hover:bg-orange-600 text-white font-bold text-xs shadow-sm transition-all cursor-pointer transform active:scale-95"
+            className="px-4 py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold text-xs shadow-sm shadow-orange-500/20 transition-all cursor-pointer transform active:scale-95"
           >
             Terapkan & Tampilkan Feed
           </button>

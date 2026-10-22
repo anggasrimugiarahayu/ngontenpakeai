@@ -233,10 +233,10 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
           </div>
           
           <div className="sticky bottom-0 bg-gray-50 dark:bg-[#141B31] p-5 border-t border-gray-200 dark:border-[#2C3246] flex justify-end gap-3">
-             <button onClick={() => setEditingPackage(null)} className="px-5 py-2.5 rounded-xl font-bold text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
+             <button onClick={() => setEditingPackage(null)} className="px-5 py-2.5 rounded-xl font-bold text-sm text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
                Batal
              </button>
-             <button onClick={async () => { await handleSaveAll(); setEditingPackage(null); }} disabled={loading} className="flex items-center gap-2 bg-rn-accent text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-rn-accent/20 hover:bg-orange-600 transition-colors disabled:opacity-50">
+             <button onClick={async () => { await handleSaveAll(); setEditingPackage(null); }} disabled={loading} className="flex items-center gap-2 bg-[#f97316] text-white px-6 py-2.5 rounded-xl font-bold text-sm shadow-sm shadow-orange-500/20 hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] transition-colors disabled:opacity-50">
                {loading ? <LoadingSpinnerSmall /> : <Save className="w-4 h-4" />}
                Simpan Perubahan
              </button>
@@ -278,7 +278,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
           ))}
         </ul>
 
-        <button className={`w-full py-2.5 rounded-xl font-black text-xs transition-all duration-300 ${isSpecial ? 'bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20' : 'bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-900 dark:text-white'}`}>
+        <button className={`w-full py-2.5 rounded-xl font-black text-xs transition-all duration-300 ${isSpecial ? 'bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white shadow-sm shadow-orange-500/20' : 'bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200'}`}>
           {pkg.name.includes("Basic") || pkg.name.includes("Book") || pkg.name.includes("Ebook")
             ? "Pilih Paket Ebook"
             : pkg.name.includes("Auto")
@@ -343,7 +343,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
               onClick={() => setEditingPackage("PRO_PLUS")}
               title="Paket Lengkap"
               aria-label="Paket Lengkap"
-              className="flex items-center justify-center h-11 bg-rn-accent hover:bg-orange-600 text-white rounded-xl transition-all active:scale-95 shadow-md shadow-rn-accent/20"
+              className="flex items-center justify-center h-11 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white rounded-xl transition-all active:scale-95 shadow-sm shadow-orange-500/20"
             >
               <Gem className="w-5 h-5" />
             </button>
@@ -374,7 +374,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
             </button>
             <button
               onClick={() => setEditingPackage("PRO_PLUS")}
-              className="flex items-center justify-center gap-2 px-3.5 py-2.5 bg-rn-accent hover:bg-orange-600 text-white rounded-xl font-bold text-xs md:text-sm transition-all shadow-md shadow-rn-accent/20 hover:-translate-y-0.5 whitespace-nowrap"
+              className="flex items-center justify-center gap-2 px-3.5 py-2.5 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white rounded-xl font-bold text-xs md:text-sm transition-all shadow-sm shadow-orange-500/20 hover:-translate-y-0.5 whitespace-nowrap"
             >
               <Gem className="w-4 h-4 shrink-0" />
               <span>Paket Lengkap</span>

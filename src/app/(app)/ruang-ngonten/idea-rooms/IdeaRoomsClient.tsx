@@ -96,14 +96,14 @@ export default function IdeaRoomsClient() {
     <div className="relative shrink-0 flex items-center">
       <button 
         onClick={() => setIsActionsMenuOpen(!isActionsMenuOpen)}
-        className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${isActionsMenuOpen ? 'bg-gray-100 dark:bg-white/10' : ''}`}
+        className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947] transition-colors ${isActionsMenuOpen ? 'bg-gray-100 dark:bg-[#1f2947]' : ''}`}
       >
         <Plus size={18} className={`transition-transform duration-200 ${isActionsMenuOpen ? 'rotate-45' : ''}`} />
       </button>
 
       {isActionsMenuOpen && (
-        <div className="absolute bottom-full left-0 mb-2 w-[240px] max-w-[calc(100vw-2rem)] md:w-64 bg-white dark:bg-black border border-gray-300 dark:border-white/20 hover:border-gray-900 dark:hover:border-white transition-all rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 py-1">
-          <div className="px-4 py-2 text-[10px] md:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 border-b border-gray-200 dark:border-white/20 bg-gray-50 dark:bg-white/5 font-heading">Topik Diskusi Cepat</div>
+        <div className="absolute bottom-full left-0 mb-2 w-[240px] max-w-[calc(100vw-2rem)] md:w-64 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] transition-all rounded-xl shadow-lg overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 py-1">
+          <div className="px-4 py-2 text-[10px] md:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 border-b border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] font-heading">Topik Diskusi Cepat</div>
           <div className="max-h-60 overflow-y-auto custom-table-scrollbar pt-1">
             {QUICK_ACTIONS.map((action, i) => {
               const Icon = action.icon;
@@ -111,7 +111,7 @@ export default function IdeaRoomsClient() {
                 <button 
                   key={i} 
                   onClick={() => handleActionClick(action.label)} 
-                  className="w-full text-left px-4 py-2 md:py-2.5 text-[12px] md:text-xs text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white flex items-center gap-3 transition-colors border-b border-gray-100/50 dark:border-white/10 last:border-0"
+                  className="w-full text-left px-4 py-2 md:py-2.5 text-[12px] md:text-xs text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-100 dark:hover:bg-[#1f2947] hover:text-gray-900 dark:hover:text-white flex items-center gap-3 transition-colors border-b border-gray-100 dark:border-[#2C3246]/50 last:border-0"
                 >
                   <Icon size={14} className="md:w-4 md:h-4 text-gray-600 dark:text-gray-400" strokeWidth={2.5}/> {action.label}
                 </button>
@@ -133,14 +133,14 @@ export default function IdeaRoomsClient() {
             const isMofu = ide.tahap_funnel?.toUpperCase().includes('MOFU');
             const isBofu = ide.tahap_funnel?.toUpperCase().includes('BOFU');
             
-            let funnelClass = "bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-white/20";
+            let funnelClass = "bg-gray-100 dark:bg-[#141B31] text-gray-700 dark:text-gray-300 border-gray-300 dark:border-[#2C3246]";
             if (isTofu) funnelClass = "bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-900/50";
             else if (isMofu) funnelClass = "bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 border-yellow-200 dark:border-yellow-900/50";
             else if (isBofu) funnelClass = "bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-400 border-orange-200 dark:border-orange-900/50";
 
             return (
-              <div key={i} className="w-full bg-white dark:bg-[#111] border border-gray-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-sm shrink-0 flex flex-col group">
-                <div className="p-4 md:p-5 border-b border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-white/5 relative flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+              <div key={i} className="w-full bg-white dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] rounded-2xl overflow-hidden shadow-sm shrink-0 flex flex-col group">
+                <div className="p-4 md:p-5 border-b border-gray-100 dark:border-[#2C3246] bg-gray-50 dark:bg-[#141B31] relative flex flex-col sm:flex-row sm:items-start justify-between gap-4">
                   <div className="flex-1 pr-0 sm:pr-4">
                     <div className="flex flex-wrap items-center gap-2 mb-3">
                       <span className={`px-2.5 py-1 rounded-md text-[10px] md:text-xs font-bold border uppercase tracking-wider ${funnelClass}`}>
@@ -161,7 +161,7 @@ export default function IdeaRoomsClient() {
                         const textToCopy = `[ FUNNELING ]\n${ide.tahap_funnel || 'IDEA'}\n\n[ FORMAT ]\n${ide.template_ide_digunakan || '-'}\n\n[ JUDUL IDE ]\n${ide.nama_ide}\n\n[ UNIQUE ANGLE ]\n${ide.angle}\n\n[ MASALAH AUDIENS ]\n${ide.masalah_audiens}\n\n[ INSIGHT ]\n${ide.insight_utama}\n\n[ DREAM OUTCOME ]\n${ide.dream_outcome || '-'}`;
                         copyToClipboard(textToCopy, `${msg.id}-${i}`);
                       }}
-                      className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${copiedId === `${msg.id}-${i}` ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-600 shadow-sm' : 'bg-white dark:bg-[#1A1A1A] border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:border-gray-300 dark:hover:border-white/30 hover:bg-gray-50 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white'}`}
+                      className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-all text-[11px] md:text-xs border shrink-0 ${copiedId === `${msg.id}-${i}` ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-600 shadow-sm' : 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200'}`}
                     >
                       {copiedId === `${msg.id}-${i}` ? <Check size={14} className="text-green-500" /> : <Copy size={14} />} 
                       {copiedId === `${msg.id}-${i}` ? 'Tersalin' : 'Salin Ide'}
@@ -169,12 +169,12 @@ export default function IdeaRoomsClient() {
                   </div>
                 </div>
                 
-                <div className="p-5 space-y-4 text-[13px] md:text-[14px] text-gray-800 dark:text-gray-300 font-medium bg-white dark:bg-black">
-                  <div className="pb-4 border-b border-dashed border-gray-200 dark:border-white/20">
+                <div className="p-5 space-y-4 text-[13px] md:text-[14px] text-gray-800 dark:text-gray-300 font-medium bg-white dark:bg-[#0F172A]">
+                  <div className="pb-4 border-b border-dashed border-gray-200 dark:border-[#2C3246]">
                     <h5 className="text-[10px] md:text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 font-bold mb-1.5">Unique Angle</h5>
                     <p className="leading-relaxed">{ide.angle}</p>
                   </div>
-                  <div className="pb-4 border-b border-dashed border-gray-200 dark:border-white/20">
+                  <div className="pb-4 border-b border-dashed border-gray-200 dark:border-[#2C3246]">
                     <h5 className="text-[10px] md:text-xs uppercase tracking-widest text-gray-400 dark:text-gray-500 font-bold mb-1.5">Masalah & Insight</h5>
                     <ul className="list-disc pl-4 space-y-1 marker:text-gray-400">
                       <li><strong className="text-gray-900 dark:text-white font-bold">Masalah:</strong> {ide.masalah_audiens}</li>
