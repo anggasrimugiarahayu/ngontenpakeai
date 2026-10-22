@@ -2,7 +2,8 @@
 import toast from "react-hot-toast";
 import { useState } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { MessageSquare, Mic, Loader2 } from "lucide-react";
+import Button from "@/components/ui/Button";
+import { MessageSquare, Mic } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
@@ -77,9 +78,9 @@ export default function FeedbackPage() {
           Masukan kamu sangat berarti untuk mengembangkan ruangcreativemuslim.
         </p>
         <Link href="/">
-          <button className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-colors">
+          <Button variant="primary" size="lg">
             Kembali ke Beranda
-          </button>
+          </Button>
         </Link>
       </div>
     );
@@ -140,13 +141,14 @@ export default function FeedbackPage() {
             </div>
             
             <div className="flex justify-end pt-4">
-              <button
+              <Button
                 type="submit"
                 disabled={!improveText.trim()}
-                className="px-6 py-2.5 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] disabled:opacity-50 text-white font-bold rounded-xl transition-all shadow-sm shadow-orange-500/20 cursor-pointer"
+                variant="primary"
+                size="md"
               >
                 Lanjut
-              </button>
+              </Button>
             </div>
           </div>
         )}
@@ -175,14 +177,16 @@ export default function FeedbackPage() {
             <div className="flex justify-between items-center pt-4">
               <BackButton onClick={() => setStep(1)} />
               
-              <button
+              <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-6 py-2.5 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] disabled:opacity-50 text-white font-bold rounded-xl transition-all flex items-center gap-2 shadow-sm shadow-orange-500/20 cursor-pointer"
+                isLoading={isSubmitting}
+                loadingText="Mengirim..."
+                variant="primary"
+                size="md"
               >
-                {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
                 Kirim Feedback
-              </button>
+              </Button>
             </div>
           </div>
         )}

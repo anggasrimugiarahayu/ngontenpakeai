@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
-import { Mail, Send, Loader2, CheckCircle, X } from "lucide-react";
+import Button from "@/components/ui/Button";
+import { Mail, Send, CheckCircle, X } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 export default function BantuanPage() {
@@ -72,7 +73,7 @@ export default function BantuanPage() {
         </div>
       )}
 
-      <h1 className="text-3xl md:text-5xl font-black font-heading mb-2 tracking-tight transition-colors duration-300 text-gray-900 dark:text-white">
+      <h1 className="text-2xl md:text-3xl font-bold font-heading mb-2 tracking-tight transition-colors duration-300 text-gray-900 dark:text-white">
         Bantuan & Support
       </h1>
       <p className="text-sm md:text-base mb-8 max-w-lg mx-auto transition-colors duration-300 text-gray-600 dark:text-gray-400">
@@ -150,27 +151,17 @@ export default function BantuanPage() {
               <p className="text-red-500 text-xs font-bold text-center mt-2">{errorMsg}</p>
             )}
 
-            <button
+            <Button
               type="submit"
-              disabled={isSubmitting}
-              className={`w-full mt-4 flex items-center justify-center gap-2 font-bold py-3 px-6 rounded-xl transition-all shadow-sm ${
-                isSubmitting 
-                  ? "bg-gray-500/50 text-gray-300 cursor-not-allowed" 
-                  : "bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white shadow-orange-500/20 active:scale-[0.99] cursor-pointer"
-              }`}
+              variant="primary"
+              size="lg"
+              isLoading={isSubmitting}
+              loadingText="Mengirim..."
+              icon={<Send className="w-5 h-5" />}
+              className="w-full mt-4"
             >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  Mengirim...
-                </>
-              ) : (
-                <>
-                  <Send className="w-5 h-5" />
-                  Kirim Pesan
-                </>
-              )}
-            </button>
+              Kirim Pesan
+            </Button>
           </form>
         )}
       </div>
