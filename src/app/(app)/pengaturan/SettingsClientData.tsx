@@ -13,6 +13,7 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
   const features = userData?.features || [];
   const usages = userData?.usages || [];
   const ownedEbooks = userData?.ownedEbooks || [];
+  const hasBook = userData?.hasBook || false;
   const proExpiredAt = userData?.proExpiredAt ? new Date(userData.proExpiredAt) : null;
   const proAutomationExpiredAt = userData?.proAutomationExpiredAt ? new Date(userData.proAutomationExpiredAt) : null;
 
@@ -40,14 +41,19 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
               </span>
             )}
           </div>
-          {isPro && (proExpiredAt || proAutomationExpiredAt) ? (
+          {isPro && (hasBook || (proExpiredAt && proExpiredAt > new Date()) || (proAutomationExpiredAt && proAutomationExpiredAt > new Date())) ? (
             <div className="space-y-0.5 mt-1">
-              {proExpiredAt && (
+              {hasBook && (
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  • Sistem Tools: Berlaku hingga {format(proExpiredAt, 'd MMMM yyyy', { locale: id })}
+                  • Ruang Belajar (E-Book): Akses Selamanya
                 </p>
               )}
-              {proAutomationExpiredAt && (
+              {proExpiredAt && proExpiredAt > new Date() && (
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  • Ruang Ngonten & Riset: Berlaku hingga {format(proExpiredAt, 'd MMMM yyyy', { locale: id })}
+                </p>
+              )}
+              {proAutomationExpiredAt && proAutomationExpiredAt > new Date() && (
                 <p className="text-xs text-gray-500 dark:text-gray-400">
                   • Ruang Automation: Berlaku hingga {format(proAutomationExpiredAt, 'd MMMM yyyy', { locale: id })}
                 </p>

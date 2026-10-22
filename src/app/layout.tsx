@@ -52,10 +52,10 @@ export default async function RootLayout({
           (o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS"
         ) || isAdmin;
         
+        const activePackagesCount = [hasBook, hasTools, hasAutomation].filter(Boolean).length;
+
         if (isAdmin) badgeName = "ADMIN";
-        else if (hasBook && hasTools && hasAutomation) badgeName = "PRO PLUS";
-        else if (hasBook && hasTools) badgeName = "PRO PLUS";
-        else if (hasTools && hasAutomation) badgeName = "PRO PLUS";
+        else if (activePackagesCount >= 2) badgeName = "PRO PLUS";
         else if (hasAutomation) badgeName = "PRO AUTO";
         else if (hasTools) badgeName = "PRO TOOLS";
         else if (hasBook) badgeName = "PRO BOOK";

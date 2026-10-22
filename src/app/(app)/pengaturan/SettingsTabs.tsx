@@ -25,7 +25,8 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
   
   const hasBook = orders.some((o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS");
   const hasTools = dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();
-  const isFullyPro = isAdmin || (hasBook && hasTools);
+  const hasAutomation = (dbUser as any)?.proAutomationExpiredAt && new Date((dbUser as any).proAutomationExpiredAt) > new Date();
+  const isFullyPro = isAdmin || (hasBook && hasTools && hasAutomation);
 
 
   const adminTabs = [
@@ -110,13 +111,24 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
                       const expiredStr = format(expiredAt, "d MMM yyyy", { locale: id });
                       dateInfo = `${createdStr} – ${expiredStr}`;
                       isActive = new Date() < expiredAt;
+                    } else if (order.orderType === "PRO_AUTOMATION") {
+                      title = "PRO AUTOMATION";
+                      const expiredAt = new Date(createdAt);
+                      expiredAt.setDate(expiredAt.getDate() + 30);
+                      const expiredStr = format(expiredAt, "d MMM yyyy", { locale: id });
+                      dateInfo = `${createdStr} – ${expiredStr}`;
+                      isActive = new Date() < expiredAt;
                     } else if (order.orderType === "PRO_PLUS") {
                       title = "PRO PLUS";
                       const expiredAt = new Date(createdAt);
                       expiredAt.setDate(expiredAt.getDate() + 30);
                       const expiredStr = format(expiredAt, "d MMM yyyy", { locale: id });
-                      dateInfo = `${createdStr} – ${expiredStr} (Tools), Ebook Selamanya`;
+                      dateInfo = `${createdStr} – ${expiredStr} (Tools & Auto), Ebook Selamanya`;
                       isActive = true; 
+                    } else if (order.orderType === "EBOOK") {
+                      title = order.product?.title || "E-Book";
+                      dateInfo = `${createdStr} – Selamanya`;
+                      isActive = true;
                     }
 
                     return (

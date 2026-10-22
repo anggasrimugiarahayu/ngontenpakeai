@@ -34,16 +34,21 @@ export async function getPengaturanDataAction() {
     isAdmin ? getCachedAdminConfig() : Promise.resolve(null)
   ]);
 
-  const hasTools = dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();
-  const isPro = isAdmin || hasTools || false;
+  const hasTools = !!(dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date());
+  const hasAutomation = !!((dbUser as any)?.proAutomationExpiredAt && new Date((dbUser as any).proAutomationExpiredAt) > new Date());
+  const hasBook = userOrders.some((o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS");
+  const isPro = isAdmin || hasTools || hasAutomation || hasBook || false;
   
   const ownedEbooks = userOrders
-    .filter((o: any) => o.product && o.orderType !== 'PRO_TOOLS')
+    .filter((o: any) => o.product && o.orderType !== 'PRO_TOOLS' && o.orderType !== 'PRO_AUTOMATION')
     .map((o: any) => o.product.title);
 
   const userData = { 
     features, 
     usages, 
+    hasBook,
+    hasTools,
+    hasAutomation,
     proExpiredAt: dbUser?.proToolsExpiredAt || null,
     proAutomationExpiredAt: (dbUser as any)?.proAutomationExpiredAt || null,
     ownedEbooks
