@@ -12,6 +12,7 @@ import HeroCanvasCell from "@/components/master-blueprint/HeroCanvasCell";
 import CanvasCell from "@/components/master-blueprint/CanvasCell";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { BackButton } from "@/components/ui/BackButton";
+import { Button } from "@/components/ui/Button";
 
 
 export default function MasterBlueprintClient({ nicheReferences }: { nicheReferences?: any[] }) {
@@ -813,14 +814,16 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
             onClick={handlePrev}
             className={step === 1 || isSubmitting ? "opacity-30 cursor-not-allowed pointer-events-none" : ""}
           />
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="md"
             disabled={isSubmitting}
-            className="px-8 py-2.5 rounded-xl text-sm font-bold text-white bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
+            isLoading={isSubmitting}
+            className="px-8"
           >
-            {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-            {step === 4 ? (isSubmitting ? "Generating..." : "Generate") : "Lanjut"}
-          </button>
+            {step === 4 ? "Generate" : "Lanjut"}
+          </Button>
         </div>
       </form>
 

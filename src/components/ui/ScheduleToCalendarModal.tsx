@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import useSWR, { mutate } from "swr";
 import { getContentCalendarAction } from "@/app/actions/toolsData";
 import { Calendar, CheckCircle2, Save, Square, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Button } from "./Button";
+import { tokens, cn } from "@/lib/design-tokens";
 
 interface ScheduleToCalendarModalProps {
   isOpen: boolean;
@@ -233,21 +235,28 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
               </div>
 
               <div className="pt-2 flex items-center gap-2">
-                <button 
+                <Button 
                   type="button" 
+                  variant="secondary"
+                  size="md"
                   disabled={isSavingAgenda}
                   onClick={() => setStep("calendar")}
-                  className="px-4 py-3.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-200 rounded-xl font-bold font-heading hover:bg-gray-50 dark:hover:bg-[#1f2947] transition-colors disabled:opacity-50 cursor-pointer"
+                  className="px-4 py-3.5"
                 >
                   <ChevronLeft size={16} />
-                </button>
-                <button 
+                </Button>
+                <Button 
                   type="submit" 
+                  variant="primary"
+                  size="md"
                   disabled={isSavingAgenda}
-                  className="flex-1 py-3.5 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white rounded-xl font-bold font-heading transition-colors flex items-center justify-center gap-2 shadow-sm shadow-orange-500/20 disabled:opacity-50 cursor-pointer"
+                  isLoading={isSavingAgenda}
+                  loadingText="Menyimpan..."
+                  icon={<Save size={16} />}
+                  className="flex-1 py-3.5"
                 >
-                  {isSavingAgenda ? <><Square size={16} className="animate-spin" /> Menyimpan...</> : <><Save size={16} /> Simpan ke Kalender</>}
-                </button>
+                  Simpan ke Kalender
+                </Button>
               </div>
             </form>
           </>

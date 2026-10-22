@@ -4,6 +4,8 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { AlertCircle } from "lucide-react";
+import { Badge } from "@/components/ui/Badge";
+import { tokens, cn } from "@/lib/design-tokens";
 
 export default function ToolCard({
   feature,
@@ -101,26 +103,14 @@ export default function ToolCard({
             <div className="flex items-center gap-1 shrink-0">
               {isProOnly ? (
                 !isPro ? (
-                  // User belum langganan paket tools (User Free atau PRO BOOK)
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400">
-                    PRO
-                  </span>
+                  <Badge variant="primary" size="xs">PRO</Badge>
                 ) : !hasBlueprint ? (
-                  // User SUDAH langganan PRO TOOLS / PRO PLUS tapi belum isi blueprint
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400">
-                    Butuh Blueprint
-                  </span>
+                  <Badge variant="warning" size="xs">Butuh Blueprint</Badge>
                 ) : (
-                  // User SUDAH langganan PRO dan blueprint aktif
-                  <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400">
-                    PRO
-                  </span>
+                  <Badge variant="neutral" size="xs">PRO</Badge>
                 )
               ) : (
-                // Fitur gratis
-                <span className="text-[9px] font-bold bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 px-1.5 py-0.5 rounded">
-                  FREE
-                </span>
+                <Badge variant="success" size="xs">FREE</Badge>
               )}
             </div>
           </div>
@@ -168,11 +158,13 @@ export default function ToolCard({
     </>
   );
 
-  const cardClasses = `group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-200 cursor-pointer z-0 overflow-hidden bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] ${
+  const cardClasses = cn(
+    "group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-200 cursor-pointer z-0 overflow-hidden",
+    tokens.card.base,
     !canAccess
       ? "opacity-80 hover:border-gray-300 dark:hover:border-white/20"
-      : "hover:border-rn-accent dark:hover:border-orange-500/50 shadow-gray-200 dark:shadow-black/50 hover:shadow-xl hover:-translate-y-1"
-  }`;
+      : "hover:border-[#f97316] dark:hover:border-orange-500/50 shadow-gray-200 dark:shadow-black/50 hover:shadow-xl hover:-translate-y-1"
+  );
 
   if (!canAccess) {
     return (

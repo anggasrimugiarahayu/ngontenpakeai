@@ -10,6 +10,7 @@ import { Copy, CheckCircle2, AlertCircle, Loader2, UserCircle, Type, AlignLeft,
   RefreshCw, Camera, ChevronDown, Trash2, ArrowRight, ArrowLeft, Check, ChevronLeft, Menu, Home, Search, PlusSquare, Video } from "lucide-react";
 import Link from "next/link";
 import { BackButton } from "@/components/ui/BackButton";
+import { Button } from "@/components/ui/Button";
 
 interface BioState {
   username: string;
@@ -652,23 +653,27 @@ export default function BioBuilderClient() {
               )}
               
               {step < 3 ? (
-                <button 
+                <Button 
                   onClick={goToNextStep} 
                   disabled={(step === 1 && !selectedBio.username) || (step === 2 && !selectedBio.name)}
-                  className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white flex items-center gap-2 transition-colors shadow-sm shadow-orange-500/20 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                  variant="primary"
+                  size="md"
+                  icon={<ArrowRight className="w-4 h-4" />}
                 >
-                  Lanjut <ArrowRight className="w-4 h-4" />
-                </button>
+                  Lanjut
+                </Button>
               ) : (
-                <button 
+                <Button 
                   onClick={() => {
                     autoSave(id, selectedBio, suggestions, avatarUrl);
                     showToast("Bio berhasil disimpan!", "success");
                   }}
-                  className="px-6 py-2.5 rounded-xl font-bold text-sm bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white flex items-center gap-2 transition-colors shadow-sm shadow-orange-500/20 cursor-pointer"
+                  variant="primary"
+                  size="md"
+                  icon={<CheckCircle2 className="w-4 h-4" />}
                 >
-                  Simpan <CheckCircle2 className="w-4 h-4" />
-                </button>
+                  Simpan
+                </Button>
               )}
             </div>
 

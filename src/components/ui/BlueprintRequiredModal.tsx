@@ -3,6 +3,8 @@
 import React from "react";
 import { useRouter } from "next/navigation";
 import { Compass, X, ArrowRight } from "lucide-react";
+import { Button } from "./Button";
+import { tokens, cn } from "@/lib/design-tokens";
 
 interface BlueprintRequiredModalProps {
   isOpen: boolean;
@@ -38,7 +40,7 @@ export default function BlueprintRequiredModal({
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-sm bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl p-6 text-center z-10 animate-in fade-in zoom-in-95 duration-200">
+      <div className={cn("relative w-full max-w-sm rounded-2xl shadow-2xl p-6 text-center z-10 animate-in fade-in zoom-in-95 duration-200", tokens.card.base)}>
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -65,20 +67,24 @@ export default function BlueprintRequiredModal({
 
         {/* Action Buttons */}
         <div className="flex flex-col gap-2">
-          <button
+          <Button
             onClick={handleNavigateToBlueprint}
-            className="w-full flex items-center justify-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-bold py-2.5 px-4 rounded-xl transition-all shadow-md shadow-orange-500/20 text-xs sm:text-sm cursor-pointer"
+            variant="primary"
+            size="md"
+            className="w-full justify-center"
           >
             <span>Isi Blueprint Sekarang</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
+            <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
 
-          <button
+          <Button
             onClick={onClose}
-            className="w-full py-2 px-4 text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 rounded-xl transition-colors cursor-pointer"
+            variant="ghost"
+            size="sm"
+            className="w-full justify-center text-gray-500 dark:text-gray-400"
           >
             Tutup
-          </button>
+          </Button>
         </div>
       </div>
     </div>
