@@ -281,7 +281,7 @@ export function AdminRuangBelajarTab({
                   setDraggedIdx(null);
                   setDragOverIdx(null);
                 }}
-                className={`cursor-grab active:cursor-grabbing select-none flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-[16px] sm:rounded-[20px] relative p-3 sm:p-4 gap-3 sm:gap-4 ${
+                className={`cursor-grab active:cursor-grabbing select-none flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-orange-500/50 hover:shadow-xl hover:-translate-y-1 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-200 border-2 border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] rounded-[16px] sm:rounded-[20px] relative p-3 sm:p-4 gap-3 sm:gap-4 ${
                   draggedIdx === index
                     ? "opacity-30 scale-95 border-dashed border-rn-accent ring-2 ring-rn-accent/30"
                     : ""
@@ -291,11 +291,11 @@ export function AdminRuangBelajarTab({
                     : ""
                 } ${
                   prod.isActive === false
-                    ? "opacity-75 bg-gray-50/70 dark:bg-[#141417]"
+                    ? "opacity-75 bg-gray-50/70 dark:bg-[#141B31]/60"
                     : ""
                 }`}
               >
-                <div className="w-[100px] sm:w-[120px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm pointer-events-none">
+                <div className="w-[100px] sm:w-[120px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-[10px] sm:rounded-xl shadow-sm pointer-events-none">
                   <div className="aspect-[3/4] relative flex items-center justify-center">
                     {prod.coverUrl ? (
                       <>
@@ -351,7 +351,7 @@ export function AdminRuangBelajarTab({
                               className="fixed inset-0 z-30"
                               onClick={() => setOpenMenuProductId(null)}
                             />
-                            <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#18181b] rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 p-2 z-40 text-xs animate-in fade-in zoom-in-95 duration-150">
+                            <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] p-2 z-40 text-xs animate-in fade-in zoom-in-95 duration-150">
                               <div className="px-2.5 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-white/5 mb-1">
                                 Status E-Book
                               </div>

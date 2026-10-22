@@ -144,7 +144,7 @@ export function NavigationProgressBar() {
 
       {/* 2. Floating Percentage Counter Pill (Pojok Kanan Bawah) */}
       <div className="fixed bottom-5 right-5 z-[9999] pointer-events-none animate-in fade-in slide-in-from-bottom-2 duration-200">
-        <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/85 dark:bg-[#18181b]/95 backdrop-blur-md border border-white/10 text-white shadow-2xl text-[12px] font-semibold font-mono tracking-tight">
+        <div className="flex items-center gap-2.5 px-3.5 py-1.5 rounded-full bg-black/85 dark:bg-[#141B31]/95 backdrop-blur-md border border-white/10 dark:border-[#2C3246] text-white shadow-2xl text-[12px] font-semibold font-mono tracking-tight">
           <span
             className={`w-2 h-2 rounded-full ${
               progress === 100 ? "bg-emerald-400" : "bg-orange-500 animate-ping"

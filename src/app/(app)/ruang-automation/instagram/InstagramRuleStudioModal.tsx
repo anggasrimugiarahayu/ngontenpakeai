@@ -115,7 +115,7 @@ export function InstagramRuleStudioModal({
     <>
       {isRuleModalOpen && (
         <div className="fixed inset-0 z-[120] flex items-center justify-center p-2 sm:p-4 md:p-6 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-6xl h-[92vh] max-h-[860px] bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+          <div className="w-full max-w-6xl h-[92vh] max-h-[860px] bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
             {/* Top Header Mobile / Tablet Close */}
             <div className="lg:hidden flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-white/10">
               <h3 className="font-bold text-sm text-gray-900 dark:text-white">
@@ -133,7 +133,7 @@ export function InstagramRuleStudioModal({
             {/* 2-Column Split Grid */}
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
               {/* LEFT COLUMN: Form Builder (42% Ratio) */}
-              <div className="lg:col-span-5 xl:col-span-5 p-6 md:p-8 overflow-y-auto space-y-6 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-white/10">
+              <div className="lg:col-span-5 xl:col-span-5 p-6 md:p-8 overflow-y-auto space-y-6 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-[#2C3246]">
                 <div>
                   <h2 className="text-xl md:text-2xl font-black font-heading text-gray-900 dark:text-white">
                     {editingRule ? "Edit Otomasi" : "Buat Otomasi Baru"}
@@ -151,7 +151,7 @@ export function InstagramRuleStudioModal({
                       value={ruleFormData.name}
                       onChange={(e) => setRuleFormData({ ...ruleFormData, name: e.target.value })}
                       placeholder="COBA"
-                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-white/20 transition-all font-medium"
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-900/20 dark:focus:ring-white/20 transition-all font-medium"
                     />
                     {!ruleFormData.name.trim() && (
                       <p className="text-[11px] text-rose-500 font-medium">Silakan masukkan nama otomasi</p>
@@ -166,10 +166,10 @@ export function InstagramRuleStudioModal({
                     <button
                       type="button"
                       onClick={() => setIsTargetDropdownOpen(!isTargetDropdownOpen)}
-                      className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                      className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#141B31] text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
                         isTargetDropdownOpen
                           ? "border-orange-500 ring-2 ring-orange-500/20"
-                          : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                          : "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-white/20"
                       }`}
                     >
                       <span className="font-medium">{ruleFormData.targetOtomasi || "Postingan Tertentu"}</span>
@@ -177,7 +177,7 @@ export function InstagramRuleStudioModal({
                     </button>
 
                     {isTargetDropdownOpen && (
-                      <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 max-h-72 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
+                      <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl py-2 z-50 max-h-72 overflow-y-auto animate-in fade-in zoom-in-95 duration-150">
                         {[
                           {
                             category: "Post / Reel",
@@ -411,7 +411,7 @@ export function InstagramRuleStudioModal({
                                       postType: "ALL_STORIES",
                                     });
                                   }}
-                                  className="px-2.5 py-1 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-gray-700 dark:text-gray-200 text-[11px] font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
+                                  className="px-2.5 py-1 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-gray-700 dark:text-gray-200 text-[11px] font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors cursor-pointer"
                                 >
                                   Gunakan Opsi Semua Story
                                 </button>
@@ -434,7 +434,7 @@ export function InstagramRuleStudioModal({
                                 className={`relative rounded-xl overflow-hidden aspect-[9/16] border-2 transition-all cursor-pointer ${
                                   isSelected
                                     ? "border-pink-500 ring-2 ring-pink-500/30 scale-[1.02] shadow-sm"
-                                    : "border-gray-200 dark:border-white/10 hover:border-gray-400 dark:hover:border-white/20 opacity-85 hover:opacity-100"
+                                    : "border-gray-200 dark:border-[#2C3246] hover:border-gray-400 dark:hover:border-white/20 opacity-85 hover:opacity-100"
                                 }`}
                                 title={story.caption || "Story"}
                               >
@@ -471,10 +471,10 @@ export function InstagramRuleStudioModal({
                       <button
                         type="button"
                         onClick={() => setIsFrequencyDropdownOpen(!isFrequencyDropdownOpen)}
-                        className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                        className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#141B31] text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
                           isFrequencyDropdownOpen
                             ? "border-orange-500 ring-2 ring-orange-500/20"
-                            : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                            : "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-white/20"
                         }`}
                       >
                         <span className="font-medium">
@@ -488,7 +488,7 @@ export function InstagramRuleStudioModal({
                       </button>
 
                       {isFrequencyDropdownOpen && (
-                        <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150">
                           {(
                             [
                               "24 jam sekali",
@@ -566,8 +566,8 @@ export function InstagramRuleStudioModal({
                                     }}
                                     className={`p-4 rounded-xl border transition-all space-y-4 shadow-xs ${
                                       isActiveCard
-                                        ? "border-gray-300 dark:border-white/20 bg-white dark:bg-[#18181b]"
-                                        : "border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] hover:border-gray-300 dark:hover:border-white/15"
+                                        ? "border-gray-300 dark:border-[#2C3246] bg-white dark:bg-[#141B31]"
+                                        : "border-gray-200 dark:border-[#2C3246]/50 bg-white dark:bg-[#141B31] hover:border-gray-300 dark:hover:border-white/15"
                                     }`}
                                   >
                                     {/* Card Header: Content N + Delete Icon */}
@@ -716,7 +716,7 @@ export function InstagramRuleStudioModal({
                               setActiveLiveContentIdx(nextContents.length - 1);
                               setActivePreviewTab("DM");
                             }}
-                            className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-white/15 hover:border-gray-300 dark:hover:border-white/25 bg-white dark:bg-[#18181b] text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
+                            className="w-full py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-white/25 bg-white dark:bg-[#141B31] text-xs sm:text-sm font-bold text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-2xs"
                           >
                             <Plus className="w-4 h-4" />
                             <span>Tambah Konten</span>
@@ -745,7 +745,7 @@ export function InstagramRuleStudioModal({
 
                       {/* Balas Reaksi Card (Hanya untuk Semua Story & Story Tertentu) */}
                       {isStoryTarget && !isStoryMentionTarget && (
-                        <div className="p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] flex items-center justify-between gap-3 animate-in fade-in duration-200">
+                        <div className="p-3.5 rounded-xl border border-gray-200/80 dark:border-[#2C3246] bg-white dark:bg-[#141B31] flex items-center justify-between gap-3 animate-in fade-in duration-200">
                           <div className="space-y-0.5">
                             <div className="flex items-center gap-1.5">
                               <span className="text-xs font-bold text-gray-900 dark:text-white">Balas Reaksi</span>
@@ -862,7 +862,7 @@ export function InstagramRuleStudioModal({
       {/* MODAL POPUP: LIHAT SEMUA POSTINGAN */}
       {showAllPostsModal && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150">
-          <div className="bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl p-5 sm:p-6 max-w-2xl w-full shadow-2xl space-y-4">
+          <div className="bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl p-5 sm:p-6 max-w-2xl w-full shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/10">
               <div>
                 <h4 className="font-bold text-base text-gray-900 dark:text-white">

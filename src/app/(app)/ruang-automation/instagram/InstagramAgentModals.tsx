@@ -37,7 +37,7 @@ export function InstagramAgentModals({
       {/* MODAL: BUAT AGEN BARU */}
       {isCreateAgentModalOpen && (
         <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-2xl p-6 space-y-5 animate-in zoom-in-95 duration-200">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-2xl p-6 space-y-5 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
@@ -116,7 +116,7 @@ export function InstagramAgentModals({
       {/* MODAL: UBAH NAMA AGEN */}
       {isEditAgentModalOpen && editingAgent && (
         <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-2xl p-6 space-y-5 animate-in zoom-in-95 duration-200">
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-2xl p-6 space-y-5 animate-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">

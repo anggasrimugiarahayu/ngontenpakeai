@@ -295,19 +295,19 @@ export default function AtmBuilderClient() {
       </button>
 
       {isAtmPlusMenuOpen && (
-        <div className="absolute bottom-full left-0 mb-3 w-[280px] md:w-[320px] max-w-[calc(100vw-2rem)] bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 shadow-xl rounded-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 py-1.5">
-          <div className="px-4 py-2.5 text-[10px] md:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 font-heading">Sumber Input ATM</div>
+        <div className="absolute bottom-full left-0 mb-3 w-[280px] md:w-[320px] max-w-[calc(100vw-2rem)] bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-xl rounded-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 py-1.5">
+          <div className="px-4 py-2.5 text-[10px] md:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 border-b border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-white/5 font-heading">Sumber Input ATM</div>
           
           <input type="file" ref={atmFileInputRef} onChange={(e) => { handleATMUpload(e); setIsAtmPlusMenuOpen(false); }} className="hidden" accept="image/*, video/*, audio/*, text/plain" />
           
-          <button onClick={(e) => { e.preventDefault(); atmFileInputRef.current?.click(); }} className="w-full text-left px-4 py-3 md:py-3.5 text-[13px] md:text-sm text-gray-700 dark:text-white font-bold hover:bg-gray-100 dark:hover:bg-white/5 flex items-center gap-3 transition-colors border-b border-gray-100/50 dark:border-white/5">
+          <button onClick={(e) => { e.preventDefault(); atmFileInputRef.current?.click(); }} className="w-full text-left px-4 py-3 md:py-3.5 text-[13px] md:text-sm text-gray-700 dark:text-white font-bold hover:bg-gray-100 dark:hover:bg-white/5 flex items-center gap-3 transition-colors border-b border-gray-100/50 dark:border-[#2C3246]/50">
             <Camera size={16} className="text-gray-500" strokeWidth={2.5}/> Upload Gambar / Screenshot
           </button>
-          <button onClick={(e) => { e.preventDefault(); atmFileInputRef.current?.click(); }} className="w-full text-left px-4 py-3 md:py-3.5 text-[13px] md:text-sm text-gray-700 dark:text-white font-bold hover:bg-gray-100 dark:hover:bg-white/5 flex items-center gap-3 transition-colors border-b border-gray-100/50 dark:border-white/5">
+          <button onClick={(e) => { e.preventDefault(); atmFileInputRef.current?.click(); }} className="w-full text-left px-4 py-3 md:py-3.5 text-[13px] md:text-sm text-gray-700 dark:text-white font-bold hover:bg-gray-100 dark:hover:bg-white/5 flex items-center gap-3 transition-colors border-b border-gray-100/50 dark:border-[#2C3246]/50">
             <Video size={16} className="text-gray-500" strokeWidth={2.5}/> Upload Video / Audio
           </button>
           
-          <div className="px-4 py-3 bg-gray-50 dark:bg-[#1a1a1c] border-t border-gray-100 dark:border-white/10">
+          <div className="px-4 py-3 bg-gray-50 dark:bg-[#0A1128] border-t border-gray-100 dark:border-[#2C3246]">
             <p className="text-[10px] md:text-[11px] text-gray-600 dark:text-gray-400 leading-relaxed font-semibold">
               <strong className="font-bold font-heading text-gray-800 dark:text-white block mb-0.5">Informasi Transkripsi:</strong> 
               Pastikan ukuran berkas tidak lebih dari 50 MB. Dukungan format: MP3, M4A, WAV, MP4, Gambar (JPG/PNG).

@@ -25,7 +25,7 @@ export function InstagramFeedGrid({
 }: Props) {
   if (!posts || posts.length === 0) {
     return (
-      <div className="w-full min-h-[300px] flex flex-col items-center justify-center p-8 bg-white dark:bg-[#18181b] rounded-2xl border border-gray-200 dark:border-white/10 text-center">
+      <div className="w-full min-h-[300px] flex flex-col items-center justify-center p-8 bg-white dark:bg-[#141B31] rounded-2xl border border-gray-200 dark:border-[#2C3246] text-center">
         <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 mb-3">
           <Film className="w-6 h-6" />
         </div>

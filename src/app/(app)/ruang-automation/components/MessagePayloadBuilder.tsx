@@ -175,10 +175,10 @@ export function MessagePayloadBuilder({
             setIsMsgTypeOpen((prev) => !prev);
             setOpenButtonDropdown(null);
           }}
-          className={`w-full px-3.5 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+          className={`w-full px-3.5 py-2.5 rounded-xl border bg-white dark:bg-[#141B31] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
             isMsgTypeOpen
               ? "border-orange-500 ring-2 ring-orange-500/20"
-              : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+              : "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-white/20"
           }`}
         >
           <span className="font-medium">
@@ -198,7 +198,7 @@ export function MessagePayloadBuilder({
         {isMsgTypeOpen && (
           <div
             onMouseDown={(e) => e.stopPropagation()}
-            className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150"
+            className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl py-2 z-50 animate-in fade-in zoom-in-95 duration-150"
           >
             {(
               [
@@ -255,7 +255,7 @@ export function MessagePayloadBuilder({
                 })
               }
               placeholder="Halo {first_name}! Terima kasih sudah tertarik. Ini link yang kamu minta..."
-              className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium leading-relaxed resize-none"
+              className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium leading-relaxed resize-none"
             />
             <div className="absolute right-3 bottom-2 text-[11px] text-gray-400 font-mono">
               {(value.message || "").length}/
@@ -377,7 +377,7 @@ export function MessagePayloadBuilder({
                             onSelectSimulatedQr?.(qr.id);
                           }}
                           placeholder={`Quick Reply ${qIdx + 1}`}
-                          className="w-full px-3 py-2 pr-12 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+                          className="w-full px-3 py-2 pr-12 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
                         />
                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-mono">
                           {qrLabel.length}/80
@@ -416,7 +416,7 @@ export function MessagePayloadBuilder({
                             onSelectSimulatedQr?.(qr.id);
                           }}
                           placeholder="Masukkan teks balasan saat quick reply diklik"
-                          className="w-full px-3 py-2 pb-5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium leading-relaxed resize-none"
+                          className="w-full px-3 py-2 pb-5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium leading-relaxed resize-none"
                         />
                         <span className="absolute right-3 bottom-1.5 text-[10px] text-gray-400 font-mono">
                           {qrReplyText.length}/1000
@@ -476,7 +476,7 @@ export function MessagePayloadBuilder({
                 onSelectSimulatedButton?.(btn.id);
                 onFocusPreviewDm?.();
               }}
-              className="p-3.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3 relative shadow-2xs"
+              className="p-3.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] space-y-3 relative shadow-2xs"
             >
               <div className="flex items-center justify-between">
                 <h5 className="text-xs font-bold text-gray-900 dark:text-white">
@@ -519,10 +519,10 @@ export function MessagePayloadBuilder({
                       setOpenButtonDropdown({ id: btn.id, type: "label" });
                     }
                   }}
-                  className={`w-full px-3.5 py-2 rounded-xl border bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                  className={`w-full px-3.5 py-2 rounded-xl border bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
                     openButtonDropdown?.id === btn.id && openButtonDropdown?.type === "label"
                       ? "border-orange-500 ring-2 ring-orange-500/20"
-                      : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                      : "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-white/20"
                   }`}
                 >
                   <span className="font-medium">{btn.labelType || "Kustom"}</span>
@@ -540,7 +540,7 @@ export function MessagePayloadBuilder({
                   openButtonDropdown?.type === "label" && (
                     <div
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                     >
                       {(["Klik Disini", "Kustom"] as const).map((labelOpt) => {
                         const isSelected =
@@ -636,10 +636,10 @@ export function MessagePayloadBuilder({
                       setOpenButtonDropdown({ id: btn.id, type: "action" });
                     }
                   }}
-                  className={`w-full px-3.5 py-2 rounded-xl border bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                  className={`w-full px-3.5 py-2 rounded-xl border bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
                     openButtonDropdown?.id === btn.id && openButtonDropdown?.type === "action"
                       ? "border-orange-500 ring-2 ring-orange-500/20"
-                      : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                      : "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-white/20"
                   }`}
                 >
                   <span
@@ -661,7 +661,7 @@ export function MessagePayloadBuilder({
                   openButtonDropdown?.type === "action" && (
                     <div
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                     >
                       {(
                         [
@@ -819,7 +819,7 @@ export function MessagePayloadBuilder({
           {(value.carouselSlides || []).map((slide, slideIdx) => (
             <div
               key={slide.id}
-              className="p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3.5 relative shadow-xs"
+              className="p-4 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] space-y-3.5 relative shadow-xs"
             >
               <div className="flex items-center justify-between">
                 <h5 className="text-xs font-bold text-gray-900 dark:text-white">

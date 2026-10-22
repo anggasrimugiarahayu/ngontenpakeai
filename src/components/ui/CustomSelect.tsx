@@ -107,7 +107,7 @@ export function CustomSelect({
   const variantStyles =
     variant === "subtle"
       ? "bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10"
-      : "bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10";
+      : "bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246]";
 
   return (
     <div
@@ -152,7 +152,7 @@ export function CustomSelect({
       {/* Popover List */}
       {isOpen && (
         <div
-          className={`absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-2 z-50 max-h-64 sm:max-h-72 overflow-y-auto animate-in fade-in zoom-in-95 duration-150 custom-scrollbar ${menuClassName}`}
+          className={`absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl py-2 z-50 max-h-64 sm:max-h-72 overflow-y-auto animate-in fade-in zoom-in-95 duration-150 custom-scrollbar ${menuClassName}`}
         >
           {hasGroups ? (
             Object.entries(groups).map(([grpName, items]) => (

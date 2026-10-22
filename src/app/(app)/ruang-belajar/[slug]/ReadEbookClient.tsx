@@ -162,7 +162,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                        <Lock className="w-4 h-4 text-rn-accent" />
                        Buka Akses E-Book
                      </h3>
-                     <div className="bg-gray-50 dark:bg-[#18181b] border border-orange-200 dark:border-rn-accent/30 rounded-xl p-5 mb-5 shadow-inner relative overflow-hidden">
+                     <div className="bg-gray-50 dark:bg-[#141B31] border border-orange-200 dark:border-rn-accent/30 rounded-xl p-5 mb-5 shadow-inner relative overflow-hidden">
                        <div className="absolute top-0 left-0 w-1 h-full bg-rn-accent"></div>
                        <div className="flex items-center justify-between mb-2">
                          <span className="text-sm font-bold text-gray-900 dark:text-white">{isFree ? "E-Book Gratis" : (isPremiumEbook ? "Eksklusif Premium" : "E-Book PRO")}</span>
@@ -239,7 +239,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                        <BookOpen className="w-4 h-4 text-green-500" />
                        Status Akses
                      </h3>
-                     <div className="bg-gray-50 dark:bg-[#18181b] border border-green-200 dark:border-green-500/30 rounded-xl p-5 mb-5 shadow-inner relative overflow-hidden">
+                     <div className="bg-gray-50 dark:bg-[#141B31] border border-green-200 dark:border-green-500/30 rounded-xl p-5 mb-5 shadow-inner relative overflow-hidden">
                        <div className="absolute top-0 left-0 w-1 h-full bg-green-500"></div>
                        <div className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
                          Akses Terbuka

@@ -151,7 +151,7 @@ export default function GlobalChatbox({
   const isSendDisabled = isLoading || (textLength < 20 && !hasAttachment);
 
   return (
-    <div className="w-full bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl shadow-lg flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
+    <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-lg flex flex-col focus-within:ring-2 focus-within:ring-rn-accent/50 focus-within:border-rn-accent transition-all duration-300 relative z-10">
       {renderAttachmentPreview && renderAttachmentPreview()}
       <textarea 
         ref={textareaRef}
@@ -188,7 +188,7 @@ export default function GlobalChatbox({
             {isModelMenuOpen && (
               <>
                 <div className="fixed inset-0 z-[40]" onClick={(e) => { e.stopPropagation(); setIsModelMenuOpen(false); }}></div>
-                <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[180px] bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-xl rounded-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 cursor-default">
+                <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[180px] bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-xl rounded-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 cursor-default">
                   {models.map((model) => {
                     const val = model.modelId || model.value || model.id || "";
                     const name = model.name || model.label;

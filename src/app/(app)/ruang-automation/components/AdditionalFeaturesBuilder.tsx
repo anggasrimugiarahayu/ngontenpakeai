@@ -75,7 +75,7 @@ export function AdditionalFeaturesBuilder({
   return (
     <div
       ref={containerRef}
-      className="space-y-3 pt-4 border-t border-gray-200 dark:border-white/10"
+      className="space-y-3 pt-4 border-t border-gray-200 dark:border-[#2C3246]"
     >
       <h3 className="text-sm font-bold text-gray-900 dark:text-white">
         Fitur Tambahan
@@ -89,7 +89,7 @@ export function AdditionalFeaturesBuilder({
               setActivePreviewTab("DM");
             }
           }}
-          className="p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3"
+          className="p-3.5 rounded-xl border border-gray-200/80 dark:border-[#2C3246] bg-white dark:bg-[#141B31] space-y-3"
         >
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5">
@@ -138,10 +138,10 @@ export function AdditionalFeaturesBuilder({
                     e.stopPropagation();
                     toggleDropdown("followUpDelay");
                   }}
-                  className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                  className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#141B31] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
                     openDropdown === "followUpDelay"
                       ? "border-orange-500 ring-2 ring-orange-500/20"
-                      : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                      : "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-white/20"
                   }`}
                 >
                   <span className="font-medium">
@@ -157,7 +157,7 @@ export function AdditionalFeaturesBuilder({
                 {openDropdown === "followUpDelay" && (
                   <div
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                   >
                     {(
                       ["15 Menit", "1 Jam", "3 Jam", "6 Jam", "12 Jam", "23 Jam"] as const
@@ -206,10 +206,10 @@ export function AdditionalFeaturesBuilder({
                     e.stopPropagation();
                     toggleDropdown("followUpCondition");
                   }}
-                  className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                  className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#141B31] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
                     openDropdown === "followUpCondition"
                       ? "border-orange-500 ring-2 ring-orange-500/20"
-                      : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                      : "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-white/20"
                   }`}
                 >
                   <span className="font-medium">
@@ -225,7 +225,7 @@ export function AdditionalFeaturesBuilder({
                 {openDropdown === "followUpCondition" && (
                   <div
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                   >
                     {(
                       ["Semua Penerima", "Hanya yang Belum Klik Link"] as const
@@ -344,7 +344,7 @@ export function AdditionalFeaturesBuilder({
         {!isStoryTarget && !isLiveTarget && !isDmTarget && (
           <div
             onClick={() => setActivePreviewTab("COMMENT")}
-            className="p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3"
+            className="p-3.5 rounded-xl border border-gray-200/80 dark:border-[#2C3246] bg-white dark:bg-[#141B31] space-y-3"
           >
             <div className="flex items-center justify-between gap-3">
               <div className="space-y-0.5">
@@ -401,10 +401,10 @@ export function AdditionalFeaturesBuilder({
                       e.stopPropagation();
                       toggleDropdown("commentLimit");
                     }}
-                    className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                    className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#141B31] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
                       openDropdown === "commentLimit"
                         ? "border-orange-500 ring-2 ring-orange-500/20"
-                        : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                        : "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-white/20"
                     }`}
                   >
                     <span className="font-medium">
@@ -420,7 +420,7 @@ export function AdditionalFeaturesBuilder({
                   {openDropdown === "commentLimit" && (
                     <div
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                     >
                       {(
                         [
@@ -511,7 +511,7 @@ export function AdditionalFeaturesBuilder({
                               });
                             }}
                             placeholder="Pesan balasan komentar..."
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
                           />
                           {ruleFormData.commentReplyVariations.length > 1 && (
                             <button
@@ -566,7 +566,7 @@ export function AdditionalFeaturesBuilder({
         {/* 3. Pesan Pembuka */}
         <div
           onClick={() => setActivePreviewTab("DM")}
-          className="p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3"
+          className="p-3.5 rounded-xl border border-gray-200/80 dark:border-[#2C3246] bg-white dark:bg-[#141B31] space-y-3"
         >
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5">
@@ -621,10 +621,10 @@ export function AdditionalFeaturesBuilder({
                     e.stopPropagation();
                     toggleDropdown("welcomeMsgType");
                   }}
-                  className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                  className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#141B31] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
                     openDropdown === "welcomeMsgType"
                       ? "border-orange-500 ring-2 ring-orange-500/20"
-                      : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                      : "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-white/20"
                   }`}
                 >
                   <span className="font-medium">
@@ -640,7 +640,7 @@ export function AdditionalFeaturesBuilder({
                 {openDropdown === "welcomeMsgType" && (
                   <div
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                   >
                     {(["Template Tombol", "Teks Biasa"] as const).map(
                       (typeOpt) => {
@@ -704,7 +704,7 @@ export function AdditionalFeaturesBuilder({
                       })
                     }
                     placeholder="Ketik pesan pembuka..."
-                    className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium leading-relaxed resize-none"
+                    className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium leading-relaxed resize-none"
                   />
                   <div className="absolute right-2.5 bottom-1.5 text-[10px] text-gray-400 font-mono">
                     {ruleFormData.welcomeMessage.length}/
@@ -733,7 +733,7 @@ export function AdditionalFeaturesBuilder({
                         })
                       }
                       placeholder="Ya, Saya Mau!"
-                      className="w-full px-3.5 py-2 pr-12 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+                      className="w-full px-3.5 py-2 pr-12 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
                     />
                     <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-mono">
                       {ruleFormData.welcomeButtonLabel.length}/80
@@ -755,7 +755,7 @@ export function AdditionalFeaturesBuilder({
               setActivePreviewTab("DM");
             }
           }}
-          className={`p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3 transition-all ${
+          className={`p-3.5 rounded-xl border border-gray-200/80 dark:border-[#2C3246] bg-white dark:bg-[#141B31] space-y-3 transition-all ${
             !ruleFormData.featureWelcomeMessage ? "opacity-60" : "opacity-100"
           }`}
         >
@@ -833,10 +833,10 @@ export function AdditionalFeaturesBuilder({
                       e.stopPropagation();
                       toggleDropdown("askFollowMsgType");
                     }}
-                    className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                    className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#141B31] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
                       openDropdown === "askFollowMsgType"
                         ? "border-orange-500 ring-2 ring-orange-500/20"
-                        : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                        : "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-white/20"
                     }`}
                   >
                     <span className="font-medium">
@@ -852,7 +852,7 @@ export function AdditionalFeaturesBuilder({
                   {openDropdown === "askFollowMsgType" && (
                     <div
                       onMouseDown={(e) => e.stopPropagation()}
-                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                      className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                     >
                       {(["Template Tombol", "Teks Biasa"] as const).map(
                         (typeOpt) => {
@@ -913,7 +913,7 @@ export function AdditionalFeaturesBuilder({
                         })
                       }
                       placeholder="Tulis pesan ajakan follow..."
-                      className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed font-normal resize-none"
+                      className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed font-normal resize-none"
                     />
                     <div className="absolute right-2.5 bottom-2 text-[10px] text-gray-400 font-mono">
                       {ruleFormData.askForFollowMessage.length}/
@@ -943,7 +943,7 @@ export function AdditionalFeaturesBuilder({
                           })
                         }
                         placeholder="Udah follow 🙌"
-                        className="w-full px-3.5 py-2 pr-12 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+                        className="w-full px-3.5 py-2 pr-12 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
                       />
                       <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-mono">
                         {ruleFormData.askForFollowButtonLabel.length}/80
@@ -995,7 +995,7 @@ export function AdditionalFeaturesBuilder({
                           })
                         }
                         placeholder="Ih kayaknya masih belum follow beneran nih 😅..."
-                        className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed font-normal resize-none"
+                        className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed font-normal resize-none"
                       />
                       <div className="absolute right-2.5 bottom-2 text-[10px] text-gray-400 font-mono">
                         {ruleFormData.askForFollowRetryMessage.length}/
@@ -1024,7 +1024,7 @@ export function AdditionalFeaturesBuilder({
                               })
                             }
                             placeholder="Udah follow 🙌"
-                            className="w-full px-3.5 py-2 pr-12 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+                            className="w-full px-3.5 py-2 pr-12 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
                           />
                           <div className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] text-gray-400 font-mono">
                             {ruleFormData.askForFollowRetryButtonLabel.length}/80
@@ -1064,7 +1064,7 @@ export function AdditionalFeaturesBuilder({
               setActivePreviewTab("DM");
             }
           }}
-          className="p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] space-y-3"
+          className="p-3.5 rounded-xl border border-gray-200/80 dark:border-[#2C3246] bg-white dark:bg-[#141B31] space-y-3"
         >
           <div className="flex items-center justify-between gap-3">
             <div className="space-y-0.5">
@@ -1118,10 +1118,10 @@ export function AdditionalFeaturesBuilder({
                     e.stopPropagation();
                     toggleDropdown("askContactType");
                   }}
-                  className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#18181b] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
+                  className={`w-full px-4 py-2.5 rounded-xl border bg-white dark:bg-[#141B31] text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-between transition-all cursor-pointer ${
                     openDropdown === "askContactType"
                       ? "border-orange-500 ring-2 ring-orange-500/20"
-                      : "border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20"
+                      : "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-white/20"
                   }`}
                 >
                   <span className="font-medium">
@@ -1137,7 +1137,7 @@ export function AdditionalFeaturesBuilder({
                 {openDropdown === "askContactType" && (
                   <div
                     onMouseDown={(e) => e.stopPropagation()}
-                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
+                    className="absolute left-0 right-0 mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl py-1.5 z-50 animate-in fade-in zoom-in-95 duration-150"
                   >
                     {(
                       [
@@ -1201,7 +1201,7 @@ export function AdditionalFeaturesBuilder({
                       })
                     }
                     placeholder="Ketik pesan permintaan kontak..."
-                    className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed font-normal resize-none"
+                    className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed font-normal resize-none"
                   />
                   <div className="absolute right-2.5 bottom-2 text-[10px] text-gray-400 font-mono">
                     {ruleFormData.askContactMessage.length}/640
@@ -1226,7 +1226,7 @@ export function AdditionalFeaturesBuilder({
                       })
                     }
                     placeholder="Ketik pesan perbaikan format..."
-                    className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed font-normal resize-none"
+                    className="w-full px-3.5 py-2.5 pb-6 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed font-normal resize-none"
                   />
                   <div className="absolute right-2.5 bottom-2 text-[10px] text-gray-400 font-mono">
                     {ruleFormData.askContactInvalidMessage.length}/640
@@ -1238,7 +1238,7 @@ export function AdditionalFeaturesBuilder({
         </div>
 
         {/* 6. Aktifkan Link Tracking */}
-        <div className="p-3.5 rounded-xl border border-gray-200/80 dark:border-white/10 bg-white dark:bg-[#18181b] flex items-center justify-between gap-3">
+        <div className="p-3.5 rounded-xl border border-gray-200/80 dark:border-[#2C3246] bg-white dark:bg-[#141B31] flex items-center justify-between gap-3">
           <div className="space-y-0.5">
             <span className="text-xs font-bold text-gray-900 dark:text-white">
               Aktifkan Link Tracking

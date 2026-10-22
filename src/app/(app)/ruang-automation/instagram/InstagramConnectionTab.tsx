@@ -67,7 +67,7 @@ export function InstagramConnectionTab({
               : null;
 
           return (
-            <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 sm:p-6 bg-white dark:bg-[#121214] shadow-xs">
+            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] p-5 sm:p-6 bg-white dark:bg-[#141B31] shadow-xs">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
                 {/* Left: Avatar + Account Info */}
                 <div className="flex items-start sm:items-center gap-3.5 sm:gap-4.5 min-w-0 flex-1">
@@ -133,7 +133,7 @@ export function InstagramConnectionTab({
         })()
       ) : (
         /* DISCONNECTED STATE */
-        <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 sm:p-6 bg-white dark:bg-[#121214] shadow-xs">
+        <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] p-5 sm:p-6 bg-white dark:bg-[#141B31] shadow-xs">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
             {/* Left: Instagram Icon + Agent Info */}
             <div className="flex items-start sm:items-center gap-3.5 sm:gap-4.5 min-w-0 flex-1">

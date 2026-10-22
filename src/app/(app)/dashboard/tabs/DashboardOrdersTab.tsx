@@ -224,8 +224,8 @@ export function DashboardOrdersTab({
 
         <div className="space-y-4">
           {/* Box 1: Status & Item */}
-          <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 dark:border-white/10 pb-4 mb-4 gap-3">
+          <div className="bg-white dark:bg-[#141B31] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-[#2C3246] shadow-sm">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-gray-100 dark:border-[#2C3246] pb-4 mb-4 gap-3">
               <div className="space-y-1.5 text-gray-500 dark:text-gray-400 text-xs sm:text-sm">
                 <div className="flex items-center gap-2">
                   <span className="w-20">Order time:</span>
@@ -241,7 +241,7 @@ export function DashboardOrdersTab({
                 </div>
               </div>
               <span
-                className={`font-bold text-xs uppercase tracking-wide px-3 py-1.5 rounded-md bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-white/5 ${
+                className={`font-bold text-xs uppercase tracking-wide px-3 py-1.5 rounded-md bg-gray-50 dark:bg-black/20 border border-gray-100 dark:border-[#2C3246]/50 ${
                   order.status === "SUCCESS"
                     ? "text-orange-500"
                     : order.status === "FAILED"
@@ -254,7 +254,7 @@ export function DashboardOrdersTab({
             </div>
 
             <div className="flex gap-4 items-start mb-5">
-              <div className="w-16 h-20 bg-gray-50 dark:bg-[#121214] rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-white/10 p-1 flex items-center justify-center">
+              <div className="w-16 h-20 bg-gray-50 dark:bg-[#0A1128] rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-[#2C3246] p-1 flex items-center justify-center">
                 {getOrderImage(order) ? (
                   <img
                     src={getOrderImage(order)}
@@ -289,16 +289,16 @@ export function DashboardOrdersTab({
 
             {/* Addon Products List (if any) */}
             {addonCount > 0 && (
-              <div className="border-t border-gray-100 dark:border-white/10 pt-3 pb-1 mb-4 space-y-2">
+              <div className="border-t border-gray-100 dark:border-[#2C3246] pt-3 pb-1 mb-4 space-y-2">
                 <p className="text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Add-on Produk ({addonCount})
                 </p>
                 {addonList.map((addon: any, idx: number) => (
                   <div
                     key={addon.id || idx}
-                    className="flex gap-3 items-center bg-gray-50/70 dark:bg-[#121214] p-2.5 rounded-lg border border-gray-100 dark:border-white/5"
+                    className="flex gap-3 items-center bg-gray-50/70 dark:bg-[#0A1128] p-2.5 rounded-lg border border-gray-100 dark:border-[#2C3246]/50"
                   >
-                    <div className="w-10 h-12 bg-white dark:bg-[#1a1a1c] rounded overflow-hidden shrink-0 border border-gray-200 dark:border-white/10 p-0.5 flex items-center justify-center">
+                    <div className="w-10 h-12 bg-white dark:bg-[#141B31] rounded overflow-hidden shrink-0 border border-gray-200 dark:border-[#2C3246] p-0.5 flex items-center justify-center">
                       {addon.coverUrl ? (
                         <img
                           src={addon.coverUrl}
@@ -327,7 +327,7 @@ export function DashboardOrdersTab({
               </div>
             )}
 
-            <div className="bg-[#f8fafc] dark:bg-[#121214] rounded-lg p-3 border border-gray-100 dark:border-white/5">
+            <div className="bg-[#f8fafc] dark:bg-[#0A1128] rounded-lg p-3 border border-gray-100 dark:border-[#2C3246]/50">
               <p className="text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
                 Notes
               </p>
@@ -338,7 +338,7 @@ export function DashboardOrdersTab({
           </div>
 
           {/* Box 2: Transaction Detail */}
-          <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm">
+          <div className="bg-white dark:bg-[#141B31] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-[#2C3246] shadow-sm">
             <h4 className="font-bold text-gray-900 dark:text-white mb-4">
               Transaction Detail
             </h4>
@@ -393,7 +393,7 @@ export function DashboardOrdersTab({
           </div>
 
           {/* Box 3: Customer */}
-          <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm">
+          <div className="bg-white dark:bg-[#141B31] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-[#2C3246] shadow-sm">
             <h4 className="font-bold text-gray-900 dark:text-white mb-3">Customer</h4>
             <div className="space-y-1.5 text-sm text-gray-800 dark:text-gray-300">
               <p>{order.user?.name || "Unknown User"}</p>
@@ -412,14 +412,14 @@ export function DashboardOrdersTab({
           </div>
 
           {/* Box 4: Email Delivery Tracking */}
-          <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm print:hidden">
+          <div className="bg-white dark:bg-[#141B31] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-[#2C3246] shadow-sm print:hidden">
             <h4 className="font-bold text-gray-400 dark:text-gray-500 uppercase text-xs tracking-wider mb-5">
               Email Delivery Tracking
             </h4>
 
             <div className="relative pl-6 space-y-6 before:absolute before:inset-0 before:ml-[11px] before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gray-200 dark:before:bg-gray-700">
               <div className="relative flex justify-between items-center text-sm">
-                <div className="absolute left-[-29px] w-3 h-3 bg-orange-500 rounded-full border-2 border-white dark:border-[#1a1a1c] z-10"></div>
+                <div className="absolute left-[-29px] w-3 h-3 bg-orange-500 rounded-full border-2 border-white dark:border-[#141B31] z-10"></div>
                 <span className="font-medium text-orange-500">Opened</span>
                 <span className="text-gray-400 text-xs">
                   {format(new Date(orderDate.getTime() + 4 * 60000), "dd MMM - HH:mm")}
@@ -427,7 +427,7 @@ export function DashboardOrdersTab({
               </div>
 
               <div className="relative flex justify-between items-center text-sm">
-                <div className="absolute left-[-29px] w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full border-2 border-white dark:border-[#1a1a1c] z-10"></div>
+                <div className="absolute left-[-29px] w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full border-2 border-white dark:border-[#141B31] z-10"></div>
                 <span className="px-2 py-0.5 bg-gray-100 dark:bg-white/5 rounded text-gray-500 dark:text-gray-400 text-xs font-medium">
                   Delivered
                 </span>
@@ -437,7 +437,7 @@ export function DashboardOrdersTab({
               </div>
 
               <div className="relative flex justify-between items-center text-sm">
-                <div className="absolute left-[-29px] w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full border-2 border-white dark:border-[#1a1a1c] z-10"></div>
+                <div className="absolute left-[-29px] w-3 h-3 bg-gray-300 dark:bg-gray-600 rounded-full border-2 border-white dark:border-[#141B31] z-10"></div>
                 <span className="px-2 py-0.5 bg-gray-100 dark:bg-white/5 rounded text-gray-500 dark:text-gray-400 text-xs font-medium">
                   Processed
                 </span>
@@ -449,7 +449,7 @@ export function DashboardOrdersTab({
           </div>
 
           {/* Box 5: Follow Up Text */}
-          <div className="bg-white dark:bg-[#1a1a1c] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-white/10 shadow-sm print:hidden">
+          <div className="bg-white dark:bg-[#141B31] sm:rounded-xl p-5 border-y sm:border border-gray-200 dark:border-[#2C3246] shadow-sm print:hidden">
             <div className="flex justify-between items-center mb-4">
               <h4 className="font-bold text-gray-900 dark:text-white text-lg">
                 Follow Up Text
@@ -491,9 +491,9 @@ export function DashboardOrdersTab({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
         {/* Left Column: Order List */}
         <div className="lg:col-span-2 flex flex-col space-y-4">
-          <div className="bg-white dark:bg-[#121214] rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm overflow-hidden flex flex-col h-full">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl border border-gray-100 dark:border-[#2C3246] shadow-sm overflow-hidden flex flex-col h-full">
             {/* Header & Filters */}
-            <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-white/10 space-y-4 shrink-0">
+            <div className="p-4 sm:p-6 border-b border-gray-100 dark:border-[#2C3246] space-y-4 shrink-0">
               <div className="flex justify-between items-center">
                 <h2 className="text-lg font-bold text-gray-900 dark:text-white">
                   Product Orders
@@ -514,7 +514,7 @@ export function DashboardOrdersTab({
                     placeholder="Cari nama atau email..."
                     value={orderSearch}
                     onChange={(e) => setOrderSearch(e.target.value)}
-                    className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-gray-900 dark:text-white"
+                    className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-gray-900 dark:text-white"
                   />
                 </div>
                 <CustomSelect
@@ -549,7 +549,7 @@ export function DashboardOrdersTab({
                       className={`cursor-pointer border rounded-xl overflow-hidden transition-all duration-200 ${
                         isSelected
                           ? "border-orange-500 ring-1 ring-orange-500 bg-orange-50/50 dark:bg-orange-500/5"
-                          : "border-gray-200 dark:border-white/10 hover:border-orange-500/50 bg-white dark:bg-[#1a1a1c]"
+                          : "border-gray-200 dark:border-[#2C3246] hover:border-orange-500/50 bg-white dark:bg-[#141B31]"
                       }`}
                     >
                       <div className="flex justify-between items-center p-3 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-black/20">
@@ -581,7 +581,7 @@ export function DashboardOrdersTab({
                         </div>
 
                         <div className="flex gap-4">
-                          <div className="w-14 h-20 bg-gray-50 dark:bg-[#121214] rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-white/10 p-1 flex items-center justify-center">
+                          <div className="w-14 h-20 bg-gray-50 dark:bg-[#0A1128] rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-[#2C3246] p-1 flex items-center justify-center">
                             {getOrderImage(order) ? (
                               <img
                                 src={getOrderImage(order)}
@@ -631,7 +631,7 @@ export function DashboardOrdersTab({
 
             {/* Pagination UI */}
             {totalPages > 1 && (
-              <div className="p-4 sm:p-5 border-t border-gray-100 dark:border-white/10 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-[#121214] shrink-0">
+              <div className="p-4 sm:p-5 border-t border-gray-100 dark:border-[#2C3246] flex flex-col sm:flex-row items-center justify-between gap-3 bg-white dark:bg-[#141B31] shrink-0">
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   Menampilkan{" "}
                   <span className="font-semibold text-gray-900 dark:text-white">
@@ -653,7 +653,7 @@ export function DashboardOrdersTab({
                     type="button"
                     onClick={() => setOrderPage((p) => Math.max(1, p - 1))}
                     disabled={orderPage === 1}
-                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <ChevronLeft className="w-3.5 h-3.5" />
                     <span className="hidden sm:inline">Prev</span>
@@ -685,7 +685,7 @@ export function DashboardOrdersTab({
                               className={`w-8 h-8 shrink-0 flex items-center justify-center rounded-lg text-xs font-bold transition-colors cursor-pointer ${
                                 orderPage === page
                                   ? "bg-orange-500 text-white border border-orange-500 shadow-sm"
-                                  : "border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-medium"
+                                  : "border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 font-medium"
                               }`}
                             >
                               {page}
@@ -699,7 +699,7 @@ export function DashboardOrdersTab({
                     type="button"
                     onClick={() => setOrderPage((p) => Math.min(totalPages, p + 1))}
                     disabled={orderPage === totalPages}
-                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-white/10 bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
+                    className="h-8 px-2.5 sm:px-3 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-white/5 hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-xs font-medium flex items-center gap-1.5 cursor-pointer shadow-2xs"
                   >
                     <span className="hidden sm:inline">Next</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -712,7 +712,7 @@ export function DashboardOrdersTab({
 
         {/* Right Column: Order Details (Desktop) */}
         <div className="hidden lg:block lg:col-span-1">
-          <div className="bg-white dark:bg-[#121214] rounded-2xl border border-gray-100 dark:border-white/10 shadow-sm overflow-hidden h-full">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl border border-gray-100 dark:border-[#2C3246] shadow-sm overflow-hidden h-full">
             <OrderDetailsContent order={selectedOrder} />
           </div>
         </div>
@@ -724,8 +724,8 @@ export function DashboardOrdersTab({
               className="absolute inset-0 bg-black/60 backdrop-blur-sm"
               onClick={() => setIsMobileModalOpen(false)}
             ></div>
-            <div className="relative bg-white dark:bg-[#121214] w-full sm:w-[90%] sm:max-w-md max-h-[90vh] rounded-t-2xl sm:rounded-2xl overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-10">
-              <div className="sticky top-0 right-0 p-4 flex justify-end bg-gradient-to-b from-white dark:from-[#121214] to-transparent z-10 pointer-events-none">
+            <div className="relative bg-white dark:bg-[#141B31] w-full sm:w-[90%] sm:max-w-md max-h-[90vh] rounded-t-2xl sm:rounded-2xl overflow-y-auto shadow-2xl animate-in slide-in-from-bottom-full sm:slide-in-from-bottom-10">
+              <div className="sticky top-0 right-0 p-4 flex justify-end bg-gradient-to-b from-white dark:from-[#141B31] to-transparent z-10 pointer-events-none">
                 <button
                   onClick={() => setIsMobileModalOpen(false)}
                   className="p-2 bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-white rounded-full hover:bg-gray-200 dark:hover:bg-white/20 transition-colors pointer-events-auto shadow-sm"

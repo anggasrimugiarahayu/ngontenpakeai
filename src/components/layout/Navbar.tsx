@@ -99,7 +99,7 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
   const isPro = badgeName !== "FREE";
 
   return (
-    <nav className="fixed w-full top-0 z-50 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors duration-300 backdrop-blur-md bg-gray-50/80 dark:bg-[#0A1128]/80 border-b border-transparent dark:border-[#2C3246]/50">
+    <nav className="fixed w-full top-0 z-50 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors duration-300 backdrop-blur-md bg-gray-50/80 dark:bg-[#0A1128]/80">
       <div className="flex items-center shrink-0 gap-3">
         {isWorkspace && (
           <button 

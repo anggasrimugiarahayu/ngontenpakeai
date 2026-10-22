@@ -97,7 +97,7 @@ export function SortFeedFilterDropdown({
       {/* Kontainer Dropdown - stopPropagation menjamin klik di dalam TIDAK PERNAH menutup dropdown */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="absolute top-full right-0 mt-2 z-50 w-80 sm:w-88 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl p-4 sm:p-5 text-gray-900 dark:text-white animate-in zoom-in-95 fade-in duration-150"
+        className="absolute top-full right-0 mt-2 z-50 w-80 sm:w-88 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl p-4 sm:p-5 text-gray-900 dark:text-white animate-in zoom-in-95 fade-in duration-150"
       >
         {/* Header Dropdown */}
         <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-white/10">

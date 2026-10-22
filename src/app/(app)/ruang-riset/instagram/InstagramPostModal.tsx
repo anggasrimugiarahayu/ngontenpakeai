@@ -56,7 +56,7 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
       <div
-        className="w-full max-w-4xl max-h-[92vh] bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative animate-in zoom-in-95 duration-200"
+        className="w-full max-w-4xl max-h-[92vh] bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Floating Close Button */}

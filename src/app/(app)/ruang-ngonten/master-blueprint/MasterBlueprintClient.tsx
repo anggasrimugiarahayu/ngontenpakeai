@@ -326,7 +326,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
   };
 
   const inputClass = `w-full p-3 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all ${
-    isDark ? "bg-[#18181b] border-white/10 text-white placeholder:text-gray-600" : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
+    isDark ? "bg-[#141B31] border-[#2C3246] text-white placeholder:text-gray-500" : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
   }`;
   const labelClass = `text-xs font-bold mb-1.5 block ${isDark ? "text-gray-300" : "text-gray-700"}`;
 
@@ -497,7 +497,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
         
         {toast && (
           <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-5 fade-in duration-300">
-            <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border ${isDark ? "bg-[#18181b] border-white/10" : "bg-white border-gray-200"}`}>
+            <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border ${isDark ? "bg-[#141B31] border-[#2C3246]" : "bg-white border-gray-200"}`}>
               {toast.type === "success" ? (
                 <div className="w-6 h-6 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center shrink-0">
                   <CheckCircle2 className="w-4 h-4" />
@@ -515,7 +515,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
         {/* Delete Confirmation Modal */}
         {isDeleteModalOpen && (
           <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className={`w-full max-w-md p-6 rounded-2xl shadow-2xl border ${isDark ? "bg-[#18181b] border-white/10" : "bg-white border-gray-200"} animate-in zoom-in-95 duration-200`}>
+            <div className={`w-full max-w-md p-6 rounded-2xl shadow-2xl border ${isDark ? "bg-[#141B31] border-[#2C3246]" : "bg-white border-gray-200"} animate-in zoom-in-95 duration-200`}>
               <div className="flex items-center gap-4 mb-4">
                 <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center shrink-0">
                   <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />
@@ -829,7 +829,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
 
       {toast && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-5 fade-in duration-300">
-          <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border ${isDark ? "bg-[#18181b] border-white/10" : "bg-white border-gray-200"}`}>
+          <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border ${isDark ? "bg-[#141B31] border-[#2C3246]" : "bg-white border-gray-200"}`}>
             {toast.type === "success" ? (
               <div className="w-6 h-6 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center shrink-0">
                 <CheckCircle2 className="w-4 h-4" />

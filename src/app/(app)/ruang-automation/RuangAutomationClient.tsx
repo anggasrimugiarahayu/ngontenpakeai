@@ -1684,7 +1684,7 @@ export default function RuangAutomationClient({
       {/* Toast Notification (Seragam dengan Ruang Ngonten & Ruang Belajar) */}
       {toast && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-[120] animate-in slide-in-from-top-5 fade-in duration-300 pointer-events-none">
-          <div className="flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl border bg-white border-gray-200 dark:bg-[#18181b] dark:border-white/10">
+          <div className="flex items-center gap-3 px-5 py-3 rounded-2xl shadow-xl border bg-white border-gray-200 dark:bg-[#141B31] dark:border-[#2C3246]">
             {toast.type === "success" ? (
               <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-500 flex items-center justify-center shrink-0">
                 <CheckCircle2 className="w-4 h-4" />
@@ -1706,7 +1706,7 @@ export default function RuangAutomationClient({
       {/* Custom Confirmation Modal (Identik dengan Ruang Ngonten & Ruang Belajar) */}
       {confirmModal && confirmModal.isOpen && (
         <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md p-6 rounded-2xl shadow-2xl border bg-white border-gray-200 dark:bg-[#18181b] dark:border-white/10 animate-in zoom-in-95 duration-200">
+          <div className="w-full max-w-md p-6 rounded-2xl shadow-2xl border bg-white border-gray-200 dark:bg-[#141B31] dark:border-[#2C3246] animate-in zoom-in-95 duration-200">
             <div className="flex items-start gap-4 mb-4">
               <div className="w-12 h-12 rounded-full bg-rose-100 dark:bg-rose-500/20 flex items-center justify-center shrink-0">
                 <AlertCircle className="w-6 h-6 text-rose-600 dark:text-rose-400" />
@@ -1855,7 +1855,7 @@ export default function RuangAutomationClient({
             {activeIgTab === "komentar" && (
               <div className="space-y-6 animate-in fade-in duration-200">
                 {/* Header & Actions Card */}
-                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214] shadow-sm">
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31] shadow-sm">
                   <div className="mb-2 md:mb-0">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                       Komentar IG ke DM
@@ -1874,7 +1874,7 @@ export default function RuangAutomationClient({
                         className={`px-3.5 py-2.5 rounded-lg border text-xs sm:text-sm font-bold flex items-center gap-2 transition-colors ${
                           filterStatus !== "ALL"
                             ? "border-gray-900 dark:border-white bg-gray-900 text-white dark:bg-white dark:text-gray-900"
-                            : "border-gray-200 dark:border-white/10 bg-white dark:bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                            : "border-gray-200 dark:border-[#2C3246] bg-white dark:bg-transparent text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
                         }`}
                       >
                         <Filter className="w-4 h-4" />
@@ -1885,7 +1885,7 @@ export default function RuangAutomationClient({
                       </button>
 
                       {isFilterOpen && (
-                        <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-2xl py-2 z-30 animate-in fade-in zoom-in-95 duration-150">
+                        <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-2xl py-2 z-30 animate-in fade-in zoom-in-95 duration-150">
                           <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
                             Status Aturan
                           </div>
@@ -1960,7 +1960,7 @@ export default function RuangAutomationClient({
                         onClick={() => setAutomationTab(tab.id as any)}
                         className={`px-3.5 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
                           automationTab === tab.id
-                            ? "bg-white dark:bg-[#18181b] text-gray-900 dark:text-white shadow-sm border border-gray-200/50 dark:border-white/10"
+                            ? "bg-white dark:bg-[#141B31] text-gray-900 dark:text-white shadow-sm border border-gray-200/50 dark:border-[#2C3246]"
                             : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                         }`}
                       >

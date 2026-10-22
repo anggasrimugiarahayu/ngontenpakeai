@@ -207,7 +207,7 @@ export default function GlobalChatLayout({
             
             {isLoading && (
               <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex gap-1.5 p-4 bg-gray-50 dark:bg-[#121214] border border-gray-100 dark:border-white/5 rounded-2xl rounded-tl-sm w-fit">
+                <div className="flex gap-1.5 p-4 bg-gray-50 dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246] rounded-2xl rounded-tl-sm w-fit">
                   <span className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce"></span>
                   <span className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce [animation-delay:0.2s]"></span>
                   <span className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce [animation-delay:0.4s]"></span>

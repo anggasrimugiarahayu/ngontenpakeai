@@ -64,7 +64,7 @@ export function InstagramAgentListSection({
       )}
 
       {/* Header & Actions Card */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214] shadow-sm">
+      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31] shadow-sm">
         <div className="mb-2 md:mb-0">
           <h1 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-1">
             IG Automation
@@ -94,7 +94,7 @@ export function InstagramAgentListSection({
             </button>
 
             {isAgentFilterOpen && (
-              <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-2xl py-2 z-30 animate-in fade-in zoom-in-95 duration-150">
+              <div className="absolute right-0 mt-2 w-48 rounded-2xl bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-2xl py-2 z-30 animate-in fade-in zoom-in-95 duration-150">
                 <div className="px-4 py-1.5 text-[10px] font-bold uppercase tracking-wider text-gray-400">
                   Status Koneksi
                 </div>
@@ -181,7 +181,7 @@ export function InstagramAgentListSection({
           </button>
         </div>
       ) : filteredAgents.length === 0 ? (
-        <div className="rounded-[20px] border border-gray-200 dark:border-white/10 p-8 text-center bg-white dark:bg-[#18181b] max-w-md mx-auto my-8 shadow-sm">
+        <div className="rounded-[20px] border border-gray-200 dark:border-[#2C3246] p-8 text-center bg-white dark:bg-[#141B31] max-w-md mx-auto my-8 shadow-sm">
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Tidak ada agen dengan status filter yang dipilih.
           </p>
@@ -206,14 +206,14 @@ export function InstagramAgentListSection({
                   onSelectAgent(agent.id);
                 }
               }}
-              className="group relative flex items-center justify-between rounded-[16px] sm:rounded-[20px] border border-gray-200 dark:border-white/10 p-4 sm:p-5 text-left transition-all duration-300 cursor-pointer overflow-hidden bg-white dark:bg-[#18181b] hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 gap-4 sm:gap-6"
+              className="group relative flex items-center justify-between rounded-[16px] sm:rounded-[20px] border-2 border-gray-200 dark:border-[#2C3246] p-4 sm:p-5 text-left transition-all duration-200 cursor-pointer overflow-hidden bg-white dark:bg-[#141B31] hover:border-rn-accent dark:hover:border-orange-500/50 hover:shadow-xl hover:-translate-y-1 hover:shadow-gray-200 dark:hover:shadow-black/50 gap-4 sm:gap-6"
             >
               {/* Sisi Kiri & Tengah: Avatar + Informasi */}
               <div className="flex items-center gap-3.5 sm:gap-4 min-w-0 flex-1">
                 {/* Avatar / Icon */}
                 <div className="relative shrink-0">
                   {agent.isLinked ? (
-                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-gray-200 dark:border-white/10 bg-gray-100 dark:bg-white/5 overflow-hidden flex items-center justify-center shadow-2xs">
+                    <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-gray-200 dark:border-[#2C3246] bg-gray-100 dark:bg-[#0A1128] overflow-hidden flex items-center justify-center shadow-2xs">
                       {agent.profilePicUrl ? (
                         <img
                           src={agent.profilePicUrl}
@@ -286,7 +286,7 @@ export function InstagramAgentListSection({
                   </button>
 
                   {activeDropdownAgentId === agent.id && (
-                    <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95">
+                    <div className="absolute right-0 top-full mt-1 w-48 rounded-xl bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-xl py-1 z-30 animate-in fade-in zoom-in-95">
                       <button
                         type="button"
                         onClick={(e) => {

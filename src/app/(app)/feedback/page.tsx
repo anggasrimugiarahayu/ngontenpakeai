@@ -130,7 +130,7 @@ export default function FeedbackPage() {
                 onChange={(e) => setImproveText(e.target.value)}
                 placeholder="Ketikan masukan kamu disini..."
                 className={`w-full h-40 p-4 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none ${
-                  isDark ? "bg-[#18181b] border-white/10 text-white placeholder:text-gray-600" : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
+                  isDark ? "bg-[#141B31] border-[#2C3246] text-white placeholder:text-gray-600" : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                 }`}
               />
               <button type="button" className={`absolute bottom-4 right-4 p-2 rounded-full transition-colors ${isDark ? "hover:bg-white/10 text-gray-400" : "hover:bg-gray-100 text-gray-400"}`}>
@@ -163,7 +163,7 @@ export default function FeedbackPage() {
                 onChange={(e) => setFeatureText(e.target.value)}
                 placeholder="Fitur yang bikin kerjaan kamu lebih gampang..."
                 className={`w-full h-40 p-4 rounded-xl text-sm border focus:ring-2 focus:ring-orange-500/50 outline-none transition-all resize-none ${
-                  isDark ? "bg-[#18181b] border-white/10 text-white placeholder:text-gray-600" : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
+                  isDark ? "bg-[#141B31] border-[#2C3246] text-white placeholder:text-gray-600" : "bg-white border-gray-200 text-gray-900 placeholder:text-gray-400"
                 }`}
               />
               <button type="button" className={`absolute bottom-4 right-4 p-2 rounded-full transition-colors ${isDark ? "hover:bg-white/10 text-gray-400" : "hover:bg-gray-100 text-gray-400"}`}>

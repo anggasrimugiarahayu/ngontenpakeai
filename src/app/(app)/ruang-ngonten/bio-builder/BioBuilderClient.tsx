@@ -697,7 +697,7 @@ export default function BioBuilderClient() {
 
       {toast && (
         <div className="fixed top-8 left-1/2 -translate-x-1/2 z-50 animate-in slide-in-from-top-5 fade-in duration-300">
-          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border bg-white border-gray-200 dark:bg-[#18181b] dark:border-white/10">
+          <div className="flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31]">
             {toast.type === "success" ? (
               <div className="w-6 h-6 rounded-full bg-green-500/20 text-green-500 flex items-center justify-center shrink-0">
                 <CheckCircle2 className="w-4 h-4" />
@@ -715,7 +715,7 @@ export default function BioBuilderClient() {
       {/* Delete Confirmation Modal */}
       {isDeleteModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="w-full max-w-md p-6 rounded-2xl shadow-2xl border bg-white border-gray-200 dark:bg-[#18181b] dark:border-white/10 animate-in zoom-in-95 duration-200">
+          <div className="w-full max-w-md p-6 rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] animate-in zoom-in-95 duration-200">
             <div className="flex items-center gap-4 mb-4">
               <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-500/20 flex items-center justify-center shrink-0">
                 <AlertCircle className="w-6 h-6 text-red-600 dark:text-red-400" />

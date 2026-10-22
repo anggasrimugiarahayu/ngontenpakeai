@@ -29,7 +29,7 @@ export default function CanvasCell({ title, badge, dataKey, content, icon: Icon,
   };
 
   return (
-    <div className="bg-white dark:bg-[#121214] p-5 rounded-2xl border border-gray-200 dark:border-white/5 flex flex-col h-full hover:border-orange-500/50 transition-colors relative group">
+    <div className="bg-white dark:bg-[#141B31] p-5 rounded-2xl border border-gray-200 dark:border-[#2C3246] flex flex-col h-full hover:border-orange-500/50 transition-colors relative group">
       <div className="flex justify-between items-start mb-4 gap-2">
         <div className="flex items-center gap-2.5">
           {Icon && <Icon size={18} className="text-gray-400" />}

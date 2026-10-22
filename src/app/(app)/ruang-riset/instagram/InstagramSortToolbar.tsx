@@ -75,7 +75,7 @@ export function InstagramSortToolbar({
     filterMode === "date";
 
   return (
-    <div className="w-full bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5 relative">
+    <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5 relative">
       {/* ========================================================================= */}
       {/* BARIS ATAS: Judul Kiri & Aksi Kanan (Persis Lampiran SortFeed) */}
       {/* ========================================================================= */}

@@ -12,12 +12,12 @@ export function TikTokPlatformCard() {
 
   return (
     <div
-      className="group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-300 cursor-not-allowed z-0 overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/5 opacity-75"
+      className="group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-300 cursor-not-allowed z-0 overflow-hidden bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] opacity-75"
       title="TikTok Automation sedang dalam tahap riset & pengembangan"
     >
       {/* Card Header */}
       <div className="flex items-center gap-3 mb-3">
-        <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center text-gray-400 dark:text-gray-500 shrink-0">
+        <div className="w-10 h-10 rounded-xl bg-gray-50 dark:bg-[#0A1128] border border-transparent dark:border-[#2C3246]/50 flex items-center justify-center text-gray-400 dark:text-gray-500 shrink-0">
           <TikTokIcon className="w-5 h-5" />
         </div>
         <div className="flex flex-col gap-1 w-full">
@@ -41,7 +41,7 @@ export function TikTokPlatformCard() {
 
       {/* Timeline Points List */}
       <div className="relative ml-1.5 space-y-3">
-        <div className="absolute left-[3px] top-1.5 bottom-1.5 w-[2px] bg-gray-200 dark:bg-white/5" />
+        <div className="absolute left-[3px] top-1.5 bottom-1.5 w-[2px] bg-gray-200 dark:bg-[#2C3246]" />
 
         {ttPoints.map((point, pIdx) => (
           <div key={pIdx} className="relative flex items-center gap-3">

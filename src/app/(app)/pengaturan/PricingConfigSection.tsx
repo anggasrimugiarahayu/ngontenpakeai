@@ -232,7 +232,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
             </div>
           </div>
           
-          <div className="sticky bottom-0 bg-gray-50 dark:bg-[#18181b] p-5 border-t border-gray-200 dark:border-white/10 flex justify-end gap-3">
+          <div className="sticky bottom-0 bg-gray-50 dark:bg-[#141B31] p-5 border-t border-gray-200 dark:border-[#2C3246] flex justify-end gap-3">
              <button onClick={() => setEditingPackage(null)} className="px-5 py-2.5 rounded-xl font-bold text-sm text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition-colors">
                Batal
              </button>

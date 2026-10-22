@@ -79,9 +79,9 @@ export default function ToolCard({
       {/* Card Header */}
       <div className="flex items-center gap-3 mb-3">
         <div
-          className={`w-10 h-10 rounded-xl bg-gray-50 dark:bg-white/5 flex items-center justify-center transition-colors ${
+          className={`w-10 h-10 rounded-xl bg-gray-50 dark:bg-[#0A1128] border border-transparent dark:border-[#2C3246]/50 flex items-center justify-center transition-colors ${
             canAccess
-              ? "text-gray-600 dark:text-gray-400 group-hover:bg-rn-accent/10 group-hover:text-rn-accent"
+              ? "text-gray-600 dark:text-gray-300 group-hover:bg-rn-accent/10 group-hover:text-rn-accent"
               : "text-gray-500"
           }`}
         >
@@ -134,7 +134,7 @@ export default function ToolCard({
 
       {/* Timeline List */}
       <div className="relative ml-1.5 space-y-3">
-        <div className="absolute left-[3px] top-1.5 bottom-1.5 w-[2px] bg-gray-200 dark:bg-white/5" />
+        <div className="absolute left-[3px] top-1.5 bottom-1.5 w-[2px] bg-gray-200 dark:bg-[#2C3246]" />
 
         {feature.points.map((point: string, pIdx: number) => (
           <div key={pIdx} className="relative flex items-center gap-3">
@@ -168,10 +168,10 @@ export default function ToolCard({
     </>
   );
 
-  const cardClasses = `group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-300 cursor-pointer z-0 overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/5 ${
+  const cardClasses = `group relative flex flex-col justify-start rounded-xl border-2 p-5 text-left transition-all duration-200 cursor-pointer z-0 overflow-hidden bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] ${
     !canAccess
       ? "opacity-80 hover:border-gray-300 dark:hover:border-white/20"
-      : "hover:border-rn-accent dark:hover:border-rn-accent/50 shadow-gray-200 dark:shadow-black/50 hover:shadow-xl hover:-translate-y-1.5"
+      : "hover:border-rn-accent dark:hover:border-orange-500/50 shadow-gray-200 dark:shadow-black/50 hover:shadow-xl hover:-translate-y-1"
   }`;
 
   if (!canAccess) {

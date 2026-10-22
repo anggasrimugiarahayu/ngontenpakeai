@@ -38,7 +38,7 @@ export default function BlueprintRequiredModal({
       />
 
       {/* Modal Dialog */}
-      <div className="relative w-full max-w-sm bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl shadow-2xl p-6 text-center z-10 animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full max-w-sm bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl p-6 text-center z-10 animate-in fade-in zoom-in-95 duration-200">
         {/* Close Button */}
         <button
           onClick={onClose}

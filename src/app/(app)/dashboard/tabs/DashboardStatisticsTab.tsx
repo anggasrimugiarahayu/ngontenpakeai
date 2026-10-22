@@ -58,7 +58,7 @@ export function DashboardStatisticsTab({
       <div className="space-y-6 animate-in fade-in duration-300">
         {/* Top Summary Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col justify-center">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-center">
             <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-orange-500"></div>
               Total Views & Clicks
@@ -78,7 +78,7 @@ export function DashboardStatisticsTab({
               )}
             </div>
           </div>
-          <div className="bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col justify-center">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-center">
             <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-blue-500"></div>
               Total Sales
@@ -87,7 +87,7 @@ export function DashboardStatisticsTab({
               {data.lifetimeOrders}
             </h3>
           </div>
-          <div className="bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col justify-center relative overflow-hidden">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-center relative overflow-hidden">
             <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3"></div>
             <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
               <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
@@ -113,7 +113,7 @@ export function DashboardStatisticsTab({
         {/* Charts Row */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Sales Value Bar Chart */}
-          <div className="lg:col-span-2 bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10">
+          <div className="lg:col-span-2 bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246]">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <div className="flex items-center gap-2 mb-1">
@@ -177,7 +177,7 @@ export function DashboardStatisticsTab({
           </div>
 
           {/* Sales Distribution Donut */}
-          <div className="lg:col-span-1 bg-white dark:bg-[#121214] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-white/10 flex flex-col">
+          <div className="lg:col-span-1 bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col">
             <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6">
               Sales Distribution
             </h3>
@@ -223,8 +223,8 @@ export function DashboardStatisticsTab({
         </div>
 
         {/* Product Lifetime Sales Table */}
-        <div className="bg-white dark:bg-[#121214] rounded-2xl shadow-sm border border-gray-100 dark:border-white/10 overflow-hidden">
-          <div className="p-5 border-b border-gray-100 dark:border-white/10 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-sm border border-gray-100 dark:border-[#2C3246] overflow-hidden">
+          <div className="p-5 border-b border-gray-100 dark:border-[#2C3246] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
               Product Lifetime Sales
             </h3>
@@ -333,7 +333,7 @@ export function DashboardStatisticsTab({
 
       {isPackageModalOpen && selectedPackage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#1a1a1c] border border-gray-100 dark:border-white/10 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+          <div className="bg-white dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246] rounded-2xl p-6 w-full max-w-md shadow-2xl">
             <div className="flex justify-between items-start mb-6">
               <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                 Detail Paket Penjualan
@@ -347,7 +347,7 @@ export function DashboardStatisticsTab({
             </div>
 
             <div className="flex gap-4 items-center mb-6">
-              <div className="w-20 h-20 bg-gray-50 dark:bg-[#121214] rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-white/10 flex items-center justify-center p-1">
+              <div className="w-20 h-20 bg-gray-50 dark:bg-[#0A1128] rounded-lg overflow-hidden shrink-0 border border-gray-200 dark:border-[#2C3246] flex items-center justify-center p-1">
                 <img
                   src={selectedPackage.image}
                   alt={selectedPackage.title}

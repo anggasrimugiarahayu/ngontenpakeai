@@ -138,7 +138,7 @@ export function PostRuleCard({
 
   return (
     <div
-      className="flex flex-row items-stretch w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-2xl relative p-3 sm:p-5 gap-3.5 sm:gap-5"
+      className="flex flex-row items-stretch w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] rounded-2xl relative p-3 sm:p-5 gap-3.5 sm:gap-5"
     >
       {/* Sisi Kiri: Cover 4:5 Ramping */}
       <div className="w-[105px] sm:w-[125px] aspect-[4/5] shrink-0 relative overflow-hidden bg-gray-200/80 dark:bg-white/10 rounded-xl sm:rounded-2xl shadow-2xs self-start">
@@ -208,7 +208,7 @@ export function PostRuleCard({
               </button>
 
               {activeDropdownRuleId === rule.id && (
-                <div className="absolute right-0 mt-1 w-40 rounded-xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute right-0 mt-1 w-40 rounded-xl bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-xl py-1 z-30 animate-in fade-in zoom-in-95 duration-150">
                   <button
                     onClick={() => {
                       setActiveDropdownRuleId(null);
@@ -439,7 +439,7 @@ export function PostAutomationSection({
 }: PostAutomationSectionProps) {
   if (filteredRules.length === 0) {
     return (
-      <div className="text-center py-16 px-4 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl space-y-4 bg-white dark:bg-[#18181b]">
+      <div className="text-center py-16 px-4 border-2 border-dashed border-gray-200 dark:border-[#2C3246] rounded-2xl space-y-4 bg-white dark:bg-[#141B31]">
         <div className="w-14 h-14 mx-auto rounded-2xl bg-gray-100 dark:bg-white/5 text-gray-700 dark:text-gray-300 flex items-center justify-center">
           <Bot className="w-7 h-7" />
         </div>

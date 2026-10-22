@@ -49,8 +49,8 @@ export default function WhatsAppModal({
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="bg-white dark:bg-[#121214] w-full max-w-lg rounded-2xl shadow-2xl relative overflow-hidden flex flex-col">
-        <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-white/10">
+      <div className="bg-white dark:bg-[#141B31] w-full max-w-lg rounded-2xl shadow-2xl relative overflow-hidden flex flex-col">
+        <div className="flex justify-between items-center p-6 border-b border-gray-100 dark:border-[#2C3246]">
           <h3 className="text-xl font-bold text-gray-900 dark:text-white">WhatsApp Follow Up</h3>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors">
             <X className="w-6 h-6" />
@@ -63,14 +63,14 @@ export default function WhatsAppModal({
           <textarea 
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            className="w-full h-48 p-4 bg-gray-50 dark:bg-[#1a1a1c] border border-gray-200 dark:border-white/10 rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white resize-none"
+            className="w-full h-48 p-4 bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl focus:outline-none focus:ring-2 focus:ring-orange-500 text-gray-900 dark:text-white resize-none"
             placeholder="Ketik pesan Anda di sini..."
           />
           <p className="text-xs text-gray-500 mt-3">
             Nomor tujuan: <span className="font-mono text-emerald-600 dark:text-emerald-400 font-bold">+{sanitizePhone(order.user?.phone || order.customerPhone || '0000')}</span>
           </p>
         </div>
-        <div className="p-6 border-t border-gray-100 dark:border-white/10 bg-gray-50 dark:bg-[#1a1a1c]">
+        <div className="p-6 border-t border-gray-100 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128]">
           <button 
             onClick={handleSend}
             className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-orange-500/20"

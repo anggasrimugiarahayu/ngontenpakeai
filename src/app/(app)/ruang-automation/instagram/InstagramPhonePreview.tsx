@@ -131,7 +131,7 @@ export function InstagramPhonePreview({
               onClick={() => setActivePreviewTab("COMMENT")}
               className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 activePreviewTab === "COMMENT"
-                  ? "bg-white dark:bg-[#18181b] text-gray-900 dark:text-white shadow-xs"
+                  ? "bg-white dark:bg-[#141B31] text-gray-900 dark:text-white shadow-xs"
                   : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
@@ -142,7 +142,7 @@ export function InstagramPhonePreview({
               onClick={() => setActivePreviewTab("DM")}
               className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
                 activePreviewTab === "DM"
-                  ? "bg-white dark:bg-[#18181b] text-gray-900 dark:text-white shadow-xs"
+                  ? "bg-white dark:bg-[#141B31] text-gray-900 dark:text-white shadow-xs"
                   : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
               }`}
             >
@@ -163,7 +163,7 @@ export function InstagramPhonePreview({
                 onClick={() => setActiveLiveContentIdx(idx)}
                 className={`px-2.5 py-1 rounded-lg transition-all cursor-pointer shrink-0 ${
                   activeLiveContentIdx === idx
-                    ? "bg-white dark:bg-[#18181b] text-gray-900 dark:text-white shadow-xs"
+                    ? "bg-white dark:bg-[#141B31] text-gray-900 dark:text-white shadow-xs"
                     : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >

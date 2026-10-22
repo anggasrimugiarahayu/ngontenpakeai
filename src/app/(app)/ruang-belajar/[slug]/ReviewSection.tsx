@@ -86,7 +86,7 @@ export default function ReviewSection({
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             placeholder="Tulis ulasan, kritik, atau saran tentang e-book ini..."
-            className="w-full bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-xl p-4 text-sm text-gray-900 dark:text-white mb-4 focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none min-h-[100px]"
+            className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl p-4 text-sm text-gray-900 dark:text-white mb-4 focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none min-h-[100px]"
           />
 
           <div className="flex justify-end gap-3">

@@ -56,7 +56,7 @@ export function InstagramDashboardTab({
       {/* Summary Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Card 1: Komentar Terjawab (1 Line) */}
-        <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-[#18181b] space-y-2">
+        <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-5 bg-white dark:bg-[#141B31] space-y-2">
           <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 gap-2">
             <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider whitespace-nowrap truncate">
               Komentar Terjawab
@@ -72,7 +72,7 @@ export function InstagramDashboardTab({
         </div>
 
         {/* Card 2: DM Terkirim */}
-        <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-[#18181b] space-y-2">
+        <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-5 bg-white dark:bg-[#141B31] space-y-2">
           <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 gap-2">
             <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider whitespace-nowrap truncate">
               DM Terkirim
@@ -88,7 +88,7 @@ export function InstagramDashboardTab({
         </div>
 
         {/* Card 3: Instagram Automation */}
-        <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-[#18181b] space-y-2">
+        <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-5 bg-white dark:bg-[#141B31] space-y-2">
           <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 gap-2">
             <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider whitespace-nowrap truncate">
               Instagram Automation
@@ -106,7 +106,7 @@ export function InstagramDashboardTab({
         </div>
 
         {/* Card 4: Tingkat Sukses */}
-        <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 bg-white dark:bg-[#18181b] space-y-2">
+        <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-5 bg-white dark:bg-[#141B31] space-y-2">
           <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 gap-2">
             <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider whitespace-nowrap truncate">
               Tingkat Sukses
@@ -123,7 +123,7 @@ export function InstagramDashboardTab({
       </div>
 
       {/* LOG KOMENTAR (14 HARI TERAKHIR) DENGAN TABEL LENGKAP & PAGINASI */}
-      <div className="rounded-2xl border border-gray-200 dark:border-white/10 p-5 sm:p-6 bg-white dark:bg-[#18181b] space-y-4">
+      <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-5 sm:p-6 bg-white dark:bg-[#141B31] space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <h4 className="font-bold text-sm sm:text-base text-gray-900 dark:text-white flex items-center gap-2">

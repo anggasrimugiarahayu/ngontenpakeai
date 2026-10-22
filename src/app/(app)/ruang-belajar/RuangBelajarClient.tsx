@@ -75,9 +75,9 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                   href={`/ruang-belajar/${ebook.slug}`} 
                   onMouseEnter={() => preload(["ebookDetail", ebook.slug], () => getEbookDetailAction(ebook.slug))}
                   onTouchStart={() => preload(["ebookDetail", ebook.slug], () => getEbookDetailAction(ebook.slug))} key={ebook.id} className="group flex">
-                  <div className="flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-rn-accent/50 hover:shadow-xl hover:-translate-y-1.5 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-300 border border-gray-200 dark:border-white/10 bg-white dark:bg-[#18181b] rounded-[16px] sm:rounded-[20px] overflow-hidden relative p-3 sm:p-4 gap-3 sm:gap-4">
+                  <div className="flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-orange-500/50 hover:shadow-xl hover:-translate-y-1 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-200 border-2 border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] rounded-[16px] sm:rounded-[20px] overflow-hidden relative p-3 sm:p-4 gap-3 sm:gap-4">
                     
-                    <div className="w-[100px] sm:w-[120px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#1f1f23] border border-gray-200 dark:border-white/5 rounded-[10px] sm:rounded-xl shadow-sm">
+                    <div className="w-[100px] sm:w-[120px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-[10px] sm:rounded-xl shadow-sm">
                       <div className="aspect-[3/4] relative flex items-center justify-center">
                         {ebook.coverUrl ? (
                           <>
@@ -181,7 +181,7 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
             })}
           </div>
         ) : (
-          <div className="py-16 text-center border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl bg-white/50 dark:bg-white/5">
+          <div className="py-16 text-center border-2 border-dashed border-gray-200 dark:border-[#2C3246] rounded-2xl bg-white/50 dark:bg-[#141B31]/50">
             <BookOpen className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4 opacity-50" />
             <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1">Belum Ada E-Book</h3>
             <p className="text-gray-500">Belum ada e-book yang ditambahkan.</p>

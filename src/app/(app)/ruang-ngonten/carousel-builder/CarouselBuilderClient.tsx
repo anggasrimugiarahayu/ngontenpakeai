@@ -619,7 +619,7 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG SESUAI KONFIGURASI INI.`;
                     value={configData.watermark_username}
                     onChange={e => setConfigData({...configData, watermark_username: e.target.value})}
                     placeholder="@username" 
-                    className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 focus:ring-2 focus:ring-orange-500/50 outline-none text-sm font-bold text-gray-900 dark:text-white"
+                    className="w-full px-4 py-2.5 rounded-xl bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] focus:ring-2 focus:ring-orange-500/50 outline-none text-sm font-bold text-gray-900 dark:text-white"
                   />
                 </div>
               </div>

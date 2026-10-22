@@ -62,7 +62,7 @@ export function InstagramProfileHeader({
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
   return (
-    <div className="w-full bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-2xl p-5 sm:p-6 md:p-8 shadow-xs relative">
+    <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl p-5 sm:p-6 md:p-8 shadow-xs relative">
       {/* ========================================================================= */}
       {/* DESKTOP LAYOUT (md:flex) */}
       {/* ========================================================================= */}
@@ -73,7 +73,7 @@ export function InstagramProfileHeader({
             <img
               src={profile.profilePicUrl}
               alt={profile.username}
-              className="w-full h-full rounded-full object-cover border-2 border-white dark:border-[#18181b]"
+              className="w-full h-full rounded-full object-cover border-2 border-white dark:border-[#141B31]"
             />
           </div>
         </div>
@@ -172,7 +172,7 @@ export function InstagramProfileHeader({
             <img
               src={profile.profilePicUrl}
               alt={profile.username}
-              className="w-full h-full rounded-full object-cover border-2 border-white dark:border-[#18181b]"
+              className="w-full h-full rounded-full object-cover border-2 border-white dark:border-[#141B31]"
             />
           </div>
 

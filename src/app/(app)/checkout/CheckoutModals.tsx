@@ -73,8 +73,8 @@ export default function CheckoutModals({
     <>
       {showAddonModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-white/10">
-            <div className="p-4 border-b border-gray-100 dark:border-white/10 flex items-center justify-between shrink-0">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-[#2C3246]">
+            <div className="p-4 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between shrink-0">
               <h3 className="font-bold text-gray-900 dark:text-white">Pilih Add-on</h3>
               <button onClick={() => setShowAddonModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-gray-500">
                 <X className="w-5 h-5" />
@@ -86,9 +86,9 @@ export default function CheckoutModals({
                 availableAddons
                   .filter((a) => !selectedAddons.includes(a.id))
                   .map((addon) => (
-                    <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/10">
+                    <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#2C3246] bg-gray-50/50 dark:bg-black/10">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 bg-white dark:bg-[#18181b] rounded-lg p-0.5 border border-gray-100 dark:border-white/5 shrink-0 flex items-center justify-center overflow-hidden">
+                        <div className="w-12 h-12 bg-white dark:bg-[#141B31] rounded-lg p-0.5 border border-gray-100 dark:border-[#2C3246] shrink-0 flex items-center justify-center overflow-hidden">
                           {addon.coverUrl ? <img src={addon.coverUrl} className="w-full h-full object-contain" alt="" /> : <CreditCard className="w-5 h-5 text-gray-300" />}
                         </div>
                         <div>
@@ -118,8 +118,8 @@ export default function CheckoutModals({
 
       {showVoucherModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-white/10">
-            <div className="p-4 border-b border-gray-100 dark:border-white/10 flex items-center justify-between shrink-0">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-[#2C3246]">
+            <div className="p-4 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between shrink-0">
               <h3 className="font-bold text-gray-900 dark:text-white">Masukkan Kode Promo</h3>
               <button
                 onClick={() => {
@@ -156,8 +156,8 @@ export default function CheckoutModals({
 
       {showPaymentModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-white/10">
-            <div className="p-4 border-b border-gray-100 dark:border-white/10 flex items-center justify-between shrink-0">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-[#2C3246]">
+            <div className="p-4 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between shrink-0">
               <h3 className="font-bold text-gray-900 dark:text-white">Select Payment Method</h3>
               <button onClick={() => setShowPaymentModal(false)} className="p-2 hover:bg-gray-100 dark:hover:bg-white/5 rounded-full transition-colors text-gray-500">
                 <X className="w-5 h-5" />
@@ -216,7 +216,7 @@ export default function CheckoutModals({
 
       {paymentState === "success" && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-[#18181b] p-8 rounded-3xl shadow-2xl border border-gray-200 dark:border-white/10 max-w-md w-full mx-auto text-center animate-in zoom-in-95 duration-300">
+          <div className="bg-white dark:bg-[#141B31] p-8 rounded-3xl shadow-2xl border border-gray-200 dark:border-[#2C3246] max-w-md w-full mx-auto text-center animate-in zoom-in-95 duration-300">
             <div className="w-20 h-20 bg-green-50 text-green-500 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
               <CheckCircle2 className="w-10 h-10" />
             </div>
@@ -269,8 +269,8 @@ export default function CheckoutModals({
       {/* INCLUDED ADDONS MODAL */}
       {isIncludedModalOpen && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-white/10">
-            <div className="p-4 border-b border-gray-100 dark:border-white/10 flex items-center justify-between shrink-0">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-[#2C3246]">
+            <div className="p-4 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between shrink-0">
               <h3 className="font-bold text-gray-900 dark:text-white">Produk Included (Gratis)</h3>
               <button
                 type="button"
@@ -286,9 +286,9 @@ export default function CheckoutModals({
 
             <div className="p-5 overflow-y-auto space-y-3">
               {includedAddons.map((addon) => (
-                <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/10">
+                <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#2C3246] bg-gray-50/50 dark:bg-black/10">
                   <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-white dark:bg-[#18181b] rounded-lg p-0.5 border border-gray-100 dark:border-white/5 shrink-0 flex items-center justify-center overflow-hidden">
+                    <div className="w-12 h-12 bg-white dark:bg-[#141B31] rounded-lg p-0.5 border border-gray-100 dark:border-[#2C3246] shrink-0 flex items-center justify-center overflow-hidden">
                       {addon.coverUrl ? <img src={addon.coverUrl} className="w-full h-full object-contain" alt="" /> : <CreditCard className="w-5 h-5 text-gray-300" />}
                     </div>
                     <div>

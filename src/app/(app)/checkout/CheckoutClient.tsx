@@ -312,7 +312,7 @@ export default function CheckoutClient({
 
   if (paymentState === "verifying") {
     return (
-      <div className="bg-white dark:bg-[#18181b] p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-white/10 max-w-md w-full mx-auto text-center mt-10">
+      <div className="bg-white dark:bg-[#141B31] p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-[#2C3246] max-w-md w-full mx-auto text-center mt-10">
         <Loader2 className="w-16 h-16 text-rn-accent animate-spin mx-auto mb-6" />
         <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Memverifikasi Status...</h2>
         <p className="text-gray-500 text-sm">Sistem sedang menghubungi Midtrans.</p>
@@ -337,7 +337,7 @@ export default function CheckoutClient({
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_400px] gap-4 lg:gap-6 items-stretch">
         <div className="flex flex-col space-y-4">
-          <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 p-4 md:p-5 flex-none">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-sm border border-gray-200 dark:border-[#2C3246] p-4 md:p-5 flex-none">
             <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-3 uppercase">PRODUCT</h3>
             <div className="flex items-start justify-between">
               <div className="flex items-start gap-4">
@@ -386,7 +386,7 @@ export default function CheckoutClient({
                     return (
                       <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-white/10 bg-gray-50/50 dark:bg-black/10">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-white dark:bg-[#18181b] rounded-lg p-0.5 border border-gray-100 dark:border-white/5 shrink-0 flex items-center justify-center overflow-hidden">
+                          <div className="w-10 h-10 bg-white dark:bg-[#141B31] rounded-lg p-0.5 border border-gray-100 dark:border-[#2C3246] shrink-0 flex items-center justify-center overflow-hidden">
                             {addon.coverUrl ? <img src={addon.coverUrl} className="w-full h-full object-contain" alt="" /> : <CreditCard className="w-4 h-4 text-gray-300" />}
                           </div>
                           <div>
@@ -417,7 +417,7 @@ export default function CheckoutClient({
             )}
           </div>
 
-          <div className="bg-white dark:bg-[#18181b] rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 p-4 md:p-5 flex-1 flex flex-col">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-sm border border-gray-200 dark:border-[#2C3246] p-4 md:p-5 flex-1 flex flex-col">
             <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-4 uppercase">BUYER INFO</h3>
             <div className="space-y-3.5 flex-1">
               <div className="space-y-1">
@@ -460,7 +460,7 @@ export default function CheckoutClient({
           </div>
         </div>
 
-        <div className="w-full bg-white dark:bg-[#18181b] rounded-2xl shadow-sm border border-gray-200 dark:border-white/10 p-4 md:p-5 flex flex-col h-full">
+        <div className="w-full bg-white dark:bg-[#141B31] rounded-2xl shadow-sm border border-gray-200 dark:border-[#2C3246] p-4 md:p-5 flex flex-col h-full">
           <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-4 uppercase">PAYMENT DETAIL</h3>
 
           <div className="space-y-2 mb-4">

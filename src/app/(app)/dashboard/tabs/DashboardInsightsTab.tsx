@@ -7,7 +7,7 @@ export function DashboardInsightsTab({ insightsData }: { insightsData: any }) {
     return <div className="p-8 text-center text-gray-500">Memuat data insights...</div>;
   if (insightsData.total === 0)
     return (
-      <div className="p-8 text-center text-gray-500 border border-gray-100 dark:border-white/5 rounded-2xl bg-white dark:bg-[#121214]">
+      <div className="p-8 text-center text-gray-500 border border-gray-100 dark:border-[#2C3246] rounded-2xl bg-white dark:bg-[#141B31]">
         Belum ada data onboarding dari user.
       </div>
     );
@@ -49,7 +49,7 @@ export function DashboardInsightsTab({ insightsData }: { insightsData: any }) {
 
   return (
     <div className="animate-in fade-in duration-300 mt-2">
-      <div className="bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 rounded-3xl p-6 md:p-8 shadow-xl">
+      <div className="bg-white dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246] rounded-3xl p-6 md:p-8 shadow-xl">
         <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-10">
           <div className="text-left max-w-2xl">
             <h3 className="text-xl md:text-2xl font-black text-gray-900 dark:text-white mb-2">
@@ -60,7 +60,7 @@ export function DashboardInsightsTab({ insightsData }: { insightsData: any }) {
             </p>
           </div>
 
-          <div className="flex flex-col items-start md:items-end bg-gray-50 dark:bg-white/5 p-3 px-5 rounded-xl border border-gray-100 dark:border-white/10 shrink-0">
+          <div className="flex flex-col items-start md:items-end bg-gray-50 dark:bg-white/5 p-3 px-5 rounded-xl border border-gray-100 dark:border-[#2C3246] shrink-0">
             <div className="text-gray-400 dark:text-gray-500 text-[10px] font-bold mb-1 uppercase tracking-wider">
               Total Responden
             </div>

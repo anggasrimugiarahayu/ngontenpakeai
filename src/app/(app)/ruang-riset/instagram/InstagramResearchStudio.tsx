@@ -227,7 +227,7 @@ export function InstagramResearchStudio({
                 value={usernameInput}
                 onChange={(e) => setUsernameInput(e.target.value)}
                 placeholder="Ketik username (contoh: papamenyapa)"
-                className="w-full pl-9 pr-4 py-3 text-sm font-medium rounded-xl bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rn-accent/20 focus:border-rn-accent transition-all shadow-xs"
+                className="w-full pl-9 pr-4 py-3 text-sm font-medium rounded-xl bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-rn-accent/20 focus:border-rn-accent transition-all shadow-xs"
               />
             </div>
 
@@ -272,7 +272,7 @@ export function InstagramResearchStudio({
 
       {/* Loading Progress Indicator (Selesai 100%) */}
       {isLoading && (
-        <div className="w-full p-6 sm:p-8 bg-white dark:bg-[#18181b] rounded-2xl border border-gray-200 dark:border-white/10 shadow-sm text-center space-y-4 animate-in fade-in duration-200 max-w-2xl mx-auto">
+        <div className="w-full p-6 sm:p-8 bg-white dark:bg-[#141B31] rounded-2xl border border-gray-200 dark:border-[#2C3246] shadow-sm text-center space-y-4 animate-in fade-in duration-200 max-w-2xl mx-auto">
           <div className="w-10 h-10 rounded-full border-3 border-orange-500 border-t-transparent animate-spin mx-auto" />
           <div className="space-y-1.5 max-w-md mx-auto">
             <div className="flex items-center justify-between text-xs font-bold">

@@ -80,7 +80,7 @@ export default function BantuanPage() {
       </p>
 
       {/* Card Form */}
-      <div className="w-full max-w-lg rounded-2xl border-2 p-6 md:p-8 transition-all duration-300 text-left relative overflow-hidden bg-white dark:bg-[#18181b] border-gray-200 dark:border-white/5 hover:border-rn-orange/30 shadow-gray-200 dark:shadow-black/50">
+      <div className="w-full max-w-lg rounded-2xl border-2 p-6 md:p-8 transition-all duration-300 text-left relative overflow-hidden bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] hover:border-rn-orange/30 shadow-gray-200 dark:shadow-black/50">
         <div className="flex items-center justify-center mb-4">
           <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center border border-orange-500/20">
             <Mail className="w-5 h-5 text-orange-500" />

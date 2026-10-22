@@ -161,7 +161,7 @@ export default function EbookActions({
       {/* Review Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#18181b] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden relative border border-gray-100 dark:border-white/10 animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden relative border border-gray-100 dark:border-[#2C3246] animate-in zoom-in-95 duration-200">
             {/* Modal Header */}
             <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5">
               <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
