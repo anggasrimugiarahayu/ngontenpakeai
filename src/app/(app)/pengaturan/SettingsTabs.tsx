@@ -53,10 +53,10 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors rounded-lg border ${
+            className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all rounded-lg border ${
               activeTab === tab.id
-                ? "border-orange-500 text-orange-500"
-                : "border-transparent text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                ? "border-orange-500/50 bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
             }`}
           >
             {tab.label}
@@ -77,7 +77,7 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
           <div className="space-y-6">
             <PlanUsageSection isPro={isPro} userData={userData} />
             
-            <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
+            <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31]">
               <div className="mb-6">
                 <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Riwayat Langganan</h2>
                 <p className="text-sm text-gray-500 dark:text-gray-400">Semua riwayat pembelian paket dan status masa aktifnya.</p>
@@ -120,7 +120,7 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
                     }
 
                     return (
-                      <div key={order.id} className="flex justify-between items-center pb-4 border-b border-gray-100 dark:border-white/5 last:border-0 last:pb-0">
+                      <div key={order.id} className="flex justify-between items-center pb-4 border-b border-gray-100 dark:border-[#2C3246]/50 last:border-0 last:pb-0">
                         <div>
                           <div className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
                             {title}
@@ -146,7 +146,7 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
             </div>
 
             {!isFullyPro && (
-              <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
+              <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31]">
                 <div className="mb-4">
                   <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Upgrade Plan</h2>
                   <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed max-w-2xl">

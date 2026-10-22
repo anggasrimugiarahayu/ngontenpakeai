@@ -213,12 +213,12 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
                     width={36}
                     height={36}
                     className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full ring-2 transition-colors ${
-                      isPro ? "ring-orange-500 ring-offset-1 sm:ring-offset-2 ring-offset-gray-50 dark:ring-offset-[#0f0f11]" : "ring-gray-300 dark:ring-gray-700/50"
+                      isPro ? "ring-orange-500 ring-offset-1 sm:ring-offset-2 ring-offset-gray-50 dark:ring-offset-[#0A1128]" : "ring-gray-300 dark:ring-gray-700/50"
                     }`}
                   />
                 ) : (
                   <div className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold text-[10px] sm:text-sm ring-2 transition-colors ${
-                    isPro ? "ring-orange-500 ring-offset-1 sm:ring-offset-2 ring-offset-gray-50 dark:ring-offset-[#0f0f11]" : "ring-gray-300 dark:ring-gray-700/50"
+                    isPro ? "ring-orange-500 ring-offset-1 sm:ring-offset-2 ring-offset-gray-50 dark:ring-offset-[#0A1128]" : "ring-gray-300 dark:ring-gray-700/50"
                   }`}>
                     {session.user?.name?.charAt(0) || "U"}
                   </div>

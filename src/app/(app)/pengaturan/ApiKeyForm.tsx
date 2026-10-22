@@ -16,7 +16,7 @@ const confirmSwal = async (text: string) => {
     padding: '1.5rem',
     buttonsStyling: false,
     customClass: {
-      popup: 'font-sans rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#121214] shadow-xl',
+      popup: 'font-sans rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] shadow-xl',
       title: '!text-lg !font-semibold text-gray-900 dark:text-white !leading-snug !m-0',
       actions: 'w-full flex gap-3 mt-6 mb-0 justify-end',
       confirmButton: 'bg-orange-500 hover:bg-orange-600 text-white font-medium px-5 py-2.5 rounded-lg text-sm transition-colors whitespace-nowrap outline-none border-none',
@@ -83,7 +83,7 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
   };
 
   return (
-    <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
+    <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31]">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
           <Key className="w-5 h-5" /> Google API Key
@@ -125,12 +125,12 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
             value={keyValue}
             onChange={(e) => setKeyValue(e.target.value)}
             required
-            className="flex-1 w-full px-4 py-2.5 md:py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
+            className="flex-1 w-full px-4 py-2.5 md:py-2 rounded-xl border border-gray-300 dark:border-[#2C3246] bg-gray-50/50 dark:bg-[#0A1128] text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
           />
           <button
             type="submit"
             disabled={isLoading || !keyValue.trim()}
-            className="w-full md:w-auto px-6 py-2.5 md:py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium transition-colors disabled:opacity-50 shadow-sm"
+            className="w-full md:w-auto px-6 py-2.5 md:py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] text-white font-bold transition-all disabled:opacity-50 shadow-sm shadow-orange-500/20 cursor-pointer"
           >
             {isLoading ? "Menyimpan..." : "Simpan"}
           </button>
@@ -139,12 +139,12 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
 
       
       <div className="space-y-4">
-        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-white/5 pb-2">
+        <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 border-b border-gray-200 dark:border-[#2C3246] pb-2">
           Key Aktif
         </h3>
         
         {currentKey ? (
-          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-white/10">
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-white/5 rounded-lg border border-gray-200 dark:border-[#2C3246]">
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
                 <Key className="w-4 h-4" />

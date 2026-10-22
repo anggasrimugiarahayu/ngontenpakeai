@@ -34,14 +34,14 @@ export default function ProfileForm({ user }: ProfileFormProps) {
   };
 
   return (
-    <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
+    <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31]">
       <div className="mb-6">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Profil</h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">Informasi akun kamu.</p>
       </div>
 
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-800 shrink-0">
+        <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] shrink-0">
           {user?.image ? (
             <Image
               src={user.image}
@@ -63,7 +63,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-2 border-t border-gray-200 dark:border-white/5 pt-6">
+        <div className="space-y-2 border-t border-gray-200 dark:border-[#2C3246] pt-6">
           <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
             Nama
           </label>
@@ -72,7 +72,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             name="name"
             id="name"
             defaultValue={user?.name || ""}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50/50 dark:bg-[#0A1128] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium text-sm"
           />
         </div>
 
@@ -85,7 +85,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             id="email"
             defaultValue={user?.email || ""}
             disabled
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-gray-50 dark:bg-white/5 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246]/50 bg-gray-100 dark:bg-[#0A1128]/50 text-gray-500 dark:text-gray-400 cursor-not-allowed font-medium text-sm"
           />
           <p className="text-xs text-gray-500 dark:text-gray-400">Email tidak dapat diubah.</p>
         </div>
@@ -99,12 +99,12 @@ export default function ProfileForm({ user }: ProfileFormProps) {
             name="image"
             id="image"
             defaultValue={user?.image || ""}
-            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-white/10 bg-transparent text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 transition-colors"
+            className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50/50 dark:bg-[#0A1128] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 transition-all font-medium text-sm"
           />
         </div>
 
         {message && (
-          <div className={`p-3 rounded-lg text-sm ${message.type === 'success' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+          <div className={`p-3 rounded-xl text-sm font-medium ${message.type === 'success' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-500 border border-rose-500/20'}`}>
             {message.text}
           </div>
         )}
@@ -112,7 +112,7 @@ export default function ProfileForm({ user }: ProfileFormProps) {
         <button
           type="submit"
           disabled={isLoading}
-          className="w-full md:w-auto px-6 py-2.5 md:py-2 rounded-lg bg-orange-500 hover:bg-orange-600 text-white font-medium transition-colors disabled:opacity-50 shadow-sm"
+          className="w-full md:w-auto px-6 py-2.5 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold transition-all shadow-sm shadow-orange-500/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer text-sm"
         >
           {isLoading ? "Menyimpan..." : "Simpan Perubahan"}
         </button>

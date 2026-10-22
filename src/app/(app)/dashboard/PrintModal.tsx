@@ -29,14 +29,14 @@ export default function PrintModal({ isOpen, onClose, order }: { isOpen: boolean
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm print:bg-transparent print:backdrop-blur-none p-4">
-      <div className="bg-gray-50 dark:bg-[#121214] w-full max-w-5xl h-[85vh] rounded-2xl flex flex-col md:flex-row overflow-hidden shadow-2xl relative print:hidden">
+      <div className="bg-gray-50 dark:bg-[#0A1128] w-full max-w-5xl h-[85vh] rounded-2xl flex flex-col md:flex-row overflow-hidden shadow-2xl relative print:hidden border border-gray-200 dark:border-[#2C3246]">
         
-        <button onClick={onClose} className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-white dark:bg-black text-gray-500 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 shadow-sm border border-gray-200 dark:border-white/10">
+        <button onClick={onClose} className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center bg-white dark:bg-[#141B31] text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white rounded-full hover:bg-gray-100 dark:hover:bg-[#1C2542] shadow-sm border border-gray-200 dark:border-[#2C3246] cursor-pointer transition-colors">
           <X className="w-5 h-5" />
         </button>
 
-        <div className="w-full md:w-[340px] bg-white dark:bg-[#1a1a1c] p-6 sm:p-8 border-r border-gray-200 dark:border-white/10 flex flex-col shrink-0 overflow-y-auto">
-          <div className="flex justify-between items-center mb-8 border-b border-gray-100 dark:border-white/5 pb-4">
+        <div className="w-full md:w-[340px] bg-white dark:bg-[#141B31] p-6 sm:p-8 border-r border-gray-200 dark:border-[#2C3246] flex flex-col shrink-0 overflow-y-auto">
+          <div className="flex justify-between items-center mb-8 border-b border-gray-100 dark:border-[#2C3246]/50 pb-4">
             <h3 className="text-gray-500 dark:text-gray-400 font-bold text-sm tracking-wide">LABEL OPTION</h3>
             <ChevronDown className="w-4 h-4 text-gray-400" />
           </div>

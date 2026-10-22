@@ -19,7 +19,7 @@ export function AdminRuangNgontenTab({ features }: { features: any[] }) {
   );
 
   return (
-    <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
+    <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31]">
       <div className="mb-4">
         <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
           Manajemen Ruang Ngonten
@@ -32,7 +32,7 @@ export function AdminRuangNgontenTab({ features }: { features: any[] }) {
         {sortedFeatures.map((f: any) => (
           <div
             key={f.id}
-            className="flex flex-col gap-3 p-4 bg-gray-50 dark:bg-transparent rounded-xl border border-gray-200 dark:border-white/5"
+            className="flex flex-col gap-3 p-4 bg-gray-50 dark:bg-[#0A1128] rounded-xl border border-gray-200 dark:border-[#2C3246]"
           >
             <div className="flex items-center justify-between">
               <span className="font-bold text-gray-900 dark:text-white">{f.name}</span>
@@ -49,7 +49,7 @@ export function AdminRuangNgontenTab({ features }: { features: any[] }) {
                 )}
               </div>
             </div>
-            <div className="flex items-center justify-between gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-white/5">
+            <div className="flex items-center justify-between gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-[#2C3246]/50">
               {/* Toggle Aktif/Nonaktif */}
               <div className="flex items-center justify-between flex-1">
                 <span className="text-xs font-bold text-gray-600 dark:text-gray-400">
@@ -73,7 +73,7 @@ export function AdminRuangNgontenTab({ features }: { features: any[] }) {
                 </button>
               </div>
 
-              <div className="w-px h-6 bg-gray-200 dark:bg-white/5 mx-1"></div>
+              <div className="w-px h-6 bg-gray-200 dark:bg-[#2C3246] mx-1"></div>
 
               {/* Toggle Pro/Gratis */}
               <div className="flex items-center justify-between flex-1">

@@ -142,8 +142,8 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
 
     return (
       <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-        <div className="bg-white dark:bg-[#121214] w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 dark:border-white/10 shadow-2xl flex flex-col">
-          <div className="sticky top-0 bg-white dark:bg-[#121214] border-b border-gray-200 dark:border-white/10 p-5 flex items-center justify-between z-10">
+        <div className="bg-white dark:bg-[#141B31] w-full max-w-3xl max-h-[90vh] overflow-y-auto rounded-2xl border border-gray-200 dark:border-[#2C3246] shadow-2xl flex flex-col">
+          <div className="sticky top-0 bg-white dark:bg-[#141B31] border-b border-gray-200 dark:border-[#2C3246] p-5 flex items-center justify-between z-10">
             <h2 className="text-xl font-black text-gray-900 dark:text-white flex items-center gap-2">
               <Edit className="w-5 h-5 text-rn-accent" />
               Edit {pkg.name}
@@ -157,35 +157,35 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Nama Paket</label>
-                <input type="text" value={pkg.name} onChange={e => updateField("name", e.target.value)} className="w-full bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
+                <input type="text" value={pkg.name} onChange={e => updateField("name", e.target.value)} className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Label Pita Atas (Opsional)</label>
-                <input type="text" value={pkg.highlightText} onChange={e => updateField("highlightText", e.target.value)} placeholder="Contoh: PALING WORTH" className="w-full bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
+                <input type="text" value={pkg.highlightText} onChange={e => updateField("highlightText", e.target.value)} placeholder="Contoh: PALING WORTH" className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
               </div>
             </div>
 
             <div>
               <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Deskripsi Pendek</label>
-              <input type="text" value={pkg.desc} onChange={e => updateField("desc", e.target.value)} className="w-full bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
+              <input type="text" value={pkg.desc} onChange={e => updateField("desc", e.target.value)} className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Harga Jual (Rp)</label>
-                <input type="number" value={pkg.price} onChange={e => updateField("price", parseInt(e.target.value) || 0)} className="w-full bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
+                <input type="number" value={pkg.price} onChange={e => updateField("price", parseInt(e.target.value) || 0)} className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Harga Coret (Rp)</label>
-                <input type="number" value={pkg.originalPrice} onChange={e => updateField("originalPrice", parseInt(e.target.value) || 0)} className="w-full bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
+                <input type="number" value={pkg.originalPrice} onChange={e => updateField("originalPrice", parseInt(e.target.value) || 0)} className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">Label Diskon</label>
-                <input type="text" value={pkg.discountLabel} onChange={e => updateField("discountLabel", e.target.value)} placeholder="Misal: 95% OFF" className="w-full bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
+                <input type="text" value={pkg.discountLabel} onChange={e => updateField("discountLabel", e.target.value)} placeholder="Misal: 95% OFF" className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-lg px-3 py-2 text-sm focus:border-rn-accent focus:ring-1 focus:ring-rn-accent outline-none" />
               </div>
             </div>
 
-            <hr className="border-gray-200 dark:border-white/10" />
+            <hr className="border-gray-200 dark:border-[#2C3246]" />
 
             <div>
                <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-3">Daftar Fitur / Benefit (Checklist)</label>
@@ -193,7 +193,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
                  {pkg.features.map((f: string, i: number) => (
                     <div key={i} className="flex items-center gap-2">
                        <Check className="w-4 h-4 text-orange-500 shrink-0" />
-                       <input type="text" value={f} onChange={e => updateFeature(i, e.target.value)} className="flex-1 bg-gray-50 dark:bg-black/50 border border-gray-300 dark:border-white/10 rounded-lg px-3 py-1.5 text-sm outline-none focus:border-rn-accent" />
+                       <input type="text" value={f} onChange={e => updateFeature(i, e.target.value)} className="flex-1 bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-lg px-3 py-1.5 text-sm outline-none focus:border-rn-accent" />
                        <button onClick={() => removeFeature(i)} className="p-1.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors">
                          <X className="w-4 h-4" />
                        </button>
@@ -205,7 +205,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
                </div>
             </div>
 
-            <hr className="border-gray-200 dark:border-white/10" />
+            <hr className="border-gray-200 dark:border-[#2C3246]" />
 
             <div>
               <label className="block text-sm font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
@@ -215,7 +215,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-60 overflow-y-auto p-1">
                 {products.map(p => (
-                  <label key={p.id} className="flex items-start gap-3 p-3 border border-gray-200 dark:border-white/10 rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors">
+                  <label key={p.id} className="flex items-start gap-3 p-3 border border-gray-200 dark:border-[#2C3246] rounded-xl hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer transition-colors">
                     <input 
                       type="checkbox" 
                       checked={pkg.bundledProductIds.includes(p.id)}
@@ -251,9 +251,9 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
     const isSpecial = pkg.highlightText && pkg.highlightText.length > 0;
     
     return (
-      <div className={`bg-white dark:bg-[#121214] border ${isSpecial ? 'border-orange-500' : 'border-gray-200 dark:border-white/10'} rounded-2xl p-5 relative flex flex-col h-full shadow-lg hover:shadow-xl transition-shadow`}>
+      <div className={`bg-white dark:bg-[#141B31] border ${isSpecial ? 'border-orange-500' : 'border-gray-200 dark:border-[#2C3246]'} rounded-2xl p-5 relative flex flex-col h-full shadow-lg hover:shadow-xl transition-shadow`}>
         {isSpecial && (
-           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[9px] font-black uppercase px-3 py-0.5 rounded-full tracking-widest border-[3px] border-white dark:border-[#121214] whitespace-nowrap shadow-sm">
+           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[9px] font-black uppercase px-3 py-0.5 rounded-full tracking-widest border-[3px] border-white dark:border-[#141B31] whitespace-nowrap shadow-sm">
              {pkg.highlightText}
            </div>
         )}
@@ -296,7 +296,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
       {renderModal()}
       
       {/* Header & Control Panel */}
-      <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-4 sm:p-6 bg-white dark:bg-[#121214] space-y-4 sm:space-y-5 shadow-sm">
+      <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-4 sm:p-6 bg-white dark:bg-[#141B31] space-y-4 sm:space-y-5 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
           <div>
             <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white tracking-tight">
@@ -306,13 +306,13 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
               Kelola pricing paket untuk setiap paket langganan member anda.
             </p>
           </div>
-          <span className="hidden lg:inline-flex text-[11px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-gray-100 dark:border-white/5 shrink-0">
+          <span className="hidden lg:inline-flex text-[11px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-white/5 px-2.5 py-1 rounded-lg border border-gray-100 dark:border-[#2C3246] shrink-0">
             Klik paket untuk edit
           </span>
         </div>
 
         {/* Action Buttons: 1 line on mobile (4 icons), full labels on desktop */}
-        <div className="pt-3 border-t border-gray-100 dark:border-white/5">
+        <div className="pt-3 border-t border-gray-100 dark:border-[#2C3246]">
           {/* Mobile View: 1 Line Grid of 4 Pure Icon Buttons */}
           <div className="grid grid-cols-4 gap-2 sm:hidden">
             <button

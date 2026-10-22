@@ -189,7 +189,7 @@ export function AdminRuangBelajarTab({
     <>
       <div className="space-y-6 animate-in fade-in duration-300">
         {/* Header & Actions */}
-        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31]">
           <div className="mb-2 md:mb-0">
             <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
               Manajemen Ruang Belajar
@@ -519,7 +519,7 @@ export function AdminRuangBelajarTab({
             );
           })}
           {productList.length === 0 && (
-            <div className="col-span-full py-12 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 dark:border-white/10 rounded-2xl bg-gray-50 dark:bg-white/5">
+            <div className="col-span-full py-12 flex flex-col items-center justify-center text-gray-400 border-2 border-dashed border-gray-200 dark:border-[#2C3246] rounded-2xl bg-gray-50 dark:bg-[#141B31]">
               <BookOpen size={40} className="mb-3 opacity-20 text-gray-400" />
               <p className="font-medium text-gray-500 text-sm">
                 Belum ada produk e-book yang ditambahkan.

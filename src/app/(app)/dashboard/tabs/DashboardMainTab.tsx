@@ -53,8 +53,8 @@ export function DashboardMainTab({
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {/* Left Section: User Stats Grid */}
         <div className="md:col-span-2 grid grid-cols-2 gap-4">
-          <div className="bg-white dark:bg-[#121214] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/10 flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-[#2C3246] flex items-center gap-3">
+            <div className="w-10 h-10 bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400">
               <Users size={18} />
             </div>
             <div>
@@ -67,8 +67,8 @@ export function DashboardMainTab({
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#121214] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/10 flex items-center gap-3">
-            <div className="w-10 h-10 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-[#2C3246] flex items-center gap-3">
+            <div className="w-10 h-10 bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400">
               <User size={18} />
             </div>
             <div>
@@ -81,8 +81,8 @@ export function DashboardMainTab({
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#121214] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/10 flex items-center gap-3">
-            <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-100 dark:border-emerald-800/30 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-[#2C3246] flex items-center gap-3">
+            <div className="w-10 h-10 bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/40 rounded-xl flex items-center justify-center text-emerald-600 dark:text-emerald-400">
               <CheckCircle2 size={18} />
             </div>
             <div>
@@ -95,8 +95,8 @@ export function DashboardMainTab({
             </div>
           </div>
 
-          <div className="bg-white dark:bg-[#121214] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/10 flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-900/10 border border-blue-100 dark:border-blue-800/30 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-[#2C3246] flex items-center gap-3">
+            <div className="w-10 h-10 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800/40 rounded-xl flex items-center justify-center text-blue-600 dark:text-blue-400">
               <TrendingUp size={18} />
             </div>
             <div>
@@ -111,7 +111,7 @@ export function DashboardMainTab({
         </div>
 
         {/* Right Card: Earnings */}
-        <div className="md:col-span-1 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-800 dark:to-slate-900 rounded-2xl p-5 shadow-sm border border-gray-200/50 dark:border-white/10 flex flex-col justify-between relative overflow-hidden">
+        <div className="md:col-span-1 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-[#141B31] dark:to-[#0d1326] rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-[#2C3246] flex flex-col justify-between relative overflow-hidden">
           <div className="absolute top-0 right-0 w-48 h-48 bg-emerald-400/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
 
           <div>
@@ -130,12 +130,12 @@ export function DashboardMainTab({
                 </h2>
               </div>
             </div>
-            <button className="text-gray-500 dark:text-gray-400 text-[11px] font-medium mt-2 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-1">
+            <button className="text-gray-500 dark:text-gray-400 text-[11px] font-medium mt-2 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
               Payout Setting Page
             </button>
           </div>
 
-          <div className="mt-4 bg-white/70 dark:bg-black/30 backdrop-blur-md p-2 rounded-xl border border-white/50 dark:border-white/10 flex items-center justify-between group">
+          <div className="mt-4 bg-white/70 dark:bg-[#0A1128]/60 backdrop-blur-md p-2 rounded-xl border border-white/50 dark:border-[#2C3246] flex items-center justify-between group">
             <div className="px-1 overflow-hidden">
               <p className="text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">
                 PayMe link
@@ -144,7 +144,7 @@ export function DashboardMainTab({
                 lynkti.com/pay
               </p>
             </div>
-            <button className="w-7 h-7 flex-shrink-0 flex items-center justify-center bg-white dark:bg-[#202020] rounded-lg shadow-sm text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors">
+            <button className="w-7 h-7 flex-shrink-0 flex items-center justify-center bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-lg shadow-sm text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer">
               <LinkIcon size={12} />
             </button>
           </div>
@@ -156,7 +156,7 @@ export function DashboardMainTab({
       </div>
 
       {/* Chart Section */}
-      <div className="bg-white dark:bg-[#121214] rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-white/10">
+      <div className="bg-white dark:bg-[#141B31] rounded-2xl p-5 shadow-sm border border-gray-200 dark:border-[#2C3246]">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-3">
@@ -186,7 +186,7 @@ export function DashboardMainTab({
           <div className="relative">
             <button
               onClick={() => setShowDatePicker(!showDatePicker)}
-              className="flex items-center bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-4 py-2 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+              className="flex items-center bg-white dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-4 py-2 hover:bg-gray-50 dark:hover:bg-[#1C2542] text-gray-700 dark:text-gray-200 transition-colors shadow-2xs cursor-pointer"
             >
               <CalendarIcon size={16} className="text-gray-500 mr-2" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -210,7 +210,7 @@ export function DashboardMainTab({
                   className="fixed inset-0 z-40"
                   onClick={() => setShowDatePicker(false)}
                 ></div>
-                <div className="absolute right-0 top-full mt-2 z-50 bg-white dark:bg-[#1c1c1e] rounded-xl shadow-lg border border-gray-100 dark:border-white/10 p-3">
+                <div className="absolute right-0 top-full mt-2 z-50 bg-white dark:bg-[#141B31] rounded-xl shadow-xl border border-gray-200 dark:border-[#2C3246] p-3">
                   <style>{`
                     .rdp {
                       --rdp-cell-size: 32px !important;
@@ -304,8 +304,8 @@ export function DashboardMainTab({
 
       {/* Bottom Stats Row */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-[#121214] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400">
+        <div className="bg-white dark:bg-[#141B31] rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-[#2C3246] flex items-center gap-3">
+          <div className="w-10 h-10 bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400">
             <TrendingUp size={18} />
           </div>
           <div>
@@ -318,8 +318,8 @@ export function DashboardMainTab({
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#121214] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400">
+        <div className="bg-white dark:bg-[#141B31] rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-[#2C3246] flex items-center gap-3">
+          <div className="w-10 h-10 bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400">
             <Layers size={18} />
           </div>
           <div>
@@ -332,8 +332,8 @@ export function DashboardMainTab({
           </div>
         </div>
 
-        <div className="bg-white dark:bg-[#121214] rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/10 flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/10 rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400">
+        <div className="bg-white dark:bg-[#141B31] rounded-2xl p-4 shadow-sm border border-gray-200 dark:border-[#2C3246] flex items-center gap-3">
+          <div className="w-10 h-10 bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl flex items-center justify-center text-gray-600 dark:text-gray-400">
             <ShoppingBag size={18} />
           </div>
           <div>

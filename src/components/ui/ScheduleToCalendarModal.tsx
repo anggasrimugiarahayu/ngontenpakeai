@@ -90,11 +90,11 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
 
   return (
     <div className="fixed inset-0 z-[110] bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in zoom-in-95 duration-200" onClick={() => { if (!isSavingAgenda && step !== "success") onClose(); }}>
-      <div className="bg-white dark:bg-[#121214] rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-lg overflow-hidden flex flex-col max-h-[90dvh]" onClick={e => e.stopPropagation()}>
+      <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] w-full max-w-lg overflow-hidden flex flex-col max-h-[90dvh]" onClick={e => e.stopPropagation()}>
         
         {step === "calendar" && (
           <>
-            <div className="px-5 py-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between bg-gray-50 dark:bg-white/5 shrink-0">
+            <div className="px-5 py-4 border-b border-gray-200 dark:border-[#2C3246] flex items-center justify-between bg-gray-50 dark:bg-white/5 shrink-0">
                <h3 className="text-sm md:text-base font-bold font-heading text-gray-900 dark:text-white flex items-center gap-2">
                  <Calendar size={18} strokeWidth={2.5} className="text-rn-accent"/> Pilih Tanggal Tayang
                </h3>

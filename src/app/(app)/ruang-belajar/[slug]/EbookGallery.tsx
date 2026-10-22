@@ -16,7 +16,7 @@ export default function EbookGallery({ title, images }: EbookGalleryProps) {
   if (validImages.length === 0) {
     return (
       <div className="w-full max-w-sm mx-auto lg:mx-0 shrink-0">
-         <div className="aspect-[3/4] w-full rounded-2xl overflow-hidden shadow-2xl relative bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5">
+         <div className="aspect-[3/4] w-full rounded-2xl overflow-hidden shadow-2xl relative bg-white dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246]">
             <div className="absolute inset-0 flex items-center justify-center">
               <BookOpen className="w-16 h-16 text-gray-300 dark:text-gray-600 opacity-50" />
             </div>
@@ -41,7 +41,7 @@ export default function EbookGallery({ title, images }: EbookGalleryProps) {
   return (
     <div className="w-full max-w-sm mx-auto lg:mx-0 shrink-0 flex flex-col gap-4">
        {/* Main Image */}
-       <div className="aspect-[3/4] w-full rounded-2xl overflow-hidden shadow-2xl relative bg-white dark:bg-[#121214] border border-gray-100 dark:border-white/5 group transition-all duration-300">
+       <div className="aspect-[3/4] w-full rounded-2xl overflow-hidden shadow-2xl relative bg-white dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246] group transition-all duration-300">
           <Image 
             key={validImages[activeIndex]}
             src={validImages[activeIndex]} 

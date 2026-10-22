@@ -206,7 +206,7 @@ export default function ContentCalendarClient() {
         btnClass += "bg-orange-50 dark:bg-orange-900/10 border border-rn-accent cursor-pointer hover:bg-orange-100 dark:hover:bg-orange-900/20";
         numClass += "text-rn-accent";
       } else {
-        btnClass += "bg-white dark:bg-[#121214] border-gray-200 dark:border-white/10 hover:border-gray-300 dark:hover:border-white/20 hover:bg-gray-50 dark:hover:bg-white/5 cursor-pointer";
+        btnClass += "bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-orange-500/50 hover:bg-gray-50 dark:hover:bg-[#1f2947] cursor-pointer";
         numClass += "text-gray-700 dark:text-gray-300";
       }
 
@@ -280,8 +280,8 @@ export default function ContentCalendarClient() {
       {/* Agenda Form Modal */}
       {isAgendaOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setIsAgendaOpen(false)}>
-          <div className="bg-white dark:bg-[#121214] rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="px-5 py-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between shrink-0 bg-gray-50 dark:bg-white/5">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="px-5 py-4 border-b border-gray-200 dark:border-[#2C3246] flex items-center justify-between shrink-0 bg-gray-50 dark:bg-white/5">
               <h3 className="font-bold text-gray-900 dark:text-white font-heading text-lg flex items-center gap-2">
                 <FileText className="text-rn-accent" size={18} /> 
                 Agenda: <span className="text-rn-accent">{selectedCalDate}</span>

@@ -329,9 +329,9 @@ export default function BioBuilderClient() {
 
   
   const Mockup = () => (
-    <div className="w-full max-w-[350px] lg:h-full mx-auto rounded-[12px] border border-gray-300 dark:border-white/20 overflow-hidden flex flex-col aspect-[9/19] bg-white dark:bg-[#121214] font-sans relative shadow-xl">
+    <div className="w-full max-w-[350px] lg:h-full mx-auto rounded-[12px] border border-gray-300 dark:border-[#2C3246] overflow-hidden flex flex-col aspect-[9/19] bg-white dark:bg-[#141B31] font-sans relative shadow-xl">
       {/* Nav Mockup */}
-      <div className="px-4 pt-10 md:pt-12 pb-3 flex items-center justify-between bg-white dark:bg-[#121214] z-10 sticky top-0 border-b border-gray-100 dark:border-white/20 shrink-0 transition-colors">
+      <div className="px-4 pt-10 md:pt-12 pb-3 flex items-center justify-between bg-white dark:bg-[#141B31] z-10 sticky top-0 border-b border-gray-100 dark:border-[#2C3246] shrink-0 transition-colors">
         <ChevronLeft size={24} className="text-gray-900 dark:text-white shrink-0" />
         <div className="flex items-center gap-1 font-bold text-[15px] md:text-[17px] tracking-tight text-gray-900 dark:text-white truncate px-2">
           {isEditingMockup ? (
@@ -344,10 +344,10 @@ export default function BioBuilderClient() {
       </div>
 
       {/* Content Mockup */}
-      <div className="p-4 flex-1 bg-white dark:bg-[#121214] overflow-y-auto scrollbar-hide transition-colors">
+      <div className="p-4 flex-1 bg-white dark:bg-[#141B31] overflow-y-auto scrollbar-hide transition-colors">
         <div className="flex items-center justify-between mb-4">
           <div className="relative group shrink-0 ml-1">
-            <div className="w-[70px] h-[70px] md:w-[84px] md:h-[84px] rounded-full p-[2px] border border-gray-200 dark:border-white/20 overflow-hidden bg-white dark:bg-[#121214]">
+            <div className="w-[70px] h-[70px] md:w-[84px] md:h-[84px] rounded-full p-[2px] border border-gray-200 dark:border-[#2C3246] overflow-hidden bg-white dark:bg-[#0A1128]">
               <img src={avatarUrl} alt="Avatar" className="w-full h-full rounded-full object-cover" />
             </div>
             <button onClick={() => avatarInputRef.current?.click()} className="absolute bottom-0 right-0 bg-blue-500 text-white rounded-full p-1.5 border-2 border-white dark:border-black shadow-sm z-10"><Camera size={14} /></button>
@@ -367,7 +367,7 @@ export default function BioBuilderClient() {
             <div className="space-y-4 mt-2 animate-in fade-in duration-200">
               <div>
                 <label className="text-[10px] md:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1.5 block">Username</label>
-                <div className="flex items-center bg-white dark:bg-[#121214] rounded-xl border border-gray-300 dark:border-white/40 shadow-none hover:border-gray-900 dark:hover:border-white  dark: hover:bg-gray-100 dark:hover:bg-white/10 focus-within:border-gray-900 dark:focus-within:border-white focus-within:bg-indigo-50 dark:focus-within:bg-gray-900  dark:  px-3 py-2 transition-all duration-200">
+                <div className="flex items-center bg-white dark:bg-[#0A1128] rounded-xl border border-gray-300 dark:border-[#2C3246] shadow-none hover:border-gray-900 dark:hover:border-white  dark: hover:bg-[#141B31] focus-within:border-gray-900 dark:focus-within:border-white focus-within:bg-indigo-50 dark:focus-within:bg-[#0A1128]  dark:  px-3 py-2 transition-all duration-200">
                   <span className="text-gray-900 dark:text-white font-bold mr-1 text-[16px] md:text-[14px]">@</span>
                   <input 
                     type="text" value={selectedBio.username} 
@@ -382,18 +382,18 @@ export default function BioBuilderClient() {
                 <input 
                   type="text" maxLength={30} value={selectedBio.name} 
                   onChange={(e) => setSelectedBio(prev => ({...prev, name: e.target.value}))}
-                  className="text-[16px] md:text-[14px] font-bold text-gray-900 dark:text-white tracking-tight w-full outline-none bg-white dark:bg-[#121214] px-3 py-2 rounded-xl border border-gray-300 dark:border-white/40 shadow-none hover:border-gray-900 dark:hover:border-white  dark: hover:bg-gray-100 dark:hover:bg-white/10 focus:border-gray-900 dark:focus:border-white  dark:  focus:bg-indigo-50 dark:focus:bg-gray-900 transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500" placeholder="Profil Name IG"
+                  className="text-[16px] md:text-[14px] font-bold text-gray-900 dark:text-white tracking-tight w-full outline-none bg-white dark:bg-[#0A1128] px-3 py-2 rounded-xl border border-gray-300 dark:border-[#2C3246] shadow-none hover:border-gray-900 dark:hover:border-white  dark: hover:bg-[#141B31] focus:border-gray-900 dark:focus:border-white  dark:  focus:bg-indigo-50 dark:focus:bg-[#0A1128] transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500" placeholder="Profil Name IG"
                 />
               </div>
               <div>
                 <div className="flex justify-between items-center mb-1.5">
                   <label className="text-[10px] md:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider block">Bio</label>
-                  <span className={`text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded border ${selectedBio.bioText.length > 150 ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800' : 'bg-gray-100 dark:bg-gray-900 text-gray-500 dark:text-gray-400 border-gray-200 dark:border-white/20'}`}>{selectedBio.bioText.length}/150</span>
+                  <span className={`text-[9px] md:text-[10px] font-bold px-1.5 py-0.5 rounded border ${selectedBio.bioText.length > 150 ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border-red-300 dark:border-red-800' : 'bg-gray-100 dark:bg-[#0A1128] text-gray-500 dark:text-gray-400 border-gray-200 dark:border-[#2C3246]'}`}>{selectedBio.bioText.length}/150</span>
                 </div>
                 <textarea 
                   rows={4} value={selectedBio.bioText}
                   onChange={(e) => setSelectedBio(prev => ({...prev, bioText: e.target.value}))}
-                  className={`text-[13px] md:text-[14px] text-gray-900 dark:text-white font-bold w-full outline-none bg-white dark:bg-[#121214] px-3 py-2 rounded-xl resize-none transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500 ${selectedBio.bioText.length > 150 ? 'border border-red-300 dark:border-red-500 focus:border-red-500 focus:bg-red-50 dark:focus:bg-red-900/20  dark: ' : 'border border-gray-300 dark:border-white/40 hover:border-gray-900 dark:hover:border-white  dark: hover:bg-gray-100 dark:hover:bg-white/10 focus:border-gray-900 dark:focus:border-white  dark:  focus:bg-indigo-50 dark:focus:bg-gray-900 shadow-none'}`} placeholder="Teks Bio IG"
+                  className={`text-[13px] md:text-[14px] text-gray-900 dark:text-white font-bold w-full outline-none bg-white dark:bg-[#0A1128] px-3 py-2 rounded-xl resize-none transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500 ${selectedBio.bioText.length > 150 ? 'border border-red-300 dark:border-red-500 focus:border-red-500 focus:bg-red-50 dark:focus:bg-red-900/20  dark: ' : 'border border-gray-300 dark:border-[#2C3246] hover:border-gray-900 dark:hover:border-white  dark: hover:bg-[#141B31] focus:border-gray-900 dark:focus:border-white  dark:  focus:bg-indigo-50 dark:focus:bg-[#0A1128] shadow-none'}`} placeholder="Teks Bio IG"
                 />
               </div>
             </div>
@@ -415,7 +415,7 @@ export default function BioBuilderClient() {
                 setMockupBtnState(null);
               }, 200);
             }}
-            className={`flex-1 rounded-xl py-2 text-center font-bold text-[12px] md:text-[13px] cursor-pointer transition-all duration-200 border ${mockupBtnState === 'edit' ? 'border-gray-900 dark:border-white bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white border-rn-accent' : 'border-gray-300 dark:border-white/40 bg-white dark:bg-[#121214] text-gray-700 dark:text-white shadow-none hover:border-gray-900 dark:hover:border-white hover:bg-white dark:hover:bg-black hover:text-gray-900 dark:hover:text-white  dark: hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95'}`}
+            className={`flex-1 rounded-xl py-2 text-center font-bold text-[12px] md:text-[13px] cursor-pointer transition-all duration-200 border ${mockupBtnState === 'edit' ? 'border-gray-900 dark:border-white bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white border-rn-accent' : 'border-gray-300 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-gray-700 dark:text-white shadow-none hover:border-gray-900 dark:hover:border-white hover:bg-white dark:hover:bg-[#0A1128] hover:text-gray-900 dark:hover:text-white active:scale-95'}`}
           >{isEditingMockup ? 'Save profile' : 'Edit profile'}</div>
           <div 
             onClick={() => {
@@ -425,21 +425,21 @@ export default function BioBuilderClient() {
                 showToast('Fitur Bagikan Profil akan segera hadir!', 'success');
               }, 200);
             }}
-            className={`flex-1 rounded-xl py-2 text-center font-bold text-[12px] md:text-[13px] cursor-pointer transition-all duration-200 border ${mockupBtnState === 'share' ? 'border-gray-900 dark:border-white bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white border-rn-accent' : 'border-gray-300 dark:border-white/40 bg-white dark:bg-[#121214] text-gray-700 dark:text-white shadow-none hover:border-gray-900 dark:hover:border-white hover:bg-white dark:hover:bg-black hover:text-gray-900 dark:hover:text-white  dark: hover:bg-gray-100 dark:hover:bg-white/10 active:scale-95'}`}
+            className={`flex-1 rounded-xl py-2 text-center font-bold text-[12px] md:text-[13px] cursor-pointer transition-all duration-200 border ${mockupBtnState === 'share' ? 'border-gray-900 dark:border-white bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white border-rn-accent' : 'border-gray-300 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-gray-700 dark:text-white shadow-none hover:border-gray-900 dark:hover:border-white hover:bg-white dark:hover:bg-[#0A1128] hover:text-gray-900 dark:hover:text-white active:scale-95'}`}
           >Share profile</div>
         </div>
 
         <div className="flex gap-3 md:gap-4 pb-2 px-1 overflow-hidden">
             {[1,2,3,4].map(i => (
               <div key={i} className="flex flex-col items-center gap-1 cursor-pointer">
-                <div className="w-[50px] h-[50px] md:w-[60px] md:h-[60px] rounded-full border border-gray-300 dark:border-white/40 p-0.5 flex items-center justify-center"><div className="w-full h-full rounded-full bg-gray-100 dark:bg-gray-800"></div></div>
+                <div className="w-[50px] h-[50px] md:w-[60px] md:h-[60px] rounded-full border border-gray-300 dark:border-[#2C3246] p-0.5 flex items-center justify-center"><div className="w-full h-full rounded-full bg-gray-100 dark:bg-[#0A1128]"></div></div>
                 <span className="text-[10px] md:text-[11px] text-gray-800 dark:text-gray-400 font-medium">Highlight</span>
               </div>
             ))}
         </div>
       </div>
       {/* Footer Mockup */}
-      <div className="bg-white dark:bg-[#121214] border-t border-gray-200 dark:border-white/20 px-6 pt-3 pb-6 md:pb-8 flex justify-between items-center text-gray-900 dark:text-white mt-auto sticky bottom-0 shrink-0 transition-colors">
+      <div className="bg-white dark:bg-[#141B31] border-t border-gray-200 dark:border-[#2C3246] px-6 pt-3 pb-6 md:pb-8 flex justify-between items-center text-gray-900 dark:text-white mt-auto sticky bottom-0 shrink-0 transition-colors">
           <Home size={22} className="md:w-[26px] md:h-[26px]" />
           <Search size={22} className="md:w-[26px] md:h-[26px]" />
           <PlusSquare size={22} className="md:w-[26px] md:h-[26px]" />
@@ -529,7 +529,7 @@ export default function BioBuilderClient() {
                             setSelectedBio(prev => ({...prev, username: val}));
                           }}
                           onBlur={() => autoSave(id, selectedBio, suggestions, avatarUrl)}
-                          className="w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-rn-accent bg-gray-50 border-gray-200 text-gray-900 dark:bg-[#121214]/50 dark:border-white/10 dark:text-white"
+                          className="w-full pl-10 pr-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-rn-accent bg-gray-50 border-gray-200 text-gray-900 dark:bg-[#0A1128] dark:border-[#2C3246] dark:text-white"
                         />
                       </div>
                     </div>
@@ -579,7 +579,7 @@ export default function BioBuilderClient() {
                         value={selectedBio.name}
                         onChange={(e) => setSelectedBio(prev => ({...prev, name: e.target.value}))}
                         onBlur={() => autoSave(id, selectedBio, suggestions, avatarUrl)}
-                        className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-rn-accent bg-gray-50 border-gray-200 text-gray-900 dark:bg-[#121214]/50 dark:border-white/10 dark:text-white"
+                        className="w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-rn-accent bg-gray-50 border-gray-200 text-gray-900 dark:bg-[#0A1128] dark:border-[#2C3246] dark:text-white"
                       />
                     </div>
                   </div>
@@ -633,7 +633,7 @@ export default function BioBuilderClient() {
                         value={selectedBio.bioText}
                         onChange={(e) => setSelectedBio(prev => ({...prev, bioText: e.target.value}))}
                         onBlur={() => autoSave(id, selectedBio, suggestions, avatarUrl)}
-                        className="w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-rn-accent resize-none bg-gray-50 border-gray-200 text-gray-900 dark:bg-[#121214]/50 dark:border-white/10 dark:text-white"
+                        className="w-full px-4 py-3 rounded-xl text-sm border focus:outline-none focus:ring-2 focus:ring-rn-accent resize-none bg-gray-50 border-gray-200 text-gray-900 dark:bg-[#0A1128] dark:border-[#2C3246] dark:text-white"
                       />
                     </div>
                   </div>

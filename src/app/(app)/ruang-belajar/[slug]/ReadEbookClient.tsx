@@ -155,7 +155,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                </div>
 
                {/* Purchase / Upgrade Box */}
-               <div className="bg-white dark:bg-[#121214] shadow-sm border border-gray-200 dark:border-white/10 rounded-2xl p-6 mb-10">
+               <div className="bg-white dark:bg-[#141B31] shadow-sm border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 mb-10">
                  {isLocked ? (
                    <>
                      <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">

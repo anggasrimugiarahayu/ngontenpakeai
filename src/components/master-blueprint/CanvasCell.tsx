@@ -51,7 +51,7 @@ export default function CanvasCell({ title, badge, dataKey, content, icon: Icon,
       <div className="flex-grow text-sm text-gray-600 dark:text-gray-300 font-medium">
         {isEditing ? (
           <textarea 
-            className="w-full min-h-[120px] p-3 bg-white dark:bg-black border border-gray-300 dark:border-white/10 rounded-xl outline-none text-sm focus:border-orange-500" 
+            className="w-full min-h-[120px] p-3 bg-white dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl outline-none text-sm focus:border-orange-500 text-gray-900 dark:text-white" 
             value={editValue} 
             onChange={(e) => setEditValue(e.target.value)} 
             autoFocus 

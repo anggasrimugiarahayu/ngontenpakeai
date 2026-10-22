@@ -78,7 +78,7 @@ export function AdminRuangBelajarModals({
       {/* Modal Kategori Baru */}
       {showAddCategory && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121214] p-5 rounded-2xl border border-gray-200 dark:border-white/10 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-[#141B31] p-5 rounded-2xl border border-gray-200 dark:border-[#2C3246] w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                 <Tag className="text-rn-accent" size={20} /> Kelola Kategori
@@ -100,7 +100,7 @@ export function AdminRuangBelajarModals({
                 });
                 setLoading(false);
               }}
-              className="flex flex-col gap-4 mb-4 pb-6 border-b border-gray-100 dark:border-white/10"
+              className="flex flex-col gap-4 mb-4 pb-6 border-b border-gray-100 dark:border-[#2C3246]"
             >
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -110,7 +110,7 @@ export function AdminRuangBelajarModals({
                   name="name"
                   placeholder="Contoh: Bisnis & Keuangan"
                   required
-                  className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                  className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                 />
               </div>
               <div className="space-y-1.5">
@@ -121,7 +121,7 @@ export function AdminRuangBelajarModals({
                   name="slug"
                   placeholder="Contoh: bisnis-keuangan"
                   required
-                  className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                  className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                 />
               </div>
               <button
@@ -141,7 +141,7 @@ export function AdminRuangBelajarModals({
                 {categories.map((c: any) => (
                   <div
                     key={c.id}
-                    className="flex items-center gap-2 bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 pl-3 pr-1 py-1.5 rounded-lg text-sm group"
+                    className="flex items-center gap-2 bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] pl-3 pr-1 py-1.5 rounded-lg text-sm group"
                   >
                     <span className="font-medium text-gray-700 dark:text-gray-300">
                       {c.name}
@@ -173,7 +173,7 @@ export function AdminRuangBelajarModals({
       {/* Modal Bank Voucher Global */}
       {showGlobalVoucherModal && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121214] p-5 rounded-2xl border border-gray-200 dark:border-white/10 w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-[#141B31] p-5 rounded-2xl border border-gray-200 dark:border-[#2C3246] w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-4 shrink-0">
               <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                 <Ticket className="text-rn-accent" size={20} /> Bank Voucher Global
@@ -186,7 +186,7 @@ export function AdminRuangBelajarModals({
               </button>
             </div>
 
-            <div className="shrink-0 bg-white dark:bg-[#121214] mt-2 mb-2">
+            <div className="shrink-0 bg-white dark:bg-[#141B31] mt-2 mb-2">
               <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
                 Buat Voucher Baru
               </h4>
@@ -205,7 +205,7 @@ export function AdminRuangBelajarModals({
                         code: e.target.value.replace(/\s/g, "").toUpperCase(),
                       })
                     }
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm uppercase focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm uppercase focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
                   />
                 </div>
                 <div className="flex gap-2">
@@ -234,7 +234,7 @@ export function AdminRuangBelajarModals({
                           discountValue: Number(e.target.value),
                         })
                       }
-                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-gray-900 dark:text-white"
+                      className="w-full bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500/50 text-gray-900 dark:text-white"
                     />
                   </div>
                 </div>
@@ -282,7 +282,7 @@ export function AdminRuangBelajarModals({
               </div>
             </div>
 
-            <div className="pt-4 mt-2 border-t border-gray-200 dark:border-white/10 flex flex-col flex-1 min-h-[150px]">
+            <div className="pt-4 mt-2 border-t border-gray-200 dark:border-[#2C3246] flex flex-col flex-1 min-h-[150px]">
               <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
                 DAFTAR VOUCHER TERSIMPAN
               </h4>
@@ -291,7 +291,7 @@ export function AdminRuangBelajarModals({
                   allVouchers.map((v: any) => (
                     <div
                       key={v.id}
-                      className="flex justify-between items-center p-3 rounded-xl border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-black/20"
+                      className="flex justify-between items-center p-3 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128]"
                     >
                       <div className="flex-1 min-w-0 pr-3">
                         <div className="flex items-center gap-2 mb-1">
@@ -338,7 +338,7 @@ export function AdminRuangBelajarModals({
       {/* Modal Add Product */}
       {showAddProduct && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121214] p-5 rounded-2xl border border-gray-200 dark:border-white/10 w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-[#141B31] p-5 rounded-2xl border border-gray-200 dark:border-[#2C3246] w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                 <BookOpen className="text-rn-accent" size={20} /> Tambah E-Book / Produk
@@ -402,7 +402,7 @@ export function AdminRuangBelajarModals({
                     name="title"
                     placeholder="Contoh: 100 Template Carousel"
                     required
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -413,7 +413,7 @@ export function AdminRuangBelajarModals({
                     name="slug"
                     placeholder="template-carousel"
                     required
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
               </div>
@@ -428,7 +428,7 @@ export function AdminRuangBelajarModals({
                     type="number"
                     placeholder="Contoh: 120"
                     defaultValue={0}
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
                 <div>
@@ -454,7 +454,7 @@ export function AdminRuangBelajarModals({
                     ].map((item) => (
                       <div
                         key={item.id}
-                        className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-visible"
+                        className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-[#2C3246] relative overflow-visible"
                       >
                         <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
                           <span
@@ -505,7 +505,7 @@ export function AdminRuangBelajarModals({
                   name="description"
                   rows={2}
                   placeholder="Penjelasan singkat mengenai produk ini..."
-                  className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all custom-scrollbar"
+                  className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all custom-scrollbar"
                 ></textarea>
               </div>
 
@@ -517,7 +517,7 @@ export function AdminRuangBelajarModals({
                   name="fileUrl"
                   type="url"
                   placeholder="https://drive.google.com/file/d/..."
-                  className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                  className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                 />
                 <p className="text-[10px] text-gray-400 mt-1">
                   Ganti &quot;view&quot; menjadi &quot;preview&quot; otomatis oleh sistem.
@@ -532,7 +532,7 @@ export function AdminRuangBelajarModals({
                   <input
                     name="author"
                     defaultValue="Admin"
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -542,7 +542,7 @@ export function AdminRuangBelajarModals({
                   <input
                     name="language"
                     defaultValue="Indonesia"
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -552,7 +552,7 @@ export function AdminRuangBelajarModals({
                   <input
                     name="formatType"
                     defaultValue="PDF / Digital"
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
               </div>
@@ -582,7 +582,7 @@ export function AdminRuangBelajarModals({
                       type="number"
                       min="0"
                       placeholder="Contoh: 49000"
-                      className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                      className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                       required
                     />
                   </div>
@@ -595,7 +595,7 @@ export function AdminRuangBelajarModals({
                       type="number"
                       min="0"
                       placeholder="Contoh: 99000"
-                      className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all line-through"
+                      className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all line-through"
                     />
                   </div>
                 </div>
@@ -617,7 +617,7 @@ export function AdminRuangBelajarModals({
                 </div>
               </label>
 
-              <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-white/5">
+              <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-[#2C3246]">
                 <button
                   type="button"
                   onClick={() => setShowAddProduct(false)}
@@ -641,7 +641,7 @@ export function AdminRuangBelajarModals({
       {/* Modal Kelola Voucher Spesifik Produk */}
       {managingVouchers && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121214] p-5 rounded-2xl border border-gray-200 dark:border-white/10 w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-[#141B31] p-5 rounded-2xl border border-gray-200 dark:border-[#2C3246] w-full max-w-lg max-h-[85vh] flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-4 shrink-0">
               <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                 Kelola Voucher
@@ -659,7 +659,7 @@ export function AdminRuangBelajarModals({
                 managingVouchers.vouchers.map((v: any) => (
                   <div
                     key={v.id}
-                    className="flex justify-between items-center p-3 rounded-xl border border-gray-200 dark:border-white/5 bg-gray-50 dark:bg-black/20"
+                    className="flex justify-between items-center p-3 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128]"
                   >
                     <div>
                       <div className="font-bold text-gray-900 dark:text-white">{v.code}</div>
@@ -691,7 +691,7 @@ export function AdminRuangBelajarModals({
               )}
             </div>
 
-            <div className="pt-4 border-t border-gray-200 dark:border-white/10 shrink-0">
+            <div className="pt-4 border-t border-gray-200 dark:border-[#2C3246] shrink-0">
               <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-3">
                 Buat Voucher Baru
               </h4>
@@ -701,7 +701,7 @@ export function AdminRuangBelajarModals({
                   placeholder="Kode Promo (ex: PROMO50)"
                   value={newVoucher.code}
                   onChange={(e) => setNewVoucher({ ...newVoucher, code: e.target.value })}
-                  className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm uppercase focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
+                  className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm uppercase focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
                 />
                 <div className="flex gap-2">
                   <div className="w-1/3">
@@ -721,7 +721,7 @@ export function AdminRuangBelajarModals({
                     onChange={(e) =>
                       setNewVoucher({ ...newVoucher, discountValue: Number(e.target.value) })
                     }
-                    className="flex-1 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50"
+                    className="flex-1 bg-gray-50 dark:bg-white/5 border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50"
                   />
                 </div>
                 <button
@@ -752,7 +752,7 @@ export function AdminRuangBelajarModals({
       {/* Modal Edit Product */}
       {editingProduct && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#121214] p-5 rounded-2xl border border-gray-200 dark:border-white/10 w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar shadow-2xl animate-in zoom-in-95 duration-200">
+          <div className="bg-white dark:bg-[#141B31] p-5 rounded-2xl border border-gray-200 dark:border-[#2C3246] w-full max-w-lg max-h-[85vh] overflow-y-auto custom-scrollbar shadow-2xl animate-in zoom-in-95 duration-200">
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-bold text-lg text-gray-900 dark:text-white flex items-center gap-2">
                 <BookOpen className="text-rn-accent" size={20} /> Edit E-Book
@@ -819,7 +819,7 @@ export function AdminRuangBelajarModals({
                     name="title"
                     defaultValue={editingProduct.title}
                     required
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -830,7 +830,7 @@ export function AdminRuangBelajarModals({
                     name="slug"
                     defaultValue={editingProduct.slug}
                     required
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
               </div>
@@ -845,7 +845,7 @@ export function AdminRuangBelajarModals({
                     type="number"
                     placeholder="Contoh: 120"
                     defaultValue={editingProduct.pageCount || 0}
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
                 <div>
@@ -890,7 +890,7 @@ export function AdminRuangBelajarModals({
                       return (
                         <div
                           key={item.id}
-                          className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-white/10 relative overflow-visible"
+                          className="flex flex-row items-center justify-between gap-2 bg-gray-50 dark:bg-white/5 p-2 rounded-lg border border-gray-200 dark:border-[#2C3246] relative overflow-visible"
                         >
                           <div className="flex flex-col min-w-0 flex-1 z-10 gap-1">
                             <span
@@ -954,7 +954,7 @@ export function AdminRuangBelajarModals({
                   name="description"
                   defaultValue={editingProduct.description || ""}
                   rows={2}
-                  className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all custom-scrollbar"
+                  className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all custom-scrollbar"
                 ></textarea>
               </div>
 
@@ -966,7 +966,7 @@ export function AdminRuangBelajarModals({
                   name="fileUrl"
                   type="url"
                   defaultValue={editingProduct.fileUrl || ""}
-                  className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                  className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                 />
               </div>
 
@@ -978,7 +978,7 @@ export function AdminRuangBelajarModals({
                   <input
                     name="author"
                     defaultValue={editingProduct.author || "Admin"}
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -988,7 +988,7 @@ export function AdminRuangBelajarModals({
                   <input
                     name="language"
                     defaultValue={editingProduct.language || "Indonesia"}
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
                 <div className="space-y-1.5">
@@ -998,7 +998,7 @@ export function AdminRuangBelajarModals({
                   <input
                     name="formatType"
                     defaultValue={editingProduct.formatType || "PDF / Digital"}
-                    className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                   />
                 </div>
               </div>
@@ -1030,7 +1030,7 @@ export function AdminRuangBelajarModals({
                       min="0"
                       defaultValue={editingProduct.price || 0}
                       placeholder="Contoh: 49000"
-                      className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                      className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
                       required
                     />
                   </div>
@@ -1044,7 +1044,7 @@ export function AdminRuangBelajarModals({
                       min="0"
                       defaultValue={editingProduct.originalPrice || ""}
                       placeholder="Contoh: 99000"
-                      className="w-full bg-gray-50 dark:bg-black/20 border border-gray-200 dark:border-white/10 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all line-through"
+                      className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all line-through"
                     />
                   </div>
                 </div>
@@ -1067,7 +1067,7 @@ export function AdminRuangBelajarModals({
                 </div>
               </label>
 
-              <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-white/5">
+              <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-[#2C3246]">
                 <button
                   type="button"
                   onClick={() => setEditingProduct(null)}

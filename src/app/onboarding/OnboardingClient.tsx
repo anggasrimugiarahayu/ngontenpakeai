@@ -95,7 +95,7 @@ export default function OnboardingClient() {
   const currentStepData = steps[step - 1];
 
   return (
-    <div className="w-full max-w-xl bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/5 shadow-xl rounded-2xl overflow-hidden relative">
+    <div className="w-full max-w-xl bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-xl rounded-2xl overflow-hidden relative">
       {/* Progress Bar */}
       <div className="w-full h-1.5 bg-gray-100 dark:bg-white/5 relative">
         <div 
@@ -120,7 +120,7 @@ export default function OnboardingClient() {
             <button
               key={i}
               onClick={() => handleSelect(currentStepData.field, opt.label)}
-              className="flex items-center justify-between w-full p-3 md:p-4 rounded-xl border border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 hover:border-rn-accent hover:bg-orange-50 dark:hover:bg-orange-900/10 transition-all text-left group"
+              className="flex items-center justify-between w-full p-3 md:p-4 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128] hover:border-rn-accent hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-all text-left group"
             >
               <div className="flex items-center gap-4 text-gray-700 dark:text-gray-300 group-hover:text-rn-accent transition-colors">
                 <div className="text-gray-400 group-hover:text-rn-accent transition-colors">

@@ -35,7 +35,7 @@ const HeroCanvasCell: React.FC<HeroCanvasCellProps> = ({ title, dataKey, content
       <div className="relative z-10 w-full flex flex-col">
         {isEditing ? (
           <textarea 
-            className="w-full min-h-[140px] p-4 md:p-5 bg-white dark:bg-black border-2 border-gray-900 dark:border-white/50 rounded-xl outline-none text-gray-900 dark:text-white text-lg md:text-xl font-bold focus:bg-white dark:focus:bg-gray-900 transition-colors placeholder-gray-500 dark:placeholder-gray-400 shadow-sm resize-y" 
+            className="w-full min-h-[140px] p-4 md:p-5 bg-white dark:bg-[#0A1128] border-2 border-gray-300 dark:border-[#2C3246] rounded-xl outline-none text-gray-900 dark:text-white text-lg md:text-xl font-bold focus:border-orange-500 transition-colors placeholder-gray-500 dark:placeholder-gray-400 shadow-sm resize-y" 
             value={editValue} 
             onChange={(e) => setEditValue(e.target.value)} 
             autoFocus 

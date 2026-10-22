@@ -11,7 +11,7 @@ export const confirmSwal = async (text: string) => {
     buttonsStyling: false,
     customClass: {
       popup:
-        "font-sans rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#121214] shadow-xl",
+        "font-sans rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] shadow-xl",
       title: "!text-lg !font-semibold text-gray-900 dark:text-white !leading-snug !m-0",
       actions: "w-full flex gap-3 mt-6 mb-0 justify-end",
       confirmButton:

@@ -23,7 +23,7 @@ export default async function DashboardPage() {
   const initialData = await getDashboardDataAction();
 
   return (
-    <div className="min-h-screen bg-gray-50/30 dark:bg-[#0f0f11] pt-20 pb-10">
+    <div className="min-h-screen bg-gray-50/30 dark:bg-[#0A1128] pt-20 pb-10">
       <div className="max-w-6xl mx-auto px-4 md:px-8">
         <DashboardClient user={session.user} initialData={initialData} />
       </div>

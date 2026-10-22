@@ -271,7 +271,7 @@ export default function DashboardClient({
           <button
             onClick={handleRefresh}
             disabled={isRefreshing}
-            className="flex items-center gap-2 px-3.5 py-2 text-xs font-semibold rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-white/5 transition-all text-gray-700 dark:text-gray-300 shadow-sm disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-2 px-3.5 py-2 text-xs font-bold rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-[#1C2542] hover:border-gray-300 dark:hover:border-gray-500 transition-all text-gray-700 dark:text-gray-200 shadow-2xs disabled:opacity-50 cursor-pointer active:scale-95"
             title="Sinkronkan seluruh data aplikasi (Dashboard, Ruang Ngonten, Ruang Belajar, dll) langsung dari database"
           >
             <RefreshCw
@@ -298,10 +298,10 @@ export default function DashboardClient({
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 text-sm font-medium whitespace-nowrap transition-colors rounded-lg border ${
+              className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all rounded-lg border ${
                 activeTab === tab.id
-                  ? "border-orange-500 text-orange-500"
-                  : "border-transparent text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                  ? "border-orange-500/50 bg-orange-500/10 text-orange-600 dark:text-orange-400"
+                  : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-white/5"
               }`}
             >
               {tab.label}

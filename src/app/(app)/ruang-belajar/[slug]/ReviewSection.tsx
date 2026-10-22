@@ -53,7 +53,7 @@ export default function ReviewSection({
       </div>
 
       {showForm && (
-        <form onSubmit={handleSubmit} className="bg-white shadow-sm dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-2xl p-6 mb-8">
+        <form onSubmit={handleSubmit} className="bg-white shadow-sm dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 mb-8">
           <h4 className="text-sm font-bold text-gray-900 dark:text-white mb-4">
             {userReview ? "Edit Ulasan Anda" : "Bagikan Pengalaman Anda"}
           </h4>

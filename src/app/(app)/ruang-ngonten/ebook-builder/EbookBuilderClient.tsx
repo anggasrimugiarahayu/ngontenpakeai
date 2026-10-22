@@ -112,17 +112,17 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
       return (
         <div className="space-y-6 mt-4 animate-in fade-in slide-in-from-bottom-2">
           {/* TAMPILAN DESKTOP (TABLE) */}
-          <div className="hidden lg:block overflow-x-auto custom-table-scrollbar rounded-[12px] border border-gray-300 dark:border-white/10 bg-white dark:bg-[#121214] shadow-sm">
+          <div className="hidden lg:block overflow-x-auto custom-table-scrollbar rounded-[12px] border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] shadow-sm">
           <table className="w-full text-left border-collapse min-w-[1000px]">
             <thead>
-              <tr className="bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-400 text-[10px] md:text-xs uppercase tracking-wider font-heading">
+              <tr className="bg-gray-50 dark:bg-[#0A1128] border-b border-gray-200 dark:border-[#2C3246] text-gray-600 dark:text-gray-400 text-[10px] md:text-xs uppercase tracking-wider font-heading">
                 <th className="p-4 font-black w-[300px]">Topik Ebook & Masalah</th>
                 <th className="p-4 font-black w-[250px]">Unique Angle</th>
                 <th className="p-4 font-black w-[250px]">Dream Outcome</th>
-                <th className="p-4 font-black text-center w-[120px] sticky right-0 bg-gray-50 dark:bg-white/5 border-l border-gray-200 dark:border-white/10 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)] z-20">Aksi</th>
+                <th className="p-4 font-black text-center w-[120px] sticky right-0 bg-gray-50 dark:bg-[#0A1128] border-l border-gray-200 dark:border-[#2C3246] shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)] z-20">Aksi</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-white/10">
+            <tbody className="divide-y divide-gray-200 dark:divide-[#2C3246]">
               {msg.data.ideas_table.map((ide: any, i: number) => (
                 <tr key={i} className="hover:bg-rn-accent/5 dark:hover:bg-white/5 transition-colors group/row">
                   <td className="p-4 align-top">
@@ -134,17 +134,17 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
                     <p className="text-[12px] md:text-[13px] text-gray-800 dark:text-gray-300 font-medium leading-relaxed">{ide.unique_angle || ide.angle}</p>
                   </td>
                   <td className="p-4 align-top whitespace-normal">
-                    <div className="bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-200 dark:border-white/10">
+                    <div className="bg-gray-50 dark:bg-[#0A1128] p-3 rounded-xl border border-gray-200 dark:border-[#2C3246]">
                        <p className="text-[12px] md:text-[13px] text-gray-800 dark:text-gray-300 font-medium leading-relaxed">{ide.dream_outcome || ide.hasil_akhir || ide.outcome || ide.insight_utama || "-"}</p>
                     </div>
                   </td>
-                  <td className="p-4 align-top text-center sticky right-0 bg-white dark:bg-[#121214] group-hover/row:bg-rn-accent/5 dark:group-hover/row:bg-[#1a1a1c] border-l border-gray-100 dark:border-white/10 shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)] z-10 transition-colors">
+                  <td className="p-4 align-top text-center sticky right-0 bg-white dark:bg-[#141B31] group-hover/row:bg-rn-accent/5 dark:group-hover/row:bg-white/5 border-l border-gray-100 dark:border-[#2C3246] shadow-[-4px_0_6px_-2px_rgba(0,0,0,0.05)] z-10 transition-colors">
                     <button
                       onClick={() => {
                         const autoPrompt = `[SYSTEM_OUTLINE] Saya tertarik dengan ide ini:\nTopik: ${ide.topic || ide.nama_ide}\nAngle: ${ide.unique_angle || ide.angle}\n\nTolong buatkan saya kerangka Outline (Daftar Isi) beserta Bab, Sub-bab, dan Inti Pembahasan yang sangat detail berdasarkan referensi gaya ebook premium.`;
                         generateContent(autoPrompt);
                       }}
-                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full font-bold transition-all text-xs font-heading w-full border bg-white dark:bg-black border-gray-300 dark:border-white/20 text-gray-700 dark:text-white shadow-sm hover:border-rn-accent dark:hover:border-rn-accent hover:text-rn-accent whitespace-nowrap"
+                      className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-full font-bold transition-all text-xs font-heading w-full border bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-200 shadow-sm hover:border-orange-500 hover:text-orange-500 whitespace-nowrap"
                     >
                       <CheckCircle2 size={14} className="mb-0.5 shrink-0" /> Pilih Ide
                     </button>
@@ -158,17 +158,17 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
         {/* TAMPILAN MOBILE (CARD) */}
         <div className="lg:hidden space-y-4">
           {msg.data.ideas_table.map((ide: any, i: number) => (
-            <div key={`mobile-ebook-${i}`} className="bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-[12px] p-4 shadow-sm space-y-4 relative overflow-hidden">
+            <div key={`mobile-ebook-${i}`} className="bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-[12px] p-4 shadow-sm space-y-4 relative overflow-hidden">
               <div className="absolute top-0 left-0 w-full h-1 bg-rn-accent"></div>
               
-              <div className="flex items-center justify-between border-b border-gray-100 dark:border-white/5 pb-3 pt-1">
+              <div className="flex items-center justify-between border-b border-gray-100 dark:border-[#2C3246] pb-3 pt-1">
                 <h5 className="font-bold text-sm text-gray-900 dark:text-white font-heading leading-tight flex-1 pr-3">{ide.topic || ide.nama_ide}</h5>
                 <button
                   onClick={() => {
                     const autoPrompt = `[SYSTEM_OUTLINE] Saya tertarik dengan ide ini:\nTopik: ${ide.topic || ide.nama_ide}\nAngle: ${ide.unique_angle || ide.angle}\n\nTolong buatkan saya kerangka Outline (Daftar Isi) beserta Bab, Sub-bab, dan Inti Pembahasan yang sangat detail berdasarkan referensi gaya ebook premium.`;
                     generateContent(autoPrompt);
                   }}
-                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full font-bold transition-all text-[11px] font-heading border bg-white dark:bg-black border-gray-300 dark:border-white/20 text-gray-700 dark:text-white shadow-sm hover:border-rn-accent hover:text-rn-accent whitespace-nowrap shrink-0"
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full font-bold transition-all text-[11px] font-heading border bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-200 shadow-sm hover:border-orange-500 hover:text-orange-500 whitespace-nowrap shrink-0"
                 >
                   <CheckCircle2 size={12} className="mb-0.5 shrink-0" /> Pilih Ide
                 </button>
@@ -182,7 +182,7 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
                   <span className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 block mb-1 tracking-wider font-heading">Unique Angle</span>
                   <p className="text-[12px] text-gray-800 dark:text-gray-300 font-medium leading-relaxed">{ide.unique_angle || ide.angle}</p>
                 </div>
-                <div className="bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-200 dark:border-white/10">
+                <div className="bg-gray-50 dark:bg-[#0A1128] p-3 rounded-xl border border-gray-200 dark:border-[#2C3246]">
                   <span className="text-[10px] uppercase font-bold text-gray-500 dark:text-gray-400 flex items-center gap-1.5 mb-2 tracking-wider font-heading"><Lightbulb size={12} strokeWidth={2.5}/> Dream Outcome</span>
                   <p className="text-[12px] text-gray-800 dark:text-gray-300 font-medium leading-relaxed">{ide.dream_outcome || ide.hasil_akhir || ide.outcome || ide.insight_utama || "-"}</p>
                 </div>
@@ -198,7 +198,7 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
       return (
         <div className="space-y-4 animate-in fade-in slide-in-from-bottom-2 mt-4 w-full">
           {msg.isReviewing !== false ? (
-            <div className="bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-[16px] p-5 md:p-6 shadow-sm w-full">
+            <div className="bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-[16px] p-5 md:p-6 shadow-sm w-full">
               <div className="bg-amber-50 dark:bg-amber-900/30 text-amber-800 dark:text-amber-400 px-4 py-3 rounded-xl text-[12px] md:text-[13px] font-bold flex items-start gap-2 border border-amber-200 dark:border-amber-800 mb-4">
                 <AlertCircle size={18} className="shrink-0 mt-0.5" />
                 <span>Review & Edit Outline ini. Jika sudah mantap, klik &quot;Generate Master Prompt&quot;. AI akan memecah instruksi ini menjadi blok prompt untuk ChatGPT.</span>
@@ -208,9 +208,9 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
                 onChange={(e) => {
                   msg.data.outlineText = e.target.value;
                 }}
-                className="w-full h-[350px] p-4 text-[13px] md:text-[14px] leading-relaxed rounded-xl border border-gray-200 dark:border-white/10 focus:border-rn-accent focus:ring-1 focus:ring-rn-accent bg-gray-50 dark:bg-white/5 text-gray-900 dark:text-gray-200 outline-none resize-y transition-all"
+                className="w-full h-[350px] p-4 text-[13px] md:text-[14px] leading-relaxed rounded-xl border border-gray-200 dark:border-[#2C3246] focus:border-rn-accent focus:ring-1 focus:ring-rn-accent bg-gray-50 dark:bg-[#0A1128] text-gray-900 dark:text-gray-200 outline-none resize-y transition-all"
               />
-              <div className="flex justify-end gap-3 pt-3 border-t border-gray-200 dark:border-white/10 mt-4">
+              <div className="flex justify-end gap-3 pt-3 border-t border-gray-200 dark:border-[#2C3246] mt-4">
                 <button
                     onClick={() => {
                         setChatHistory(prev => prev.map(m => m.id === msg.id ? { ...m, isReviewing: false } : m));
@@ -244,18 +244,18 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
           </div>
           <div className="grid grid-cols-1 gap-5">
             {msg.data.prompt_blocks.map((block: any, pIdx: number) => (
-              <div key={pIdx} className="bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 rounded-[12px] overflow-hidden shadow-sm">
-                <div className="bg-gray-50 dark:bg-white/5 px-4 md:px-5 py-3.5 border-b border-gray-200 dark:border-white/10 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
+              <div key={pIdx} className="bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-[12px] overflow-hidden shadow-sm">
+                <div className="bg-gray-50 dark:bg-white/5 px-4 md:px-5 py-3.5 border-b border-gray-200 dark:border-[#2C3246] flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
                   <span className="font-bold text-gray-900 dark:text-white text-sm md:text-base block font-heading truncate flex-1">{block.label}</span>
                   <button 
                     onClick={() => copyToClipboard(block.content, `${msg.id}-${pIdx}`)}
-                    className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full font-bold transition-all text-xs font-heading border whitespace-nowrap shrink-0 ${actionState === `copy-${msg.id}-${pIdx}` ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white dark:bg-black border-gray-300 dark:border-white/20 text-gray-700 dark:text-white hover:border-rn-accent hover:text-rn-accent'}`}
+                    className={`flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full font-bold transition-all text-xs font-heading border whitespace-nowrap shrink-0 ${actionState === `copy-${msg.id}-${pIdx}` ? 'bg-emerald-500 border-emerald-500 text-white' : 'bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-200 hover:border-orange-500 hover:text-orange-500'}`}
                   >
                     <Copy size={14} /> {actionState === `copy-${msg.id}-${pIdx}` ? 'Tersalin!' : 'Salin Prompt'}
                   </button>
                 </div>
                 <div className="p-4 md:p-5">
-                  <div className="bg-gray-50 dark:bg-[#1a1a1c] p-4 rounded-xl border border-gray-100 dark:border-white/5">
+                  <div className="bg-gray-50 dark:bg-[#0A1128] p-4 rounded-xl border border-gray-100 dark:border-[#2C3246]">
                     <p className="leading-relaxed whitespace-pre-wrap font-medium text-[13px] md:text-[14px] text-gray-800 dark:text-gray-300 font-mono tracking-tight">{block.content}</p>
                   </div>
                 </div>
@@ -273,14 +273,14 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
     <div className="relative shrink-0 flex items-center" ref={plusMenuRef}>
       <button 
         onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsPlusMenuOpen(!isPlusMenuOpen); }} 
-        className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full border border-gray-200 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors ${isPlusMenuOpen ? 'bg-gray-100 dark:bg-white/10' : ''}`}
+        className={`flex items-center justify-center w-8 h-8 md:w-9 md:h-9 rounded-full border border-gray-200 dark:border-[#2C3246] text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#141B31] transition-colors ${isPlusMenuOpen ? 'bg-gray-100 dark:bg-[#141B31]' : ''}`}
       >
         <Plus size={18} className={`transition-transform duration-200 ${isPlusMenuOpen ? 'rotate-45' : ''}`} />
       </button>
 
       {isPlusMenuOpen && (
-        <div className="absolute bottom-full left-0 mb-3 w-[260px] md:w-[280px] max-w-[calc(100vw-2rem)] bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 shadow-xl rounded-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 py-1.5">
-          <div className="px-4 py-2.5 text-[10px] md:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 border-b border-gray-200 dark:border-white/10 bg-gray-50 dark:bg-white/5 font-heading">Menu Diskusi Cepat</div>
+        <div className="absolute bottom-full left-0 mb-3 w-[260px] md:w-[280px] max-w-[calc(100vw-2rem)] bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-xl rounded-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 py-1.5">
+          <div className="px-4 py-2.5 text-[10px] md:text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 border-b border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-white/5 font-heading">Menu Diskusi Cepat</div>
           <div className="max-h-60 overflow-y-auto no-scrollbar pt-1">
             {[
               { icon: Lightbulb, label: 'Carikan 5 Ide Ebook', command: 'Carikan saya 5 Ide Ebook spesifik yang sangat relevan dengan audiens Blueprint saya.' },

@@ -287,8 +287,8 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG SESUAI KONFIGURASI INI.`;
       </button>
 
       {isScriptMenuOpen && (
-        <div className="absolute bottom-full left-0 mb-3 w-[240px] max-w-[calc(100vw-2rem)] bg-white dark:bg-[#121214] border border-gray-200 dark:border-white/10 shadow-xl rounded-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 py-1.5">
-          <div className="px-4 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 border-b border-gray-100 dark:border-white/5 bg-gray-50 dark:bg-white/5">Pilih Mode Prompting</div>
+        <div className="absolute bottom-full left-0 mb-3 w-[240px] max-w-[calc(100vw-2rem)] bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-xl rounded-xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 py-1.5">
+          <div className="px-4 py-2 text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1 border-b border-gray-100 dark:border-[#2C3246]/50 bg-gray-50 dark:bg-white/5">Pilih Mode Prompting</div>
           <button onClick={() => { setCpMode('brainstorming'); setIsScriptMenuOpen(false); }} className={`w-full text-left px-4 py-3 text-sm font-bold flex items-center gap-3 transition-colors border-b border-gray-100 dark:border-white/5 ${cpMode === 'brainstorming' ? 'bg-rn-accent/10 text-rn-accent' : 'text-gray-700 dark:text-white hover:bg-gray-100 dark:hover:bg-white/5'}`}>
             <Lightbulb size={16} className={cpMode === 'brainstorming' ? 'text-rn-accent' : 'text-gray-500'} strokeWidth={2.5}/> Mode Brainstorming
           </button>
@@ -591,8 +591,8 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG SESUAI KONFIGURASI INI.`;
       {/* Configuration Modal */}
       {showConfigModal && (
         <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-gray-900/60 dark:bg-black/70 backdrop-blur-sm animate-in fade-in duration-200" onClick={() => setShowConfigModal(false)}>
-          <div className="bg-white dark:bg-[#121214] rounded-2xl shadow-2xl border border-gray-200 dark:border-white/10 w-full max-w-lg max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
-            <div className="px-5 py-4 border-b border-gray-200 dark:border-white/10 flex items-center justify-between shrink-0 bg-gray-50 dark:bg-white/5">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] w-full max-w-lg max-h-[90vh] flex flex-col" onClick={e => e.stopPropagation()}>
+            <div className="px-5 py-4 border-b border-gray-200 dark:border-[#2C3246] flex items-center justify-between shrink-0 bg-gray-50 dark:bg-white/5">
               <h3 className="font-bold text-gray-900 dark:text-white font-heading text-lg flex items-center gap-2">
                 <Images className="text-rn-accent" size={18} /> Konfigurasi Visual Carousel
               </h3>

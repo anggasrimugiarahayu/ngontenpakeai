@@ -26,7 +26,7 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
 
   return (
     <div className="space-y-6">
-      <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
+      <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31]">
         <div className="mb-4">
           <h3 className="text-lg font-bold text-gray-900 dark:text-white">Tambah Model Baru</h3>
         </div>
@@ -35,25 +35,25 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
             placeholder="Nama (ex: Gemini Flash)"
             value={newModel.name}
             onChange={(e) => setNewModel({ ...newModel, name: e.target.value })}
-            className="bg-gray-50 dark:bg-transparent border border-gray-200 dark:border-white/10 rounded-lg px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500 focus:outline-none"
+            className="bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none transition-all"
           />
           <input
             placeholder="Model ID (ex: gemini-1.5-flash)"
             value={newModel.modelId}
             onChange={(e) => setNewModel({ ...newModel, modelId: e.target.value })}
-            className="bg-gray-50 dark:bg-transparent border border-gray-200 dark:border-white/10 rounded-lg px-4 py-2 text-sm font-mono focus:ring-2 focus:ring-orange-500 focus:outline-none"
+            className="bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white rounded-xl px-4 py-2 text-sm font-mono focus:ring-2 focus:ring-orange-500/20 focus:border-orange-500 focus:outline-none transition-all"
           />
           <button
             onClick={handleAddModel}
             disabled={loading || !newModel.name || !newModel.modelId}
-            className="bg-rn-accent hover:bg-orange-600 text-white font-bold px-4 py-2 rounded-lg text-sm transition-colors disabled:opacity-50 shadow-sm"
+            className="bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold px-5 py-2.5 rounded-xl text-sm transition-all shadow-sm shadow-orange-500/20 active:scale-[0.98] disabled:opacity-50 cursor-pointer"
           >
             Tambah
           </button>
         </div>
       </div>
 
-      <div className="border border-gray-200 dark:border-white/5 rounded-2xl p-6 bg-white dark:bg-[#121214]">
+      <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31]">
         <div className="mb-4">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">Daftar Model AI</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -64,7 +64,7 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
           {models.map((model: any) => (
             <div
               key={model.id}
-              className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 dark:bg-transparent rounded-xl border border-gray-200 dark:border-white/5 gap-4"
+              className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 dark:bg-[#0A1128] rounded-xl border border-gray-200 dark:border-[#2C3246] gap-4"
             >
               <div className="flex flex-col">
                 <div className="flex flex-wrap items-center gap-2">

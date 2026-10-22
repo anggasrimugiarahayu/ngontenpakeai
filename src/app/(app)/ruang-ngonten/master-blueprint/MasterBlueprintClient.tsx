@@ -385,10 +385,10 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
               <HeroCanvasCell title="Positioning & Identity" dataKey="positioning_identity" content={blueprint.positioning_identity} onUpdate={handleUpdateCanvas} />
               
               {/* PAGE 1: Brand Foundation */}
-              <div className="bg-white dark:bg-[#121214] rounded-[12px] border border-gray-200 dark:border-white/5 p-5 md:p-8">
+              <div className="bg-white dark:bg-[#141B31] rounded-[12px] border border-gray-200 dark:border-[#2C3246] p-5 md:p-8">
                 <div 
                   onClick={() => setIsBrandOpen(!isBrandOpen)} 
-                  className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 pb-4 border-b border-gray-200 dark:border-white/10 gap-3 cursor-pointer group"
+                  className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 pb-4 border-b border-gray-200 dark:border-[#2C3246] gap-3 cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white font-heading group-hover:text-orange-500 transition-colors">Brand Foundation</h2>
@@ -417,10 +417,10 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
               </div>
               
               {/* PAGE 2: Expansion Engine */}
-              <div className="bg-white dark:bg-[#121214] rounded-[12px] border border-gray-200 dark:border-white/5 p-5 md:p-8">
+              <div className="bg-white dark:bg-[#141B31] rounded-[12px] border border-gray-200 dark:border-[#2C3246] p-5 md:p-8">
                 <div 
                   onClick={() => setIsContentOpen(!isContentOpen)}
-                  className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 pb-4 border-b border-gray-200 dark:border-white/10 gap-3 cursor-pointer group"
+                  className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 pb-4 border-b border-gray-200 dark:border-[#2C3246] gap-3 cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white font-heading group-hover:text-orange-500 transition-colors">Content & Business Strategy</h2>
@@ -447,10 +447,10 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
               </div>
               
               {/* PAGE 3: Audience Psychology */}
-              <div className="bg-white dark:bg-[#121214] rounded-[12px] border border-gray-200 dark:border-white/5 p-5 md:p-8">
+              <div className="bg-white dark:bg-[#141B31] rounded-[12px] border border-gray-200 dark:border-[#2C3246] p-5 md:p-8">
                 <div 
                   onClick={() => setIsPsychologyOpen(!isPsychologyOpen)}
-                  className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 pb-4 border-b border-gray-200 dark:border-white/10 gap-3 cursor-pointer group"
+                  className="flex flex-col md:flex-row md:justify-between md:items-center mb-6 pb-4 border-b border-gray-200 dark:border-[#2C3246] gap-3 cursor-pointer group"
                 >
                   <div className="flex items-center gap-3">
                     <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white font-heading group-hover:text-orange-500 transition-colors">Audience Psychology</h2>
