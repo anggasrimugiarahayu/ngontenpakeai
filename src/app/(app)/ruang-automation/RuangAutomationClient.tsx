@@ -262,9 +262,12 @@ export default function RuangAutomationClient({
       if (errorParam === "cancelled") {
         showToast("info", "Proses login Instagram dibatalkan.");
       } else if (errorParam === "no_business_account") {
+        const detailsParam = params.get("details");
         showToast(
           "error",
-          "Akun Instagram belum berupa Akun Profesional (Kreator/Bisnis) atau belum ditautkan ke Facebook Page."
+          detailsParam
+            ? `Meta API Error: ${decodeURIComponent(detailsParam)}`
+            : "Akun belum terhubung. Pastikan akun sudah berstatus Akun Profesional & telah disetujui sebagai Tester di Meta Developer (selama tahap Development)."
         );
       } else if (errorParam === "missing_credentials") {
         showToast("error", "Kredensial Meta App belum terpasang di sistem.");

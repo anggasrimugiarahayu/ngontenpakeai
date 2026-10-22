@@ -99,7 +99,7 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
   const isPro = badgeName !== "FREE";
 
   return (
-    <nav className="fixed w-full top-0 z-50 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors duration-300 backdrop-blur-md bg-gray-50/80 dark:bg-[#0f0f11]/80">
+    <nav className="fixed w-full top-0 z-50 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors duration-300 backdrop-blur-md bg-gray-50/80 dark:bg-[#0A1128]/80 border-b border-transparent dark:border-[#2C3246]/50">
       <div className="flex items-center shrink-0 gap-3">
         {isWorkspace && (
           <button 
@@ -226,8 +226,8 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
               </div>
               
               {/* Dropdown Menu */}
-              <div className={`absolute right-0 mt-2 w-56 bg-white dark:bg-[#18181b] border border-gray-200 dark:border-white/10 rounded-xl shadow-xl transition-all duration-200 overflow-hidden z-50 ${isDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
-                <div className="p-3 border-b border-gray-200 dark:border-white/5">
+              <div className={`absolute right-0 mt-2 w-56 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-xl transition-all duration-200 overflow-hidden z-50 ${isDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+                <div className="p-3 border-b border-gray-200 dark:border-[#2C3246]">
                   <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{session.user?.name}</p>
                   <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{session.user?.email}</p>
                 </div>

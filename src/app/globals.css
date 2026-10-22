@@ -16,9 +16,9 @@
   --color-rn-blue: #5A9CB5;
   --color-rn-orange: #FACE68;
   --color-rn-darkorange: #FAAC68;
-  --color-rn-dark-bg: #0f0f11;
-  --color-rn-card: #18181b;
-  --color-rn-border: #27272a;
+  --color-rn-dark-bg: #0A1128;
+  --color-rn-card: #141B31;
+  --color-rn-border: #2C3246;
   
   --animate-scroll-left: scroll-left 120s linear infinite;
   --animate-scroll-right: scroll-right 120s linear infinite;
@@ -53,7 +53,7 @@
 }
 
 .dark {
-  --card: #18181b;
+  --card: #141B31;
 }
 
 ::selection {

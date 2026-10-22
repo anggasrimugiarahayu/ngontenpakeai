@@ -162,13 +162,32 @@ export async function GET(request: NextRequest) {
     } | null = null;
     let targetAccessToken = userToken;
 
+    let metaErrorMessage: string | null = null;
     try {
       let directIgRes = await fetch(
         `https://graph.instagram.com/v22.0/me?fields=id,user_id,username,name,profile_picture_url,account_type&access_token=${userToken}`
       );
       if (!directIgRes.ok) {
+        const errJson = await directIgRes.json().catch(() => null);
+        console.warn("directIgRes attempt 1 error:", directIgRes.status, errJson);
+        if (errJson?.error?.message) {
+          metaErrorMessage = errJson.error.message;
+        }
+
+        // Fallback jika field account_type ditolak di versi ini
         directIgRes = await fetch(
-          `https://graph.instagram.com/me?fields=id,username,name,profile_picture_url,account_type&access_token=${userToken}`
+          `https://graph.instagram.com/v22.0/me?fields=id,user_id,username,name,profile_picture_url&access_token=${userToken}`
+        );
+      }
+      if (!directIgRes.ok) {
+        const errJson2 = await directIgRes.json().catch(() => null);
+        console.warn("directIgRes attempt 2 error:", directIgRes.status, errJson2);
+        if (errJson2?.error?.message) {
+          metaErrorMessage = errJson2.error.message;
+        }
+
+        directIgRes = await fetch(
+          `https://graph.instagram.com/me?fields=id,username,name,profile_picture_url&access_token=${userToken}`
         );
       }
       if (directIgRes.ok) {
@@ -185,8 +204,9 @@ export async function GET(request: NextRequest) {
           };
         }
       }
-    } catch (directErr) {
+    } catch (directErr: any) {
       console.warn("Direct Instagram /me fetch failed:", directErr);
+      metaErrorMessage = directErr?.message || metaErrorMessage;
     }
 
     // Fallback: Check by user ID if /me didn't yield full info
@@ -246,6 +266,9 @@ export async function GET(request: NextRequest) {
     if (!targetIgAccount || !targetIgAccount.id) {
       const redirectUrl = new URL("/ruang-automation", origin);
       redirectUrl.searchParams.set("error", "no_business_account");
+      if (metaErrorMessage) {
+        redirectUrl.searchParams.set("details", metaErrorMessage);
+      }
       redirectUrl.searchParams.set("platform", "instagram");
       return NextResponse.redirect(redirectUrl);
     }

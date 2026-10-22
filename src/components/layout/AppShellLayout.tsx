@@ -309,12 +309,12 @@ export default function AppShellLayout({
     <div className="flex flex-1 w-full relative">
       {/* FLOATING SIDEBAR (DESKTOP) */}
       <aside
-        className={`hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-[60] bg-white/90 dark:bg-[#121214]/90 backdrop-blur-xl border border-gray-200 dark:border-white/10 shadow-2xl rounded-2xl flex-col transition-all duration-300 ease-in-out ${
+        className={`hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-[60] bg-white/90 dark:bg-[#141B31]/90 backdrop-blur-xl border border-gray-200 dark:border-[#2C3246] shadow-2xl rounded-2xl flex-col transition-all duration-300 ease-in-out ${
           isExpanded ? "w-[260px]" : "w-[64px]"
         } overflow-hidden`}
       >
         {/* Toggle Button */}
-        <div className="flex items-center justify-end p-2 border-b border-gray-100 dark:border-white/5">
+        <div className="flex items-center justify-end p-2 border-b border-gray-100 dark:border-[#2C3246]/60">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="w-10 h-10 flex items-center justify-center rounded-xl text-gray-500 hover:bg-gray-100 dark:hover:bg-white/10 hover:text-gray-900 dark:hover:text-white transition-colors"
@@ -417,7 +417,7 @@ export default function AppShellLayout({
         </div>
 
         {(isToolsMode || isAutomationMode) && (
-          <div className="p-2 border-t border-gray-100 dark:border-white/5 mt-auto">
+          <div className="p-2 border-t border-gray-100 dark:border-[#2C3246]/60 mt-auto">
             <Link
               prefetch={true}
               href={backHref}
@@ -444,11 +444,11 @@ export default function AppShellLayout({
         )}
 
         <aside
-          className={`fixed top-0 bottom-0 left-0 z-[80] w-[260px] bg-white dark:bg-[#121214] border-r border-gray-200 dark:border-white/10 transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
+          className={`fixed top-0 bottom-0 left-0 z-[80] w-[260px] bg-white dark:bg-[#141B31] border-r border-gray-200 dark:border-[#2C3246] transition-transform duration-300 ease-in-out md:hidden flex flex-col ${
             isOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-white/5">
+          <div className="flex items-center justify-between p-4 border-b border-gray-100 dark:border-[#2C3246]/60">
             <span className="font-bold text-gray-900 dark:text-white">{drawerTitle}</span>
             <button
               onClick={() => setIsOpen(false)}
@@ -548,7 +548,7 @@ export default function AppShellLayout({
           </div>
 
           {(isToolsMode || isAutomationMode) && (
-            <div className="p-4 border-t border-gray-100 dark:border-white/5 mt-auto">
+            <div className="p-4 border-t border-gray-100 dark:border-[#2C3246]/60 mt-auto">
               <Link
                 prefetch={true}
                 href={backHref}
