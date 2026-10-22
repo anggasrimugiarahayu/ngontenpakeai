@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { InstagramPostItem, InstagramTargetProfile } from "./types";
+import { tokens, cn } from "@/lib/design-tokens";
 import {
   X,
   ExternalLink,
@@ -56,7 +57,7 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
   return (
     <div className="fixed inset-0 z-[120] flex items-center justify-center p-3 sm:p-4 md:p-6 bg-black/75 backdrop-blur-sm animate-in fade-in duration-200">
       <div
-        className="w-full max-w-4xl max-h-[92vh] bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative animate-in zoom-in-95 duration-200"
+        className={cn("w-full max-w-4xl max-h-[92vh] rounded-2xl md:rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative animate-in zoom-in-95 duration-200", tokens.card.base)}
         onClick={(e) => e.stopPropagation()}
       >
         {/* Floating Close Button */}
@@ -127,7 +128,7 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
               href={post.permalink}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-[#141B31] dark:hover:bg-[#1f2947] border border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-300 transition-colors"
+              className={cn("inline-flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors", tokens.button.variants.secondary)}
             >
               <ExternalLink className="w-3.5 h-3.5" />
               <span>Buka IG</span>
@@ -202,7 +203,7 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
               </button>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] text-xs sm:text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed max-h-[220px] overflow-y-auto">
+            <div className={cn("p-3.5 text-xs sm:text-sm text-gray-700 dark:text-gray-300 whitespace-pre-line leading-relaxed max-h-[220px] overflow-y-auto", tokens.card.subtle)}>
               {post.caption}
             </div>
           </div>

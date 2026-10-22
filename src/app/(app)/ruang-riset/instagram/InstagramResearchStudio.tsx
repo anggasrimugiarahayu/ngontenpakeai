@@ -15,6 +15,8 @@ import { InstagramFeedGrid } from "./InstagramFeedGrid";
 import { InstagramPostModal } from "./InstagramPostModal";
 import { exportPostsToCSV } from "./exportUtils";
 import { BackButton } from "@/components/ui/BackButton";
+import { Button } from "@/components/ui/Button";
+import { tokens, cn } from "@/lib/design-tokens";
 import {
   Search,
   AlertCircle,
@@ -225,23 +227,17 @@ export function InstagramResearchStudio({
               />
             </div>
 
-            <button
+            <Button
               type="submit"
               disabled={isLoading || !usernameInput.trim()}
-              className="px-6 py-3 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold text-sm shadow-sm shadow-orange-500/20 transition-all transform active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer flex items-center justify-center gap-2 shrink-0"
+              isLoading={isLoading}
+              loadingText="Menganalisis..."
+              icon={<Search className="w-4 h-4" />}
+              size="lg"
+              className="shrink-0"
             >
-              {isLoading ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Menganalisis...</span>
-                </>
-              ) : (
-                <>
-                  <Search className="w-4 h-4" />
-                  <span>Riset Konten</span>
-                </>
-              )}
-            </button>
+              Riset Konten
+            </Button>
           </form>
 
           {/* Quick Suggestion Chips */}

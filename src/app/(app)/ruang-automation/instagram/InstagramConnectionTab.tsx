@@ -3,6 +3,8 @@
 import React from "react";
 import { RefreshCw } from "lucide-react";
 import { InstagramIcon } from "../components/AutomationIcons";
+import { Button } from "@/components/ui/Button";
+import { tokens, cn } from "@/lib/design-tokens";
 
 interface InstagramConnectionTabProps {
   displayAccount: any;
@@ -108,23 +110,27 @@ export function InstagramConnectionTab({
                     Terhubung: {formattedUpdated}
                   </div>
                   <div className="flex items-center gap-2.5 w-full md:w-auto">
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="md"
                       onClick={onResyncAccount}
                       disabled={isPending}
-                      className="flex-1 md:flex-initial px-4 py-2 sm:py-2.5 rounded-xl bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 font-bold dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] disabled:opacity-50"
+                      isLoading={isPending}
+                      className="flex-1 md:flex-initial"
                       title="Sinkronkan ulang data profil dari Meta API"
                     >
-                      {isPending && <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0" />}
                       <span className="truncate">Singkronkan ulang</span>
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      variant="danger"
+                      size="md"
                       onClick={onDisconnect}
                       disabled={isPending}
-                      className="flex-1 md:flex-initial px-4 py-2 sm:py-2.5 rounded-xl bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 font-bold dark:bg-red-950/30 dark:hover:bg-red-900/40 dark:border-red-900/40 dark:text-red-400 text-xs sm:text-sm flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-[0.98] disabled:opacity-50"
+                      className="flex-1 md:flex-initial"
                       title="Putuskan koneksi akun ini"
                     >
                       <span className="truncate">Putuskan Koneksi</span>
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -154,15 +160,17 @@ export function InstagramConnectionTab({
               <div className="w-full text-center md:text-right text-xs text-gray-400 dark:text-gray-500 font-normal">
                 Belum Terhubung ke akun
               </div>
-              <button
+              <Button
+                variant="primary"
+                size="md"
                 onClick={() => onStartMetaOAuth(displayAccount?.id || selectedAgentId || account?.id)}
                 disabled={isPending}
-                className="w-full md:w-auto px-5 py-2.5 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all shrink-0 cursor-pointer shadow-sm shadow-orange-500/20 active:scale-[0.98] disabled:opacity-50"
+                isLoading={isPending}
+                className="w-full md:w-auto"
                 title="Hubungkan akun Instagram Anda secara resmi via Meta"
               >
-                {isPending && <RefreshCw className="w-3.5 h-3.5 animate-spin shrink-0" />}
                 <span>Hubungkan Akun IG</span>
-              </button>
+              </Button>
             </div>
           </div>
         </div>

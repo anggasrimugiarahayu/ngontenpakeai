@@ -15,6 +15,8 @@ import { MessagePayloadBuilder } from "../components/MessagePayloadBuilder";
 import { AdditionalFeaturesBuilder } from "../components/AdditionalFeaturesBuilder";
 import { TriggerKeywordBuilder } from "../components/TriggerKeywordBuilder";
 import { InstagramPhonePreview } from "./InstagramPhonePreview";
+import { Switch } from "@/components/ui/Switch";
+import { Button } from "@/components/ui/Button";
 
 interface InstagramRuleStudioModalProps {
   isRuleModalOpen: boolean;
@@ -753,19 +755,11 @@ export function InstagramRuleStudioModal({
                             </div>
                             <p className="text-[11px] text-gray-500">Balas ❤️ pada balasan story Anda</p>
                           </div>
-                          <button
-                            type="button"
-                            onClick={() => setRuleFormData({ ...ruleFormData, replyHeartReaction: !ruleFormData.replyHeartReaction })}
-                            className={`w-10 h-6 rounded-full transition-colors relative p-0.5 cursor-pointer ${
-                              ruleFormData.replyHeartReaction ? "bg-gray-900 dark:bg-white" : "bg-gray-200 dark:bg-white/15"
-                            }`}
-                          >
-                            <div
-                              className={`w-5 h-5 rounded-full bg-white dark:bg-black shadow-sm transition-transform ${
-                                ruleFormData.replyHeartReaction ? "translate-x-4" : "translate-x-0"
-                              }`}
-                            />
-                          </button>
+                          <Switch
+                            size="sm"
+                            checked={Boolean(ruleFormData.replyHeartReaction)}
+                            onChange={(nextVal) => setRuleFormData({ ...ruleFormData, replyHeartReaction: nextVal })}
+                          />
                         </div>
                       )}
 

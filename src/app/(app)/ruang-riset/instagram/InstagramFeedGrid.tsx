@@ -3,6 +3,7 @@
 import React from "react";
 import { InstagramPostItem, InstagramTargetProfile, SortOption } from "./types";
 import { Film, Layers, Play, Heart, MessageSquare, Flame, Sparkles } from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 interface Props {
   posts: InstagramPostItem[];
@@ -25,17 +26,11 @@ export function InstagramFeedGrid({
 }: Props) {
   if (!posts || posts.length === 0) {
     return (
-      <div className="w-full min-h-[300px] flex flex-col items-center justify-center p-8 bg-white dark:bg-[#141B31] rounded-2xl border border-gray-200 dark:border-[#2C3246] text-center">
-        <div className="w-12 h-12 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-400 mb-3">
-          <Film className="w-6 h-6" />
-        </div>
-        <h4 className="text-base font-bold text-gray-900 dark:text-white">
-          Tidak ada konten yang cocok
-        </h4>
-        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 max-w-sm">
-          Coba ganti kata kunci pencarian atau ubah filter format (Semua / Reels / Foto).
-        </p>
-      </div>
+      <EmptyState
+        icon={<Film className="w-6 h-6" />}
+        title="Tidak ada konten yang cocok"
+        description="Coba ganti kata kunci pencarian atau ubah filter format (Semua / Reels / Foto)."
+      />
     );
   }
 

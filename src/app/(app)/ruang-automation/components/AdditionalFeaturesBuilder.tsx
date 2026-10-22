@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { SpintaxAntiSpamTips } from "./SpintaxAntiSpamTips";
 import { MessagePayloadBuilder } from "./MessagePayloadBuilder";
+import { Switch } from "@/components/ui/Switch";
 
 interface AdditionalFeaturesBuilderProps {
   ruleFormData: any;
@@ -100,28 +101,16 @@ export function AdditionalFeaturesBuilder({
                 Kirim pesan follow up secara otomatis
               </p>
             </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                const nextVal = !ruleFormData.featureFollowUp;
+            <Switch
+              size="sm"
+              checked={Boolean(ruleFormData.featureFollowUp)}
+              onChange={(nextVal) => {
                 setRuleFormData({ ...ruleFormData, featureFollowUp: nextVal });
                 if (nextVal) {
                   setActivePreviewTab("DM");
                 }
               }}
-              className={`w-10 h-6 rounded-full transition-colors relative p-0.5 cursor-pointer ${
-                ruleFormData.featureFollowUp
-                  ? "bg-gray-900 dark:bg-white"
-                  : "bg-gray-200 dark:bg-white/15"
-              }`}
-            >
-              <div
-                className={`w-5 h-5 rounded-full bg-white dark:bg-black shadow-sm transition-transform ${
-                  ruleFormData.featureFollowUp ? "translate-x-4" : "translate-x-0"
-                }`}
-              />
-            </button>
+            />
           </div>
 
           {ruleFormData.featureFollowUp && (
@@ -355,11 +344,10 @@ export function AdditionalFeaturesBuilder({
                   Balas pengguna yang mengomentari postingan Anda
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  const nextVal = !ruleFormData.featureReplyComment;
+              <Switch
+                size="sm"
+                checked={Boolean(ruleFormData.featureReplyComment)}
+                onChange={(nextVal) => {
                   setRuleFormData({
                     ...ruleFormData,
                     featureReplyComment: nextVal,
@@ -368,20 +356,7 @@ export function AdditionalFeaturesBuilder({
                     setActivePreviewTab("COMMENT");
                   }
                 }}
-                className={`w-10 h-6 rounded-full transition-colors relative p-0.5 cursor-pointer ${
-                  ruleFormData.featureReplyComment
-                    ? "bg-gray-900 dark:bg-white"
-                    : "bg-gray-200 dark:bg-white/15"
-                }`}
-              >
-                <div
-                  className={`w-5 h-5 rounded-full bg-white dark:bg-black shadow-sm transition-transform ${
-                    ruleFormData.featureReplyComment
-                      ? "translate-x-4"
-                      : "translate-x-0"
-                  }`}
-                />
-              </button>
+              />
             </div>
 
             {ruleFormData.featureReplyComment && (
@@ -577,11 +552,10 @@ export function AdditionalFeaturesBuilder({
                 Kirim pesan pertama ke pengguna
               </p>
             </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                const nextVal = !ruleFormData.featureWelcomeMessage;
+            <Switch
+              size="sm"
+              checked={Boolean(ruleFormData.featureWelcomeMessage)}
+              onChange={(nextVal) => {
                 setRuleFormData({
                   ...ruleFormData,
                   featureWelcomeMessage: nextVal,
@@ -591,20 +565,7 @@ export function AdditionalFeaturesBuilder({
                   setActivePreviewTab("DM");
                 }
               }}
-              className={`w-10 h-6 rounded-full transition-colors relative p-0.5 cursor-pointer ${
-                ruleFormData.featureWelcomeMessage
-                  ? "bg-gray-900 dark:bg-white"
-                  : "bg-gray-200 dark:bg-white/15"
-              }`}
-            >
-              <div
-                className={`w-5 h-5 rounded-full bg-white dark:bg-black shadow-sm transition-transform ${
-                  ruleFormData.featureWelcomeMessage
-                    ? "translate-x-4"
-                    : "translate-x-0"
-                }`}
-              />
-            </button>
+            />
           </div>
 
           {ruleFormData.featureWelcomeMessage && (
@@ -775,16 +736,15 @@ export function AdditionalFeaturesBuilder({
                 Minta pengguna untuk mengikuti akun Anda
               </p>
             </div>
-            <button
-              type="button"
+            <Switch
+              size="sm"
               disabled={!ruleFormData.featureWelcomeMessage}
-              onClick={(e) => {
-                e.stopPropagation();
+              checked={Boolean(ruleFormData.featureWelcomeMessage && ruleFormData.featureAskForFollow)}
+              onChange={(nextVal) => {
                 if (!ruleFormData.featureWelcomeMessage) {
                   showToast("info", "Aktifkan Pesan Pembuka terlebih dahulu");
                   return;
                 }
-                const nextVal = !ruleFormData.featureAskForFollow;
                 setRuleFormData({
                   ...ruleFormData,
                   featureAskForFollow: nextVal,
@@ -794,28 +754,7 @@ export function AdditionalFeaturesBuilder({
                   setSimulatedFollowStep("GATE");
                 }
               }}
-              title={
-                !ruleFormData.featureWelcomeMessage
-                  ? "Aktifkan Pesan Pembuka terlebih dahulu"
-                  : undefined
-              }
-              className={`w-10 h-6 rounded-full transition-colors relative p-0.5 ${
-                !ruleFormData.featureWelcomeMessage
-                  ? "bg-gray-200 dark:bg-white/10 cursor-not-allowed opacity-50"
-                  : ruleFormData.featureAskForFollow
-                  ? "bg-gray-900 dark:bg-white cursor-pointer"
-                  : "bg-gray-200 dark:bg-white/15 cursor-pointer"
-              }`}
-            >
-              <div
-                className={`w-5 h-5 rounded-full bg-white dark:bg-black shadow-sm transition-transform ${
-                  ruleFormData.featureAskForFollow &&
-                  ruleFormData.featureWelcomeMessage
-                    ? "translate-x-4"
-                    : "translate-x-0"
-                }`}
-              />
-            </button>
+            />
           </div>
 
           {ruleFormData.featureWelcomeMessage &&
@@ -1075,11 +1014,10 @@ export function AdditionalFeaturesBuilder({
                 Kumpulkan email atau nomor WhatsApp sebelum mengirim konten
               </p>
             </div>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                const nextVal = !ruleFormData.featureAskForContact;
+            <Switch
+              size="sm"
+              checked={Boolean(ruleFormData.featureAskForContact)}
+              onChange={(nextVal) => {
                 setRuleFormData({
                   ...ruleFormData,
                   featureAskForContact: nextVal,
@@ -1088,20 +1026,7 @@ export function AdditionalFeaturesBuilder({
                   setActivePreviewTab("DM");
                 }
               }}
-              className={`w-10 h-6 rounded-full transition-colors relative p-0.5 cursor-pointer ${
-                ruleFormData.featureAskForContact
-                  ? "bg-gray-900 dark:bg-white"
-                  : "bg-gray-200 dark:bg-white/15"
-              }`}
-            >
-              <div
-                className={`w-5 h-5 rounded-full bg-white dark:bg-black shadow-sm transition-transform ${
-                  ruleFormData.featureAskForContact
-                    ? "translate-x-4"
-                    : "translate-x-0"
-                }`}
-              />
-            </button>
+            />
           </div>
 
           {ruleFormData.featureAskForContact && (
@@ -1248,28 +1173,16 @@ export function AdditionalFeaturesBuilder({
               Hanya untuk jenis pesan Tombol atau Carousel
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() =>
+          <Switch
+            size="sm"
+            checked={Boolean(ruleFormData.featureLinkTracking)}
+            onChange={(nextVal) =>
               setRuleFormData({
                 ...ruleFormData,
-                featureLinkTracking: !ruleFormData.featureLinkTracking,
+                featureLinkTracking: nextVal,
               })
             }
-            className={`w-10 h-6 rounded-full transition-colors relative p-0.5 cursor-pointer ${
-              ruleFormData.featureLinkTracking
-                ? "bg-gray-900 dark:bg-white"
-                : "bg-gray-200 dark:bg-white/15"
-            }`}
-          >
-            <div
-              className={`w-5 h-5 rounded-full bg-white dark:bg-black shadow-sm transition-transform ${
-                ruleFormData.featureLinkTracking
-                  ? "translate-x-4"
-                  : "translate-x-0"
-              }`}
-            />
-          </button>
+          />
         </div>
       </div>
     </div>
