@@ -378,6 +378,7 @@ export async function verifyPayment(orderId: string) {
       });
       revalidatePath("/ruang-belajar");
       revalidatePath("/ruang-ngonten");
+      revalidatePath("/ruang-riset");
       revalidatePath("/ruang-automation");
       revalidatePath("/dashboard");
       try {

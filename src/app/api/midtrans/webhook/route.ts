@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 import { coreApi } from "@/lib/midtrans";
 import prisma from "@/lib/prisma";
 
@@ -139,6 +139,11 @@ export async function POST(req: NextRequest) {
       revalidateTag("user-ownership", "default");
       revalidateTag("user-orders", "default");
       revalidateTag("user-session", "default");
+      revalidatePath("/ruang-belajar");
+      revalidatePath("/ruang-ngonten");
+      revalidatePath("/ruang-riset");
+      revalidatePath("/ruang-automation");
+      revalidatePath("/dashboard");
     } catch (e) {
       console.error("Failed to revalidate tags:", e);
     }

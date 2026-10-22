@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Button from "@/components/ui/Button";
 import { Loader2, CheckCircle2, X, CreditCard } from "lucide-react";
 import { PAYMENT_METHODS, PaymentMethodKey } from "@/lib/payment-calc";
 import { revalidateAfterPurchaseAction } from "@/app/actions/checkout";
@@ -238,7 +239,7 @@ export default function CheckoutModals({
               }
 
               return (
-                <button
+                <Button
                   onClick={async () => {
                     setIsRedirecting(true);
                     try {
@@ -249,17 +250,14 @@ export default function CheckoutModals({
                     window.location.href = targetUrl;
                   }}
                   disabled={isRedirecting}
-                  className="flex items-center justify-center gap-2 w-full bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold py-3.5 rounded-xl disabled:opacity-50 transition-all cursor-pointer shadow-sm shadow-orange-500/20"
+                  isLoading={isRedirecting}
+                  loadingText={loadingMessage}
+                  variant="primary"
+                  size="lg"
+                  className="w-full py-3.5 h-auto text-base"
                 >
-                  {isRedirecting ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      <span>{loadingMessage}</span>
-                    </>
-                  ) : (
-                    `Lanjut ke ${targetName}`
-                  )}
-                </button>
+                  Lanjut ke {targetName}
+                </Button>
               );
             })()}
           </div>

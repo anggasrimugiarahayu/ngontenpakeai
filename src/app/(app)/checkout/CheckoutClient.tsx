@@ -641,7 +641,7 @@ export default function CheckoutClient({
         </div>
       </div>
 
-      {(showAddonModal || showVoucherModal || showPaymentModal || isIncludedModalOpen) && (
+      {(showAddonModal || showVoucherModal || showPaymentModal || isIncludedModalOpen || paymentState === "success") && (
         <CheckoutModals
           type={type}
           showAddonModal={showAddonModal}
