@@ -224,6 +224,12 @@ export function AdminRuangBelajarTab({
           </div>
         </div>
 
+        {/* Live Preview Section Header */}
+        <div className="flex items-center gap-2 px-1">
+          <div className="w-2 h-6 bg-rn-accent rounded-full"></div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Live Preview</h2>
+        </div>
+
         {/* Cards Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
           {productList.map((prod: any, index: number) => {

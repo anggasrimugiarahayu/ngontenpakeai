@@ -9,9 +9,6 @@ import {
   MoreVertical,
   Eye,
   EyeOff,
-  GripHorizontal,
-  CheckCircle2,
-  XCircle,
 } from "lucide-react";
 import {
   HomepageCardConfig,
@@ -140,13 +137,13 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
       </div>
 
       {/* 2. GRID 4 KARTU BERBENTUK FISIK ASLI HOMEPAGE */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 px-1">
-          <span className="flex items-center gap-1.5 font-medium">
-            <GripHorizontal className="w-4 h-4 text-orange-500" />
-            Tarik &amp; lepas (drag &amp; drop) kartu untuk mengubah urutan tampilan di beranda.
-          </span>
-          <span className="font-semibold text-gray-700 dark:text-gray-300">
+      <div className="space-y-4">
+        <div className="flex items-center justify-between px-1">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-6 bg-rn-accent rounded-full"></div>
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Live Preview</h2>
+          </div>
+          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
             {cards.filter((c) => c.isActive).length} dari {cards.length} Aktif
           </span>
         </div>
@@ -195,7 +192,7 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
                 } ${
                   card.isActive
                     ? "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-[#3E4766] hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)]"
-                    : "opacity-60 bg-gray-50/80 dark:bg-[#141B31]/50 border-dashed border-gray-300 dark:border-[#2C3246]"
+                    : "opacity-50 grayscale-[40%] bg-gray-50/80 dark:bg-[#141B31]/50 border-dashed border-gray-300 dark:border-[#2C3246]"
                 }`}
               >
                 {/* Top Corner: Badge & Tombol Titik Tiga (⋮) */}
@@ -275,30 +272,6 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
                   <p className="text-sm leading-relaxed transition-colors duration-200 text-gray-600 dark:text-[#9CA3AF] line-clamp-3">
                     {card.description}
                   </p>
-                </div>
-
-                {/* Badge Status di Kaki Card */}
-                <div className="mt-4 pt-3 border-t border-gray-100 dark:border-[#2C3246]/60 flex items-center justify-between text-[11px]">
-                  <span
-                    className={`inline-flex items-center gap-1.5 font-bold ${
-                      card.isActive
-                        ? "text-emerald-600 dark:text-emerald-400"
-                        : "text-gray-400 dark:text-gray-500"
-                    }`}
-                  >
-                    {card.isActive ? (
-                      <>
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Aktif (Bisa Diklik)
-                      </>
-                    ) : (
-                      <>
-                        <XCircle className="w-3.5 h-3.5" /> Nonaktif (Disabled)
-                      </>
-                    )}
-                  </span>
-                  <span className="text-[10px] text-gray-400 font-mono">
-                    Urutan #{index + 1}
-                  </span>
                 </div>
               </div>
             );

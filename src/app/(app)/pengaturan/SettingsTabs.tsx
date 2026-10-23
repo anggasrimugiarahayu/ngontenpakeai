@@ -36,7 +36,7 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
     { id: "fitur", label: "Ruang Ngonten" },
     { id: "belajar", label: "Ruang Belajar" },
     { id: "pricing", label: "Pricing Paket" },
-    { id: "homepage", label: "Halaman Beranda" },
+    { id: "homepage", label: "Home Page" },
   ];
 
   const userTabs = [
