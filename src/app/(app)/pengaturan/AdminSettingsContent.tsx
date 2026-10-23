@@ -5,6 +5,7 @@ import { AdminApiKeyTab } from "./tabs/AdminApiKeyTab";
 import { AdminAiModelTab } from "./tabs/AdminAiModelTab";
 import { AdminRuangNgontenTab } from "./tabs/AdminRuangNgontenTab";
 import { AdminRuangBelajarTab } from "./tabs/AdminRuangBelajarTab";
+import { AdminHomepageTab } from "./tabs/AdminHomepageTab";
 
 export function AdminSettingsContent({
   activeTab,
@@ -25,6 +26,9 @@ export function AdminSettingsContent({
       )}
       {activeTab === "belajar" && (
         <AdminRuangBelajarTab categories={categories} products={products} />
+      )}
+      {activeTab === "homepage" && (
+        <AdminHomepageTab settings={settings} />
       )}
     </>
   );

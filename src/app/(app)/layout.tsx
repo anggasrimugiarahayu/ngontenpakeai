@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
-import { getCachedFeatures, getCachedHasBlueprint, getCachedAppUser } from "@/lib/cache";
+import { getCachedFeatures, getCachedHasBlueprint, getCachedAppUser, getCachedHomepageCards } from "@/lib/cache";
 import AppShellLayout from "@/components/layout/AppShellLayout";
 import { redirect } from "next/navigation";
 
@@ -8,12 +8,18 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const session = await auth();
   let hasBlueprint = false;
   let dbFeatures: any = [];
+  let homepageCards: any = [];
   
   try {
     if (session?.user?.id) {
       hasBlueprint = await getCachedHasBlueprint(session.user.id);
     }
-    dbFeatures = await getCachedFeatures();
+    const [features, cards] = await Promise.all([
+      getCachedFeatures(),
+      getCachedHomepageCards(),
+    ]);
+    dbFeatures = features;
+    homepageCards = cards;
   } catch (error) {
     console.error("Error fetching cache/blueprint", error);
   }
@@ -45,5 +51,5 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const isPro = hasTools || isAdmin;
   const isLoggedIn = !!session?.user;
   
-  return <AppShellLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isAdmin={isAdmin} isLoggedIn={isLoggedIn}>{children}</AppShellLayout>;
+  return <AppShellLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isAdmin={isAdmin} isLoggedIn={isLoggedIn} homepageCards={homepageCards}>{children}</AppShellLayout>;
 }

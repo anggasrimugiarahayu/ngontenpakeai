@@ -1,5 +1,6 @@
 import HomePageClient from "./HomePageClient";
 import { getPricingPackagesAction } from "@/app/actions/pengaturan";
+import { getHomepageCardsAction } from "@/app/actions/adminSettings";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -10,6 +11,14 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 export default async function Page() {
-  const pricingConfig = await getPricingPackagesAction();
-  return <HomePageClient initialPricingConfig={pricingConfig} />;
+  const [pricingConfig, homepageCards] = await Promise.all([
+    getPricingPackagesAction(),
+    getHomepageCardsAction(),
+  ]);
+  return (
+    <HomePageClient
+      initialPricingConfig={pricingConfig}
+      initialCards={homepageCards}
+    />
+  );
 }

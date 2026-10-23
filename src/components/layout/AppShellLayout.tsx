@@ -187,6 +187,7 @@ export default function AppShellLayout({
   isPro = false,
   isAdmin = false,
   isLoggedIn = false,
+  homepageCards = [],
 }: {
   children: React.ReactNode;
   hasBlueprint: boolean;
@@ -194,6 +195,7 @@ export default function AppShellLayout({
   isPro?: boolean;
   isAdmin?: boolean;
   isLoggedIn?: boolean;
+  homepageCards?: any[];
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -336,20 +338,25 @@ export default function AppShellLayout({
 
   let GLOBAL_NAV_ITEMS = [];
 
+  const isBelajarDisabled = homepageCards.find((c: any) => c.id === "ruang-belajar")?.isActive === false;
+  const isNgontenDisabled = homepageCards.find((c: any) => c.id === "ruang-ngonten")?.isActive === false;
+  const isAutomationDisabled = homepageCards.find((c: any) => c.id === "ruang-automation")?.isActive === false;
+  const isRisetDisabled = homepageCards.find((c: any) => c.id === "ruang-riset")?.isActive === false;
+
   if (!isLoggedIn) {
     GLOBAL_NAV_ITEMS = [
-      { label: "Ruang Belajar", href: "/ruang-belajar", icon: BookOpen },
-      { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate },
-      { label: "Ruang Automation", href: "/ruang-automation", icon: Bot },
-      { label: "Ruang Riset", href: "/ruang-riset", icon: Search },
+      { label: "Ruang Belajar", href: "/ruang-belajar", icon: BookOpen, disabled: isBelajarDisabled },
+      { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate, disabled: isNgontenDisabled },
+      { label: "Ruang Automation", href: "/ruang-automation", icon: Bot, disabled: isAutomationDisabled },
+      { label: "Ruang Riset", href: "/ruang-riset", icon: Search, disabled: isRisetDisabled },
       { label: "Pricing", href: "/?pricing=true", icon: CreditCard },
     ];
   } else {
     GLOBAL_NAV_ITEMS = [
-      { label: "Ruang Belajar", href: "/ruang-belajar", icon: BookOpen },
-      { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate },
-      { label: "Ruang Automation", href: "/ruang-automation", icon: Bot },
-      { label: "Ruang Riset", href: "/ruang-riset", icon: Search },
+      { label: "Ruang Belajar", href: "/ruang-belajar", icon: BookOpen, disabled: isBelajarDisabled },
+      { label: "Ruang Ngonten", href: "/ruang-ngonten", icon: LayoutTemplate, disabled: isNgontenDisabled },
+      { label: "Ruang Automation", href: "/ruang-automation", icon: Bot, disabled: isAutomationDisabled },
+      { label: "Ruang Riset", href: "/ruang-riset", icon: Search, disabled: isRisetDisabled },
     ];
     if (isAdmin) {
       GLOBAL_NAV_ITEMS.push({ label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" });

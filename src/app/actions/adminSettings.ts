@@ -4,6 +4,8 @@ import prisma from "@/lib/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { attachComputedBuyerCounts } from "@/lib/product-buyers";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
+import { HomepageCardConfig } from "@/lib/homepage-cards";
+import { getCachedHomepageCards } from "@/lib/cache";
 
 function safeRevalidateTag(tag: string) {
   try {
@@ -97,7 +99,44 @@ export async function saveAppSetting(key: string, value: string) {
       revalidatePath("/");
     } catch (e) {}
   }
+  if (key === "HOMEPAGE_CARDS") {
+    safeRevalidateTag("homepage-cards");
+    try {
+      revalidatePath("/");
+    } catch (e) {}
+    try {
+      revalidatePath("/(app)", "layout");
+    } catch (e) {}
+    try {
+      revalidatePath("/pengaturan");
+    } catch (e) {}
+  }
   revalidateAdminConfig();
+}
+
+export async function getHomepageCardsAction(): Promise<HomepageCardConfig[]> {
+  return await getCachedHomepageCards();
+}
+
+export async function saveHomepageCardsAction(cards: HomepageCardConfig[]) {
+  await prisma.appSetting.upsert({
+    where: { key: "HOMEPAGE_CARDS" },
+    update: { value: JSON.stringify(cards) },
+    create: { key: "HOMEPAGE_CARDS", value: JSON.stringify(cards) },
+  });
+  safeRevalidateTag("homepage-cards");
+  safeRevalidateTag("admin-config");
+  try {
+    revalidatePath("/");
+  } catch (e) {}
+  try {
+    revalidatePath("/(app)", "layout");
+  } catch (e) {}
+  try {
+    revalidatePath("/pengaturan");
+  } catch (e) {}
+  revalidateAdminConfig();
+  return { success: true };
 }
 
 export async function deleteAppSetting(key: string) {

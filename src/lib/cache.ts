@@ -1,5 +1,25 @@
 import { unstable_cache } from 'next/cache';
 import prisma from './prisma';
+import { mergeHomepageCards, DEFAULT_HOMEPAGE_CARDS } from './homepage-cards';
+
+export const getCachedHomepageCards = unstable_cache(
+  async () => {
+    try {
+      const setting = await prisma.appSetting.findUnique({
+        where: { key: "HOMEPAGE_CARDS" }
+      });
+      if (setting?.value) {
+        return mergeHomepageCards(JSON.parse(setting.value));
+      }
+      return DEFAULT_HOMEPAGE_CARDS;
+    } catch (e) {
+      console.error("Failed to fetch homepage cards in cache:", e);
+      return DEFAULT_HOMEPAGE_CARDS;
+    }
+  },
+  ['homepage-cards-config'],
+  { revalidate: 3600, tags: ['homepage-cards'] }
+);
 
 export const getCachedFeatures = unstable_cache(
   async () => {
