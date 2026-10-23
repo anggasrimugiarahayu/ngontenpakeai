@@ -86,10 +86,11 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
     <>
       {/* MAIN CONTENT */}
       {!showPricing ? (
-        <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 pt-4 md:pt-6 pb-20 sm:pb-28 text-center max-w-6xl mx-auto w-full">
+        <main className="flex-1 flex flex-col items-center justify-center px-4 sm:px-6 pt-4 md:pt-6 pb-20 sm:pb-28 text-center max-w-6xl mx-auto w-full overscroll-none select-none">
           <button
             onClick={handleOpenPricing}
-            className="group inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border border-amber-500/30 bg-amber-500/5 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-colors mb-6"
+            draggable={false}
+            className="group inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold border border-amber-500/30 bg-amber-500/5 text-amber-600 dark:text-amber-400 hover:bg-amber-500/10 transition-colors mb-6 select-none"
           >
             <Flame
               className="w-3.5 h-3.5 text-amber-500"
@@ -100,7 +101,7 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
           </button>
 
           <h1
-            className={`text-3xl sm:text-4xl md:text-5xl font-extrabold font-heading mb-10 md:mb-12 tracking-tight transition-colors duration-300 text-gray-900 dark:text-[#F3F4F6]`}
+            className={`text-3xl sm:text-4xl md:text-5xl font-extrabold font-heading mb-10 md:mb-12 tracking-tight transition-colors duration-300 text-gray-900 dark:text-[#F3F4F6] select-none`}
           >
             Mau mulai dari mana hari ini?
           </h1>
@@ -109,10 +110,11 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
             {/* EBOOK CARD */}
             <Link
               prefetch={true}
+              draggable={false}
               onMouseEnter={() => { if (isLoggedIn) preload("ruangBelajar", getRuangBelajarDataAction) }}
               onTouchStart={() => { if (isLoggedIn) preload("ruangBelajar", getRuangBelajarDataAction) }}
               href="/ruang-belajar"
-              className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] cursor-pointer z-0 overflow-hidden bg-white border-gray-200 hover:border-gray-300 dark:bg-[#141B31] dark:border-[#2C3246] dark:hover:border-[#3E4766]`}
+              className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] cursor-pointer z-0 overflow-hidden bg-white border-gray-200 hover:border-gray-300 dark:bg-[#141B31] dark:border-[#2C3246] dark:hover:border-[#3E4766] select-none`}
             >
               <span className="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-orange-500 shadow-sm z-10">
                 Update Baru
@@ -142,8 +144,9 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
 
             {/* TOOLS CARD */}
             <Link prefetch={true}
+              draggable={false}
               href="/ruang-ngonten"
-              className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] cursor-pointer z-0 overflow-hidden bg-white border-gray-200 hover:border-gray-300 dark:bg-[#141B31] dark:border-[#2C3246] dark:hover:border-[#3E4766]`}
+              className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] cursor-pointer z-0 overflow-hidden bg-white border-gray-200 hover:border-gray-300 dark:bg-[#141B31] dark:border-[#2C3246] dark:hover:border-[#3E4766] select-none`}
             >
 
               <div className="relative w-full overflow-hidden aspect-[344/145] lg:aspect-[4/3] rounded-lg">
@@ -258,8 +261,9 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
 
             {/* RUANG AUTOMATION CARD */}
             <Link
+              draggable={false}
               href="/ruang-automation"
-              className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] cursor-pointer z-0 overflow-hidden bg-white border-gray-200 hover:border-gray-300 dark:bg-[#141B31] dark:border-[#2C3246] dark:hover:border-[#3E4766]`}
+              className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] cursor-pointer z-0 overflow-hidden bg-white border-gray-200 hover:border-gray-300 dark:bg-[#141B31] dark:border-[#2C3246] dark:hover:border-[#3E4766] select-none`}
             >
               <span className="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-orange-500 shadow-sm z-10">
                 Coming Soon
@@ -290,8 +294,9 @@ function HomeContent({ initialPricingConfig }: { initialPricingConfig: any }) {
 
             {/* RUANG RISET CARD */}
             <Link
+              draggable={false}
               href="/ruang-riset"
-              className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] cursor-pointer z-0 overflow-hidden bg-white border-gray-200 hover:border-gray-300 dark:bg-[#141B31] dark:border-[#2C3246] dark:hover:border-[#3E4766]`}
+              className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] cursor-pointer z-0 overflow-hidden bg-white border-gray-200 hover:border-gray-300 dark:bg-[#141B31] dark:border-[#2C3246] dark:hover:border-[#3E4766] select-none`}
             >
               <span className="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-orange-500 shadow-sm z-10">
                 Coming Soon
