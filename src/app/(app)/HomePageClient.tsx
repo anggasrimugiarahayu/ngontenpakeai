@@ -249,14 +249,14 @@ function HomeContent({
             </div>
           </div>
 
-          {/* Dynamic Active Packages Grid for Selected Category (Sistem 3 Kolom Desktop, Rata Kiri, Ukuran Seragam) */}
+          {/* Dynamic Active Packages Grid for Selected Category (Center di Publik/User, Ukuran Tetap Seragam) */}
           {(() => {
             const activePackages = (pricingConfig.categoryOrder?.[selectedPricingCategory] || [])
               .map((id) => pricingConfig.packages?.[id] || pricingConfig[id])
               .filter((item) => item && item.isActive !== false);
 
             return (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 w-full max-w-5xl mx-auto text-left">
+              <div className="flex flex-wrap justify-center items-stretch gap-5 w-full max-w-5xl mx-auto text-left">
                 {activePackages.map((pkgData) => {
                   const isSpecial =
                     pkgData.highlightText && pkgData.highlightText.trim() !== "";
@@ -266,7 +266,7 @@ function HomeContent({
                   return (
                     <div
                       key={pkgData.id}
-                      className={`w-full border-2 rounded-2xl p-6 flex flex-col justify-between relative transition-all duration-300 ${
+                      className={`w-full sm:w-[320px] lg:w-[330px] max-w-[340px] border-2 rounded-2xl p-6 flex flex-col justify-between relative transition-all duration-300 ${
                         isSpecial
                           ? "border-orange-500 bg-white dark:bg-[#141B31] shadow-xl shadow-orange-500/10"
                           : "bg-white border-gray-200 dark:bg-[#141B31] dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-orange-500/40"

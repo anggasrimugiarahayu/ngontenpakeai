@@ -200,8 +200,8 @@ export function PricingConfigSection({
           </span>
         </div>
 
-        {/* TAB SWITCHER KATEGORI & TAMBAH PAKET (STYLE CARD SERAGAM) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 bg-white dark:bg-[#141B31] rounded-2xl border border-gray-200 dark:border-[#2C3246] shadow-xs">
+        {/* TAB SWITCHER KATEGORI (STYLE CARD SERAGAM) */}
+        <div className="p-2 sm:p-2.5 bg-white dark:bg-[#141B31] rounded-2xl border border-gray-200 dark:border-[#2C3246] shadow-xs flex items-center">
           <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-gray-100/90 dark:bg-[#0A1128] border border-gray-200/80 dark:border-white/10 overflow-x-auto max-w-full scrollbar-hide">
             {PRICING_CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat.id;
@@ -222,16 +222,6 @@ export function PricingConfigSection({
               );
             })}
           </div>
-
-          {/* Quick Button to Add Package to Selected Category */}
-          <button
-            type="button"
-            onClick={() => setIsEditModalOpen(true)}
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 self-start sm:self-center"
-          >
-            <Plus className="w-4 h-4 text-orange-500" />
-            <span>Tambah Paket {PRICING_CATEGORIES.find((c) => c.id === selectedCategory)?.label}</span>
-          </button>
         </div>
 
         {/* CARDS GRID (Sistem 3 Kolom Desktop, Rata Kiri, Ukuran Seragam) */}
