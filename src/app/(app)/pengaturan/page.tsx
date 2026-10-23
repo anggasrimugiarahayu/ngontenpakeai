@@ -1,3 +1,4 @@
+// Trigger deploy
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
