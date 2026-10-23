@@ -76,7 +76,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
     return (
       <div className="flex flex-col h-[calc(100vh-148px)] md:h-[calc(100vh-164px)] overflow-hidden bg-transparent">
         {/* Header Toolbar */}
-        <div className="flex-shrink-0 h-16 border-b border-gray-200 dark:border-[#2C3246] bg-transparent px-4 md:px-8 flex items-center justify-between z-10">
+        <div className="flex-shrink-0 h-16 border-b border-gray-200 dark:border-[#2C3246] bg-gray-50/95 dark:bg-[#0A1128]/95 backdrop-blur-md px-4 md:px-8 flex items-center justify-between relative z-20">
           <div className="flex items-center gap-3 md:gap-4">
             <BackButton href="/ruang-belajar" />
             <div className="min-w-0">

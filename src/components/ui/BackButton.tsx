@@ -23,7 +23,7 @@ export function BackButton({
 }: BackButtonProps) {
   const router = useRouter();
 
-  const baseClasses = cn(tokens.backButton, className);
+  const baseClasses = cn(tokens.backButton, "relative z-10 pointer-events-auto", className);
 
   // If href is passed, use Next.js Link
   if (href) {
@@ -31,11 +31,12 @@ export function BackButton({
       <Link
         href={href}
         prefetch={prefetch}
+        onClick={onClick}
         title={title}
         aria-label={title}
         className={baseClasses}
       >
-        <ArrowLeft className="w-5 h-5" />
+        <ArrowLeft className="w-5 h-5 pointer-events-none" />
       </Link>
     );
   }
@@ -49,7 +50,7 @@ export function BackButton({
       aria-label={title}
       className={baseClasses}
     >
-      <ArrowLeft className="w-5 h-5" />
+      <ArrowLeft className="w-5 h-5 pointer-events-none" />
     </button>
   );
 }

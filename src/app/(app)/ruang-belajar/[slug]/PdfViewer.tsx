@@ -27,7 +27,7 @@ export default function PdfViewer({ embedUrl, title }: { embedUrl: string, title
   };
 
   return (
-    <div ref={viewerRef} className="flex-1 w-full bg-[#0f0f0f] relative overflow-hidden flex flex-col group">
+    <div ref={viewerRef} className="flex-1 w-full bg-[#0f0f0f] relative overflow-hidden flex flex-col group [isolation:isolate] z-0">
       <iframe 
         src={embedUrl} 
         className="absolute -top-[56px] left-0 w-full h-[calc(100%+56px)] border-0"
