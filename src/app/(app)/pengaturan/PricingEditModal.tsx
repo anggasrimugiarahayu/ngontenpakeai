@@ -263,7 +263,6 @@ export function PricingEditModal({
 
           {/* Tab 5 Kategori */}
           {PRICING_CATEGORIES.map((cat) => {
-            const Icon = categoryIcons[cat.id];
             const isActive = activeTab === cat.id;
             const count = (formData.categoryOrder?.[cat.id] || []).length;
 
@@ -272,13 +271,12 @@ export function PricingEditModal({
                 key={cat.id}
                 type="button"
                 onClick={() => handleSelectTab(cat.id)}
-                className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
                   isActive
                     ? "bg-[#f97316] text-white shadow-sm shadow-orange-500/30"
                     : "text-gray-600 dark:text-gray-400 hover:bg-gray-200/60 dark:hover:bg-[#1e2746]"
                 }`}
               >
-                <Icon className="w-4 h-4 shrink-0" />
                 <span>{cat.label}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${

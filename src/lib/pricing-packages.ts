@@ -54,7 +54,6 @@ export const PRICING_CATEGORIES: PricingCategoryMeta[] = [
     id: "automation",
     label: "Automation",
     iconName: "Bot",
-    badge: "Populer",
     description: "Otomasi interaksi, auto DM & balas komentar Instagram 24/7.",
   },
   {
@@ -67,7 +66,6 @@ export const PRICING_CATEGORIES: PricingCategoryMeta[] = [
     id: "plus",
     label: "Paket Plus",
     iconName: "Gem",
-    badge: "Paling Worth",
     description: "Akses komplit seluruh ekosistem: E-Book, Tools, Automation & Riset.",
   },
 ];

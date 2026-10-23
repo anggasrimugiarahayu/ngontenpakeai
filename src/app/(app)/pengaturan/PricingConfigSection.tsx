@@ -204,7 +204,6 @@ export function PricingConfigSection({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-gray-100/70 dark:bg-[#0A1128]/80 rounded-2xl border border-gray-200 dark:border-[#2C3246]">
           <div className="inline-flex items-center gap-1 overflow-x-auto p-1 scrollbar-hide w-full sm:w-auto">
             {PRICING_CATEGORIES.map((cat) => {
-              const Icon = categoryIcons[cat.id];
               const isSelected = selectedCategory === cat.id;
               const count = (config.categoryOrder?.[cat.id] || []).length;
 
@@ -213,20 +212,14 @@ export function PricingConfigSection({
                   key={cat.id}
                   type="button"
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
                     isSelected
                       ? "bg-white dark:bg-[#141B31] text-orange-500 dark:text-orange-400 shadow-sm border border-gray-200 dark:border-orange-500/30"
                       : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                   }`}
                 >
-                  <Icon className="w-4 h-4 shrink-0" />
                   <span>{cat.label}</span>
-                  {cat.badge && (
-                    <span className="text-[9px] px-1.5 py-0.2 rounded-full font-black uppercase bg-orange-500/15 text-orange-600 dark:text-orange-400">
-                      {cat.badge}
-                    </span>
-                  )}
-                  <span className="text-[10px] font-mono text-gray-400">
+                  <span className="ml-1.5 text-[10px] font-mono text-gray-400">
                     ({count})
                   </span>
                 </button>

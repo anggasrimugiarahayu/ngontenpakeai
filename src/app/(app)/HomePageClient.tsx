@@ -250,25 +250,13 @@ function HomeContent({
                     key={cat.id}
                     type="button"
                     onClick={() => setSelectedPricingCategory(cat.id)}
-                    className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
                       isSelected
                         ? "bg-[#f97316] text-white shadow-md shadow-orange-500/25 scale-[1.02]"
                         : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-white/5"
                     }`}
                   >
-                    <Icon className="w-4 h-4 shrink-0" />
-                    <span>{cat.label}</span>
-                    {cat.badge && (
-                      <span
-                        className={`text-[9px] px-1.5 py-0.2 rounded-full font-black uppercase ${
-                          isSelected
-                            ? "bg-white text-orange-600"
-                            : "bg-orange-500/20 text-orange-600 dark:text-orange-400"
-                        }`}
-                      >
-                        {cat.badge}
-                      </span>
-                    )}
+                    {cat.label}
                   </button>
                 );
               })}
