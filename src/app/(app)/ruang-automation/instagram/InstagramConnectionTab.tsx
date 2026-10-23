@@ -73,7 +73,7 @@ export function InstagramConnectionTab({
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
                 {/* Left: Avatar + Account Info */}
                 <div className="flex items-start sm:items-center gap-3.5 sm:gap-4.5 min-w-0 flex-1">
-                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-gray-200 dark:border-[#2C3246] bg-gray-100 dark:bg-[#0F172A] overflow-hidden shrink-0 shadow-2xs">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full border border-gray-200 dark:border-[#2C3246] bg-gray-100 dark:bg-[#0A1128] overflow-hidden shrink-0 shadow-2xs">
                     {avatarSrc ? (
                       <img
                         src={avatarSrc}

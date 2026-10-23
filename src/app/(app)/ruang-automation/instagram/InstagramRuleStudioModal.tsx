@@ -296,12 +296,12 @@ export function InstagramRuleStudioModal({
                           </div>
                         </div>
                       ) : isLoadingFeed ? (
-                        <div className="p-4 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] flex items-center justify-center gap-2 text-xs text-gray-500">
+                        <div className="p-4 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128] flex items-center justify-center gap-2 text-xs text-gray-500">
                           <RefreshCw className="w-4 h-4 animate-spin text-gray-400" />
                           <span>Memuat postingan feed Instagram Anda...</span>
                         </div>
                       ) : feedPosts.length === 0 ? (
-                        <div className="p-3.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-center text-xs text-gray-500 space-y-1">
+                        <div className="p-3.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128] text-center text-xs text-gray-500 space-y-1">
                           <p className="font-semibold text-gray-700 dark:text-gray-300">Belum Ada Postingan Ditemukan</p>
                           <p className="text-[11px] text-gray-400">Pastikan akun Instagram Anda sudah memiliki postingan feed atau Reels publik.</p>
                         </div>
@@ -379,7 +379,7 @@ export function InstagramRuleStudioModal({
                           </div>
                         </div>
                       ) : isLoadingStories ? (
-                        <div className="p-4 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] flex items-center justify-center gap-2 text-xs text-gray-500">
+                        <div className="p-4 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128] flex items-center justify-center gap-2 text-xs text-gray-500">
                           <RefreshCw className="w-4 h-4 animate-spin text-gray-400" />
                           <span>Memeriksa story aktif dari Meta API...</span>
                         </div>
@@ -610,7 +610,7 @@ export function InstagramRuleStudioModal({
                                             setRuleFormData({ ...ruleFormData, liveContents: next });
                                           }}
                                           placeholder="Masukkan kata"
-                                          className="w-full px-3.5 py-2.5 pr-14 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
+                                          className="w-full px-3.5 py-2.5 pr-14 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128] text-xs sm:text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 font-medium"
                                         />
                                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] text-gray-400 font-mono">
                                           {content.keywords.length}/200

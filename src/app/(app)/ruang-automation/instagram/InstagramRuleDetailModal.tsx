@@ -301,7 +301,7 @@ export function InstagramRuleDetailModal({
 
   return (
     <div className="fixed inset-0 z-[145] flex items-center justify-center p-2 sm:p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#141417] border border-gray-200 dark:border-[#2C3246] rounded-2xl sm:rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-white dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-2xl sm:rounded-3xl max-w-5xl w-full max-h-[92vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         {/* HEADER MODAL DETAIL (RESPONSIF MOBILE DENGAN STRUKTUR 2 BARIS) */}
         <div className="px-5 sm:px-7 py-3.5 sm:py-4 border-b border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] shrink-0 space-y-1.5 sm:space-y-1">
           {/* Baris 1: Judul & Status di Kiri, Tombol Aksi di Kanan */}
@@ -389,10 +389,10 @@ export function InstagramRuleDetailModal({
         </div>
 
         {/* BODY MODAL DETAIL (SCROLLABLE) */}
-        <div className="p-5 sm:p-7 overflow-y-auto space-y-6 flex-1">
+        <div className="p-5 sm:p-7 overflow-y-auto space-y-6 flex-1 bg-gray-50/50 dark:bg-[#0A1128]">
           {/* 1. 7 KPI METRIC CARDS */}
           <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-gray-50/60 dark:bg-[#141B31] p-3.5">
+            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] p-3.5 shadow-2xs">
               <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 Send
               </span>
@@ -402,7 +402,7 @@ export function InstagramRuleDetailModal({
               <span className="text-[10px] text-gray-400 whitespace-nowrap">Pesan terkirim</span>
             </div>
 
-            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-gray-50/60 dark:bg-[#141B31] p-3.5">
+            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] p-3.5 shadow-2xs">
               <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 Read
               </span>
@@ -412,7 +412,7 @@ export function InstagramRuleDetailModal({
               <span className="text-[10px] text-gray-400 whitespace-nowrap">Direspon / dibaca</span>
             </div>
 
-            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-gray-50/60 dark:bg-[#141B31] p-3.5">
+            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] p-3.5 shadow-2xs">
               <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 Clicked
               </span>
@@ -422,7 +422,7 @@ export function InstagramRuleDetailModal({
               <span className="text-[10px] text-gray-400 whitespace-nowrap">Total klik link</span>
             </div>
 
-            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-gray-50/60 dark:bg-[#141B31] p-3.5">
+            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] p-3.5 shadow-2xs">
               <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 New Follower
               </span>
@@ -432,7 +432,7 @@ export function InstagramRuleDetailModal({
               <span className="text-[10px] text-gray-400 whitespace-nowrap">Dari Ask Follow</span>
             </div>
 
-            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-gray-50/60 dark:bg-[#141B31] p-3.5">
+            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] p-3.5 shadow-2xs">
               <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 CTR
               </span>
@@ -442,7 +442,7 @@ export function InstagramRuleDetailModal({
               <span className="text-[10px] text-gray-400 whitespace-nowrap">Rasio klik / kirim</span>
             </div>
 
-            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-gray-50/60 dark:bg-[#141B31] p-3.5">
+            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] p-3.5 shadow-2xs">
               <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 Paid
               </span>
@@ -452,7 +452,7 @@ export function InstagramRuleDetailModal({
               <span className="text-[10px] text-gray-400 whitespace-nowrap">Transaksi lunas</span>
             </div>
 
-            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-gray-50/60 dark:bg-[#141B31] p-3.5 col-span-2 sm:col-span-1">
+            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] p-3.5 col-span-2 sm:col-span-1 shadow-2xs">
               <span className="text-[10px] sm:text-[11px] font-bold uppercase tracking-wider text-gray-400 block whitespace-nowrap">
                 Total Earning
               </span>
@@ -527,7 +527,7 @@ export function InstagramRuleDetailModal({
               ].map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246] flex flex-col justify-between"
+                  className="p-4 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-[#0A1128] border border-gray-200/80 dark:border-[#2C3246] flex flex-col justify-between"
                 >
                   {/* Waffle Grid 10x10 (100 Kotak) */}
                   <div className="grid grid-cols-10 gap-1 w-full max-w-[140px] aspect-square mx-auto mb-4">
@@ -561,7 +561,7 @@ export function InstagramRuleDetailModal({
                       {item.description}
                     </p>
                     <div className="pt-1.5">
-                      <span className="inline-block text-[10px] sm:text-[11px] font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-white/10 px-2 py-0.5 rounded-md border border-gray-200/80 dark:border-[#2C3246] shadow-2xs">
+                      <span className="inline-block text-[10px] sm:text-[11px] font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-[#141B31] px-2 py-0.5 rounded-md border border-gray-200/80 dark:border-[#2C3246] shadow-2xs">
                         {item.countLabel}
                       </span>
                     </div>
@@ -592,7 +592,7 @@ export function InstagramRuleDetailModal({
               {buttonWaffleItems.map((item) => (
                 <div
                   key={item.id}
-                  className="p-4 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246] flex flex-col justify-between"
+                  className="p-4 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-[#0A1128] border border-gray-200/80 dark:border-[#2C3246] flex flex-col justify-between"
                 >
                   {/* Waffle Grid 10x10 (100 Kotak) */}
                   <div className="grid grid-cols-10 gap-1 w-full max-w-[140px] aspect-square mx-auto mb-4">
@@ -626,7 +626,7 @@ export function InstagramRuleDetailModal({
                       {item.description}
                     </p>
                     <div className="pt-1.5">
-                      <span className="inline-block text-[10px] sm:text-[11px] font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-white/10 px-2 py-0.5 rounded-md border border-gray-200/80 dark:border-[#2C3246] shadow-2xs">
+                      <span className="inline-block text-[10px] sm:text-[11px] font-bold text-gray-700 dark:text-gray-300 bg-white dark:bg-[#141B31] px-2 py-0.5 rounded-md border border-gray-200/80 dark:border-[#2C3246] shadow-2xs">
                         {item.countLabel}
                       </span>
                     </div>
@@ -690,7 +690,7 @@ export function InstagramRuleDetailModal({
               </div>
 
               <div className="space-y-3 text-xs">
-                <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0F172A] border border-gray-100 dark:border-[#2C3246]">
+                <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#0A1128] border border-gray-200/80 dark:border-[#2C3246]">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1.5">
                     Kata Kunci Pemicu
                   </span>
@@ -712,7 +712,7 @@ export function InstagramRuleDetailModal({
                   </div>
                 </div>
 
-                <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0F172A] border border-gray-100 dark:border-[#2C3246]">
+                <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#0A1128] border border-gray-200/80 dark:border-[#2C3246]">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
                     Variasi Balasan Komentar ({detailCommentReplies.length})
                   </span>
@@ -731,7 +731,7 @@ export function InstagramRuleDetailModal({
                   )}
                 </div>
 
-                <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#0F172A] border border-gray-100 dark:border-[#2C3246]">
+                <div className="p-3.5 rounded-xl bg-gray-50 dark:bg-[#0A1128] border border-gray-200/80 dark:border-[#2C3246]">
                   <span className="text-[10px] font-bold uppercase tracking-wider text-gray-400 block mb-1">
                     Pesan DM Utama & Tautan
                   </span>
@@ -800,7 +800,7 @@ export function InstagramRuleDetailModal({
                       setIsRetryingFailed(false);
                     }
                   }}
-                  className="px-3 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-200 font-bold hover:bg-gray-100 dark:hover:bg-white/10 disabled:opacity-50 text-xs font-bold text-gray-700 dark:text-gray-200 inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:cursor-not-allowed"
+                  className="px-3 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 dark:bg-[#0A1128] dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-200 font-bold disabled:opacity-50 text-xs inline-flex items-center gap-1.5 transition-colors cursor-pointer disabled:cursor-not-allowed"
                 >
                   {isRetryingFailed ? (
                     <Loader2 className="w-3.5 h-3.5 animate-spin text-orange-500" />
@@ -858,7 +858,7 @@ export function InstagramRuleDetailModal({
             <div className="overflow-x-auto border border-gray-200 dark:border-[#2C3246] rounded-xl">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="bg-gray-50 dark:bg-white/5 border-b border-gray-200 dark:border-[#2C3246] text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <tr className="bg-gray-50 dark:bg-[#0A1128] border-b border-gray-200 dark:border-[#2C3246] text-[11px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     <th className="py-3 px-4">Komentar</th>
                     <th className="py-3 px-4">Pesan</th>
                     <th className="py-3 px-4">Balasan Komentar</th>
@@ -886,7 +886,7 @@ export function InstagramRuleDetailModal({
                       return (
                         <tr
                           key={log.id}
-                          className="hover:bg-gray-50/70 dark:hover:bg-white/[0.02] transition-colors"
+                          className="hover:bg-gray-50/70 dark:hover:bg-[#1f2947]/40 transition-colors"
                         >
                           <td className="py-3 px-4">
                             <div className="font-bold text-gray-900 dark:text-white">
