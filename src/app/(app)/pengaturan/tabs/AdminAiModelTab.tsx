@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { mutate } from "swr";
+import toast from "react-hot-toast";
 import {
   createAiModel,
   setDefaultModel,
@@ -14,16 +15,88 @@ import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
 
 export function AdminAiModelTab({ models }: { models: any[] }) {
+  const [modelList, setModelList] = useState(models || []);
   const [newModel, setNewModel] = useState({ name: "", modelId: "", provider: "google" });
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    setModelList(models || []);
+  }, [models]);
 
   const handleAddModel = async () => {
     if (!newModel.name || !newModel.modelId) return;
     setLoading(true);
-    await createAiModel(newModel);
-    mutate("pengaturan");
-    setNewModel({ name: "", modelId: "", provider: "google" });
-    setLoading(false);
+    try {
+      await createAiModel(newModel);
+      mutate("pengaturan");
+      setNewModel({ name: "", modelId: "", provider: "google" });
+      toast.success("Model AI berhasil ditambahkan");
+    } catch {
+      toast.error("Gagal menambahkan model AI");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleModel = async (id: string, nextVal: boolean) => {
+    const prevModels = [...modelList];
+    setModelList((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, isActive: nextVal } : m))
+    );
+    try {
+      await toggleModel(id, nextVal);
+      mutate("pengaturan");
+    } catch {
+      setModelList(prevModels);
+      toast.error("Gagal mengubah status model AI");
+      mutate("pengaturan");
+    }
+  };
+
+  const handleSetDefault = async (id: string) => {
+    const prevModels = [...modelList];
+    setModelList((prev) =>
+      prev.map((m) => ({ ...m, isDefault: m.id === id }))
+    );
+    try {
+      await setDefaultModel(id);
+      mutate("pengaturan");
+    } catch {
+      setModelList(prevModels);
+      toast.error("Gagal mengatur model default");
+      mutate("pengaturan");
+    }
+  };
+
+  const handleSetFallback = async (id: string) => {
+    const prevModels = [...modelList];
+    setModelList((prev) =>
+      prev.map((m) => ({ ...m, isFallback: m.id === id }))
+    );
+    try {
+      await setFallbackModel(id);
+      mutate("pengaturan");
+    } catch {
+      setModelList(prevModels);
+      toast.error("Gagal mengatur model alternatif");
+      mutate("pengaturan");
+    }
+  };
+
+  const handleDeleteModel = async (id: string) => {
+    if (await confirmSwal("Hapus model ini?")) {
+      const prevModels = [...modelList];
+      setModelList((prev) => prev.filter((m) => m.id !== id));
+      try {
+        await deleteModel(id);
+        mutate("pengaturan");
+        toast.success("Model berhasil dihapus");
+      } catch {
+        setModelList(prevModels);
+        toast.error("Gagal menghapus model");
+        mutate("pengaturan");
+      }
+    }
   };
 
   return (
@@ -63,7 +136,7 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
           </p>
         </div>
         <div className="space-y-3">
-          {models.map((model: any) => (
+          {modelList.map((model: any) => (
             <div
               key={model.id}
               className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 dark:bg-[#0A1128] rounded-xl border border-gray-200 dark:border-[#2C3246] gap-4"
@@ -98,19 +171,13 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
                   <Switch
                     size="sm"
                     checked={Boolean(model.isActive)}
-                    onChange={async (nextVal) => {
-                      await toggleModel(model.id, nextVal);
-                      mutate("pengaturan");
-                    }}
+                    onChange={(nextVal) => handleToggleModel(model.id, nextVal)}
                   />
                 </div>
 
                 {!model.isDefault && model.isActive && (
                   <button
-                    onClick={async () => {
-                      await setDefaultModel(model.id);
-                      mutate("pengaturan");
-                    }}
+                    onClick={() => handleSetDefault(model.id)}
                     className="px-3 py-1.5 text-xs font-medium rounded-lg bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 transition-colors"
                   >
                     Set Default
@@ -119,10 +186,7 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
 
                 {!model.isFallback && model.isActive && (
                   <button
-                    onClick={async () => {
-                      await setFallbackModel(model.id);
-                      mutate("pengaturan");
-                    }}
+                    onClick={() => handleSetFallback(model.id)}
                     className="px-3 py-1.5 text-xs font-medium rounded-lg bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 transition-colors"
                   >
                     Set Alternatif
@@ -130,12 +194,7 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
                 )}
 
                 <button
-                  onClick={async () => {
-                    if (await confirmSwal("Hapus model ini?")) {
-                      await deleteModel(model.id);
-                      mutate("pengaturan");
-                    }
-                  }}
+                  onClick={() => handleDeleteModel(model.id)}
                   className="px-3 py-1.5 text-xs font-medium rounded-lg border border-red-200 dark:border-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors"
                 >
                   Hapus

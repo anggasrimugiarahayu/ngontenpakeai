@@ -1,5 +1,8 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import { mutate } from "swr";
+import toast from "react-hot-toast";
 import { toggleFeatureStatus, toggleFeaturePro } from "@/app/actions/adminSettings";
 import { Switch } from "@/components/ui/Switch";
 import { tokens, cn } from "@/lib/design-tokens";
@@ -16,9 +19,45 @@ const ORDER = [
 ];
 
 export function AdminRuangNgontenTab({ features }: { features: any[] }) {
-  const sortedFeatures = [...(features || [])].sort(
+  const [featureList, setFeatureList] = useState(features || []);
+
+  useEffect(() => {
+    setFeatureList(features || []);
+  }, [features]);
+
+  const sortedFeatures = [...(featureList || [])].sort(
     (a, b) => ORDER.indexOf(a.name) - ORDER.indexOf(b.name)
   );
+
+  const handleToggleStatus = async (id: string, nextVal: boolean) => {
+    const prevFeatures = [...featureList];
+    setFeatureList((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, isActive: nextVal } : f))
+    );
+    try {
+      await toggleFeatureStatus(id, nextVal);
+      mutate("pengaturan");
+    } catch {
+      setFeatureList(prevFeatures);
+      toast.error("Gagal mengubah status aktif fitur");
+      mutate("pengaturan");
+    }
+  };
+
+  const handleTogglePro = async (id: string, nextVal: boolean) => {
+    const prevFeatures = [...featureList];
+    setFeatureList((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, isProOnly: nextVal } : f))
+    );
+    try {
+      await toggleFeaturePro(id, nextVal);
+      mutate("pengaturan");
+    } catch {
+      setFeatureList(prevFeatures);
+      toast.error("Gagal mengubah status PRO fitur");
+      mutate("pengaturan");
+    }
+  };
 
   return (
     <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31]">
@@ -60,7 +99,7 @@ export function AdminRuangNgontenTab({ features }: { features: any[] }) {
                 <Switch
                   size="sm"
                   checked={Boolean(f.isActive)}
-                  onChange={() => toggleFeatureStatus(f.id, !f.isActive)}
+                  onChange={(nextVal) => handleToggleStatus(f.id, nextVal)}
                 />
               </div>
 
@@ -74,7 +113,7 @@ export function AdminRuangNgontenTab({ features }: { features: any[] }) {
                 <Switch
                   size="sm"
                   checked={Boolean(f.isProOnly)}
-                  onChange={() => toggleFeaturePro(f.id, !f.isProOnly)}
+                  onChange={(nextVal) => handleTogglePro(f.id, nextVal)}
                 />
               </div>
             </div>
