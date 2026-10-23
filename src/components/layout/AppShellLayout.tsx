@@ -128,10 +128,56 @@ function WhatsAppIcon({ size = 20, className = "" }: { size?: number; className?
   );
 }
 
+function YouTubeIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19.1c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.43z" />
+      <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function FacebookIcon({ size = 20, className = "" }: { size?: number; className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={className}
+    >
+      <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+  );
+}
+
 const AUTOMATION_TOOLS = [
   { href: "/ruang-automation?platform=instagram", label: "Instagram Automation", icon: InstagramIcon, platformKey: "instagram" },
   { href: "/ruang-automation?platform=tiktok", label: "TikTok Automation", icon: TikTokIcon, platformKey: "tiktok", disabled: true },
   { href: "/ruang-automation?platform=whatsapp", label: "WhatsApp Automation", icon: WhatsAppIcon, platformKey: "whatsapp", disabled: true },
+];
+
+const RISET_TOOLS = [
+  { href: "/ruang-riset?platform=instagram", label: "Instagram Riset", icon: InstagramIcon, platformKey: "instagram" },
+  { href: "/ruang-riset?platform=tiktok", label: "TikTok Riset", icon: TikTokIcon, platformKey: "tiktok", disabled: true },
+  { href: "/ruang-riset?platform=youtube", label: "YouTube Riset", icon: YouTubeIcon, platformKey: "youtube", disabled: true },
+  { href: "/ruang-riset?platform=facebook", label: "Facebook Riset", icon: FacebookIcon, platformKey: "facebook", disabled: true },
 ];
 
 export default function AppShellLayout({
@@ -153,6 +199,7 @@ export default function AppShellLayout({
   const router = useRouter();
   const [activePath, setActivePath] = useState(pathname);
   const [activePlatform, setActivePlatform] = useState<string | null>(null);
+  const [activeRisetPlatform, setActiveRisetPlatform] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false); // Mobile drawer
   const [isExpanded, setIsExpanded] = useState(false); // Desktop floating dock
 
@@ -175,8 +222,13 @@ export default function AppShellLayout({
       const plat = params.get("platform");
       if (pathname.startsWith("/ruang-automation")) {
         setActivePlatform(plat || null);
+        setActiveRisetPlatform(null);
+      } else if (pathname.startsWith("/ruang-riset")) {
+        setActiveRisetPlatform(plat || null);
+        setActivePlatform(null);
       } else {
         setActivePlatform(null);
+        setActiveRisetPlatform(null);
       }
     }
   }, [pathname]);
@@ -189,22 +241,32 @@ export default function AppShellLayout({
         const plat = params.get("platform");
         if (window.location.pathname.startsWith("/ruang-automation")) {
           setActivePlatform(plat || null);
+          setActiveRisetPlatform(null);
+        } else if (window.location.pathname.startsWith("/ruang-riset")) {
+          setActiveRisetPlatform(plat || null);
+          setActivePlatform(null);
         } else {
           setActivePlatform(null);
+          setActiveRisetPlatform(null);
         }
       }
     };
     const handlePlatformChange = (e: any) => {
       setActivePlatform(e.detail || null);
     };
+    const handleRisetPlatformChange = (e: any) => {
+      setActiveRisetPlatform(e.detail || null);
+    };
 
     window.addEventListener("popstate", handleLocationChange);
     window.addEventListener("app-shallow-navigate", handleLocationChange);
     window.addEventListener("automation-platform-change", handlePlatformChange);
+    window.addEventListener("riset-platform-change", handleRisetPlatformChange);
     return () => {
       window.removeEventListener("popstate", handleLocationChange);
       window.removeEventListener("app-shallow-navigate", handleLocationChange);
       window.removeEventListener("automation-platform-change", handlePlatformChange);
+      window.removeEventListener("riset-platform-change", handleRisetPlatformChange);
     };
   }, []);
 
@@ -242,6 +304,22 @@ export default function AppShellLayout({
       window.dispatchEvent(new CustomEvent("automation-platform-change", { detail: plat }));
       window.dispatchEvent(new Event("app-shallow-navigate"));
       setIsOpen(false);
+    } else if (href === "/ruang-riset" && activePath.startsWith("/ruang-riset")) {
+      e.preventDefault();
+      window.history.pushState(null, "", "/ruang-riset");
+      setActiveRisetPlatform(null);
+      window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: null }));
+      window.dispatchEvent(new Event("app-shallow-navigate"));
+      setIsOpen(false);
+    } else if (href.startsWith("/ruang-riset?platform=") && activePath.startsWith("/ruang-riset")) {
+      e.preventDefault();
+      const params = new URLSearchParams(href.split("?")[1]);
+      const plat = params.get("platform");
+      window.history.pushState(null, "", href);
+      setActiveRisetPlatform(plat);
+      window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: plat }));
+      window.dispatchEvent(new Event("app-shallow-navigate"));
+      setIsOpen(false);
     } else if ((href === "/" || href === "/?pricing=true") && (activePath === "/" || activePath === "" || activePath.startsWith("/?"))) {
       e.preventDefault();
       const isPricing = href === "/?pricing=true";
@@ -254,6 +332,7 @@ export default function AppShellLayout({
 
   const isToolsMode = activePath.startsWith("/ruang-ngonten/") && activePath !== "/ruang-ngonten" && activePath !== "/ruang-ngonten/";
   const isAutomationMode = activePath.startsWith("/ruang-automation") && !!activePlatform;
+  const isRisetMode = activePath.startsWith("/ruang-riset") && !!activeRisetPlatform;
 
   let GLOBAL_NAV_ITEMS = [];
 
@@ -303,6 +382,10 @@ export default function AppShellLayout({
     itemsToRender = AUTOMATION_TOOLS;
     backHref = "/ruang-automation";
     drawerTitle = "Menu Automasi";
+  } else if (isRisetMode) {
+    itemsToRender = RISET_TOOLS;
+    backHref = "/ruang-riset";
+    drawerTitle = "Menu Riset";
   }
 
   return (
@@ -331,6 +414,8 @@ export default function AppShellLayout({
             let isActive = false;
             if (isAutomationMode) {
               isActive = activePlatform === (tool as any).platformKey;
+            } else if (isRisetMode) {
+              isActive = activeRisetPlatform === (tool as any).platformKey;
             } else if (!isToolsMode) {
               isActive =
                 activePath === tool.href ||
@@ -346,7 +431,7 @@ export default function AppShellLayout({
               return (
                 <div
                   key={tool.href}
-                  title={!isExpanded ? `${tool.label} (Segera Hadir)` : undefined}
+                  title={!isExpanded ? (isRisetMode ? tool.label : `${tool.label} (Segera Hadir)`) : undefined}
                   className={`flex items-center rounded-xl transition-all duration-200 text-gray-400 dark:text-gray-600 opacity-60 cursor-not-allowed ${
                     isExpanded ? "px-3 py-3 gap-3" : "justify-center w-10 h-10 mx-auto"
                   }`}
@@ -416,7 +501,7 @@ export default function AppShellLayout({
           })}
         </div>
 
-        {(isToolsMode || isAutomationMode) && (
+        {(isToolsMode || isAutomationMode || isRisetMode) && (
           <div className="p-2 border-t border-gray-100 dark:border-[#2C3246]/60 mt-auto">
             <Link
               prefetch={true}
@@ -463,6 +548,8 @@ export default function AppShellLayout({
               let isActive = false;
               if (isAutomationMode) {
                 isActive = activePlatform === (tool as any).platformKey;
+              } else if (isRisetMode) {
+                isActive = activeRisetPlatform === (tool as any).platformKey;
               } else if (!isToolsMode) {
                 isActive =
                   activePath === tool.href ||
@@ -547,7 +634,7 @@ export default function AppShellLayout({
             })}
           </div>
 
-          {(isToolsMode || isAutomationMode) && (
+          {(isToolsMode || isAutomationMode || isRisetMode) && (
             <div className="p-4 border-t border-gray-100 dark:border-[#2C3246]/60 mt-auto">
               <Link
                 prefetch={true}

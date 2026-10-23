@@ -97,6 +97,16 @@ export default function RuangRisetClient({
       const platformParam = params.get("platform");
       if (platformParam === "instagram") {
         setSelectedPlatform("instagram");
+        window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: "instagram" }));
+      } else {
+        setSelectedPlatform(null);
+        window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: null }));
+      }
+    };
+
+    const handlePlatformChange = (e: any) => {
+      if (e.detail === "instagram") {
+        setSelectedPlatform("instagram");
       } else {
         setSelectedPlatform(null);
       }
@@ -104,7 +114,11 @@ export default function RuangRisetClient({
 
     syncFromUrl();
     window.addEventListener("popstate", syncFromUrl);
-    return () => window.removeEventListener("popstate", syncFromUrl);
+    window.addEventListener("riset-platform-change", handlePlatformChange);
+    return () => {
+      window.removeEventListener("popstate", syncFromUrl);
+      window.removeEventListener("riset-platform-change", handlePlatformChange);
+    };
   }, []);
 
   // Handle click on Instagram Research Card
@@ -122,6 +136,7 @@ export default function RuangRisetClient({
     setSelectedPlatform("instagram");
     if (typeof window !== "undefined") {
       window.history.pushState(null, "", "/ruang-riset?platform=instagram");
+      window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: "instagram" }));
       window.dispatchEvent(new Event("app-shallow-navigate"));
     }
   };
@@ -130,6 +145,7 @@ export default function RuangRisetClient({
     setSelectedPlatform(null);
     if (typeof window !== "undefined") {
       window.history.pushState(null, "", "/ruang-riset");
+      window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: null }));
       window.dispatchEvent(new Event("app-shallow-navigate"));
     }
   };
