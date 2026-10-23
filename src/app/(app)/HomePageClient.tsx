@@ -15,11 +15,6 @@ import {
   Zap,
   Moon,
   Check,
-  BookOpen,
-  Wrench,
-  Bot,
-  Search,
-  Gem,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -54,14 +49,6 @@ function HomeContent({
   const cards = initialCards && initialCards.length > 0 ? initialCards : DEFAULT_HOMEPAGE_CARDS;
   const [selectedPricingCategory, setSelectedPricingCategory] =
     useState<PricingCategoryKey>("ebook");
-
-  const categoryIcons: Record<PricingCategoryKey, any> = {
-    ebook: BookOpen,
-    tools: Wrench,
-    automation: Bot,
-    riset: Search,
-    plus: Gem,
-  };
 
   useEffect(() => {
     setMounted(true);
@@ -233,11 +220,10 @@ function HomeContent({
             Ambil kesempatan mumpung lagi diskon besar-besaran. Sekali bayar!
           </p>
 
-          {/* Centered Segmented Control Tab Switcher (Gaya Pill Persis Gambar Referensi) */}
-          <div className="flex justify-center mb-6 max-w-full">
-            <div className="inline-flex items-center gap-1.5 p-1.5 rounded-2xl bg-gray-100/90 dark:bg-white/5 border border-gray-200 dark:border-white/10 shadow-inner overflow-x-auto max-w-full scrollbar-hide">
+          {/* Centered Segmented Control Tab Switcher (Gaya Pill Bersih seperti referensi) */}
+          <div className="flex justify-center mb-8 max-w-full">
+            <div className="inline-flex items-center gap-1 p-1.5 rounded-2xl bg-gray-100/90 dark:bg-[#0A1128] border border-gray-200 dark:border-white/10 shadow-inner overflow-x-auto max-w-full scrollbar-hide">
               {PRICING_CATEGORIES.map((cat) => {
-                const Icon = categoryIcons[cat.id];
                 const isSelected = selectedPricingCategory === cat.id;
                 const activeCount = (pricingConfig.categoryOrder?.[cat.id] || [])
                   .map((id) => pricingConfig.packages?.[id] || pricingConfig[id])
@@ -252,8 +238,8 @@ function HomeContent({
                     onClick={() => setSelectedPricingCategory(cat.id)}
                     className={`px-4 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
                       isSelected
-                        ? "bg-[#f97316] text-white shadow-md shadow-orange-500/25 scale-[1.02]"
-                        : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-white/5"
+                        ? "bg-white text-gray-900 dark:bg-[#1E2746] dark:text-white shadow-sm border border-gray-200/80 dark:border-[#3E4766]"
+                        : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-white/5"
                     }`}
                   >
                     {cat.label}
@@ -263,23 +249,14 @@ function HomeContent({
             </div>
           </div>
 
-          {/* Dynamic Active Packages Grid for Selected Category */}
+          {/* Dynamic Active Packages Grid for Selected Category (Ukuran Seragam ~330px) */}
           {(() => {
             const activePackages = (pricingConfig.categoryOrder?.[selectedPricingCategory] || [])
               .map((id) => pricingConfig.packages?.[id] || pricingConfig[id])
               .filter((item) => item && item.isActive !== false);
 
-            const gridCols =
-              activePackages.length === 1
-                ? "grid-cols-1 max-w-md mx-auto"
-                : activePackages.length === 2
-                ? "grid-cols-1 md:grid-cols-2 max-w-3xl mx-auto"
-                : activePackages.length === 3
-                ? "grid-cols-1 md:grid-cols-3 max-w-5xl mx-auto"
-                : "grid-cols-1 md:grid-cols-2 xl:grid-cols-4";
-
             return (
-              <div className={`grid ${gridCols} gap-3.5 xl:gap-4 w-full text-left`}>
+              <div className="flex flex-wrap justify-center items-stretch gap-4 md:gap-5 w-full max-w-6xl mx-auto text-left">
                 {activePackages.map((pkgData) => {
                   const isSpecial =
                     pkgData.highlightText && pkgData.highlightText.trim() !== "";
@@ -289,10 +266,10 @@ function HomeContent({
                   return (
                     <div
                       key={pkgData.id}
-                      className={`border rounded-2xl p-4.5 xl:p-5 flex flex-col justify-between relative transition-all duration-300 ${
+                      className={`w-full sm:w-[330px] max-w-[340px] border-2 rounded-2xl p-6 flex flex-col justify-between relative transition-all duration-300 ${
                         isSpecial
-                          ? "border-2 border-orange-500 transform xl:-translate-y-1 bg-white dark:bg-[#141B31] shadow-xl shadow-orange-500/10"
-                          : "bg-white border-2 border-gray-200 dark:bg-[#141B31] dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-orange-500/40"
+                          ? "border-orange-500 bg-white dark:bg-[#141B31] shadow-xl shadow-orange-500/10"
+                          : "bg-white border-gray-200 dark:bg-[#141B31] dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-orange-500/40"
                       }`}
                     >
                       <div>
@@ -373,7 +350,7 @@ function HomeContent({
                               () => getCheckoutDetailsAction(pkgData.id, undefined)
                             );
                         }}
-                        className={`w-full mt-4 xl:mt-5 block text-center font-bold text-xs xl:text-sm py-3 rounded-xl transition-all ${
+                        className={`w-full mt-6 block text-center font-bold text-xs xl:text-sm py-3 rounded-xl transition-all ${
                           isSpecial
                             ? "bg-orange-500 text-white font-bold hover:bg-orange-600 shadow-[0_0_20px_rgba(249,115,22,0.25)]"
                             : "bg-gray-900 hover:bg-orange-500 hover:text-white text-white dark:bg-[#2C3246] dark:hover:bg-orange-500 dark:hover:text-white dark:text-white"

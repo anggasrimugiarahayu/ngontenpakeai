@@ -251,11 +251,11 @@ export function PricingEditModal({
             onClick={() => handleSelectTab("promo")}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
               activeTab === "promo"
-                ? "bg-orange-500 text-white shadow-sm shadow-orange-500/30"
-                : "text-gray-600 dark:text-gray-400 hover:bg-gray-200/60 dark:hover:bg-[#1e2746]"
+                ? "bg-white text-gray-900 dark:bg-[#1E2746] dark:text-white shadow-sm border border-gray-200/80 dark:border-[#3E4766]"
+                : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
             }`}
           >
-            <Flame className="w-4 h-4 shrink-0 text-amber-300" />
+            <Flame className="w-4 h-4 shrink-0 text-orange-500" />
             <span>Banner Promo</span>
           </button>
 
@@ -273,16 +273,16 @@ export function PricingEditModal({
                 onClick={() => handleSelectTab(cat.id)}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
                   isActive
-                    ? "bg-[#f97316] text-white shadow-sm shadow-orange-500/30"
-                    : "text-gray-600 dark:text-gray-400 hover:bg-gray-200/60 dark:hover:bg-[#1e2746]"
+                    ? "bg-white text-gray-900 dark:bg-[#1E2746] dark:text-white shadow-sm border border-gray-200/80 dark:border-[#3E4766]"
+                    : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >
                 <span>{cat.label}</span>
                 <span
                   className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
                     isActive
-                      ? "bg-white/20 text-white"
-                      : "bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-400"
+                      ? "bg-gray-100 dark:bg-white/10 text-gray-900 dark:text-white"
+                      : "bg-gray-200/80 dark:bg-white/5 text-gray-500 dark:text-gray-400"
                   }`}
                 >
                   {count}
