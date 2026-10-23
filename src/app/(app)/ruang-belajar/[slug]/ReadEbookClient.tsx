@@ -78,7 +78,12 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
         {/* Header Toolbar */}
         <div className="flex-shrink-0 h-16 border-b border-gray-200 dark:border-[#2C3246] bg-gray-50/95 dark:bg-[#0A1128]/95 backdrop-blur-md px-4 md:px-8 flex items-center justify-between relative z-20">
           <div className="flex items-center gap-3 md:gap-4">
-            <BackButton href="/ruang-belajar" />
+            <BackButton 
+              href="/ruang-belajar" 
+              onClick={() => {
+                window.location.href = "/ruang-belajar";
+              }}
+            />
             <div className="min-w-0">
               <h1 className="font-bold text-sm md:text-base text-gray-900 dark:text-white leading-none flex items-center gap-2 truncate">
                 {ebook.title}

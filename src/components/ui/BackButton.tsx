@@ -31,7 +31,12 @@ export function BackButton({
       <Link
         href={href}
         prefetch={prefetch}
-        onClick={onClick}
+        onClick={(e) => {
+          if (onClick) {
+            e.preventDefault();
+            onClick();
+          }
+        }}
         title={title}
         aria-label={title}
         className={baseClasses}

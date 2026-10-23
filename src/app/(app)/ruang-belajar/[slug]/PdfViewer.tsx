@@ -6,6 +6,7 @@ import { Maximize, Minimize } from "lucide-react";
 export default function PdfViewer({ embedUrl, title }: { embedUrl: string, title: string }) {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const viewerRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -13,7 +14,16 @@ export default function PdfViewer({ embedUrl, title }: { embedUrl: string, title
     };
 
     document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      if (iframeRef.current) {
+        try {
+          iframeRef.current.src = "about:blank";
+        } catch {
+          // ignore
+        }
+      }
+    };
   }, []);
 
   const toggleFullscreen = () => {
@@ -29,6 +39,7 @@ export default function PdfViewer({ embedUrl, title }: { embedUrl: string, title
   return (
     <div ref={viewerRef} className="flex-1 w-full bg-[#0f0f0f] relative overflow-hidden flex flex-col group [isolation:isolate] z-0">
       <iframe 
+        ref={iframeRef}
         src={embedUrl} 
         className="absolute -top-[56px] left-0 w-full h-[calc(100%+56px)] border-0"
         allow="autoplay; fullscreen"
