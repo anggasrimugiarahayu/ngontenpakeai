@@ -50,12 +50,12 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
   return (
     <div className="space-y-6">
       {/* Horizontal Tabs Navigation */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide">
+      <div className="flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-3 scrollbar-hide max-w-full">
         {tabs.map(tab => (
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={`px-4 py-2 text-sm font-bold whitespace-nowrap transition-all rounded-lg border ${
+            className={`px-3 sm:px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold whitespace-nowrap transition-all rounded-lg border ${
               activeTab === tab.id
                 ? "border-orange-500/50 bg-orange-500/10 text-orange-600 dark:text-orange-400"
                 : "border-transparent text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-[#1f2947]"
