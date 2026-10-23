@@ -197,6 +197,8 @@ Platform Dipilih: ${formData.platform ? (Array.isArray(formData.platform) ? form
 
     try {
       revalidateTag("blueprint", "default");
+      (revalidateTag as any)("blueprint");
+      revalidatePath("/", "layout");
     } catch (e) {}
 
     if (accessCheck.featureId) {

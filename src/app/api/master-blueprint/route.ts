@@ -7,6 +7,7 @@ function safeRevalidateBlueprint() {
   try { (revalidateTag as any)("blueprint", "default"); } catch {}
   try { (revalidateTag as any)("blueprint"); } catch {}
   try { revalidatePath("/ruang-ngonten", "layout"); } catch {}
+  try { revalidatePath("/", "layout"); } catch {}
 }
 
 export async function PUT(req: Request) {

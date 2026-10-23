@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import toast from "react-hot-toast";
 import { toggleFeatureStatus, toggleFeaturePro } from "@/app/actions/adminSettings";
@@ -19,6 +20,7 @@ const ORDER = [
 ];
 
 export function AdminRuangNgontenTab({ features }: { features: any[] }) {
+  const router = useRouter();
   const [featureList, setFeatureList] = useState(features || []);
 
   useEffect(() => {
@@ -37,6 +39,7 @@ export function AdminRuangNgontenTab({ features }: { features: any[] }) {
     try {
       await toggleFeatureStatus(id, nextVal);
       mutate("pengaturan");
+      router.refresh();
     } catch {
       setFeatureList(prevFeatures);
       toast.error("Gagal mengubah status aktif fitur");
@@ -52,6 +55,7 @@ export function AdminRuangNgontenTab({ features }: { features: any[] }) {
     try {
       await toggleFeaturePro(id, nextVal);
       mutate("pengaturan");
+      router.refresh();
     } catch {
       setFeatureList(prevFeatures);
       toast.error("Gagal mengubah status PRO fitur");

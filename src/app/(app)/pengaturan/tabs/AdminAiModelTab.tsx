@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { mutate } from "swr";
 import toast from "react-hot-toast";
 import {
@@ -15,6 +16,7 @@ import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
 
 export function AdminAiModelTab({ models }: { models: any[] }) {
+  const router = useRouter();
   const [modelList, setModelList] = useState(models || []);
   const [newModel, setNewModel] = useState({ name: "", modelId: "", provider: "google" });
   const [loading, setLoading] = useState(false);
@@ -29,6 +31,7 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
     try {
       await createAiModel(newModel);
       mutate("pengaturan");
+      router.refresh();
       setNewModel({ name: "", modelId: "", provider: "google" });
       toast.success("Model AI berhasil ditambahkan");
     } catch {
@@ -46,6 +49,7 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
     try {
       await toggleModel(id, nextVal);
       mutate("pengaturan");
+      router.refresh();
     } catch {
       setModelList(prevModels);
       toast.error("Gagal mengubah status model AI");
@@ -61,6 +65,7 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
     try {
       await setDefaultModel(id);
       mutate("pengaturan");
+      router.refresh();
     } catch {
       setModelList(prevModels);
       toast.error("Gagal mengatur model default");
@@ -76,6 +81,7 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
     try {
       await setFallbackModel(id);
       mutate("pengaturan");
+      router.refresh();
     } catch {
       setModelList(prevModels);
       toast.error("Gagal mengatur model alternatif");
@@ -90,6 +96,7 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
       try {
         await deleteModel(id);
         mutate("pengaturan");
+        router.refresh();
         toast.success("Model berhasil dihapus");
       } catch {
         setModelList(prevModels);

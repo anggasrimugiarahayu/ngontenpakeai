@@ -5,10 +5,43 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { attachComputedBuyerCounts } from "@/lib/product-buyers";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
 
-function revalidateAdminConfig() {
+function safeRevalidateTag(tag: string) {
   try {
-    revalidateTag("admin-config", "default");
-  } catch (e) {}
+    (revalidateTag as any)(tag);
+  } catch {}
+  try {
+    (revalidateTag as any)(tag, "default");
+  } catch {}
+}
+
+function revalidateAdminConfig() {
+  safeRevalidateTag("admin-config");
+  safeRevalidateTag("features");
+  try {
+    revalidatePath("/", "layout");
+  } catch {}
+  try {
+    revalidatePath("/pengaturan");
+  } catch {}
+  try {
+    revalidatePath("/ruang-ngonten");
+  } catch {}
+}
+
+function revalidateEbookCatalog(slug?: string) {
+  safeRevalidateTag("ebook-catalog");
+  safeRevalidateTag("admin-config");
+  try {
+    revalidatePath("/ruang-belajar");
+  } catch {}
+  if (slug) {
+    try {
+      revalidatePath(`/ruang-belajar/${slug}`);
+    } catch {}
+  }
+  try {
+    revalidatePath("/pengaturan");
+  } catch {}
 }
 
 // 1. Models AI
@@ -56,14 +89,15 @@ export async function saveAppSetting(key: string, value: string) {
     create: { key, value },
   });
   if (key === "PRICING_PACKAGES") {
+    safeRevalidateTag("pricing-packages");
     try {
-      revalidateTag("pricing-packages", "default");
-    } catch (e) {
-      console.error("Error revalidating pricing-packages:", e);
-    }
+      revalidatePath("/checkout");
+    } catch (e) {}
+    try {
+      revalidatePath("/");
+    } catch (e) {}
   }
   revalidateAdminConfig();
-  revalidatePath("/pengaturan");
 }
 
 export async function deleteAppSetting(key: string) {
@@ -72,13 +106,18 @@ export async function deleteAppSetting(key: string) {
       where: { key },
     });
     if (key === "PRICING_PACKAGES") {
-      revalidateTag("pricing-packages", "default");
+      safeRevalidateTag("pricing-packages");
+      try {
+        revalidatePath("/checkout");
+      } catch (e) {}
+      try {
+        revalidatePath("/");
+      } catch (e) {}
     }
   } catch (e) {
     // Ignore error if not found
   }
   revalidateAdminConfig();
-  revalidatePath("/pengaturan");
 }
 
 // 3. Features (Ruang Ngonten)
@@ -88,12 +127,10 @@ export async function getFeatures() {
 export async function toggleFeatureStatus(id: string, isActive: boolean) {
   await prisma.feature.update({ where: { id }, data: { isActive } });
   revalidateAdminConfig();
-  revalidatePath("/pengaturan");
 }
 export async function toggleFeaturePro(id: string, isProOnly: boolean) {
   await prisma.feature.update({ where: { id }, data: { isProOnly } });
   revalidateAdminConfig();
-  revalidatePath("/pengaturan");
 }
 
 // 4. Digital Categories & Products
@@ -108,8 +145,7 @@ export async function createCategory(data: any) {
     }
   }
   await prisma.digitalCategory.create({ data });
-  revalidateAdminConfig();
-  revalidatePath("/pengaturan");
+  revalidateEbookCatalog();
 }
 
 export async function getProducts() {
@@ -170,12 +206,7 @@ export async function toggleProductStatus(id: string, isActive: boolean) {
     where: { id },
     data: { isActive },
   });
-  try {
-    revalidateTag("ebook-catalog", "default");
-  } catch (e) {}
-  revalidateAdminConfig();
-  revalidatePath("/pengaturan");
-  revalidatePath("/ruang-belajar");
+  revalidateEbookCatalog();
 }
 
 export async function reorderProducts(orderedIds: string[]) {
@@ -184,12 +215,7 @@ export async function reorderProducts(orderedIds: string[]) {
     update: { value: JSON.stringify(orderedIds) },
     create: { key: "EBOOK_SORT_ORDER", value: JSON.stringify(orderedIds) },
   });
-  try {
-    revalidateTag("ebook-catalog", "default");
-  } catch (e) {}
-  revalidateAdminConfig();
-  revalidatePath("/pengaturan");
-  revalidatePath("/ruang-belajar");
+  revalidateEbookCatalog();
 }
 
 export async function createProduct(data: any) {
@@ -206,26 +232,17 @@ export async function createProduct(data: any) {
       category: categoryId ? { connect: { id: categoryId } } : undefined,
     },
   });
-  try {
-    revalidateTag("ebook-catalog", "default");
-  } catch (e) {}
-  revalidateAdminConfig();
-  revalidatePath("/pengaturan");
+  revalidateEbookCatalog(data.slug);
 }
 
 export async function deleteCategory(id: string) {
   await prisma.digitalCategory.delete({ where: { id } });
-  revalidateAdminConfig();
-  revalidatePath("/pengaturan");
+  revalidateEbookCatalog();
 }
 
 export async function deleteProduct(id: string) {
   await prisma.digitalProduct.delete({ where: { id } });
-  try {
-    revalidateTag("ebook-catalog", "default");
-  } catch (e) {}
-  revalidateAdminConfig();
-  revalidatePath("/pengaturan");
+  revalidateEbookCatalog();
 }
 
 export async function updateProduct(id: string, data: any) {
@@ -252,11 +269,7 @@ export async function updateProduct(id: string, data: any) {
       category: categoryId ? { connect: { id: categoryId } } : undefined,
     },
   });
-  try {
-    revalidateTag("ebook-catalog", "default");
-  } catch (e) {}
-  revalidateAdminConfig();
-  revalidatePath("/pengaturan");
+  revalidateEbookCatalog(data.slug);
 }
 
 export async function createVoucher(data: { code: string; discountType: string; discountValue: number; digitalProductId: string }) {

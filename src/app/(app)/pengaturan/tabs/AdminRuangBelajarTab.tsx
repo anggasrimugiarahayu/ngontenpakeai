@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import toast from "react-hot-toast";
 import { mutate } from "swr";
@@ -34,6 +35,7 @@ export function AdminRuangBelajarTab({
   categories: any[];
   products: any[];
 }) {
+  const router = useRouter();
   const [productList, setProductList] = useState(products || []);
   const [openMenuProductId, setOpenMenuProductId] = useState<string | null>(null);
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
@@ -274,6 +276,8 @@ export function AdminRuangBelajarTab({
                   const orderedIds = newItems.map((p: any) => p.id);
                   try {
                     await reorderProducts(orderedIds);
+                    mutate("pengaturan");
+                    router.refresh();
                     toast.success("Urutan E-Book berhasil diperbarui!");
                   } catch {
                     toast.error("Gagal menyimpan urutan e-book.");
@@ -373,6 +377,7 @@ export function AdminRuangBelajarTab({
                                   try {
                                     await toggleProductStatus(prod.id, newStatus);
                                     mutate("pengaturan");
+                                    router.refresh();
                                     toast.success(
                                       newStatus
                                         ? "E-Book diaktifkan (tampil di katalog)"
@@ -506,6 +511,7 @@ export function AdminRuangBelajarTab({
                             setLoading(true);
                             await deleteProduct(prod.id);
                             mutate("pengaturan");
+                            router.refresh();
                             setLoading(false);
                           }
                         }}

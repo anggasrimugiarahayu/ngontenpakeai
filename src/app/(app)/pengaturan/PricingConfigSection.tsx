@@ -2,10 +2,12 @@
 
 import toast from "react-hot-toast";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { saveAppSetting } from "@/app/actions/adminSettings";
 import { Save, CheckCircle2, Edit, Package, Wrench, Gem, Check, X, Plus, BookOpen, Bot } from "lucide-react";
 
 export function PricingConfigSection({ products, settings }: { products: any[], settings: any[] }) {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [successMsg, setSuccessMsg] = useState("");
   
@@ -96,6 +98,7 @@ export function PricingConfigSection({ products, settings }: { products: any[], 
     setSuccessMsg("");
     try {
       await saveAppSetting("PRICING_PACKAGES", JSON.stringify(config));
+      router.refresh();
       setSuccessMsg("Konfigurasi pricing berhasil disimpan!");
       setTimeout(() => setSuccessMsg(""), 3000);
     } catch (e) {
