@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { coreApi } from "@/lib/midtrans";
 import prisma from "@/lib/prisma";
+import { mergePricingConfig } from "@/lib/pricing-packages";
 
 export async function POST(req: NextRequest) {
   try {
@@ -71,30 +72,36 @@ export async function POST(req: NextRequest) {
               }
             });
           }
-        } else if (order.orderType === "PRO_BOOK" || order.orderType === "PRO_TOOLS" || order.orderType === "PRO_AUTOMATION" || order.orderType === "PRO_PLUS") {
-          // 1. Upgrade to PRO role
+        } else {
+          // Dynamic PRO subscription & package fulfillment
           let updateData: any = { role: "PRO" };
           
+          const setting = await tx.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
+          const pricingConfig = mergePricingConfig(setting?.value ? JSON.parse(setting.value as string) : null);
+          const targetPkg = pricingConfig[order.orderType] || pricingConfig.packages?.[order.orderType];
+          const durationDays = targetPkg?.durationDays ?? 30;
+          const cat = targetPkg?.category;
+
           const currentUser = await tx.user.findUnique({
             where: { id: order.userId },
             select: { proToolsExpiredAt: true, proAutomationExpiredAt: true }
           });
 
-          // If they bought TOOLS or LENGKAP, give them 30 days of proToolsExpiredAt
-          if (order.orderType === "PRO_TOOLS" || order.orderType === "PRO_PLUS") {
+          // Tools
+          if (order.orderType.includes("TOOLS") || cat === "tools" || cat === "plus" || order.orderType === "PRO_PLUS") {
             const baseDate = (currentUser?.proToolsExpiredAt && new Date(currentUser.proToolsExpiredAt) > new Date())
               ? new Date(currentUser.proToolsExpiredAt)
               : new Date();
-            baseDate.setDate(baseDate.getDate() + 30);
+            baseDate.setDate(baseDate.getDate() + (durationDays > 0 ? durationDays : 30));
             updateData.proToolsExpiredAt = baseDate;
           }
 
-          // If they bought AUTOMATION or LENGKAP, give them 30 days of proAutomationExpiredAt
-          if (order.orderType === "PRO_AUTOMATION" || order.orderType === "PRO_PLUS") {
+          // Automation
+          if (order.orderType.includes("AUTO") || cat === "automation" || cat === "plus" || order.orderType === "PRO_PLUS") {
             const baseDate = (currentUser?.proAutomationExpiredAt && new Date(currentUser.proAutomationExpiredAt) > new Date())
               ? new Date(currentUser.proAutomationExpiredAt)
               : new Date();
-            baseDate.setDate(baseDate.getDate() + 30);
+            baseDate.setDate(baseDate.getDate() + (durationDays > 0 ? durationDays : 30));
             updateData.proAutomationExpiredAt = baseDate;
           }
 
@@ -103,24 +110,19 @@ export async function POST(req: NextRequest) {
             data: updateData
           });
 
-          // 2. Unlock bundled E-books from PRICING_PACKAGES config
-          const setting = await tx.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
-          const pricingConfig = setting?.value ? JSON.parse(setting.value) : null;
-          
-          if (pricingConfig && pricingConfig[order.orderType] && pricingConfig[order.orderType].bundledProductIds) {
-            const bundledIds = pricingConfig[order.orderType].bundledProductIds;
-            for (const pid of bundledIds) {
-              const existing = await tx.userOwnedProduct.findFirst({
-                where: { userId: order.userId, digitalProductId: pid }
+          // Unlock bundled E-books from PRICING_PACKAGES config
+          const bundledIds = targetPkg?.bundledProductIds || [];
+          for (const pid of bundledIds) {
+            const existing = await tx.userOwnedProduct.findFirst({
+              where: { userId: order.userId, digitalProductId: pid }
+            });
+            if (!existing) {
+              await tx.userOwnedProduct.create({
+                data: {
+                  userId: order.userId,
+                  digitalProductId: pid
+                }
               });
-              if (!existing) {
-                await tx.userOwnedProduct.create({
-                  data: {
-                    userId: order.userId,
-                    digitalProductId: pid
-                  }
-                });
-              }
             }
           }
         }

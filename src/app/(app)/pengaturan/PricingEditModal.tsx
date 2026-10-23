@@ -7,6 +7,7 @@ import {
   BookOpen,
   Wrench,
   Bot,
+  Search,
   Gem,
   Plus,
   Trash2,
@@ -14,12 +15,15 @@ import {
   Package,
   Save,
   Loader2,
-  Eye,
-  EyeOff,
+  Clock,
+  Sparkles,
 } from "lucide-react";
 import {
   PricingPackagesConfig,
   PricingPackageItem,
+  PricingCategoryKey,
+  PRICING_CATEGORIES,
+  generatePackageId,
 } from "@/lib/pricing-packages";
 
 interface PricingEditModalProps {
@@ -27,80 +31,175 @@ interface PricingEditModalProps {
   onClose: () => void;
   config: PricingPackagesConfig;
   products: any[];
+  initialCategory?: PricingCategoryKey;
   onSave: (newConfig: PricingPackagesConfig) => Promise<void>;
 }
 
-type TabType = "promo" | "PRO_BOOK" | "PRO_TOOLS" | "PRO_AUTOMATION" | "PRO_PLUS";
+type ModalTab = "promo" | PricingCategoryKey;
 
 export function PricingEditModal({
   isOpen,
   onClose,
   config,
   products,
+  initialCategory = "ebook",
   onSave,
 }: PricingEditModalProps) {
-  const [activeTab, setActiveTab] = useState<TabType>("promo");
+  const [activeTab, setActiveTab] = useState<ModalTab>(initialCategory);
   const [formData, setFormData] = useState<PricingPackagesConfig>(config);
   const [saving, setSaving] = useState(false);
+
+  // Selected package ID within the active category
+  const [selectedPkgId, setSelectedPkgId] = useState<string>("");
 
   // Sync state whenever modal opens
   useEffect(() => {
     if (isOpen) {
-      setFormData(JSON.parse(JSON.stringify(config)));
+      const cloned: PricingPackagesConfig = JSON.parse(JSON.stringify(config));
+      setFormData(cloned);
+      setActiveTab(initialCategory);
+
+      // Pick first package in this category
+      const firstInCat = cloned.categoryOrder?.[initialCategory]?.[0] || "";
+      setSelectedPkgId(firstInCat);
     }
-  }, [isOpen, config]);
+  }, [isOpen, config, initialCategory]);
+
+  // When switching category tabs, select the first package of that category
+  const handleSelectTab = (tab: ModalTab) => {
+    setActiveTab(tab);
+    if (tab !== "promo") {
+      const list = formData.categoryOrder?.[tab] || [];
+      if (list.length > 0) {
+        setSelectedPkgId(list[0]);
+      } else {
+        setSelectedPkgId("");
+      }
+    }
+  };
 
   if (!isOpen) return null;
 
-  const handleUpdatePackage = (
-    pkgKey: "PRO_BOOK" | "PRO_TOOLS" | "PRO_AUTOMATION" | "PRO_PLUS",
+  const currentPkg = selectedPkgId ? formData.packages?.[selectedPkgId] : null;
+
+  const handleUpdateCurrentPkg = (
     field: keyof PricingPackageItem,
     value: any
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [pkgKey]: {
-        ...prev[pkgKey],
+    if (!selectedPkgId) return;
+    setFormData((prev) => {
+      const updatedPkg = {
+        ...prev.packages[selectedPkgId],
         [field]: value,
-      },
-    }));
+      };
+      return {
+        ...prev,
+        packages: {
+          ...prev.packages,
+          [selectedPkgId]: updatedPkg,
+        },
+        [selectedPkgId]: updatedPkg,
+      };
+    });
   };
 
-  const handleUpdateFeature = (
-    pkgKey: "PRO_BOOK" | "PRO_TOOLS" | "PRO_AUTOMATION" | "PRO_PLUS",
-    idx: number,
-    value: string
-  ) => {
-    const features = [...formData[pkgKey].features];
+  const handleUpdateFeature = (idx: number, value: string) => {
+    if (!currentPkg) return;
+    const features = [...currentPkg.features];
     features[idx] = value;
-    handleUpdatePackage(pkgKey, "features", features);
+    handleUpdateCurrentPkg("features", features);
   };
 
-  const handleAddFeature = (
-    pkgKey: "PRO_BOOK" | "PRO_TOOLS" | "PRO_AUTOMATION" | "PRO_PLUS"
-  ) => {
-    const features = [...formData[pkgKey].features, ""];
-    handleUpdatePackage(pkgKey, "features", features);
+  const handleAddFeature = () => {
+    if (!currentPkg) return;
+    const features = [...currentPkg.features, ""];
+    handleUpdateCurrentPkg("features", features);
   };
 
-  const handleRemoveFeature = (
-    pkgKey: "PRO_BOOK" | "PRO_TOOLS" | "PRO_AUTOMATION" | "PRO_PLUS",
-    idx: number
-  ) => {
-    const features = formData[pkgKey].features.filter((_, i) => i !== idx);
-    handleUpdatePackage(pkgKey, "features", features);
+  const handleRemoveFeature = (idx: number) => {
+    if (!currentPkg) return;
+    const features = currentPkg.features.filter((_, i) => i !== idx);
+    handleUpdateCurrentPkg("features", features);
   };
 
-  const handleToggleProduct = (
-    pkgKey: "PRO_BOOK" | "PRO_TOOLS" | "PRO_AUTOMATION" | "PRO_PLUS",
-    productId: string
-  ) => {
-    const current = [...(formData[pkgKey].bundledProductIds || [])];
+  const handleToggleProduct = (productId: string) => {
+    if (!currentPkg) return;
+    const current = [...(currentPkg.bundledProductIds || [])];
     const exists = current.includes(productId);
     const updated = exists
       ? current.filter((id) => id !== productId)
       : [...current, productId];
-    handleUpdatePackage(pkgKey, "bundledProductIds", updated);
+    handleUpdateCurrentPkg("bundledProductIds", updated);
+  };
+
+  // Add a new package to the current active category
+  const handleAddNewPackage = (category: PricingCategoryKey) => {
+    const newId = generatePackageId(category);
+    const newPackage: PricingPackageItem = {
+      id: newId,
+      category,
+      name: `Paket Baru ${category === "ebook" ? "E-Book" : category.toUpperCase()}`,
+      desc: "Deskripsi singkat mengenai paket ini.",
+      price: 99000,
+      originalPrice: 199000,
+      discountLabel: "50% OFF",
+      highlightText: "",
+      periodLabel: category === "ebook" ? "Sekali Bayar" : "/bulan",
+      subBillingText: category === "ebook" ? "Akses Selamanya" : "",
+      durationDays: category === "ebook" ? 0 : 30,
+      features: ["Fitur unggulan 1", "Fitur unggulan 2"],
+      bundledProductIds: [],
+      isActive: true,
+    };
+
+    setFormData((prev) => {
+      const currentCatList = prev.categoryOrder?.[category] || [];
+      return {
+        ...prev,
+        packages: {
+          ...prev.packages,
+          [newId]: newPackage,
+        },
+        categoryOrder: {
+          ...prev.categoryOrder,
+          [category]: [...currentCatList, newId],
+        },
+        [newId]: newPackage,
+      };
+    });
+
+    setSelectedPkgId(newId);
+  };
+
+  // Delete a package
+  const handleDeletePackage = (pkgId: string, category: PricingCategoryKey) => {
+    if (confirm("Apakah Anda yakin ingin menghapus paket ini?")) {
+      setFormData((prev) => {
+        const newPackages = { ...prev.packages };
+        delete newPackages[pkgId];
+
+        const newCatOrder = {
+          ...prev.categoryOrder,
+          [category]: (prev.categoryOrder?.[category] || []).filter(
+            (id) => id !== pkgId
+          ),
+        };
+
+        const nextState = {
+          ...prev,
+          packages: newPackages,
+          categoryOrder: newCatOrder,
+        };
+        delete nextState[pkgId];
+        return nextState;
+      });
+
+      // Select next available package in category
+      const remaining = (formData.categoryOrder?.[category] || []).filter(
+        (id) => id !== pkgId
+      );
+      setSelectedPkgId(remaining[0] || "");
+    }
   };
 
   const handleSave = async () => {
@@ -113,46 +212,66 @@ export function PricingEditModal({
     }
   };
 
-  const tabs: { id: TabType; label: string; icon: any }[] = [
-    { id: "promo", label: "Banner Promo", icon: Flame },
-    { id: "PRO_BOOK", label: "Paket Ebook", icon: BookOpen },
-    { id: "PRO_TOOLS", label: "Paket Tools", icon: Wrench },
-    { id: "PRO_AUTOMATION", label: "Paket Automation", icon: Bot },
-    { id: "PRO_PLUS", label: "Paket Lengkap", icon: Gem },
-  ];
+  const categoryIcons: Record<PricingCategoryKey, any> = {
+    ebook: BookOpen,
+    tools: Wrench,
+    automation: Bot,
+    riset: Search,
+    plus: Gem,
+  };
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 animate-in fade-in duration-200">
-      <div className="bg-white dark:bg-[#141B31] w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-2xl border border-gray-200 dark:border-[#2C3246] shadow-2xl flex flex-col">
+      <div className="bg-white dark:bg-[#141B31] w-full max-w-5xl max-h-[92vh] overflow-hidden rounded-2xl border border-gray-200 dark:border-[#2C3246] shadow-2xl flex flex-col">
         {/* Header Modal */}
         <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between shrink-0 bg-white dark:bg-[#141B31]">
           <div>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
-              Edit Paket Pricing &amp; Promo
+            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-orange-500" />
+              <span>Edit Paket Pricing &amp; Promo</span>
             </h2>
             <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              Atur banner promo, detail benefit, harga diskon, dan bundling otomatis e-book.
+              Kelola kategori (E-Book, Tools, Automation, Riset, Paket Plus), tambah paket baru, dan atur banner promo.
             </p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1e2746] transition-colors"
+            className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1e2746] transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-1.5 px-4 sm:px-5 pt-3 pb-2 border-b border-gray-100 dark:border-[#2C3246] overflow-x-auto scrollbar-hide shrink-0 bg-gray-50/70 dark:bg-[#0A1128]/40">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            const isActive = activeTab === tab.id;
+        {/* Tab Navigasi Kategori */}
+        <div className="flex items-center gap-1.5 px-4 sm:px-5 pt-3 pb-2.5 border-b border-gray-100 dark:border-[#2C3246] overflow-x-auto scrollbar-hide shrink-0 bg-gray-50/70 dark:bg-[#0A1128]/50">
+          {/* Tab Promo */}
+          <button
+            type="button"
+            onClick={() => handleSelectTab("promo")}
+            className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
+              activeTab === "promo"
+                ? "bg-orange-500 text-white shadow-sm shadow-orange-500/30"
+                : "text-gray-600 dark:text-gray-400 hover:bg-gray-200/60 dark:hover:bg-[#1e2746]"
+            }`}
+          >
+            <Flame className="w-4 h-4 shrink-0 text-amber-300" />
+            <span>Banner Promo</span>
+          </button>
+
+          <div className="w-[1px] h-5 bg-gray-200 dark:bg-[#2C3246] mx-1 shrink-0" />
+
+          {/* Tab 5 Kategori */}
+          {PRICING_CATEGORIES.map((cat) => {
+            const Icon = categoryIcons[cat.id];
+            const isActive = activeTab === cat.id;
+            const count = (formData.categoryOrder?.[cat.id] || []).length;
+
             return (
               <button
-                key={tab.id}
+                key={cat.id}
                 type="button"
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => handleSelectTab(cat.id)}
                 className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold whitespace-nowrap transition-all cursor-pointer ${
                   isActive
                     ? "bg-[#f97316] text-white shadow-sm shadow-orange-500/30"
@@ -160,13 +279,22 @@ export function PricingEditModal({
                 }`}
               >
                 <Icon className="w-4 h-4 shrink-0" />
-                <span>{tab.label}</span>
+                <span>{cat.label}</span>
+                <span
+                  className={`text-[10px] px-1.5 py-0.2 rounded-full font-bold ${
+                    isActive
+                      ? "bg-white/20 text-white"
+                      : "bg-gray-200 dark:bg-white/10 text-gray-600 dark:text-gray-400"
+                  }`}
+                >
+                  {count}
+                </span>
               </button>
             );
           })}
         </div>
 
-        {/* Form Body - Scrollable */}
+        {/* Modal Body */}
         <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6">
           {/* TAB 1: BANNER PROMO */}
           {activeTab === "promo" && (
@@ -178,7 +306,7 @@ export function PricingEditModal({
                   </div>
                   <div>
                     <h3 className="font-bold text-sm sm:text-base text-gray-900 dark:text-white">
-                      Pengaturan Teks &amp; Tampilan Promo
+                      Pengaturan Teks &amp; Tampilan Banner Promo
                     </h3>
                     <p className="text-xs text-gray-500 dark:text-gray-400">
                       Teks promo ini muncul di tombol pill pada bagian atas beranda dan tombol kembali halaman harga.
@@ -254,221 +382,341 @@ export function PricingEditModal({
             </div>
           )}
 
-          {/* TAB 2-5: FORM PAKET SPESIFIK */}
+          {/* TAB 2-6: KATEGORI PRODUK (EBOOK, TOOLS, AUTO, RISET, PLUS) */}
           {activeTab !== "promo" && (
             <div className="space-y-6 animate-in fade-in duration-200">
-              {(() => {
-                const pkg = formData[activeTab];
-                if (!pkg) return null;
+              {/* Header Kategori & Tombol Tambah Paket */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-gray-50 dark:bg-[#0A1128]/70 rounded-2xl border border-gray-200 dark:border-[#2C3246]">
+                <div>
+                  <h3 className="font-bold text-sm sm:text-base text-gray-900 dark:text-white capitalize">
+                    Daftar Paket di Kategori {activeTab}
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Pilih paket untuk diedit atau tambahkan paket pricing baru untuk kategori ini.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleAddNewPackage(activeTab)}
+                  className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-xs shadow-sm shadow-orange-500/20 transition-all cursor-pointer whitespace-nowrap shrink-0"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Tambah Paket Baru</span>
+                </button>
+              </div>
 
-                return (
-                  <>
-                    {/* Bagian Informasi Utama */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                          Nama Paket
-                        </label>
-                        <input
-                          type="text"
-                          value={pkg.name}
-                          onChange={(e) =>
-                            handleUpdatePackage(activeTab, "name", e.target.value)
-                          }
-                          className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                          Label Pita Atas / Highlight (Opsional)
-                        </label>
-                        <input
-                          type="text"
-                          value={pkg.highlightText || ""}
-                          onChange={(e) =>
-                            handleUpdatePackage(
-                              activeTab,
-                              "highlightText",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Contoh: PALING WORTH"
-                          className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-                        />
-                      </div>
+              {/* Sub-Tabs / Daftar Paket dalam Kategori Ini */}
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                {(formData.categoryOrder?.[activeTab] || []).map((pkgId) => {
+                  const pkg = formData.packages?.[pkgId];
+                  if (!pkg) return null;
+                  const isSelected = selectedPkgId === pkgId;
+
+                  return (
+                    <button
+                      key={pkgId}
+                      type="button"
+                      onClick={() => setSelectedPkgId(pkgId)}
+                      className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold border transition-all cursor-pointer whitespace-nowrap ${
+                        isSelected
+                          ? "border-orange-500 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 shadow-sm"
+                          : "border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-gray-700 dark:text-gray-300 hover:border-gray-300"
+                      }`}
+                    >
+                      <span>{pkg.name}</span>
+                      <span className="text-[10px] text-gray-400 font-mono">
+                        (Rp {(pkg.price / 1000).toFixed(0)}k)
+                      </span>
+                      {pkg.highlightText && (
+                        <span className="text-[9px] bg-orange-500 text-white px-1.5 py-0.2 rounded font-black uppercase">
+                          {pkg.highlightText}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* FORM DETAIL PAKET YANG DIPILIH */}
+              {currentPkg ? (
+                <div className="space-y-6 pt-2">
+                  <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-[#2C3246]">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-gray-500 dark:text-gray-400">
+                        Editing Paket:
+                      </span>
+                      <span className="text-xs font-mono font-bold text-gray-800 dark:text-gray-200 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded">
+                        {currentPkg.id}
+                      </span>
                     </div>
 
+                    {/* Tombol Hapus Paket */}
+                    <button
+                      type="button"
+                      onClick={() => handleDeletePackage(currentPkg.id, activeTab)}
+                      className="inline-flex items-center gap-1.5 text-xs font-bold text-red-500 hover:text-red-600 px-2.5 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+                      title="Hapus paket ini"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hapus Paket</span>
+                    </button>
+                  </div>
+
+                  {/* Informasi Utama */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                        Deskripsi Pendek
+                        Nama Paket
                       </label>
                       <input
                         type="text"
-                        value={pkg.desc}
+                        value={currentPkg.name}
                         onChange={(e) =>
-                          handleUpdatePackage(activeTab, "desc", e.target.value)
+                          handleUpdateCurrentPkg("name", e.target.value)
                         }
                         className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
                       />
                     </div>
-
-                    {/* Harga dan Diskon */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div>
-                        <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                          Harga Jual (Rp)
-                        </label>
-                        <input
-                          type="number"
-                          value={pkg.price}
-                          onChange={(e) =>
-                            handleUpdatePackage(
-                              activeTab,
-                              "price",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                          className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                          Harga Coret Asli (Rp)
-                        </label>
-                        <input
-                          type="number"
-                          value={pkg.originalPrice}
-                          onChange={(e) =>
-                            handleUpdatePackage(
-                              activeTab,
-                              "originalPrice",
-                              parseInt(e.target.value) || 0
-                            )
-                          }
-                          className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
-                          Label Diskon
-                        </label>
-                        <input
-                          type="text"
-                          value={pkg.discountLabel || ""}
-                          onChange={(e) =>
-                            handleUpdatePackage(
-                              activeTab,
-                              "discountLabel",
-                              e.target.value
-                            )
-                          }
-                          placeholder="Misal: 95% OFF"
-                          className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-                        />
-                      </div>
-                    </div>
-
-                    <hr className="border-gray-200 dark:border-[#2C3246]" />
-
-                    {/* Daftar Fitur / Checklist */}
                     <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
-                          Daftar Fitur / Benefit (Checklist)
-                        </label>
-                        <button
-                          type="button"
-                          onClick={() => handleAddFeature(activeTab)}
-                          className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-500 hover:text-orange-600 px-2 py-1 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors"
-                        >
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>Tambah Fitur</span>
-                        </button>
-                      </div>
-
-                      <div className="space-y-2">
-                        {pkg.features.map((feat, i) => (
-                          <div key={i} className="flex items-center gap-2">
-                            <Check className="w-4 h-4 text-orange-500 shrink-0" />
-                            <input
-                              type="text"
-                              value={feat}
-                              onChange={(e) =>
-                                handleUpdateFeature(activeTab, i, e.target.value)
-                              }
-                              placeholder="Ketik rincian fitur..."
-                              className="flex-1 bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:border-orange-500"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveFeature(activeTab, i)}
-                              className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors"
-                              title="Hapus fitur"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <hr className="border-gray-200 dark:border-[#2C3246]" />
-
-                    {/* Bundling E-Book Otomatis */}
-                    <div>
-                      <label className="block text-sm font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
-                        <Package className="w-4 h-4 text-orange-500" />
-                        <span>E-Book Bundling Otomatis (Database Unlock)</span>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                        Label Pita Atas / Highlight (Opsional)
                       </label>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                        Centang e-book yang akan otomatis dimiliki oleh pembeli setelah pembayaran berhasil.
-                      </p>
+                      <input
+                        type="text"
+                        value={currentPkg.highlightText || ""}
+                        onChange={(e) =>
+                          handleUpdateCurrentPkg("highlightText", e.target.value)
+                        }
+                        placeholder="Contoh: PALING WORTH / HEMAT 25%"
+                        className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+                      />
+                    </div>
+                  </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-56 overflow-y-auto p-1 border border-gray-100 dark:border-[#2C3246] rounded-xl">
-                        {products && products.length > 0 ? (
-                          products.map((p) => {
-                            const isBundled = (
-                              pkg.bundledProductIds || []
-                            ).includes(p.id);
+                  <div>
+                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                      Deskripsi Pendek
+                    </label>
+                    <input
+                      type="text"
+                      value={currentPkg.desc}
+                      onChange={(e) =>
+                        handleUpdateCurrentPkg("desc", e.target.value)
+                      }
+                      className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+                    />
+                  </div>
 
-                            return (
-                              <label
-                                key={p.id}
-                                className={`flex items-start gap-3 p-3 border rounded-xl cursor-pointer transition-all ${
-                                  isBundled
-                                    ? "border-orange-500/50 bg-orange-50/20 dark:bg-orange-500/5"
-                                    : "border-gray-200 dark:border-[#2C3246] hover:bg-gray-50 dark:hover:bg-white/5"
-                                }`}
-                              >
-                                <input
-                                  type="checkbox"
-                                  checked={isBundled}
-                                  onChange={() =>
-                                    handleToggleProduct(activeTab, p.id)
-                                  }
-                                  className="mt-0.5 rounded text-orange-500 focus:ring-orange-500 border-gray-300 dark:border-gray-700 bg-transparent w-4 h-4"
-                                />
-                                <div className="flex flex-col">
-                                  <span className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1 leading-tight">
-                                    {p.title}
-                                  </span>
-                                  <span className="text-[10px] text-gray-500 mt-0.5 font-medium">
-                                    {p.accessLevel}
-                                  </span>
-                                </div>
-                              </label>
-                            );
-                          })
-                        ) : (
-                          <div className="col-span-2 text-center py-4 text-xs text-gray-400">
-                            Tidak ada produk e-book yang tersedia.
-                          </div>
-                        )}
+                  {/* Harga, Durasi & Diskon */}
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                        Harga Jual (Rp)
+                      </label>
+                      <input
+                        type="number"
+                        value={currentPkg.price}
+                        onChange={(e) =>
+                          handleUpdateCurrentPkg(
+                            "price",
+                            parseInt(e.target.value) || 0
+                          )
+                        }
+                        className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                        Harga Coret (Rp)
+                      </label>
+                      <input
+                        type="number"
+                        value={currentPkg.originalPrice}
+                        onChange={(e) =>
+                          handleUpdateCurrentPkg(
+                            "originalPrice",
+                            parseInt(e.target.value) || 0
+                          )
+                        }
+                        className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                        Label Diskon
+                      </label>
+                      <input
+                        type="text"
+                        value={currentPkg.discountLabel || ""}
+                        onChange={(e) =>
+                          handleUpdateCurrentPkg("discountLabel", e.target.value)
+                        }
+                        placeholder="Misal: 95% OFF"
+                        className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                        Masa Aktif (Hari)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          value={currentPkg.durationDays ?? 30}
+                          onChange={(e) =>
+                            handleUpdateCurrentPkg(
+                              "durationDays",
+                              parseInt(e.target.value) || 0
+                            )
+                          }
+                          placeholder="0 = Lifetime"
+                          className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+                        />
+                        <span className="absolute right-3 top-2.5 text-[10px] text-gray-400 font-bold">
+                          {currentPkg.durationDays === 0
+                            ? "Lifetime"
+                            : `${currentPkg.durationDays} hari`}
+                        </span>
                       </div>
                     </div>
-                  </>
-                );
-              })()}
+                  </div>
+
+                  {/* Label Periode & Teks Sub-billing */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                        Label Periode Harga
+                      </label>
+                      <input
+                        type="text"
+                        value={currentPkg.periodLabel || ""}
+                        onChange={(e) =>
+                          handleUpdateCurrentPkg("periodLabel", e.target.value)
+                        }
+                        placeholder="Misal: Sekali Bayar, /bulan, /3 bulan, /tahun"
+                        className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">
+                        Teks Sub-billing Tambahan (Opsional)
+                      </label>
+                      <input
+                        type="text"
+                        value={currentPkg.subBillingText || ""}
+                        onChange={(e) =>
+                          handleUpdateCurrentPkg("subBillingText", e.target.value)
+                        }
+                        placeholder="Misal: Bayar Rp 199.000 / 3 bulan atau Hemat Rp 68.000"
+                        className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
+                      />
+                    </div>
+                  </div>
+
+                  <hr className="border-gray-200 dark:border-[#2C3246]" />
+
+                  {/* Checklist Fitur / Benefit */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+                        Daftar Fitur / Benefit (Checklist)
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleAddFeature}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-500 hover:text-orange-600 px-2 py-1 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors cursor-pointer"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Tambah Fitur</span>
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      {currentPkg.features.map((feat, i) => (
+                        <div key={i} className="flex items-center gap-2">
+                          <Check className="w-4 h-4 text-orange-500 shrink-0" />
+                          <input
+                            type="text"
+                            value={feat}
+                            onChange={(e) => handleUpdateFeature(i, e.target.value)}
+                            placeholder="Ketik rincian fitur..."
+                            className="flex-1 bg-gray-50 dark:bg-[#0A1128] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:border-orange-500"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFeature(i)}
+                            className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-xl transition-colors cursor-pointer"
+                            title="Hapus fitur"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <hr className="border-gray-200 dark:border-[#2C3246]" />
+
+                  {/* Bundling E-Book Otomatis */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                      <Package className="w-4 h-4 text-orange-500" />
+                      <span>E-Book Bundling Otomatis (Database Unlock)</span>
+                    </label>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                      Centang e-book yang akan otomatis dimiliki oleh member setelah pembayaran paket ini berhasil.
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-52 overflow-y-auto p-1 border border-gray-100 dark:border-[#2C3246] rounded-xl">
+                      {products && products.length > 0 ? (
+                        products.map((p) => {
+                          const isBundled = (
+                            currentPkg.bundledProductIds || []
+                          ).includes(p.id);
+
+                          return (
+                            <label
+                              key={p.id}
+                              className={`flex items-start gap-3 p-3 border rounded-xl cursor-pointer transition-all ${
+                                isBundled
+                                  ? "border-orange-500/50 bg-orange-50/20 dark:bg-orange-500/5"
+                                  : "border-gray-200 dark:border-[#2C3246] hover:bg-gray-50 dark:hover:bg-white/5"
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isBundled}
+                                onChange={() => handleToggleProduct(p.id)}
+                                className="mt-0.5 rounded text-orange-500 focus:ring-orange-500 border-gray-300 dark:border-gray-700 bg-transparent w-4 h-4"
+                              />
+                              <div className="flex flex-col">
+                                <span className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1 leading-tight">
+                                  {p.title}
+                                </span>
+                                <span className="text-[10px] text-gray-500 mt-0.5 font-medium">
+                                  {p.accessLevel}
+                                </span>
+                              </div>
+                            </label>
+                          );
+                        })
+                      ) : (
+                        <div className="col-span-2 text-center py-4 text-xs text-gray-400">
+                          Tidak ada produk e-book yang tersedia.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-center py-10 text-gray-400 text-sm">
+                  Belum ada paket di kategori ini. Silakan klik tombol{" "}
+                  <span className="font-bold text-orange-500">
+                    + Tambah Paket Baru
+                  </span>{" "}
+                  di atas.
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -479,7 +727,7 @@ export function PricingEditModal({
             type="button"
             onClick={onClose}
             disabled={saving}
-            className="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-[#1e2746] transition-colors"
+            className="px-5 py-2.5 rounded-xl font-bold text-xs sm:text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-[#1e2746] transition-colors cursor-pointer"
           >
             Batal
           </button>

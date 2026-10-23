@@ -15,6 +15,11 @@ import {
   Zap,
   Moon,
   Check,
+  BookOpen,
+  Wrench,
+  Bot,
+  Search,
+  Gem,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -22,7 +27,11 @@ import { useSession } from "next-auth/react";
 import { Suspense } from "react";
 import { HomeCardVisual } from "@/components/home/HomeCardVisuals";
 import { HomepageCardConfig, DEFAULT_HOMEPAGE_CARDS } from "@/lib/homepage-cards";
-import { mergePricingConfig } from "@/lib/pricing-packages";
+import {
+  mergePricingConfig,
+  PricingCategoryKey,
+  PRICING_CATEGORIES,
+} from "@/lib/pricing-packages";
 
 function HomeContent({
   initialPricingConfig,
@@ -43,6 +52,16 @@ function HomeContent({
   const promoText = pricingConfig.promoBanner?.text || "PROMO hingga 95%";
   const showPromo = pricingConfig.promoBanner?.show !== false;
   const cards = initialCards && initialCards.length > 0 ? initialCards : DEFAULT_HOMEPAGE_CARDS;
+  const [selectedPricingCategory, setSelectedPricingCategory] =
+    useState<PricingCategoryKey>("ebook");
+
+  const categoryIcons: Record<PricingCategoryKey, any> = {
+    ebook: BookOpen,
+    tools: Wrench,
+    automation: Bot,
+    riset: Search,
+    plus: Gem,
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -214,20 +233,53 @@ function HomeContent({
             Ambil kesempatan mumpung lagi diskon besar-besaran. Sekali bayar!
           </p>
 
-          {/* Dynamic Active Packages Grid */}
+          {/* Centered Segmented Control Tab Switcher (Gaya Pill Persis Gambar Referensi) */}
+          <div className="flex justify-center mb-6 max-w-full">
+            <div className="inline-flex items-center gap-1.5 p-1.5 rounded-2xl bg-gray-100/90 dark:bg-white/5 border border-gray-200 dark:border-white/10 shadow-inner overflow-x-auto max-w-full scrollbar-hide">
+              {PRICING_CATEGORIES.map((cat) => {
+                const Icon = categoryIcons[cat.id];
+                const isSelected = selectedPricingCategory === cat.id;
+                const activeCount = (pricingConfig.categoryOrder?.[cat.id] || [])
+                  .map((id) => pricingConfig.packages?.[id] || pricingConfig[id])
+                  .filter((p) => p && p.isActive !== false).length;
+
+                if (activeCount === 0) return null;
+
+                return (
+                  <button
+                    key={cat.id}
+                    type="button"
+                    onClick={() => setSelectedPricingCategory(cat.id)}
+                    className={`flex items-center gap-2 px-3.5 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                      isSelected
+                        ? "bg-[#f97316] text-white shadow-md shadow-orange-500/25 scale-[1.02]"
+                        : "text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-white/5"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4 shrink-0" />
+                    <span>{cat.label}</span>
+                    {cat.badge && (
+                      <span
+                        className={`text-[9px] px-1.5 py-0.2 rounded-full font-black uppercase ${
+                          isSelected
+                            ? "bg-white text-orange-600"
+                            : "bg-orange-500/20 text-orange-600 dark:text-orange-400"
+                        }`}
+                      >
+                        {cat.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Dynamic Active Packages Grid for Selected Category */}
           {(() => {
-            const activePackages = (pricingConfig.packageOrder || [
-              "PRO_BOOK",
-              "PRO_TOOLS",
-              "PRO_AUTOMATION",
-              "PRO_PLUS",
-            ])
-              .map((key) => ({
-                key,
-                type: key,
-                data: pricingConfig[key],
-              }))
-              .filter((item) => item.data && item.data.isActive !== false);
+            const activePackages = (pricingConfig.categoryOrder?.[selectedPricingCategory] || [])
+              .map((id) => pricingConfig.packages?.[id] || pricingConfig[id])
+              .filter((item) => item && item.isActive !== false);
 
             const gridCols =
               activePackages.length === 1
@@ -240,25 +292,23 @@ function HomeContent({
 
             return (
               <div className={`grid ${gridCols} gap-3.5 xl:gap-4 w-full text-left`}>
-                {activePackages.map((pkgItem) => {
-                  const pkgData = pkgItem.data;
-                  const isLengkap = pkgItem.key === "PRO_PLUS";
-                  const hasHighlight =
+                {activePackages.map((pkgData) => {
+                  const isSpecial =
                     pkgData.highlightText && pkgData.highlightText.trim() !== "";
                   const formatK = (p: number) =>
                     p >= 1000 ? p / 1000 + "k" : p.toString();
 
                   return (
                     <div
-                      key={pkgItem.key}
+                      key={pkgData.id}
                       className={`border rounded-2xl p-4.5 xl:p-5 flex flex-col justify-between relative transition-all duration-300 ${
-                        hasHighlight
+                        isSpecial
                           ? "border-2 border-orange-500 transform xl:-translate-y-1 bg-white dark:bg-[#141B31] shadow-xl shadow-orange-500/10"
                           : "bg-white border-2 border-gray-200 dark:bg-[#141B31] dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-orange-500/40"
                       }`}
                     >
                       <div>
-                        {hasHighlight && (
+                        {isSpecial && (
                           <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[9px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-widest whitespace-nowrap shadow-sm">
                             {pkgData.highlightText}
                           </div>
@@ -271,13 +321,18 @@ function HomeContent({
                           {pkgData.desc}
                         </p>
 
-                        <div className="flex items-baseline gap-2 mb-1">
+                        <div className="flex items-baseline gap-1 mb-0.5">
                           <span className="text-2xl xl:text-3xl font-black transition-colors duration-300 text-gray-900 dark:text-[#F3F4F6] leading-tight">
                             Rp {formatK(pkgData.price)}
                           </span>
+                          {pkgData.periodLabel && (
+                            <span className="text-xs text-gray-400 font-semibold">
+                              {pkgData.periodLabel}
+                            </span>
+                          )}
                         </div>
 
-                        <div className="flex items-center gap-2 mb-3">
+                        <div className="flex items-center gap-2 mb-1">
                           <span className="text-xs transition-colors duration-300 text-gray-400 dark:text-[#9CA3AF]/60">
                             Total <span className="line-through">Rp {pkgData.originalPrice?.toLocaleString("id-ID")}</span>
                           </span>
@@ -288,16 +343,18 @@ function HomeContent({
                           )}
                         </div>
 
+                        {pkgData.subBillingText && (
+                          <p className="text-[11px] text-orange-600 dark:text-orange-400 font-semibold mb-2">
+                            {pkgData.subBillingText}
+                          </p>
+                        )}
+
                         <div className="mt-3">
                           <ul className="space-y-2 xl:space-y-2.5 text-xs xl:text-[13px] transition-colors duration-300 text-gray-700 dark:text-[#D1D5DB]">
                             {pkgData.features.map((f: string, i: number) => (
                               <li
                                 key={i}
-                                className={`flex gap-2 items-start leading-snug ${
-                                  isLengkap && i === 0
-                                    ? "font-bold text-gray-900 dark:text-white"
-                                    : ""
-                                }`}
+                                className="flex gap-2 items-start leading-snug"
                               >
                                 <Check className="w-4 h-4 text-orange-500 shrink-0 mt-0.5" />
                                 <span className="line-clamp-2">{f}</span>
@@ -311,38 +368,30 @@ function HomeContent({
                         prefetch={true}
                         href={
                           isLoggedIn
-                            ? `/checkout?type=${pkgItem.type}`
-                            : `/login?redirect=/checkout?type=${pkgItem.type}`
+                            ? `/checkout?type=${pkgData.id}`
+                            : `/login?redirect=/checkout?type=${pkgData.id}`
                         }
                         onMouseEnter={() => {
                           if (isLoggedIn)
                             preload(
-                              ["checkout", pkgItem.type, undefined],
-                              () => getCheckoutDetailsAction(pkgItem.type, undefined)
+                              ["checkout", pkgData.id, undefined],
+                              () => getCheckoutDetailsAction(pkgData.id, undefined)
                             );
                         }}
                         onTouchStart={() => {
                           if (isLoggedIn)
                             preload(
-                              ["checkout", pkgItem.type, undefined],
-                              () => getCheckoutDetailsAction(pkgItem.type, undefined)
+                              ["checkout", pkgData.id, undefined],
+                              () => getCheckoutDetailsAction(pkgData.id, undefined)
                             );
                         }}
                         className={`w-full mt-4 xl:mt-5 block text-center font-bold text-xs xl:text-sm py-3 rounded-xl transition-all ${
-                          hasHighlight
+                          isSpecial
                             ? "bg-orange-500 text-white font-bold hover:bg-orange-600 shadow-[0_0_20px_rgba(249,115,22,0.25)]"
                             : "bg-gray-900 hover:bg-orange-500 hover:text-white text-white dark:bg-[#2C3246] dark:hover:bg-orange-500 dark:hover:text-white dark:text-white"
                         }`}
                       >
-                        {pkgData.name.includes("Basic") ||
-                        pkgData.name.includes("Book") ||
-                        pkgData.name.includes("Ebook")
-                          ? "Pilih Paket Ebook"
-                          : pkgData.name.includes("Auto")
-                          ? "Pilih Paket Automation"
-                          : pkgData.name.includes("Tools")
-                          ? "Pilih Sistem Tools"
-                          : "Pilih Paket Lengkap"}
+                        Pilih {pkgData.name}
                       </Link>
                     </div>
                   );

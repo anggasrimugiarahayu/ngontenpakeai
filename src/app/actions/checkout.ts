@@ -1,6 +1,7 @@
 "use server";
 
 import { auth } from "@/auth";
+import { mergePricingConfig } from "@/lib/pricing-packages";
 import prisma from "@/lib/prisma";
 import { verifyPayment } from "@/app/actions/payment";
 import { revalidatePath, revalidateTag } from "next/cache";
@@ -81,36 +82,26 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     itemName = product.title;
     itemDescription = product.description || "Akses selamanya untuk produk ini.";
     productImage = (product as any).coverUrl || "";
-  } else if (type === "PRO_BOOK" || type === "PRO_TOOLS" || type === "PRO_AUTOMATION" || type === "PRO_PLUS") {
-    const setting = await prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
-    const pricingConfig = setting?.value ? JSON.parse(setting.value) : null;
-
-    if (pricingConfig && pricingConfig[type]) {
-      baseAmount = pricingConfig[type].price;
-      itemName = pricingConfig[type].name;
-      itemDescription = pricingConfig[type].desc;
-      bundledIds = pricingConfig[type].bundledProductIds || [];
-      switch(type) {
-        case "PRO_BOOK": productImage = "/img_paket/paket_ebook.png"; break;
-        case "PRO_TOOLS": productImage = "/img_paket/paket_tools.png"; break;
-        case "PRO_AUTOMATION": productImage = "/img_paket/paket_tools.png"; break;
-        case "PRO_PLUS": productImage = "/img_paket/paket_lengkap.png"; break;
-      }
-    } else {
-
-      // Fallback defaults
-      if (type === "PRO_BOOK") {
-        baseAmount = 99000; itemName = "Paket PRO BOOK"; itemDescription = "Cocok buat yang mau fokus belajar teori faceless creator.";
-      } else if (type === "PRO_TOOLS") {
-        baseAmount = 99000; itemName = "Paket Sistem Tools"; itemDescription = "Cocok buat yang butuh bantuan AI untuk eksekusi ngonten.";
-      } else if (type === "PRO_AUTOMATION") {
-        baseAmount = 99000; itemName = "Paket Pro Automation"; itemDescription = "Otomatisasi balasan komentar pintar dan auto-DM Instagram 24/7.";
-      } else if (type === "PRO_PLUS") {
-        baseAmount = 149000; itemName = "Paket Lengkap (Ebook)"; itemDescription = "Bonus terbanyak, akses jualan (PLR) dan Lifetime support.";
-      }
-    }
   } else {
-    return { badRequest: true, redirect: "/" };
+    // Dynamic lookup for any package in PRICING_PACKAGES
+    const setting = await prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
+    const pricingConfig = mergePricingConfig(setting?.value ? JSON.parse(setting.value) : null);
+    const targetPkg = pricingConfig[type] || pricingConfig.packages?.[type];
+
+    if (targetPkg) {
+      baseAmount = targetPkg.price;
+      itemName = targetPkg.name;
+      itemDescription = targetPkg.desc || "Akses paket langganan Ngonten Pakai AI.";
+      bundledIds = targetPkg.bundledProductIds || [];
+      const cat = targetPkg.category;
+      if (type.includes("BOOK") || cat === "ebook") productImage = "/img_paket/paket_ebook.png";
+      else if (type.includes("TOOLS") || cat === "tools") productImage = "/img_paket/paket_tools.png";
+      else if (type.includes("AUTO") || cat === "automation") productImage = "/img_paket/paket_tools.png";
+      else if (type.includes("RISET") || cat === "riset") productImage = "/img_paket/paket_tools.png";
+      else productImage = "/img_paket/paket_lengkap.png";
+    } else {
+      return { badRequest: true, redirect: "/" };
+    }
   }
 
   const isProduction = process.env.NODE_ENV === "production" && process.env.MIDTRANS_IS_PRODUCTION === "true";

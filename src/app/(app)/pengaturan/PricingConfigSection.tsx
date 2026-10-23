@@ -10,10 +10,18 @@ import {
   Eye,
   EyeOff,
   Check,
+  Plus,
+  BookOpen,
+  Wrench,
+  Bot,
+  Search,
+  Gem,
 } from "lucide-react";
 import { saveAppSetting } from "@/app/actions/adminSettings";
 import {
   PricingPackagesConfig,
+  PricingCategoryKey,
+  PRICING_CATEGORIES,
   mergePricingConfig,
 } from "@/lib/pricing-packages";
 import { PricingEditModal } from "./PricingEditModal";
@@ -27,6 +35,8 @@ export function PricingConfigSection({
 }) {
   const router = useRouter();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedCategory, setSelectedCategory] =
+    useState<PricingCategoryKey>("ebook");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
 
   // Drag and drop state
@@ -69,16 +79,22 @@ export function PricingConfigSection({
 
   const handleToggleActive = async (pkgKey: string) => {
     setOpenMenuId(null);
-    const targetPkg = config[pkgKey];
+    const targetPkg = config.packages?.[pkgKey] || config[pkgKey];
     if (!targetPkg) return;
 
     const newStatus = targetPkg.isActive === false;
+    const updatedPkg = {
+      ...targetPkg,
+      isActive: newStatus,
+    };
+
     const updatedConfig: PricingPackagesConfig = {
       ...config,
-      [pkgKey]: {
-        ...targetPkg,
-        isActive: newStatus,
+      packages: {
+        ...config.packages,
+        [pkgKey]: updatedPkg,
       },
+      [pkgKey]: updatedPkg,
     };
 
     setConfig(updatedConfig);
@@ -87,7 +103,9 @@ export function PricingConfigSection({
       if (newStatus) {
         toast.success(`Paket ${targetPkg.name} berhasil diaktifkan!`);
       } else {
-        toast.success(`Paket ${targetPkg.name} dinonaktifkan (disembunyikan dari beranda).`);
+        toast.success(
+          `Paket ${targetPkg.name} dinonaktifkan (disembunyikan dari beranda).`
+        );
       }
     }
   };
@@ -99,16 +117,19 @@ export function PricingConfigSection({
       return;
     }
 
-    const newOrder = [...config.packageOrder];
-    const [movedItem] = newOrder.splice(draggedIdx, 1);
-    newOrder.splice(dropIndex, 0, movedItem);
+    const currentOrder = [...(config.categoryOrder?.[selectedCategory] || [])];
+    const [movedItem] = currentOrder.splice(draggedIdx, 1);
+    currentOrder.splice(dropIndex, 0, movedItem);
 
     setDraggedIdx(null);
     setDragOverIdx(null);
 
     const updatedConfig: PricingPackagesConfig = {
       ...config,
-      packageOrder: newOrder,
+      categoryOrder: {
+        ...config.categoryOrder,
+        [selectedCategory]: currentOrder,
+      },
     };
 
     setConfig(updatedConfig);
@@ -125,20 +146,30 @@ export function PricingConfigSection({
     }
   };
 
-  const activeCount = config.packageOrder.filter(
-    (key) => config[key]?.isActive !== false
+  const categoryIcons: Record<PricingCategoryKey, any> = {
+    ebook: BookOpen,
+    tools: Wrench,
+    automation: Bot,
+    riset: Search,
+    plus: Gem,
+  };
+
+  const currentCategoryPackageIds =
+    config.categoryOrder?.[selectedCategory] || [];
+  const activeCountInCurrentCat = currentCategoryPackageIds.filter(
+    (id) => (config.packages?.[id] || config[id])?.isActive !== false
   ).length;
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
-      {/* 1. HEADER CARD (METODE PERSIS SEPERTI HOMEPAGE & RUANG BELAJAR) */}
+      {/* 1. HEADER CARD MANAJEMEN */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31] shadow-xs">
         <div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
             Manajemen Pricing Paket
           </h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Kelola pricing paket, promo, urutan posisi, dan aktifkan atau nonaktifkan paket langganan.
+            Kelola kategori (E-Book, Tools, Automation, Riset, Paket Plus), atur durasi, harga diskon, dan urutan paket.
           </p>
         </div>
 
@@ -156,7 +187,7 @@ export function PricingConfigSection({
       </div>
 
       {/* 2. LIVE PREVIEW SECTION */}
-      <div className="space-y-4">
+      <div className="space-y-5">
         <div className="flex items-center justify-between px-1">
           <div className="flex items-center gap-2">
             <div className="w-2 h-6 bg-rn-accent rounded-full"></div>
@@ -165,204 +196,275 @@ export function PricingConfigSection({
             </h2>
           </div>
           <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-            {activeCount} dari {config.packageOrder.length} Aktif
+            {activeCountInCurrentCat} dari {currentCategoryPackageIds.length} Aktif
           </span>
         </div>
 
-        {/* DRAGGABLE CARDS GRID */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-          {config.packageOrder.map((pkgKey, index) => {
-            const pkg = config[pkgKey];
-            if (!pkg) return null;
+        {/* TAB SWITCHER KATEGORI (GAYA PILL PERSIS TAMPILAN REFERENSI) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-gray-100/70 dark:bg-[#0A1128]/80 rounded-2xl border border-gray-200 dark:border-[#2C3246]">
+          <div className="inline-flex items-center gap-1 overflow-x-auto p-1 scrollbar-hide w-full sm:w-auto">
+            {PRICING_CATEGORIES.map((cat) => {
+              const Icon = categoryIcons[cat.id];
+              const isSelected = selectedCategory === cat.id;
+              const count = (config.categoryOrder?.[cat.id] || []).length;
 
-            const isMenuOpen = openMenuId === pkgKey;
-            const isSpecial = pkg.highlightText && pkg.highlightText.trim().length > 0;
-            const isActive = pkg.isActive !== false;
-
-            return (
-              <div
-                key={pkgKey}
-                draggable
-                onDragStart={(e) => {
-                  setDraggedIdx(index);
-                  e.dataTransfer.effectAllowed = "move";
-                  e.dataTransfer.setData("text/plain", pkgKey);
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.dataTransfer.dropEffect = "move";
-                  if (dragOverIdx !== index) {
-                    setDragOverIdx(index);
-                  }
-                }}
-                onDragLeave={() => {
-                  if (dragOverIdx === index) {
-                    setDragOverIdx(null);
-                  }
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  handleDrop(index);
-                }}
-                onDragEnd={() => {
-                  setDraggedIdx(null);
-                  setDragOverIdx(null);
-                }}
-                className={`group relative flex flex-col justify-between rounded-2xl border-2 p-5 text-left transition-all duration-150 z-0 overflow-visible select-none cursor-grab active:cursor-grabbing ${
-                  draggedIdx === index
-                    ? "opacity-30 scale-95 border-dashed border-orange-500 ring-2 ring-orange-500/30"
-                    : ""
-                } ${
-                  dragOverIdx === index && draggedIdx !== index
-                    ? "ring-2 ring-orange-500 shadow-2xl border-orange-500 scale-[1.02]"
-                    : ""
-                } ${
-                  isActive
-                    ? isSpecial
-                      ? "border-orange-500 bg-white dark:bg-[#141B31] shadow-lg hover:shadow-xl hover:-translate-y-0.5"
-                      : "border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] shadow-sm hover:border-gray-300 dark:hover:border-[#3E4766] hover:shadow-md hover:-translate-y-0.5"
-                    : "opacity-50 grayscale-[40%] bg-gray-50/80 dark:bg-[#141B31]/50 border-dashed border-gray-300 dark:border-[#2C3246]"
-                }`}
-              >
-                {/* Ribbon Highlight Pita Atas */}
-                {isSpecial && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[9px] font-black uppercase px-3 py-0.5 rounded-full tracking-widest border-[3px] border-white dark:border-[#141B31] whitespace-nowrap shadow-sm z-10 pointer-events-none">
-                    {pkg.highlightText}
-                  </div>
-                )}
-
-                {/* Pojok Kanan Atas: Titik Tiga (⋮) untuk Enable/Disable */}
-                <div
-                  className="absolute top-3 right-3 z-20"
-                  onMouseDown={(e) => e.stopPropagation()}
+              return (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat.id)}
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                    isSelected
+                      ? "bg-white dark:bg-[#141B31] text-orange-500 dark:text-orange-400 shadow-sm border border-gray-200 dark:border-orange-500/30"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                  }`}
                 >
-                  <button
-                    type="button"
-                    onClick={() => setOpenMenuId(isMenuOpen ? null : pkgKey)}
-                    className={`p-1.5 rounded-lg border transition-colors shadow-2xs ${
-                      isActive
-                        ? "bg-white/90 dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] text-gray-600 dark:text-gray-300 hover:text-orange-500 hover:border-orange-500"
-                        : "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20"
-                    }`}
-                    title="Pengaturan Enable / Disable Paket"
-                  >
-                    <MoreVertical size={15} />
-                  </button>
-
-                  {/* Dropdown Menu Titik Tiga */}
-                  {isMenuOpen && (
-                    <>
-                      <div
-                        className="fixed inset-0 z-30"
-                        onClick={() => setOpenMenuId(null)}
-                      />
-                      <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] p-2 z-40 text-xs animate-in fade-in zoom-in-95 duration-150">
-                        <div className="px-2.5 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-[#2C3246] mb-1 flex items-center justify-between">
-                          <span>Status Paket</span>
-                          <span
-                            className={`w-2 h-2 rounded-full ${
-                              isActive ? "bg-emerald-500" : "bg-gray-400"
-                            }`}
-                          />
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => handleToggleActive(pkgKey)}
-                          className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl font-bold transition-colors text-left cursor-pointer ${
-                            isActive
-                              ? "hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-700 dark:text-gray-200 hover:text-red-600 dark:hover:text-red-400"
-                              : "hover:bg-emerald-50 dark:hover:bg-emerald-500/10 text-gray-700 dark:text-gray-200 hover:text-emerald-600 dark:hover:text-emerald-400"
-                          }`}
-                        >
-                          <span className="flex items-center gap-2">
-                            {isActive ? (
-                              <EyeOff size={14} className="text-red-500" />
-                            ) : (
-                              <Eye size={14} className="text-emerald-500" />
-                            )}
-                            {isActive ? "Nonaktifkan Paket" : "Aktifkan Paket"}
-                          </span>
-                        </button>
-                      </div>
-                    </>
+                  <Icon className="w-4 h-4 shrink-0" />
+                  <span>{cat.label}</span>
+                  {cat.badge && (
+                    <span className="text-[9px] px-1.5 py-0.2 rounded-full font-black uppercase bg-orange-500/15 text-orange-600 dark:text-orange-400">
+                      {cat.badge}
+                    </span>
                   )}
-                </div>
+                  <span className="text-[10px] font-mono text-gray-400">
+                    ({count})
+                  </span>
+                </button>
+              );
+            })}
+          </div>
 
-                {/* Konten Card Atas */}
-                <div>
-                  <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-1 leading-tight pr-8">
-                    {pkg.name}
-                  </h3>
-                  <p className="text-gray-500 dark:text-gray-400 text-[11px] mb-3 leading-relaxed line-clamp-2">
-                    {pkg.desc}
-                  </p>
-
-                  <div className="text-gray-900 dark:text-white font-black text-2xl mb-0.5 tracking-tight">
-                    Rp {formatK(pkg.price)}
-                  </div>
-                  <div className="text-gray-400 text-[11px] font-medium mb-1.5 line-through">
-                    Total Rp {pkg.originalPrice?.toLocaleString("id-ID")}
-                  </div>
-                  {pkg.discountLabel && (
-                    <div className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-500 border border-red-200 dark:border-red-500/20 text-[9px] font-black px-1.5 py-0.5 rounded w-max mb-4 tracking-wider">
-                      {pkg.discountLabel}
-                    </div>
-                  )}
-
-                  {/* Checklist Fitur */}
-                  <ul className="space-y-2 mb-5">
-                    {pkg.features.map((feat: string, i: number) => (
-                      <li
-                        key={i}
-                        className="flex items-start gap-2 text-[11px] text-gray-700 dark:text-gray-300 font-medium"
-                      >
-                        <Check className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
-                        <span className="leading-snug">{feat}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                {/* Bagian Bawah: Tombol Preview */}
-                <div>
-                  <button
-                    type="button"
-                    tabIndex={-1}
-                    className={`w-full py-2.5 rounded-xl font-black text-xs transition-all pointer-events-none ${
-                      isSpecial
-                        ? "bg-[#f97316] text-white shadow-sm shadow-orange-500/20"
-                        : "bg-white border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:border-[#2C3246] dark:text-gray-200"
-                    }`}
-                  >
-                    {pkg.name.includes("Basic") ||
-                    pkg.name.includes("Book") ||
-                    pkg.name.includes("Ebook")
-                      ? "Pilih Paket Ebook"
-                      : pkg.name.includes("Auto")
-                      ? "Pilih Paket Automation"
-                      : pkg.name.includes("Tools")
-                      ? "Pilih Sistem Tools"
-                      : "Pilih Paket Lengkap"}
-                  </button>
-
-                  {!isActive && (
-                    <div className="mt-2 text-center text-[10px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-[#0A1128] py-1 px-2 rounded-lg border border-dashed border-gray-200 dark:border-[#2C3246]">
-                      Nonaktif (Dihilangkan dari Beranda)
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+          {/* Quick Button to Add Package to Selected Category */}
+          <button
+            type="button"
+            onClick={() => setIsEditModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-xl text-xs font-bold transition-colors cursor-pointer shrink-0 self-end sm:self-center"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Tambah Paket {PRICING_CATEGORIES.find((c) => c.id === selectedCategory)?.label}</span>
+          </button>
         </div>
+
+        {/* CARDS GRID */}
+        {currentCategoryPackageIds.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 w-full">
+            {currentCategoryPackageIds.map((pkgKey, index) => {
+              const pkg = config.packages?.[pkgKey] || config[pkgKey];
+              if (!pkg) return null;
+
+              const isMenuOpen = openMenuId === pkgKey;
+              const isSpecial =
+                pkg.highlightText && pkg.highlightText.trim().length > 0;
+              const isActive = pkg.isActive !== false;
+
+              return (
+                <div
+                  key={pkgKey}
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedIdx(index);
+                    e.dataTransfer.effectAllowed = "move";
+                    e.dataTransfer.setData("text/plain", pkgKey);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    if (dragOverIdx !== index) {
+                      setDragOverIdx(index);
+                    }
+                  }}
+                  onDragLeave={() => {
+                    if (dragOverIdx === index) {
+                      setDragOverIdx(null);
+                    }
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    handleDrop(index);
+                  }}
+                  onDragEnd={() => {
+                    setDraggedIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  className={`group relative flex flex-col justify-between rounded-2xl border-2 p-5 text-left transition-all duration-150 z-0 overflow-visible select-none cursor-grab active:cursor-grabbing ${
+                    draggedIdx === index
+                      ? "opacity-30 scale-95 border-dashed border-orange-500 ring-2 ring-orange-500/30"
+                      : ""
+                  } ${
+                    dragOverIdx === index && draggedIdx !== index
+                      ? "ring-2 ring-orange-500 shadow-2xl border-orange-500 scale-[1.02]"
+                      : ""
+                  } ${
+                    isActive
+                      ? isSpecial
+                        ? "border-orange-500 bg-white dark:bg-[#141B31] shadow-lg hover:shadow-xl hover:-translate-y-0.5"
+                        : "border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] shadow-sm hover:border-gray-300 dark:hover:border-[#3E4766] hover:shadow-md hover:-translate-y-0.5"
+                      : "opacity-50 grayscale-[40%] bg-gray-50/80 dark:bg-[#141B31]/50 border-dashed border-gray-300 dark:border-[#2C3246]"
+                  }`}
+                >
+                  {/* Ribbon Highlight Pita Atas */}
+                  {isSpecial && (
+                    <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[9px] font-black uppercase px-3 py-0.5 rounded-full tracking-widest border-[3px] border-white dark:border-[#141B31] whitespace-nowrap shadow-sm z-10 pointer-events-none">
+                      {pkg.highlightText}
+                    </div>
+                  )}
+
+                  {/* Pojok Kanan Atas: Titik Tiga (⋮) untuk Enable/Disable */}
+                  <div
+                    className="absolute top-3 right-3 z-20"
+                    onMouseDown={(e) => e.stopPropagation()}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setOpenMenuId(isMenuOpen ? null : pkgKey)}
+                      className={`p-1.5 rounded-lg border transition-colors shadow-2xs ${
+                        isActive
+                          ? "bg-white/90 dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] text-gray-600 dark:text-gray-300 hover:text-orange-500 hover:border-orange-500"
+                          : "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20"
+                      }`}
+                      title="Pengaturan Enable / Disable Paket"
+                    >
+                      <MoreVertical size={15} />
+                    </button>
+
+                    {/* Dropdown Menu Titik Tiga */}
+                    {isMenuOpen && (
+                      <>
+                        <div
+                          className="fixed inset-0 z-30"
+                          onClick={() => setOpenMenuId(null)}
+                        />
+                        <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] p-2 z-40 text-xs animate-in fade-in zoom-in-95 duration-150">
+                          <div className="px-2.5 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-[#2C3246] mb-1 flex items-center justify-between">
+                            <span>Status Paket</span>
+                            <span
+                              className={`w-2 h-2 rounded-full ${
+                                isActive ? "bg-emerald-500" : "bg-gray-400"
+                              }`}
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleActive(pkgKey)}
+                            className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl font-bold transition-colors text-left cursor-pointer ${
+                              isActive
+                                ? "hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-700 dark:text-gray-200 hover:text-red-600 dark:hover:text-red-400"
+                                : "hover:bg-emerald-50 dark:hover:bg-emerald-500/10 text-gray-700 dark:text-gray-200 hover:text-emerald-600 dark:hover:text-emerald-400"
+                            }`}
+                          >
+                            <span className="flex items-center gap-2">
+                              {isActive ? (
+                                <EyeOff size={14} className="text-red-500" />
+                              ) : (
+                                <Eye size={14} className="text-emerald-500" />
+                              )}
+                              {isActive ? "Nonaktifkan Paket" : "Aktifkan Paket"}
+                            </span>
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Konten Card Atas */}
+                  <div>
+                    <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-1 leading-tight pr-8">
+                      {pkg.name}
+                    </h3>
+                    <p className="text-gray-500 dark:text-gray-400 text-[11px] mb-3 leading-relaxed line-clamp-2">
+                      {pkg.desc}
+                    </p>
+
+                    <div className="flex items-baseline gap-1 mb-0.5">
+                      <span className="text-gray-900 dark:text-white font-black text-2xl tracking-tight">
+                        Rp {formatK(pkg.price)}
+                      </span>
+                      {pkg.periodLabel && (
+                        <span className="text-xs text-gray-400 font-semibold">
+                          {pkg.periodLabel}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-gray-400 text-[11px] font-medium line-through">
+                        Total Rp {pkg.originalPrice?.toLocaleString("id-ID")}
+                      </span>
+                      {pkg.discountLabel && (
+                        <span className="bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-500 border border-red-200 dark:border-red-500/20 text-[9px] font-black px-1.5 py-0.2 rounded tracking-wider">
+                          {pkg.discountLabel}
+                        </span>
+                      )}
+                    </div>
+
+                    {pkg.subBillingText && (
+                      <p className="text-[11px] text-orange-600 dark:text-orange-400 font-semibold mb-3">
+                        {pkg.subBillingText}
+                      </p>
+                    )}
+
+                    {/* Checklist Fitur */}
+                    <ul className="space-y-2 mb-5 mt-3">
+                      {pkg.features.map((feat: string, i: number) => (
+                        <li
+                          key={i}
+                          className="flex items-start gap-2 text-[11px] text-gray-700 dark:text-gray-300 font-medium"
+                        >
+                          <Check className="w-3.5 h-3.5 text-orange-500 shrink-0 mt-0.5" />
+                          <span className="leading-snug">{feat}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Bagian Bawah: Tombol Preview */}
+                  <div>
+                    <button
+                      type="button"
+                      tabIndex={-1}
+                      className={`w-full py-2.5 rounded-xl font-black text-xs transition-all pointer-events-none ${
+                        isSpecial
+                          ? "bg-[#f97316] text-white shadow-sm shadow-orange-500/20"
+                          : "bg-white border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:border-[#2C3246] dark:text-gray-200"
+                      }`}
+                    >
+                      Pilih {pkg.name}
+                    </button>
+
+                    {!isActive && (
+                      <div className="mt-2 text-center text-[10px] font-semibold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-[#0A1128] py-1 px-2 rounded-lg border border-dashed border-gray-200 dark:border-[#2C3246]">
+                        Nonaktif (Dihilangkan dari Beranda)
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <div className="text-center py-12 border-2 border-dashed border-gray-200 dark:border-[#2C3246] rounded-2xl p-6">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
+              Belum ada paket yang terdaftar di kategori ini.
+            </p>
+            <button
+              type="button"
+              onClick={() => setIsEditModalOpen(true)}
+              className="inline-flex items-center gap-1.5 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-sm shadow-orange-500/20"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Tambah Paket Baru</span>
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* 3. MODAL EDIT MULTI-TAB (PROMO & 4 PAKET) */}
+      {/* 3. MODAL EDIT TERPUSAT */}
       <PricingEditModal
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         config={config}
         products={products}
+        initialCategory={selectedCategory}
         onSave={handleSaveModal}
       />
     </div>
