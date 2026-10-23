@@ -29,11 +29,6 @@ export default function CheckoutWrapperClient() {
     );
   }
 
-  if (data.notAuthorized) {
-    router.replace(`/login?redirect=/checkout?type=${type}${productId ? `&productId=${productId}` : ''}`);
-    return null;
-  }
-
   if (data.badRequest) {
     router.replace(data.redirect || "/");
     return null;
@@ -53,6 +48,7 @@ export default function CheckoutWrapperClient() {
           initialName={data.initialName || ""}
           initialEmail={data.initialEmail || ""}
           initialPhone={data.initialPhone || ""}
+          isLoggedIn={Boolean(data.isLoggedIn)}
           productImage={data.productImage}
           existingPendingOrder={data.existingPendingOrder}
           availableAddons={data.availableAddons || []}

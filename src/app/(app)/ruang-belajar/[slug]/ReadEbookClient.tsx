@@ -219,7 +219,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                                </Link>
                                {isProEbook && (
                                  <Link 
-                                   href="/?pricing=true" 
+                                   href="/?pricing=true&cat=ebook" 
                                    className="w-full flex items-center justify-center gap-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 px-6 py-3.5 rounded-xl font-bold transition-all border border-orange-200 dark:border-orange-500/20"
                                  >
                                    <Crown className="w-5 h-5" /> Beli Paket E-Book (Akses Semua E-book PRO)

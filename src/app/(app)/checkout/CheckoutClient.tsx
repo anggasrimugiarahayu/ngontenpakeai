@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect } from "react";
 import Script from "next/script";
+import { useSession } from "next-auth/react";
 import { createCheckoutToken, verifyPayment, cancelPayment } from "@/app/actions/payment";
 import { validatePromoCodeAction } from "@/app/actions/checkout";
 import { useRouter } from "next/navigation";
@@ -25,6 +26,7 @@ interface CheckoutClientProps {
   initialName: string;
   initialEmail: string;
   initialPhone: string;
+  isLoggedIn?: boolean;
   productImage?: string;
   existingPendingOrder?: { token: string | null; orderId: string; expiryTime: string; paymentMethodKey: string } | null;
   availableAddons?: CheckoutAddonItem[];
@@ -42,12 +44,15 @@ export default function CheckoutClient({
   initialName,
   initialEmail,
   initialPhone,
+  isLoggedIn = false,
   productImage,
   existingPendingOrder,
   availableAddons = [],
   includedAddons = [],
 }: CheckoutClientProps) {
   const router = useRouter();
+  const { data: session } = useSession();
+  const userIsLoggedIn = isLoggedIn || Boolean(session?.user?.id);
   const [loading, setLoading] = useState(false);
   const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "success" | "pending" | "error">(existingPendingOrder ? "pending" : "idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -78,6 +83,35 @@ export default function CheckoutClient({
   const [customerName, setCustomerName] = useState(initialName);
   const [customerEmail, setCustomerEmail] = useState(initialEmail);
   const [customerPhone, setCustomerPhone] = useState(initialPhone);
+
+  // Restore any draft saved when an unauthenticated guest was redirected to login
+  useEffect(() => {
+    try {
+      const saved = sessionStorage.getItem("guest_checkout_draft");
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.customerName) setCustomerName(parsed.customerName);
+        if (parsed.customerEmail) setCustomerEmail(parsed.customerEmail);
+        if (parsed.customerPhone) setCustomerPhone(parsed.customerPhone);
+        if (parsed.selectedMethod) setSelectedMethod(parsed.selectedMethod);
+        if (Array.isArray(parsed.selectedAddons) && parsed.selectedAddons.length > 0) {
+          setSelectedAddons(parsed.selectedAddons);
+        }
+        if (parsed.agreeToTerms) setAgreeToTerms(true);
+        if (parsed.agreeToMarketing) setAgreeToMarketing(true);
+        if (parsed.voucherCode) setPromoCodeInput(parsed.voucherCode);
+        sessionStorage.removeItem("guest_checkout_draft");
+      }
+    } catch (e) {
+      console.error("Failed to restore checkout draft", e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (initialName && !customerName) setCustomerName(initialName);
+    if (initialEmail && !customerEmail) setCustomerEmail(initialEmail);
+    if (initialPhone && !customerPhone) setCustomerPhone(initialPhone);
+  }, [initialName, initialEmail, initialPhone]);
 
   const [agreeToTerms, setAgreeToTerms] = useState(false);
   const [agreeToMarketing, setAgreeToMarketing] = useState(false);
@@ -273,6 +307,30 @@ export default function CheckoutClient({
   const handlePay = async () => {
     if (!customerName || !customerEmail || !customerPhone) return setErrorMessage("Mohon lengkapi Email, Nama, dan Phone Number Anda.");
     if (!agreeToTerms || !agreeToMarketing) return setErrorMessage("Anda harus menyetujui kedua persyaratan di atas untuk melanjutkan.");
+
+    // If user is not logged in, save draft to sessionStorage and redirect to login
+    if (!userIsLoggedIn) {
+      if (typeof window !== "undefined") {
+        const draft = {
+          customerName,
+          customerEmail,
+          customerPhone,
+          selectedMethod,
+          selectedAddons,
+          voucherCode: appliedVoucher?.code || promoCodeInput || undefined,
+          agreeToTerms,
+          agreeToMarketing,
+        };
+        try {
+          sessionStorage.setItem("guest_checkout_draft", JSON.stringify(draft));
+        } catch (e) {
+          console.error("Failed to save checkout draft", e);
+        }
+        const currentPath = window.location.pathname + window.location.search;
+        window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
+      }
+      return;
+    }
 
     setLoading(true);
     setErrorMessage("");

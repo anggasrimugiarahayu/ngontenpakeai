@@ -13,12 +13,6 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
   const session = await auth();
   const isLoggedIn = !!session?.user;
 
-  // Intercept item-level clicks if not logged in
-  if (params?.slug && params.slug.length > 0 && !isLoggedIn) {
-    const slugPath = params.slug.join('/');
-    redirect(`/login?redirect=/ruang-ngonten/${slugPath}`);
-  }
-
   let hasBlueprint = false;
   if (session?.user?.id) {
     hasBlueprint = await getCachedHasBlueprint(session.user.id);
@@ -34,8 +28,8 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
     isPro = hasTools || dbUser?.role === "ADMIN";
   }
 
-  // Intercept direct URL access if accessing a pro-only tool while not Pro
-  if (params?.slug && params.slug.length > 0 && !isPro) {
+  // Intercept direct URL access
+  if (params?.slug && params.slug.length > 0) {
     const currentSlug = params.slug[0];
     const matchingFeature = dbFeatures.find((f: any) => {
       const slugName = f.name.toLowerCase().replace(/\s+/g, '-');
@@ -53,8 +47,13 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
     });
 
     const isProOnly = matchingFeature ? matchingFeature.isProOnly : false;
-    if (isProOnly) {
-      redirect("/?pricing=true");
+    if (isProOnly && !isPro) {
+      redirect("/?pricing=true&cat=tools");
+    }
+
+    if (!isLoggedIn) {
+      const slugPath = params.slug.join('/');
+      redirect(`/login?redirect=/ruang-ngonten/${slugPath}`);
     }
   }
 

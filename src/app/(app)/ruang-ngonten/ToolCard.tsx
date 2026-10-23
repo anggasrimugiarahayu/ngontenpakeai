@@ -33,7 +33,11 @@ export default function ToolCard({
     if (!isLoggedIn) {
       e.preventDefault();
       window.dispatchEvent(new Event("app-loading-start"));
-      router.push(`/login?redirect=${feature.href}`);
+      if (isProOnly) {
+        router.push("/?pricing=true&cat=tools");
+      } else {
+        router.push(`/login?redirect=${encodeURIComponent(feature.href)}`);
+      }
       return;
     }
 
@@ -46,7 +50,7 @@ export default function ToolCard({
       } else if (isProOnly && !isPro) {
         // User Free atau User PRO BOOK: arahkan ke halaman langganan paket tools
         window.dispatchEvent(new Event("app-loading-start"));
-        router.push("/?pricing=true");
+        router.push("/?pricing=true&cat=tools");
       } else if (isBlueprintLocked) {
         // User PRO TOOLS / PRO PLUS yang belum isi blueprint: munculkan modal
         window.dispatchEvent(

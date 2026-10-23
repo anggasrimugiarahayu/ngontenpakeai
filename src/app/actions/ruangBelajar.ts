@@ -149,14 +149,13 @@ export async function getRuangBelajarDataAction() {
 
 export async function getEbookDetailAction(slug: string) {
   const session = await auth();
-  if (!session?.user?.id) return { notFound: true, reason: "unauthorized" };
-  const userId = session.user.id;
+  const userId = session?.user?.id;
 
   const [, cachedEbook, userProducts, userOrders] = await Promise.all([
-    getCachedAppUser(userId),
+    userId ? getCachedAppUser(userId) : Promise.resolve(null),
     getCachedEbookBySlug(slug),
-    getCachedUserOwnedProducts(userId).catch(() => []),
-    getCachedUserOrders(userId).catch(() => []),
+    userId ? getCachedUserOwnedProducts(userId).catch(() => []) : Promise.resolve([]),
+    userId ? getCachedUserOrders(userId).catch(() => []) : Promise.resolve([]),
   ]);
 
   if (!cachedEbook) {
@@ -165,30 +164,32 @@ export async function getEbookDetailAction(slug: string) {
 
   let isFavorite = false;
   let favoriteCount = (cachedEbook as any)?._count?.favorites || 0;
-  try {
-    const [fav, freshCount] = await Promise.all([
-      prisma.favorite.findUnique({
-        where: { userId_digitalProductId: { userId, digitalProductId: cachedEbook.id } },
-      }),
-      prisma.favorite.count({
-        where: { digitalProductId: cachedEbook.id },
-      }),
-    ]);
-    isFavorite = !!fav;
-    if (typeof freshCount === "number") {
-      favoriteCount = freshCount;
+  if (userId) {
+    try {
+      const [fav, freshCount] = await Promise.all([
+        prisma.favorite.findUnique({
+          where: { userId_digitalProductId: { userId, digitalProductId: cachedEbook.id } },
+        }),
+        prisma.favorite.count({
+          where: { digitalProductId: cachedEbook.id },
+        }),
+      ]);
+      isFavorite = !!fav;
+      if (typeof freshCount === "number") {
+        favoriteCount = freshCount;
+      }
+    } catch (e) {
+      console.error("Error checking favorite status:", e);
     }
-  } catch (e) {
-    console.error("Error checking favorite status:", e);
   }
 
   const ebook = {
     ...cachedEbook,
-    favorites: isFavorite ? [{ id: "fav", userId }] : [],
+    favorites: isFavorite && userId ? [{ id: "fav", userId }] : [],
     favoriteCount,
   };
 
-  const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = session?.user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
   const hasBookPackage = userOrders.some(
     (o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS"
   );
@@ -200,7 +201,7 @@ export async function getEbookDetailAction(slug: string) {
     isPro,
     isAdmin,
     ownedProductIds,
-    userId,
+    userId: userId || null,
   };
 }
 

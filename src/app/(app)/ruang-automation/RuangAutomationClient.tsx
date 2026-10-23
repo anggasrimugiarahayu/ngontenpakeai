@@ -280,14 +280,9 @@ export default function RuangAutomationClient({
 
   // Handle click on Instagram Automation Card
   const handleSelectInstagram = () => {
-    if (!isLoggedIn) {
+    if (!isLoggedIn || (!isPro && !isAdmin)) {
       window.dispatchEvent(new Event("app-loading-start"));
-      router.push("/login?redirect=/ruang-automation?platform=instagram");
-      return;
-    }
-    if (!isPro && !isAdmin) {
-      window.dispatchEvent(new Event("app-loading-start"));
-      router.push("/?pricing=true");
+      router.push("/?pricing=true&cat=automation");
       return;
     }
     setUserHasExitedToHub(false);

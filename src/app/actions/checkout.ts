@@ -28,14 +28,16 @@ export async function revalidateAfterPurchaseAction() {
 
 export async function getCheckoutDetailsAction(type: string, productId?: string) {
   const session = await auth();
-  if (!session?.user?.id) return { notAuthorized: true };
+  const userId = session?.user?.id;
   if (!type) return { badRequest: true };
 
   // Run independent queries concurrently
   const [user, rawProduct, pendingDbOrder, rawAvailableAddons] = await Promise.all([
-    prisma.user.findUnique({
-      where: { id: session.user.id }
-    }).catch(() => null),
+    userId
+      ? prisma.user.findUnique({
+          where: { id: userId }
+        }).catch(() => null)
+      : Promise.resolve(null),
     
     (type === "EBOOK" && productId) 
       ? prisma.digitalProduct.findUnique({
@@ -44,23 +46,23 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
         }).catch(() => null)
       : Promise.resolve(null),
       
-    prisma.order.findFirst({
-      where: {
-        userId: session.user.id,
-        orderType: type as any,
-        ...(productId ? { digitalProductId: productId } : {}),
-        status: "PENDING"
-      },
-      orderBy: { createdAt: 'desc' }
-    }).catch(() => null),
+    userId
+      ? prisma.order.findFirst({
+          where: {
+            userId: userId,
+            orderType: type as any,
+            ...(productId ? { digitalProductId: productId } : {}),
+            status: "PENDING"
+          },
+          orderBy: { createdAt: 'desc' }
+        }).catch(() => null)
+      : Promise.resolve(null),
     
     prisma.digitalProduct.findMany({
       where: { isActive: true, id: { not: productId || undefined } },
       select: { id: true, title: true, price: true, updatedAt: true }
     }).catch(() => [])
   ]);
-
-  if (!user) return { notAuthorized: true };
 
   const [productList, availableAddons] = await Promise.all([
     rawProduct ? attachLightweightCovers([rawProduct], false) : Promise.resolve([]),
@@ -143,9 +145,10 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     baseAmount,
     clientKey,
     isProduction,
-    initialName: user.name || "",
-    initialEmail: user.email || "",
-    initialPhone: user.phone || "",
+    initialName: user?.name || "",
+    initialEmail: user?.email || "",
+    initialPhone: user?.phone || "",
+    isLoggedIn: Boolean(userId),
     productImage,
     existingPendingOrder,
     availableAddons,
@@ -155,8 +158,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
 
 
 export async function validatePromoCodeAction(code: string, productId: string) {
-  const session = await auth();
-  if (!session?.user?.id) return { success: false, message: "Unauthorized" };
+  if (!code) return { success: false, message: "Kode promo tidak boleh kosong" };
 
   const voucher = await prisma.voucher.findFirst({
     where: {

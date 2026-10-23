@@ -123,14 +123,9 @@ export default function RuangRisetClient({
 
   // Handle click on Instagram Research Card
   const handleSelectInstagram = () => {
-    if (!isLoggedIn) {
+    if (!isLoggedIn || (!isPro && !isAdmin)) {
       window.dispatchEvent(new Event("app-loading-start"));
-      router.push("/login?redirect=/ruang-riset?platform=instagram");
-      return;
-    }
-    if (!isPro && !isAdmin) {
-      window.dispatchEvent(new Event("app-loading-start"));
-      router.push("/?pricing=true");
+      router.push("/?pricing=true&cat=riset");
       return;
     }
     setSelectedPlatform("instagram");

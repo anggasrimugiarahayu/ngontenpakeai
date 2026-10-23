@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { BookOpen, Star, Loader2, Heart } from "lucide-react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -9,6 +10,8 @@ import useSWR, { preload } from "swr";
 import { getRuangBelajarDataAction, getEbookDetailAction } from "@/app/actions/ruangBelajar";
 
 export default function RuangBelajarClient({ initialData }: { initialData?: any }) {
+  const { data: session } = useSession();
+  const isLoggedIn = !!session?.user;
   const { data, isLoading } = useSWR("ruangBelajar", getRuangBelajarDataAction, {
     fallbackData: initialData,
     revalidateOnFocus: false,
@@ -54,7 +57,7 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
         {products.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5 max-w-7xl mx-auto">
             {products.map((ebook: any) => {
-              const isFree = ebook.accessLevel === "FREE";
+              const isFree = ebook.accessLevel === "FREE" || !ebook.price || ebook.price <= 0;
               const isProEbook = ebook.accessLevel === "PRO";
               const isPremiumEbook = ebook.accessLevel === "PREMIUM";
               
@@ -70,12 +73,26 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                 ? (ebook.reviews.reduce((acc: number, rev: any) => acc + rev.rating, 0) / reviewCount).toFixed(1)
                 : "0.0";
 
+              const targetHref = isFree && !isLoggedIn
+                ? `/login?redirect=${encodeURIComponent(`/ruang-belajar/${ebook.slug}`)}`
+                : `/ruang-belajar/${ebook.slug}`;
+
               return (
                 <Link 
                   prefetch={true}
-                  href={`/ruang-belajar/${ebook.slug}`} 
-                  onMouseEnter={() => preload(["ebookDetail", ebook.slug], () => getEbookDetailAction(ebook.slug))}
-                  onTouchStart={() => preload(["ebookDetail", ebook.slug], () => getEbookDetailAction(ebook.slug))} key={ebook.id} className="group flex">
+                  href={targetHref} 
+                  onMouseEnter={() => {
+                    if (isLoggedIn || !isFree) {
+                      preload(["ebookDetail", ebook.slug], () => getEbookDetailAction(ebook.slug));
+                    }
+                  }}
+                  onTouchStart={() => {
+                    if (isLoggedIn || !isFree) {
+                      preload(["ebookDetail", ebook.slug], () => getEbookDetailAction(ebook.slug));
+                    }
+                  }} 
+                  key={ebook.id} 
+                  className="group flex">
                   <div className="flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-orange-500/50 hover:shadow-xl hover:-translate-y-1 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-200 border-2 border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] rounded-[16px] sm:rounded-[20px] overflow-hidden relative p-3 sm:p-4 gap-3 sm:gap-4">
                     
                     <div className="w-[100px] sm:w-[120px] shrink-0 relative overflow-hidden bg-gray-100 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-[10px] sm:rounded-xl shadow-sm">

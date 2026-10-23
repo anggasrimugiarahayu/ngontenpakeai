@@ -47,8 +47,12 @@ function HomeContent({
   const promoText = pricingConfig.promoBanner?.text || "PROMO hingga 95%";
   const showPromo = pricingConfig.promoBanner?.show !== false;
   const cards = initialCards && initialCards.length > 0 ? initialCards : DEFAULT_HOMEPAGE_CARDS;
+  const validCategories: PricingCategoryKey[] = ["ebook", "tools", "automation", "riset", "plus"];
+  const catParam = searchParams.get("cat") as PricingCategoryKey | null;
   const [selectedPricingCategory, setSelectedPricingCategory] =
-    useState<PricingCategoryKey>("ebook");
+    useState<PricingCategoryKey>(
+      catParam && validCategories.includes(catParam) ? catParam : "ebook"
+    );
 
   useEffect(() => {
     setMounted(true);
@@ -59,9 +63,21 @@ function HomeContent({
   }, [showPricingParam]);
 
   useEffect(() => {
+    const cat = searchParams.get("cat") as PricingCategoryKey | null;
+    if (cat && validCategories.includes(cat)) {
+      setSelectedPricingCategory(cat);
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
     const handlePopState = () => {
-      const isPricing = new URLSearchParams(window.location.search).get("pricing") === "true";
+      const search = new URLSearchParams(window.location.search);
+      const isPricing = search.get("pricing") === "true";
+      const cat = search.get("cat") as PricingCategoryKey | null;
       setShowPricing(isPricing);
+      if (cat && validCategories.includes(cat)) {
+        setSelectedPricingCategory(cat);
+      }
       window.dispatchEvent(new CustomEvent("pricing-change", { detail: isPricing }));
     };
     const handlePricingEvent = (e: any) => {
@@ -338,24 +354,18 @@ function HomeContent({
 
                       <Link
                         prefetch={true}
-                        href={
-                          isLoggedIn
-                            ? `/checkout?type=${pkgData.id}`
-                            : `/login?redirect=/checkout?type=${pkgData.id}`
-                        }
+                        href={`/checkout?type=${pkgData.id}`}
                         onMouseEnter={() => {
-                          if (isLoggedIn)
-                            preload(
-                              ["checkout", pkgData.id, undefined],
-                              () => getCheckoutDetailsAction(pkgData.id, undefined)
-                            );
+                          preload(
+                            ["checkout", pkgData.id, undefined],
+                            () => getCheckoutDetailsAction(pkgData.id, undefined)
+                          );
                         }}
                         onTouchStart={() => {
-                          if (isLoggedIn)
-                            preload(
-                              ["checkout", pkgData.id, undefined],
-                              () => getCheckoutDetailsAction(pkgData.id, undefined)
-                            );
+                          preload(
+                            ["checkout", pkgData.id, undefined],
+                            () => getCheckoutDetailsAction(pkgData.id, undefined)
+                          );
                         }}
                         className={`w-full mt-6 block text-center font-bold text-xs xl:text-sm py-3 rounded-xl transition-all ${
                           isSpecial
