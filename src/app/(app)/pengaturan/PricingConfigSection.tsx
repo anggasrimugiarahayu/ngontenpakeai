@@ -200,28 +200,24 @@ export function PricingConfigSection({
           </span>
         </div>
 
-        {/* TAB SWITCHER KATEGORI (GAYA PILL BERSIH SEPERTI REFERENSI) */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2 bg-gray-100/70 dark:bg-[#0A1128]/80 rounded-2xl border border-gray-200 dark:border-[#2C3246]">
-          <div className="inline-flex items-center gap-1 overflow-x-auto p-1 scrollbar-hide w-full sm:w-auto">
+        {/* TAB SWITCHER KATEGORI & TAMBAH PAKET (STYLE CARD SERAGAM) */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 sm:p-5 bg-white dark:bg-[#141B31] rounded-2xl border border-gray-200 dark:border-[#2C3246] shadow-xs">
+          <div className="inline-flex items-center gap-1 p-1 rounded-xl bg-gray-100/90 dark:bg-[#0A1128] border border-gray-200/80 dark:border-white/10 overflow-x-auto max-w-full scrollbar-hide">
             {PRICING_CATEGORIES.map((cat) => {
               const isSelected = selectedCategory === cat.id;
-              const count = (config.categoryOrder?.[cat.id] || []).length;
 
               return (
                 <button
                   key={cat.id}
                   type="button"
                   onClick={() => setSelectedCategory(cat.id)}
-                  className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
+                  className={`px-3.5 sm:px-4 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all cursor-pointer whitespace-nowrap ${
                     isSelected
                       ? "bg-white text-gray-900 dark:bg-[#1E2746] dark:text-white shadow-sm border border-gray-200/80 dark:border-[#3E4766]"
-                      : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
+                      : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/50 dark:hover:bg-white/5"
                   }`}
                 >
-                  <span>{cat.label}</span>
-                  <span className={`ml-1.5 text-[10px] font-mono ${isSelected ? "text-gray-500 dark:text-gray-300" : "text-gray-400"}`}>
-                    ({count})
-                  </span>
+                  {cat.label}
                 </button>
               );
             })}
@@ -231,16 +227,16 @@ export function PricingConfigSection({
           <button
             type="button"
             onClick={() => setIsEditModalOpen(true)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 rounded-xl text-xs font-bold transition-colors cursor-pointer shrink-0 self-end sm:self-center"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-orange-500/10 hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 border border-orange-500/30 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer shrink-0 self-start sm:self-center"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4 text-orange-500" />
             <span>Tambah Paket {PRICING_CATEGORIES.find((c) => c.id === selectedCategory)?.label}</span>
           </button>
         </div>
 
-        {/* CARDS GRID (Ukuran Seragam ~330px) */}
+        {/* CARDS GRID (Sistem 3 Kolom Desktop, Rata Kiri, Ukuran Seragam) */}
         {currentCategoryPackageIds.length > 0 ? (
-          <div className="flex flex-wrap justify-center items-stretch gap-4 md:gap-5 w-full">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 w-full">
             {currentCategoryPackageIds.map((pkgKey, index) => {
               const pkg = config.packages?.[pkgKey] || config[pkgKey];
               if (!pkg) return null;
@@ -279,7 +275,7 @@ export function PricingConfigSection({
                     setDraggedIdx(null);
                     setDragOverIdx(null);
                   }}
-                  className={`w-full sm:w-[330px] max-w-[340px] group relative flex flex-col justify-between rounded-2xl border-2 p-6 text-left transition-all duration-150 z-0 overflow-visible select-none cursor-grab active:cursor-grabbing ${
+                  className={`w-full group relative flex flex-col justify-between rounded-2xl border-2 p-6 text-left transition-all duration-150 z-0 overflow-visible select-none cursor-grab active:cursor-grabbing ${
                     draggedIdx === index
                       ? "opacity-30 scale-95 border-dashed border-orange-500 ring-2 ring-orange-500/30"
                       : ""
