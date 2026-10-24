@@ -51,25 +51,18 @@ export async function POST(req: NextRequest) {
 
         // Grant the Item!
         if (order.orderType === "EBOOK") {
-          const productIdsToGrant = [];
-          if (order.digitalProductId) productIdsToGrant.push(order.digitalProductId);
-          if (order.addonIds && Array.isArray(order.addonIds)) {
-            productIdsToGrant.push(...order.addonIds);
-          }
+          const productIdsToGrant = Array.from(new Set([
+            ...(order.digitalProductId ? [order.digitalProductId] : []),
+            ...(order.addonIds && Array.isArray(order.addonIds) ? (order.addonIds as string[]) : [])
+          ])).filter(Boolean);
 
-          for (const pid of productIdsToGrant) {
-            await tx.userOwnedProduct.upsert({
-              where: {
-                userId_digitalProductId: {
-                  userId: order.userId,
-                  digitalProductId: pid
-                }
-              },
-              update: {},
-              create: {
+          if (productIdsToGrant.length > 0) {
+            await tx.userOwnedProduct.createMany({
+              data: productIdsToGrant.map((pid) => ({
                 userId: order.userId,
                 digitalProductId: pid
-              }
+              })),
+              skipDuplicates: true
             });
           }
         } else {
@@ -110,25 +103,25 @@ export async function POST(req: NextRequest) {
             data: updateData
           });
 
-          // Unlock bundled E-books from PRICING_PACKAGES config
-          const bundledIds = targetPkg?.bundledProductIds || [];
-          for (const pid of bundledIds) {
-            const existing = await tx.userOwnedProduct.findFirst({
-              where: { userId: order.userId, digitalProductId: pid }
+          // Unlock bundled E-books from PRICING_PACKAGES config + any add-on E-books purchased with the package
+          const allGrantIds = Array.from(new Set([
+            ...(targetPkg?.bundledProductIds || []),
+            ...(order.addonIds && Array.isArray(order.addonIds) ? (order.addonIds as string[]) : [])
+          ])).filter(Boolean);
+
+          if (allGrantIds.length > 0) {
+            await tx.userOwnedProduct.createMany({
+              data: allGrantIds.map((pid) => ({
+                userId: order.userId,
+                digitalProductId: pid
+              })),
+              skipDuplicates: true
             });
-            if (!existing) {
-              await tx.userOwnedProduct.create({
-                data: {
-                  userId: order.userId,
-                  digitalProductId: pid
-                }
-              });
-            }
           }
         }
       });
-    } else {
-      // Just update status if failed/pending
+    } else if (order.status !== "SUCCESS") {
+      // Just update status if failed/pending and order was not already completed
       await prisma.order.update({
         where: { id: orderId },
         data: { status: finalStatus }

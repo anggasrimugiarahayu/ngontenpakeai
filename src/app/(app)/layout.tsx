@@ -1,4 +1,3 @@
-import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { getCachedFeatures, getCachedHasBlueprint, getCachedAppUser, getCachedHomepageCards } from "@/lib/cache";
 import AppShellLayout from "@/components/layout/AppShellLayout";
@@ -9,38 +8,29 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   let hasBlueprint = false;
   let dbFeatures: any = [];
   let homepageCards: any = [];
-  
-  try {
-    if (session?.user?.id) {
-      hasBlueprint = await getCachedHasBlueprint(session.user.id);
-    }
-    const [features, cards] = await Promise.all([
-      getCachedFeatures(),
-      getCachedHomepageCards(),
-    ]);
-    dbFeatures = features;
-    homepageCards = cards;
-  } catch (error) {
-    console.error("Error fetching cache/blueprint", error);
-  }
-  
   let userRole = "USER";
   let hasTools = false;
   let needsOnboarding = false;
 
-  if (session?.user?.id) {
-    try {
-      const dbUser = await getCachedAppUser(session.user.id);
-      if (dbUser) {
-        if (!dbUser.onboardingCompleted) {
-          needsOnboarding = true;
-        }
-        userRole = dbUser.role || "USER";
-        hasTools = dbUser.proToolsExpiredAt ? new Date(dbUser.proToolsExpiredAt) > new Date() : false;
+  try {
+    const [fetchedHasBlueprint, features, cards, dbUser] = await Promise.all([
+      session?.user?.id ? getCachedHasBlueprint(session.user.id) : Promise.resolve(false),
+      getCachedFeatures(),
+      getCachedHomepageCards(),
+      session?.user?.id ? getCachedAppUser(session.user.id) : Promise.resolve(null),
+    ]);
+    hasBlueprint = fetchedHasBlueprint;
+    dbFeatures = features;
+    homepageCards = cards;
+    if (dbUser) {
+      if (!dbUser.onboardingCompleted) {
+        needsOnboarding = true;
       }
-    } catch (error) {
-      console.error("Error fetching dbUser in AppLayout", error);
+      userRole = dbUser.role || "USER";
+      hasTools = dbUser.proToolsExpiredAt ? new Date(dbUser.proToolsExpiredAt) > new Date() : false;
     }
+  } catch (error) {
+    console.error("Error fetching cache/blueprint", error);
   }
   
   if (needsOnboarding) {

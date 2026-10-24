@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import {
   InstagramPostItem,
@@ -175,31 +176,29 @@ async function fetchDirectInstagramApi(targetUsername: string) {
       return null;
     }
 
-    // Fetch official profile details from graph.instagram.com/v22.0/me
+    // Fetch official profile details and live posts concurrently from graph.instagram.com/v22.0/me
     const profileUrl = `https://graph.instagram.com/v22.0/me?fields=id,username,name,account_type,profile_picture_url,biography,website,followers_count,follows_count,media_count&access_token=${encodeURIComponent(
       token
     )}`;
-
-    const profileRes = await fetch(profileUrl, { next: { revalidate: 300 } });
-    if (!profileRes.ok) {
-      console.warn("Direct graph.instagram.com profile returned status:", profileRes.status);
-      return null;
-    }
-
-    const pData = await profileRes.json();
-
-    // Fetch official live posts from graph.instagram.com/v22.0/me/media
     const mediaUrl = `https://graph.instagram.com/v22.0/me/media?fields=id,caption,media_type,media_url,thumbnail_url,permalink,timestamp,like_count,comments_count&limit=40&access_token=${encodeURIComponent(
       token
     )}`;
 
-    const mediaRes = await fetch(mediaUrl, { next: { revalidate: 300 } });
+    const [profileRes, mediaRes] = await Promise.all([
+      fetch(profileUrl, { next: { revalidate: 300 } }),
+      fetch(mediaUrl, { next: { revalidate: 300 } }),
+    ]);
+
+    if (!profileRes.ok) {
+      console.warn("Direct graph.instagram.com profile returned status:", profileRes.status);
+      return null;
+    }
     if (!mediaRes.ok) {
       console.warn("Direct graph.instagram.com media returned status:", mediaRes.status);
       return null;
     }
 
-    const mData = await mediaRes.json();
+    const [pData, mData] = await Promise.all([profileRes.json(), mediaRes.json()]);
     const mediaList = mData.data || [];
 
     const rawProfile = {
@@ -1065,6 +1064,11 @@ function getHighFidelityFallback(cleanUser: string) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await request.json();
     const rawUsername = body.username;
 

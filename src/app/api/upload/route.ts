@@ -1,15 +1,38 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { auth } from "@/auth";
 import { deletePhysicalUploadFile } from "@/lib/server-uploads";
+
+const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
 
 export async function POST(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const data = await req.formData();
     const file: File | null = data.get("file") as unknown as File;
 
     if (!file) {
       return NextResponse.json({ error: "Tidak ada file yang diunggah" }, { status: 400 });
+    }
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { error: "Format file tidak didukung. Gunakan JPG, PNG, WebP, atau GIF." },
+        { status: 400 }
+      );
+    }
+
+    if (file.size > MAX_UPLOAD_SIZE_BYTES) {
+      return NextResponse.json(
+        { error: "Ukuran file maksimal 10MB." },
+        { status: 400 }
+      );
     }
 
     const bytes = await file.arrayBuffer();
@@ -54,6 +77,11 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    const session = await auth();
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body = await req.json();
     const { url } = body;
 

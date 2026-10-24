@@ -1,6 +1,5 @@
 import { auth } from "@/auth";
 import type { Metadata } from "next";
-import Script from "next/script";
 import "./globals.css";
 import { ThemeProvider } from "@/components/layout/ThemeProvider";
 import AuthProvider from "@/components/layout/AuthProvider";
@@ -9,7 +8,6 @@ import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "react-hot-toast";
 
-import prisma from "@/lib/prisma";
 import { getCachedMemberCount, getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
 import SWRProvider from "@/components/layout/SWRProvider";
 import { NavigationProgressBar } from "@/components/layout/NavigationProgressBar";
@@ -32,8 +30,11 @@ export default async function RootLayout({
   let userRole = "USER";
   let badgeName = "FREE";
   try {
-    memberCount = await getCachedMemberCount();
-    const session = await auth();
+    const [fetchedMemberCount, session] = await Promise.all([
+      getCachedMemberCount(),
+      auth()
+    ]);
+    memberCount = fetchedMemberCount;
     if (session?.user?.id) {
       const [dbUser, userOrders] = await Promise.all([
         getCachedAppUser(session.user.id),

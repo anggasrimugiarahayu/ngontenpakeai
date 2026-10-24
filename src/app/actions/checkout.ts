@@ -32,7 +32,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
   if (!type) return { badRequest: true };
 
   // Run independent queries concurrently
-  const [user, rawProduct, pendingDbOrder, rawAvailableAddons] = await Promise.all([
+  const [user, rawProduct, pendingDbOrder, rawAvailableAddons, pricingSetting] = await Promise.all([
     userId
       ? prisma.user.findUnique({
           where: { id: userId }
@@ -61,14 +61,20 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     prisma.digitalProduct.findMany({
       where: { isActive: true, id: { not: productId || undefined } },
       select: { id: true, title: true, price: true, updatedAt: true }
-    }).catch(() => [])
+    }).catch(() => []),
+
+    type !== "EBOOK"
+      ? prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } }).catch(() => null)
+      : Promise.resolve(null),
   ]);
 
-  const [productList, availableAddons] = await Promise.all([
-    rawProduct ? attachLightweightCovers([rawProduct], false) : Promise.resolve([]),
-    attachLightweightCovers(rawAvailableAddons, false),
-  ]);
-  const product = productList[0] || null;
+  const combinedRawProducts = [
+    ...(rawProduct ? [rawProduct] : []),
+    ...rawAvailableAddons,
+  ];
+  const combinedWithCovers = await attachLightweightCovers(combinedRawProducts, false);
+  const product = rawProduct ? (combinedWithCovers.find((p) => p.id === rawProduct.id) || null) : null;
+  const availableAddons = combinedWithCovers.filter((p) => p.id !== rawProduct?.id);
 
   let baseAmount = 0;
   let bundledIds: string[] = [];
@@ -78,16 +84,15 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
 
   if (type === "EBOOK") {
     if (!productId || !product) return { badRequest: true, redirect: "/ruang-belajar" };
-    if (!product.price || product.price <= 0) return { badRequest: true, redirect: `/ruang-belajar/${product.slug}` };
+    if (!product.price || product.price <= 0) return { badRequest: true, redirect: `/ruang-belajar/${(product as any).slug}` };
     
     baseAmount = product.price;
     itemName = product.title;
-    itemDescription = product.description || "Akses selamanya untuk produk ini.";
+    itemDescription = (product as any).description || "Akses selamanya untuk produk ini.";
     productImage = (product as any).coverUrl || "";
   } else {
     // Dynamic lookup for any package in PRICING_PACKAGES
-    const setting = await prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
-    const pricingConfig = mergePricingConfig(setting?.value ? JSON.parse(setting.value) : null);
+    const pricingConfig = mergePricingConfig(pricingSetting?.value ? JSON.parse(pricingSetting.value) : null);
     const targetPkg = pricingConfig[type] || pricingConfig.packages?.[type];
 
     if (targetPkg) {
@@ -109,24 +114,15 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
   const isProduction = process.env.NODE_ENV === "production" && process.env.MIDTRANS_IS_PRODUCTION === "true";
   const clientKey = isProduction ? process.env.MIDTRANS_CLIENT_KEY : process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "SB-Mid-client-rIaAV5Qv-Ue28a9u";
 
-  // OPTIMIZATION: Run Midtrans API check and bundled addons fetch concurrently (Promise.all)
   let existingPendingOrder = null;
-  
-  const midtransPromise = (pendingDbOrder && pendingDbOrder.midtransId) 
-    ? verifyPayment(pendingDbOrder.id)
-    : Promise.resolve(null);
+  const verifyRes = (pendingDbOrder && pendingDbOrder.midtransId) 
+    ? await verifyPayment(pendingDbOrder.id)
+    : null;
 
-  const includedAddonsPromise = (type.startsWith("PRO_") && bundledIds && bundledIds.length > 0)
-    ? prisma.digitalProduct.findMany({
-        where: { id: { in: bundledIds } },
-        select: { id: true, title: true, price: true, updatedAt: true }
-      }).then((rows) => attachLightweightCovers(rows, false)).catch(() => [])
-    : Promise.resolve([]);
-
-  const [verifyRes, includedAddons] = await Promise.all([
-    midtransPromise,
-    includedAddonsPromise
-  ]);
+  const bundledSet = new Set(bundledIds || []);
+  const includedAddons = (type.startsWith("PRO_") && bundledSet.size > 0)
+    ? availableAddons.filter((a) => bundledSet.has(a.id))
+    : [];
 
   if (verifyRes && verifyRes.success && verifyRes.status === "PENDING" && verifyRes.expiryTime && pendingDbOrder) {
     existingPendingOrder = {

@@ -4,8 +4,7 @@ import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
-
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import prisma from "@/lib/prisma";
 
 export async function POST(req: Request) {
   try {
@@ -14,7 +13,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const accessCheck = await verifyFeatureAccess(session.user.id, "ATM Content Builder", session.user.email);
+    const [accessCheck, body, userRecord] = await Promise.all([
+      verifyFeatureAccess(session.user.id, "ATM Content Builder", session.user.email),
+      req.json(),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { googleApiKey: true }
+      })
+    ]);
+
     if (!accessCheck.authorized) {
       return NextResponse.json({
         error: accessCheck.code === "QUOTA_EXCEEDED" ? "QUOTA_EXCEEDED" : accessCheck.reason,
@@ -23,7 +30,13 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
 
-    const { chatHistory, currentInput, fileData, fileType, blueprint, model } = await req.json();
+    const apiKey = await getApiKey(userRecord?.googleApiKey);
+    if (!apiKey) {
+      return NextResponse.json({ error: "Gemini API Key tidak ditemukan baik dari pengguna maupun sistem." }, { status: 400 });
+    }
+
+    const ai = new GoogleGenAI({ apiKey });
+    const { chatHistory, currentInput, fileData, fileType, blueprint, model } = body;
 
     const systemPrompt = `[MASTER PROMPT – ATM CONTENT BUILDER]
 [KONDISI WAKTU SEKARANG: ${new Date().getFullYear()}]

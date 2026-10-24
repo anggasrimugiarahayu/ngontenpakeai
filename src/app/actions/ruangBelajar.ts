@@ -51,8 +51,15 @@ export const getCachedDigitalProductsList = unstable_cache(
       prisma.appSetting.findUnique({ where: { key: "EBOOK_SORT_ORDER" } }).catch(() => null),
     ]);
 
-    const withBuyers = await attachComputedBuyerCounts(rawProducts);
-    const products = await attachLightweightCovers(withBuyers, false);
+    const [withBuyers, withCovers] = await Promise.all([
+      attachComputedBuyerCounts(rawProducts),
+      attachLightweightCovers(rawProducts, false),
+    ]);
+    const coverMap = new Map(withCovers.map((c) => [c.id, c]));
+    const products = withBuyers.map((p) => {
+      const cov = coverMap.get(p.id);
+      return cov ? { ...p, coverUrl: cov.coverUrl } : p;
+    });
 
     if (sortSetting?.value) {
       try {
@@ -91,9 +98,16 @@ export const getCachedEbookBySlug = unstable_cache(
     });
 
     if (!rawEbook) return null;
-    const [withBuyers] = await attachComputedBuyerCounts([rawEbook]);
-    const [computedEbook] = await attachLightweightCovers([withBuyers], true);
-    return computedEbook;
+    const [[withBuyers], [withCover]] = await Promise.all([
+      attachComputedBuyerCounts([rawEbook]),
+      attachLightweightCovers([rawEbook], true),
+    ]);
+    return {
+      ...withBuyers,
+      coverUrl: withCover.coverUrl,
+      coverUrl2: withCover.coverUrl2,
+      coverUrl3: withCover.coverUrl3,
+    };
   },
   ["digital-product-by-slug-v2"],
   { revalidate: 3600, tags: ["ebook-catalog"] }
@@ -259,28 +273,28 @@ export async function claimFreeEbook(productId: string) {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const userId = session.user.id;
-  const user = await prisma.user.findUnique({ where: { id: userId } });
+  const [user, product, hasBookPackage] = await Promise.all([
+    prisma.user.findUnique({ where: { id: userId } }),
+    prisma.digitalProduct.findUnique({
+      where: { id: productId },
+      select: { id: true, accessLevel: true },
+    }),
+    prisma.order.findFirst({
+      where: {
+        userId,
+        status: "SUCCESS",
+        orderType: { in: ["PRO_BOOK", "PRO_PLUS"] },
+      },
+    }),
+  ]);
 
   if (!user) throw new Error("User not found");
-
-  const product = await prisma.digitalProduct.findUnique({
-    where: { id: productId },
-    select: { id: true, accessLevel: true },
-  });
   if (!product) throw new Error("Product not found");
 
   const isFree = product.accessLevel === "FREE";
   const isProEbook = product.accessLevel === "PRO";
 
   const isAdmin = user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com" || user.role === "ADMIN";
-
-  const hasBookPackage = await prisma.order.findFirst({
-    where: {
-      userId,
-      status: "SUCCESS",
-      orderType: { in: ["PRO_BOOK", "PRO_PLUS"] },
-    },
-  });
 
   const canClaimProEbook = isAdmin || !!hasBookPackage;
 

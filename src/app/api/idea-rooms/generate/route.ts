@@ -34,7 +34,16 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const accessCheck = await verifyFeatureAccess(session.user.id, "Idea Rooms", session.user.email);
+    const [accessCheck, body, userRecord, dbKnowledge] = await Promise.all([
+      verifyFeatureAccess(session.user.id, "Idea Rooms", session.user.email),
+      req.json(),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { googleApiKey: true }
+      }),
+      fetchKnowledgeBase()
+    ]);
+
     if (!accessCheck.authorized) {
       return NextResponse.json({
         error: accessCheck.code === "QUOTA_EXCEEDED" ? "QUOTA_EXCEEDED" : accessCheck.reason,
@@ -43,13 +52,7 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
 
-    const body = await req.json();
     const { promptText, isFunneling, blueprintData, chatHistory, model } = body;
-
-    const userRecord = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { googleApiKey: true }
-    });
 
     const apiKey = await getApiKey(userRecord?.googleApiKey);
 
@@ -58,7 +61,6 @@ export async function POST(req: Request) {
     }
 
     const ai = new GoogleGenAI({ apiKey });
-    const dbKnowledge = await fetchKnowledgeBase();
 
     const ideaCountRule = isFunneling 
       ? "JIKA Anda memutuskan untuk membuahkan ide, Anda WAJIB MENGHASILKAN TEPAT 30 IDE KONTEN (10 TOFU, 10 MOFU, 10 BOFU). Tulis setiap field secara sangat singkat dan padat (maksimal 1 kalimat) agar JSON tidak terpotong."

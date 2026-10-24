@@ -22,7 +22,6 @@ export async function GET() {
     return NextResponse.json(models);
   } catch (error) {
     console.error("Error fetching AI models:", error);
-return NextResponse.json({ error: String(error) }, { status: 500 });
     // Fallback on error
     return NextResponse.json([
       { modelId: 'gemini-3.7-flash', name: 'Gemini 3.7 Flash', isDefault: true },

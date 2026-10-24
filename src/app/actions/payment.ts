@@ -3,7 +3,6 @@
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { snap, coreApi, isProduction } from "@/lib/midtrans";
-import { headers } from "next/headers";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { calculatePaymentFees, PAYMENT_METHODS, PaymentMethodKey } from "@/lib/payment-calc";
 import { mergePricingConfig } from "@/lib/pricing-packages";
@@ -62,13 +61,6 @@ export async function createCheckoutToken(data: {
   }
 
   
-  let itemDetails: any[] = [{
-    id: data.productId || data.type,
-    price: baseAmount,
-    quantity: 1,
-    name: orderName.substring(0, 50)
-  }];
-
   if (data.addonIds && data.addonIds.length > 0) {
     const addons = await prisma.digitalProduct.findMany({
       where: { id: { in: data.addonIds } }
@@ -76,23 +68,30 @@ export async function createCheckoutToken(data: {
     
     addons.forEach(addon => {
       baseAmount += (addon.price || 0);
-      itemDetails.push({
-        id: addon.id,
-        price: addon.price || 0,
-        quantity: 1,
-        name: `Add-on: ${addon.title}`.substring(0, 50)
-      });
     });
   }
 
-  if (data.discountAmount && data.discountAmount > 0) {
-    baseAmount -= data.discountAmount;
-    itemDetails.push({
-      id: "DISCOUNT",
-      price: -data.discountAmount,
-      quantity: 1,
-      name: (`Promo: ${data.voucherCode || 'Discount'}`).substring(0, 50)
+  let verifiedDiscountAmount = 0;
+  let verifiedVoucherCode: string | undefined = undefined;
+
+  if (data.voucherCode && data.voucherCode.trim()) {
+    const voucher = await prisma.voucher.findFirst({
+      where: {
+        code: data.voucherCode.trim().toUpperCase(),
+        isActive: true,
+        ...(data.productId ? { digitalProductId: data.productId } : {})
+      }
     });
+    if (voucher) {
+      verifiedVoucherCode = voucher.code;
+      if (voucher.discountType === "PERCENTAGE") {
+        verifiedDiscountAmount = Math.round((baseAmount * voucher.discountValue) / 100);
+      } else {
+        verifiedDiscountAmount = voucher.discountValue;
+      }
+      verifiedDiscountAmount = Math.min(verifiedDiscountAmount, Math.max(0, baseAmount - 1000));
+      baseAmount = Math.max(1000, baseAmount - verifiedDiscountAmount);
+    }
   }
 
   if (!data.paymentMethodKey || !PAYMENT_METHODS[data.paymentMethodKey]) {
@@ -110,8 +109,8 @@ export async function createCheckoutToken(data: {
       orderType: data.type,
       digitalProductId: data.productId,
       addonIds: data.addonIds || [],
-      voucherCode: data.voucherCode,
-      discountAmount: data.discountAmount || 0,
+      voucherCode: verifiedVoucherCode,
+      discountAmount: verifiedDiscountAmount,
       amount: grossAmount,
       status: "PENDING",
       paymentMethod: data.paymentMethodKey
@@ -303,25 +302,18 @@ export async function verifyPayment(orderId: string) {
 
         // Grant the Item!
         if (order.orderType === "EBOOK") {
-          const productIdsToGrant = [];
-          if (order.digitalProductId) productIdsToGrant.push(order.digitalProductId);
-          if (order.addonIds && Array.isArray(order.addonIds)) {
-            productIdsToGrant.push(...(order.addonIds as string[]));
-          }
+          const productIdsToGrant = Array.from(new Set([
+            ...(order.digitalProductId ? [order.digitalProductId] : []),
+            ...(order.addonIds && Array.isArray(order.addonIds) ? (order.addonIds as string[]) : [])
+          ])).filter(Boolean);
 
-          for (const pid of productIdsToGrant) {
-            await tx.userOwnedProduct.upsert({
-              where: {
-                userId_digitalProductId: {
-                  userId: order.userId,
-                  digitalProductId: pid
-                }
-              },
-              update: {},
-              create: {
+          if (productIdsToGrant.length > 0) {
+            await tx.userOwnedProduct.createMany({
+              data: productIdsToGrant.map((pid) => ({
                 userId: order.userId,
                 digitalProductId: pid
-              }
+              })),
+              skipDuplicates: true
             });
           }
         } else {
@@ -362,20 +354,20 @@ export async function verifyPayment(orderId: string) {
             data: updateData
           });
 
-          // Unlock bundled E-books from PRICING_PACKAGES config
-          const bundledIds = targetPkg?.bundledProductIds || [];
-          for (const pid of bundledIds) {
-            const existing = await tx.userOwnedProduct.findFirst({
-              where: { userId: order.userId, digitalProductId: pid }
+          // Unlock bundled E-books from PRICING_PACKAGES config + any add-on E-books purchased with the package
+          const allGrantIds = Array.from(new Set([
+            ...(targetPkg?.bundledProductIds || []),
+            ...(order.addonIds && Array.isArray(order.addonIds) ? (order.addonIds as string[]) : [])
+          ])).filter(Boolean);
+
+          if (allGrantIds.length > 0) {
+            await tx.userOwnedProduct.createMany({
+              data: allGrantIds.map((pid) => ({
+                userId: order.userId,
+                digitalProductId: pid
+              })),
+              skipDuplicates: true
             });
-            if (!existing) {
-              await tx.userOwnedProduct.create({
-                data: {
-                  userId: order.userId,
-                  digitalProductId: pid
-                }
-              });
-            }
           }
         }
       });

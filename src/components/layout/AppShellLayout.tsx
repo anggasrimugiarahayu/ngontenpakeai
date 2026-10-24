@@ -359,12 +359,12 @@ export default function AppShellLayout({
       { label: "Ruang Riset", href: "/ruang-riset", icon: Search, disabled: isRisetDisabled },
     ];
     if (isAdmin) {
-      GLOBAL_NAV_ITEMS.push({ label: "Dashboard", icon: LayoutDashboard, href: "/dashboard" });
+      GLOBAL_NAV_ITEMS.push({ label: "Dashboard", icon: LayoutDashboard, href: "/dashboard", disabled: false });
     }
     GLOBAL_NAV_ITEMS.push(
-      { label: "Pengaturan", icon: Settings, href: "/pengaturan" },
-      { label: "Bantuan", icon: HelpCircle, href: "/bantuan" },
-      { label: "Feedback", icon: MessageSquare, href: "/feedback" }
+      { label: "Pengaturan", icon: Settings, href: "/pengaturan", disabled: false },
+      { label: "Bantuan", icon: HelpCircle, href: "/bantuan", disabled: false },
+      { label: "Feedback", icon: MessageSquare, href: "/feedback", disabled: false }
     );
   }
 

@@ -1,4 +1,3 @@
-import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getCachedFeatures, getCachedHasBlueprint, getCachedNicheReferences, getCachedAppUser } from "@/lib/cache";
@@ -9,22 +8,20 @@ export const metadata = {
 };
 
 export default async function RuangNgontenCatchAllPage(props: { params: Promise<{ slug?: string[] }> }) {
-  const params = await props.params;
-  const session = await auth();
+  const [params, session] = await Promise.all([props.params, auth()]);
   const isLoggedIn = !!session?.user;
-
-  let hasBlueprint = false;
-  if (session?.user?.id) {
-    hasBlueprint = await getCachedHasBlueprint(session.user.id);
-  }
-  const dbFeatures = await getCachedFeatures();
-  const nicheReferences = await getCachedNicheReferences();
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
+
+  const [hasBlueprint, dbFeatures, nicheReferences, dbUser] = await Promise.all([
+    session?.user?.id ? getCachedHasBlueprint(session.user.id) : Promise.resolve(false),
+    getCachedFeatures(),
+    getCachedNicheReferences(),
+    !isAdmin && session?.user?.id ? getCachedAppUser(session.user.id) : Promise.resolve(null),
+  ]);
+
   let isPro = isAdmin;
-  
-  if (!isAdmin && session?.user?.id) {
-    const dbUser = await getCachedAppUser(session.user.id);
-    const hasTools = dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();
+  if (!isAdmin && dbUser) {
+    const hasTools = !!(dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date());
     isPro = hasTools || dbUser?.role === "ADMIN";
   }
 

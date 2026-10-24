@@ -5,7 +5,7 @@ import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import { GoogleGenAI } from "@google/genai";
 import prisma from "@/lib/prisma";
-import { revalidateTag } from "next/cache";
+import { revalidateTag, revalidatePath } from "next/cache";
 
 export async function POST(req: Request) {
   try {
@@ -14,7 +14,15 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const accessCheck = await verifyFeatureAccess(session.user.id, "Master Blueprint", session.user.email);
+    const [accessCheck, formData, dbUser] = await Promise.all([
+      verifyFeatureAccess(session.user.id, "Master Blueprint", session.user.email),
+      req.json(),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { googleApiKey: true }
+      })
+    ]);
+
     if (!accessCheck.authorized) {
       return NextResponse.json({
         error: accessCheck.code === "QUOTA_EXCEEDED" ? "QUOTA_EXCEEDED" : accessCheck.reason,
@@ -22,14 +30,6 @@ export async function POST(req: Request) {
         message: accessCheck.reason
       }, { status: 403 });
     }
-
-    const formData = await req.json();
-
-    // Get User's API Key
-    const dbUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { googleApiKey: true }
-    });
 
     const apiKey = await getApiKey(dbUser?.googleApiKey);
     if (!apiKey) {

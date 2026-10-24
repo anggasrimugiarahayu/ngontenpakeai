@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
+import prisma from "@/lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,7 +13,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const accessCheck = await verifyFeatureAccess(session.user.id, "Ebook Prompt Builder", session.user.email);
+    const [accessCheck, body, userRecord] = await Promise.all([
+      verifyFeatureAccess(session.user.id, "Ebook Prompt Builder", session.user.email),
+      req.json(),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { googleApiKey: true }
+      })
+    ]);
+
     if (!accessCheck.authorized) {
       return NextResponse.json({
         error: accessCheck.code === "QUOTA_EXCEEDED" ? "QUOTA_EXCEEDED" : accessCheck.reason,
@@ -27,10 +36,12 @@ export async function POST(req: NextRequest) {
       blueprint = {},
       model,
       apiKey
-    } = await req.json();
+    } = body;
 
-    const selectedModel = model || await getDefaultAiModel("gemini-2.5-flash");
-    const currentKey = apiKey || process.env.GEMINI_API_KEY;
+    const [selectedModel, currentKey] = await Promise.all([
+      model ? Promise.resolve(model) : getDefaultAiModel("gemini-2.5-flash"),
+      getApiKey(apiKey || userRecord?.googleApiKey)
+    ]);
     if (!currentKey) {
       return NextResponse.json({ 
         is_error: true, 

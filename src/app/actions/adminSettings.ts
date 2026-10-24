@@ -1,12 +1,30 @@
 "use server";
 
 import prisma from "@/lib/prisma";
+import { auth } from "@/auth";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { attachComputedBuyerCounts } from "@/lib/product-buyers";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
 import { deletePhysicalUploadFile } from "@/lib/server-uploads";
 import { HomepageCardConfig } from "@/lib/homepage-cards";
 import { getCachedHomepageCards } from "@/lib/cache";
+
+async function assertAdmin() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    throw new Error("Unauthorized");
+  }
+  if (session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com") {
+    return;
+  }
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true },
+  });
+  if (dbUser?.role !== "ADMIN") {
+    throw new Error("Forbidden: Admin access required");
+  }
+}
 
 function safeRevalidateTag(tag: string) {
   try {
@@ -52,30 +70,39 @@ export async function getAiModels() {
   return await prisma.aiModel.findMany({ orderBy: { createdAt: "desc" } });
 }
 export async function createAiModel(data: any) {
+  await assertAdmin();
   await prisma.aiModel.create({ data });
   revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 export async function setDefaultModel(id: string) {
-  await prisma.aiModel.updateMany({ data: { isDefault: false } });
-  await prisma.aiModel.update({ where: { id }, data: { isDefault: true } });
+  await assertAdmin();
+  await prisma.$transaction([
+    prisma.aiModel.updateMany({ data: { isDefault: false } }),
+    prisma.aiModel.update({ where: { id }, data: { isDefault: true } }),
+  ]);
   revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 
 export async function setFallbackModel(id: string) {
-  await prisma.aiModel.updateMany({ data: { isFallback: false } });
-  await prisma.aiModel.update({ where: { id }, data: { isFallback: true } });
+  await assertAdmin();
+  await prisma.$transaction([
+    prisma.aiModel.updateMany({ data: { isFallback: false } }),
+    prisma.aiModel.update({ where: { id }, data: { isFallback: true } }),
+  ]);
   revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 
 export async function toggleModel(id: string, isActive: boolean) {
+  await assertAdmin();
   await prisma.aiModel.update({ where: { id }, data: { isActive } });
   revalidateAdminConfig();
   revalidatePath("/pengaturan");
 }
 export async function deleteModel(id: string) {
+  await assertAdmin();
   await prisma.aiModel.delete({ where: { id } });
   revalidateAdminConfig();
   revalidatePath("/pengaturan");
@@ -86,6 +113,7 @@ export async function getAppSettings() {
   return await prisma.appSetting.findMany();
 }
 export async function saveAppSetting(key: string, value: string) {
+  await assertAdmin();
   await prisma.appSetting.upsert({
     where: { key },
     update: { value },
@@ -120,6 +148,7 @@ export async function getHomepageCardsAction(): Promise<HomepageCardConfig[]> {
 }
 
 export async function saveHomepageCardsAction(cards: HomepageCardConfig[]) {
+  await assertAdmin();
   await prisma.appSetting.upsert({
     where: { key: "HOMEPAGE_CARDS" },
     update: { value: JSON.stringify(cards) },
@@ -141,6 +170,7 @@ export async function saveHomepageCardsAction(cards: HomepageCardConfig[]) {
 }
 
 export async function deleteAppSetting(key: string) {
+  await assertAdmin();
   try {
     await prisma.appSetting.delete({
       where: { key },
@@ -165,10 +195,12 @@ export async function getFeatures() {
   return await prisma.feature.findMany({ orderBy: { name: "asc" } });
 }
 export async function toggleFeatureStatus(id: string, isActive: boolean) {
+  await assertAdmin();
   await prisma.feature.update({ where: { id }, data: { isActive } });
   revalidateAdminConfig();
 }
 export async function toggleFeaturePro(id: string, isProOnly: boolean) {
+  await assertAdmin();
   await prisma.feature.update({ where: { id }, data: { isProOnly } });
   revalidateAdminConfig();
 }
@@ -178,6 +210,7 @@ export async function getCategories() {
   return await prisma.digitalCategory.findMany({ orderBy: { createdAt: "desc" } });
 }
 export async function createCategory(data: any) {
+  await assertAdmin();
   if (data.slug) {
     const existing = await prisma.digitalCategory.findUnique({ where: { slug: data.slug } });
     if (existing) {
@@ -220,8 +253,15 @@ export async function getProducts() {
     prisma.appSetting.findUnique({ where: { key: "EBOOK_SORT_ORDER" } }).catch(() => null),
   ]);
 
-  const withBuyers = await attachComputedBuyerCounts(rawProducts);
-  const products = await attachLightweightCovers(withBuyers, true);
+  const [withBuyers, withCovers] = await Promise.all([
+    attachComputedBuyerCounts(rawProducts),
+    attachLightweightCovers(rawProducts, true),
+  ]);
+  const coverMap = new Map(withCovers.map((c) => [c.id, c]));
+  const products = withBuyers.map((p) => {
+    const cov = coverMap.get(p.id);
+    return cov ? { ...p, coverUrl: cov.coverUrl, coverUrl2: cov.coverUrl2, coverUrl3: cov.coverUrl3 } : p;
+  });
 
   if (sortSetting?.value) {
     try {
@@ -242,6 +282,7 @@ export async function getProducts() {
 }
 
 export async function toggleProductStatus(id: string, isActive: boolean) {
+  await assertAdmin();
   await prisma.digitalProduct.update({
     where: { id },
     data: { isActive },
@@ -250,6 +291,7 @@ export async function toggleProductStatus(id: string, isActive: boolean) {
 }
 
 export async function reorderProducts(orderedIds: string[]) {
+  await assertAdmin();
   await prisma.appSetting.upsert({
     where: { key: "EBOOK_SORT_ORDER" },
     update: { value: JSON.stringify(orderedIds) },
@@ -259,6 +301,7 @@ export async function reorderProducts(orderedIds: string[]) {
 }
 
 export async function createProduct(data: any) {
+  await assertAdmin();
   if (data.slug) {
     const existing = await prisma.digitalProduct.findUnique({ where: { slug: data.slug } });
     if (existing) {
@@ -276,11 +319,13 @@ export async function createProduct(data: any) {
 }
 
 export async function deleteCategory(id: string) {
+  await assertAdmin();
   await prisma.digitalCategory.delete({ where: { id } });
   revalidateEbookCatalog();
 }
 
 export async function deleteProduct(id: string) {
+  await assertAdmin();
   const prod = await prisma.digitalProduct.findUnique({
     where: { id },
     select: { coverUrl: true, coverUrl2: true, coverUrl3: true },
@@ -295,6 +340,7 @@ export async function deleteProduct(id: string) {
 }
 
 export async function updateProduct(id: string, data: any) {
+  await assertAdmin();
   // Jalankan pengecekan duplikasi slug dan pengambilan data produk lama secara paralel (menghemat 1 roundtrip network)
   const [existing, oldProduct] = await Promise.all([
     data.slug
@@ -358,8 +404,12 @@ export async function updateProduct(id: string, data: any) {
 }
 
 export async function createVoucher(data: { code: string; discountType: string; discountValue: number; digitalProductId: string }) {
+  await assertAdmin();
   await prisma.voucher.create({ data });
+  revalidateEbookCatalog();
 }
 export async function deleteVoucher(id: string) {
+  await assertAdmin();
   await prisma.voucher.delete({ where: { id } });
+  revalidateEbookCatalog();
 }

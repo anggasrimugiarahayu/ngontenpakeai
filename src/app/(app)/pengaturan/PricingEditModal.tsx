@@ -185,7 +185,7 @@ export function PricingEditModal({
           ),
         };
 
-        const nextState = {
+        const nextState: PricingPackagesConfig = {
           ...prev,
           packages: newPackages,
           categoryOrder: newCatOrder,

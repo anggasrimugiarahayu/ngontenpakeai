@@ -13,7 +13,14 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const accessCheck = await verifyFeatureAccess(session.user.id, "Bio Builder", session.user.email);
+    const [accessCheck, body, dbUser] = await Promise.all([
+      verifyFeatureAccess(session.user.id, "Bio Builder", session.user.email),
+      req.json(),
+      prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { googleApiKey: true }
+      })
+    ]);
     if (!accessCheck.authorized) {
       return NextResponse.json({
         error: accessCheck.code === "QUOTA_EXCEEDED" ? "QUOTA_EXCEEDED" : accessCheck.reason,
@@ -22,7 +29,6 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
 
-    const body = await req.json();
     const { action, payload, blueprintId } = body;
     
     if (!action || !payload || !blueprintId) {
@@ -276,10 +282,6 @@ ${blueprintContext}
     }
 
     
-    const dbUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { googleApiKey: true }
-    });
     const apiKey = await getApiKey(dbUser?.googleApiKey);
     if (!apiKey) {
       return NextResponse.json({ error: "API Key tidak ditemukan. Silakan tambahkan di Pengaturan." }, { status: 400 });

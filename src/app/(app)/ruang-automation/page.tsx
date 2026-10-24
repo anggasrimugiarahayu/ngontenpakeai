@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { getInstagramAutomationDataAction } from "@/app/actions/instagramAutomation";
-import { getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
+import { getCachedAppUser } from "@/lib/cache";
 import RuangAutomationClient from "./RuangAutomationClient";
 
 export const metadata = {
