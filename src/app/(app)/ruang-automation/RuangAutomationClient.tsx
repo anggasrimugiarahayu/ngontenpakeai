@@ -1190,7 +1190,7 @@ export default function RuangAutomationClient({
       askContactInvalidMessage: config.askContactInvalidMessage || "Waduh, format emailnya kayaknya belum pas nih kak 😅 Coba cek dan ketik ulang email aktif kamu ya 🙏",
       featureLinkTracking: config.featureLinkTracking ?? true,
       replyHeartReaction: config.replyHeartReaction ?? false,
-      isActive: rule.isActive ?? true,
+      isActive: (rule.name || "").includes("(Salinan)") ? true : (rule.isActive ?? true),
     });
     setIsTargetDropdownOpen(false);
     setIsFrequencyDropdownOpen(false);
@@ -1225,7 +1225,7 @@ export default function RuangAutomationClient({
       try {
         const res = await duplicateAutomationRuleAction(ruleId);
         if (res.success) {
-          showToast("success", "Salinan aturan berhasil dibuat!");
+          showToast("success", "Salinan aturan berhasil dibuat! (Status awal: Dijeda)");
           await mutateData();
         } else {
           showToast("error", (res as any).error || "Gagal membuat salinan aturan");
@@ -1361,16 +1361,16 @@ export default function RuangAutomationClient({
           .filter(Boolean);
 
     const chosenPostId = ruleFormData.targetOtomasi === "Postingan Tertentu"
-      ? (selectedPost?.id || ruleFormData.postId || (feedPosts[0]?.id) || "post_1")
+      ? (ruleFormData.postId || selectedPost?.id || (feedPosts[0]?.id) || "post_1")
       : ruleFormData.targetOtomasi === "Story Tertentu"
-      ? (selectedStory?.id || ruleFormData.postId || (activeStories[0]?.id) || "story_1")
+      ? (ruleFormData.postId || selectedStory?.id || (activeStories[0]?.id) || "story_1")
       : undefined;
 
     const existingRuleConfig = editingRule ? parseClientRuleConfig(editingRule.dmMessage) : {};
     const postCoverUrl = ruleFormData.targetOtomasi === "Postingan Tertentu"
-      ? (selectedPost?.image || selectedPost?.thumb || getCachedCoverUrl(chosenPostId) || existingRuleConfig.postCoverUrl || null)
+      ? (selectedPost?.image || selectedPost?.thumb || getCachedCoverUrl(chosenPostId) || (ruleFormData.postId === editingRule?.specificPostId ? existingRuleConfig.postCoverUrl : null) || null)
       : ruleFormData.targetOtomasi === "Story Tertentu"
-      ? (selectedStory?.image || selectedStory?.thumb || getCachedCoverUrl(chosenPostId) || existingRuleConfig.postCoverUrl || null)
+      ? (selectedStory?.image || selectedStory?.thumb || getCachedCoverUrl(chosenPostId) || (ruleFormData.postId === editingRule?.specificPostId ? existingRuleConfig.postCoverUrl : null) || null)
       : null;
 
     if (chosenPostId && postCoverUrl) {
@@ -1425,7 +1425,9 @@ export default function RuangAutomationClient({
       storyMentionFrequency: ruleFormData.storyMentionFrequency || "24 jam sekali",
       keywordRule: ruleFormData.keywordRule,
       triggerCommentType: isStoryMentionRule ? "ALL" : (isLiveRulePayload || isDmRulePayload) ? "KEYWORDS" : ruleFormData.triggerCommentType,
-      postPermalink: selectedPost?.permalink || existingRuleConfig.postPermalink || null,
+      postPermalink: ruleFormData.targetOtomasi === "Postingan Tertentu"
+        ? (selectedPost?.permalink || (ruleFormData.postId === editingRule?.specificPostId ? existingRuleConfig.postPermalink : null) || null)
+        : null,
       postCoverUrl: postCoverUrl || null,
     };
     const serializedDm = JSON.stringify(extendedConfig);

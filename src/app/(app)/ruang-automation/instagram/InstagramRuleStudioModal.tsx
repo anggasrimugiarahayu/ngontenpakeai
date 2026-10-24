@@ -120,9 +120,20 @@ export function InstagramRuleStudioModal({
           <div className="w-full max-w-6xl h-[92vh] max-h-[860px] bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
             {/* Top Header Mobile / Tablet Close */}
             <div className="lg:hidden flex items-center justify-between px-6 py-3 border-b border-gray-100 dark:border-[#2C3246]">
-              <h3 className="font-bold text-sm text-gray-900 dark:text-white">
-                {editingRule ? "Edit Otomasi" : "Buat Otomasi Baru"}
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="font-bold text-sm text-gray-900 dark:text-white">
+                  {editingRule ? "Edit Otomasi" : "Buat Otomasi Baru"}
+                </h3>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    ruleFormData.isActive
+                      ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400"
+                      : "bg-amber-500/15 text-amber-500 dark:text-amber-400"
+                  }`}
+                >
+                  {ruleFormData.isActive ? "Aktif" : "Dijeda"}
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={() => setIsRuleModalOpen(false)}
@@ -136,11 +147,39 @@ export function InstagramRuleStudioModal({
             <div className="flex-1 grid grid-cols-1 lg:grid-cols-12 overflow-hidden">
               {/* LEFT COLUMN: Form Builder (42% Ratio) */}
               <div className="lg:col-span-5 xl:col-span-5 p-6 md:p-8 overflow-y-auto space-y-6 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-[#2C3246]">
-                <div>
-                  <h2 className="text-xl md:text-2xl font-black font-heading text-gray-900 dark:text-white">
-                    {editingRule ? "Edit Otomasi" : "Buat Otomasi Baru"}
-                  </h2>
+                <div className="flex items-center justify-between pb-3 border-b border-gray-100 dark:border-[#2C3246]">
+                  <div>
+                    <h2 className="text-xl md:text-2xl font-black font-heading text-gray-900 dark:text-white">
+                      {editingRule ? "Edit Otomasi" : "Buat Otomasi Baru"}
+                    </h2>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                      {ruleFormData.isActive
+                        ? "Aturan aktif & siap merespons komentar"
+                        : "Aturan sedang dijeda (tidak akan merespons komentar)"}
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className={`text-xs font-bold ${ruleFormData.isActive ? "text-emerald-600 dark:text-emerald-400" : "text-amber-500"}`}>
+                      {ruleFormData.isActive ? "Aktif" : "Dijeda"}
+                    </span>
+                    <Switch
+                      checked={Boolean(ruleFormData.isActive)}
+                      onChange={(val) => setRuleFormData({ ...ruleFormData, isActive: val })}
+                    />
+                  </div>
                 </div>
+
+                {!ruleFormData.isActive && (
+                  <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 flex items-start gap-2.5 text-xs">
+                    <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-amber-500" />
+                    <div>
+                      <p className="font-bold">Status: Aturan Sedang Dijeda</p>
+                      <p className="text-[11px] opacity-90 mt-0.5">
+                        Komentar atau pesan Instagram tidak akan dibalas otomatis selama aturan ini dijeda. Geser toggle di atas ke <strong>Aktif</strong> agar sistem langsung merespons setelah disimpan.
+                      </p>
+                    </div>
+                  </div>
+                )}
 
                 <form onSubmit={handleSaveRule} className="space-y-6">
                   {/* 1. Nama Otomasi */}

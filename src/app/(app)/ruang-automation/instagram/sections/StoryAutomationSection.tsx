@@ -260,15 +260,49 @@ export function StoryRuleCard({
           </div>
 
           {/* Baris 2: Status */}
-          <div className="leading-none">
+          <div className="flex items-center gap-2 leading-none">
             {!isAccountLinked ? (
-              <span className="text-xs sm:text-sm font-medium text-gray-400 dark:text-gray-500">
-                Terputus
+              <span className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-gray-400 dark:text-gray-500">
+                <span className="w-2 h-2 rounded-full bg-gray-400" />
+                Akun Terputus
               </span>
+            ) : rule.isActive ? (
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  Aktif
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleRule(rule.id, true);
+                  }}
+                  className="px-2 py-0.5 rounded text-[10px] font-semibold text-gray-400 hover:text-amber-600 hover:bg-amber-500/10 transition-colors cursor-pointer"
+                  title="Jeda aturan ini"
+                >
+                  Jeda
+                </button>
+              </div>
             ) : (
-              <span className="text-xs sm:text-sm font-medium text-emerald-600 dark:text-emerald-400">
-                Terhubung
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="flex items-center gap-1.5 text-xs sm:text-sm font-medium text-amber-500 dark:text-amber-400">
+                  <span className="w-2 h-2 rounded-full bg-amber-500" />
+                  Dijeda (Nonaktif)
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleToggleRule(rule.id, false);
+                  }}
+                  className="px-2.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/25 transition-colors cursor-pointer flex items-center gap-1"
+                  title="Aktifkan aturan ini"
+                >
+                  <Play className="w-2.5 h-2.5 fill-current" />
+                  <span>Aktifkan</span>
+                </button>
+              </div>
             )}
           </div>
 
