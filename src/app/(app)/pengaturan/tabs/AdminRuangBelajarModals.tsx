@@ -3,7 +3,7 @@
 import React from "react";
 import toast from "react-hot-toast";
 import { mutate } from "swr";
-import { BookOpen, Tag, Ticket, X, Trash2, ChevronDown } from "lucide-react";
+import { BookOpen, Tag, Ticket, X, Trash2, ChevronDown, Save, Loader2 } from "lucide-react";
 import {
   createCategory,
   deleteCategory,
@@ -71,6 +71,7 @@ export function AdminRuangBelajarModals({
       (p.vouchers || []).map((v: any) => ({ ...v, productTitle: p.title }))
     ) || [];
 
+  const [isSaving, setIsSaving] = React.useState(false);
   const [addCategoryId, setAddCategoryId] = React.useState("");
 
   return (
@@ -93,12 +94,20 @@ export function AdminRuangBelajarModals({
 
             <form
               action={async (formData) => {
-                setLoading(true);
-                await createCategory({
-                  name: formData.get("name"),
-                  slug: formData.get("slug"),
-                });
-                setLoading(false);
+                setIsSaving(true);
+                try {
+                  await createCategory({
+                    name: formData.get("name"),
+                    slug: formData.get("slug"),
+                  });
+                  mutate("pengaturan");
+                  toast.success("Kategori berhasil dibuat!");
+                } catch (e) {
+                  console.error(e);
+                  toast.error("Gagal membuat kategori.");
+                } finally {
+                  setIsSaving(false);
+                }
               }}
               className="flex flex-col gap-4 mb-4 pb-6 border-b border-gray-100 dark:border-[#2C3246]"
             >
@@ -126,10 +135,20 @@ export function AdminRuangBelajarModals({
               </div>
               <button
                 type="submit"
-                disabled={loading}
-                className="w-full bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white py-2.5 mt-2 rounded-xl text-sm font-bold shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-colors"
+                disabled={isSaving}
+                className="w-full flex items-center justify-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white py-2.5 mt-2 rounded-xl text-sm font-bold shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all cursor-pointer"
               >
-                Simpan Kategori Baru
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Menyimpan...</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-4 h-4" />
+                    <span>Simpan Kategori</span>
+                  </>
+                )}
               </button>
             </form>
 
@@ -258,26 +277,42 @@ export function AdminRuangBelajarModals({
                       !newVoucher.digitalProductId
                     )
                       return toast.error("Lengkapi data dan pilih E-Book!");
-                    setLoading(true);
-                    await createVoucher({
-                      code: newVoucher.code.toUpperCase(),
-                      discountType: newVoucher.discountType,
-                      discountValue: newVoucher.discountValue,
-                      digitalProductId: newVoucher.digitalProductId,
-                    });
-                    setNewVoucher({
-                      code: "",
-                      discountType: "PERCENTAGE",
-                      discountValue: 0,
-                      digitalProductId: "",
-                    });
-                    toast.success("Voucher dibuat! Harap refresh halaman.");
-                    setLoading(false);
+                    setIsSaving(true);
+                    try {
+                      await createVoucher({
+                        code: newVoucher.code.toUpperCase(),
+                        discountType: newVoucher.discountType,
+                        discountValue: newVoucher.discountValue,
+                        digitalProductId: newVoucher.digitalProductId,
+                      });
+                      setNewVoucher({
+                        code: "",
+                        discountType: "PERCENTAGE",
+                        discountValue: 0,
+                        digitalProductId: "",
+                      });
+                      mutate("pengaturan");
+                      toast.success("Voucher berhasil dibuat!");
+                    } catch (e) {
+                      toast.error("Gagal membuat voucher.");
+                    } finally {
+                      setIsSaving(false);
+                    }
                   }}
-                  disabled={loading}
-                  className="w-full bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold py-2.5 rounded-xl shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all"
+                  disabled={isSaving}
+                  className="w-full flex items-center justify-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold py-2.5 rounded-xl shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all cursor-pointer"
                 >
-                  Simpan Voucher Baru
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Simpan Voucher</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -385,15 +420,18 @@ export function AdminRuangBelajarModals({
                     ? parseInt(formData.get("originalPrice") as string)
                     : 0,
                 };
-                setShowAddProduct(false);
-                setUploadedUrls({});
-                toast.success("E-book berhasil ditambahkan!");
+                setIsSaving(true);
                 try {
                   await createProduct(newPayload);
                   mutate("pengaturan");
+                  setShowAddProduct(false);
+                  setUploadedUrls({});
+                  toast.success("E-book berhasil ditambahkan!");
                 } catch (err) {
                   console.error("Gagal menambahkan e-book:", err);
                   toast.error("Gagal menambahkan e-book.");
+                } finally {
+                  setIsSaving(false);
                 }
               }}
               className="flex flex-col gap-3"
@@ -632,10 +670,20 @@ export function AdminRuangBelajarModals({
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm shadow-orange-500/20 disabled:opacity-50 hover:scale-105 transition-transform"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm shadow-orange-500/20 disabled:opacity-50 hover:scale-105 transition-all cursor-pointer"
                 >
-                  Simpan E-Book
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Simpan E-Book</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -733,20 +781,36 @@ export function AdminRuangBelajarModals({
                   onClick={async () => {
                     if (!newVoucher.code || !newVoucher.discountValue)
                       return toast.error("Lengkapi data!");
-                    setLoading(true);
-                    await createVoucher({
-                      ...newVoucher,
-                      code: newVoucher.code.toUpperCase(),
-                      digitalProductId: managingVouchers.id,
-                    });
-                    setNewVoucher({ code: "", discountType: "PERCENTAGE", discountValue: 0 });
-                    toast.success("Voucher dibuat! Harap refresh halaman.");
-                    setLoading(false);
+                    setIsSaving(true);
+                    try {
+                      await createVoucher({
+                        ...newVoucher,
+                        code: newVoucher.code.toUpperCase(),
+                        digitalProductId: managingVouchers.id,
+                      });
+                      setNewVoucher({ code: "", discountType: "PERCENTAGE", discountValue: 0 });
+                      mutate("pengaturan");
+                      toast.success("Voucher berhasil dibuat!");
+                    } catch {
+                      toast.error("Gagal membuat voucher.");
+                    } finally {
+                      setIsSaving(false);
+                    }
                   }}
-                  disabled={loading}
-                  className="w-full bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold py-2.5 rounded-xl shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all"
+                  disabled={isSaving}
+                  className="w-full flex items-center justify-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold py-2.5 rounded-xl shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all cursor-pointer"
                 >
-                  Simpan Voucher
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Simpan Voucher</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>
@@ -809,17 +873,18 @@ export function AdminRuangBelajarModals({
                     : 0,
                 };
 
-                // Langsung tutup modal seketika dan beri toast sukses
-                setEditingProduct(null);
-                setUploadedUrls({});
-                toast.success("Perubahan e-book berhasil disimpan!");
-
+                setIsSaving(true);
                 try {
                   await updateProduct(prodId, updatePayload);
                   mutate("pengaturan");
+                  setEditingProduct(null);
+                  setUploadedUrls({});
+                  toast.success("Perubahan e-book berhasil disimpan!");
                 } catch (err) {
                   console.error("Gagal update e-book:", err);
                   toast.error("Gagal menyimpan perubahan e-book.");
+                } finally {
+                  setIsSaving(false);
                 }
               }}
               className="flex flex-col gap-3"
@@ -1091,10 +1156,20 @@ export function AdminRuangBelajarModals({
                 </button>
                 <button
                   type="submit"
-                  disabled={loading}
-                  className="bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm shadow-orange-500/20 disabled:opacity-50 hover:scale-105 transition-transform"
+                  disabled={isSaving}
+                  className="flex items-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm shadow-orange-500/20 disabled:opacity-50 hover:scale-105 transition-all cursor-pointer"
                 >
-                  Simpan Perubahan
+                  {isSaving ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Menyimpan...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-4 h-4" />
+                      <span>Simpan Perubahan</span>
+                    </>
+                  )}
                 </button>
               </div>
             </form>

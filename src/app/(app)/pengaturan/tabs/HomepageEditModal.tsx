@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { X, Check, Tag } from "lucide-react";
+import { X, Save, Loader2, Tag } from "lucide-react";
 import { HomepageCardConfig } from "@/lib/homepage-cards";
 
 interface HomepageEditModalProps {
@@ -184,10 +184,19 @@ export function HomepageEditModal({
             <button
               type="submit"
               disabled={isSaving}
-              className="px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-all shadow-sm shadow-orange-500/20 flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all shadow-sm shadow-orange-500/20 disabled:opacity-50 cursor-pointer"
             >
-              <Check className="w-4 h-4" />
-              {isSaving ? "Menyimpan..." : "Simpan Perubahan"}
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Simpan Perubahan</span>
+                </>
+              )}
             </button>
           </div>
         </form>

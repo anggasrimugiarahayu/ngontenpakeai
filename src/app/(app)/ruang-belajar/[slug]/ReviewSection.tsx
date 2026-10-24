@@ -2,7 +2,7 @@
 
 import toast from "react-hot-toast";
 import { useState } from "react";
-import { Star } from "lucide-react";
+import { Star, Save, Loader2 } from "lucide-react";
 import { addReview } from "@/app/actions/ruangBelajar";
 
 export default function ReviewSection({ 
@@ -102,9 +102,19 @@ export default function ReviewSection({
             <button 
               type="submit"
               disabled={isSubmitting || rating === 0}
-              className="px-6 py-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold rounded-lg shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all"
+              className="flex items-center gap-2 px-6 py-2.5 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold rounded-xl shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all cursor-pointer text-sm"
             >
-              {isSubmitting ? "Menyimpan..." : "Simpan Ulasan"}
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Simpan Ulasan</span>
+                </>
+              )}
             </button>
           </div>
         </form>

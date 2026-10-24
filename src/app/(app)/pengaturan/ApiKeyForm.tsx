@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { updateApiKey, deleteApiKey } from "@/app/actions/pengaturan";
-import { Key, Trash2, ExternalLink } from "lucide-react";
+import { Key, Trash2, ExternalLink, Save, Loader2 } from "lucide-react";
 
 import Swal from 'sweetalert2';
 const confirmSwal = async (text: string) => {
@@ -130,9 +130,19 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
           <button
             type="submit"
             disabled={isLoading || !keyValue.trim()}
-            className="w-full md:w-auto px-6 py-2.5 md:py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] text-white font-bold transition-all disabled:opacity-50 shadow-sm shadow-orange-500/20 cursor-pointer"
+            className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 md:py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold transition-all disabled:opacity-50 shadow-sm shadow-orange-500/20 cursor-pointer"
           >
-            {isLoading ? "Menyimpan..." : "Simpan"}
+            {isLoading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Menyimpan...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>Simpan Perubahan</span>
+              </>
+            )}
           </button>
         </div>
       </form>

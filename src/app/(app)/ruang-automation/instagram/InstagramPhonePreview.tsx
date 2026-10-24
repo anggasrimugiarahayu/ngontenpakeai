@@ -11,11 +11,13 @@ import {
   Heart,
   Home,
   Image as ImageIcon,
+  Loader2,
   MessageCircle,
   Mic,
   Phone,
   Plus,
   RefreshCw,
+  Save,
   Search,
   Send,
   Video,
@@ -115,9 +117,19 @@ export function InstagramPhonePreview({
             type="button"
             onClick={handleSaveRule}
             disabled={isPending || !ruleFormData.name.trim()}
-            className="px-4 py-1.5 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white text-xs font-bold shadow-sm shadow-orange-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white text-xs font-bold shadow-sm shadow-orange-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
           >
-            {isPending ? "Menyimpan..." : editingRule ? "Simpan Perubahan" : "Buat Otomasi"}
+            {isPending ? (
+              <>
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                <span>Menyimpan...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-3.5 h-3.5" />
+                <span>{editingRule ? "Simpan Perubahan" : "Buat Otomasi"}</span>
+              </>
+            )}
           </button>
         </div>
       </div>

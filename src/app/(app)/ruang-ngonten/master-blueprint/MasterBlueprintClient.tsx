@@ -378,9 +378,19 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
                 </div>
               )}
             </div>
-            <button onClick={(e) => { e.preventDefault(); saveUpdatesToDB(); }} disabled={isSaving} className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm shrink-0 transition-all bg-[#f97316] text-white hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] shadow-sm shadow-orange-500/20 disabled:opacity-50">
-                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />} Simpan
-              </button>
+            <button onClick={(e) => { e.preventDefault(); saveUpdatesToDB(); }} disabled={isSaving} className="flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-xs sm:text-sm shrink-0 transition-all bg-[#f97316] text-white hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] shadow-sm shadow-orange-500/20 disabled:opacity-50 cursor-pointer">
+              {isSaving ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Simpan Perubahan</span>
+                </>
+              )}
+            </button>
           </div>
         </div>
 

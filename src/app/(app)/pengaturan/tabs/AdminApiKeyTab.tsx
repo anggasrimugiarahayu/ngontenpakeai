@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import toast from "react-hot-toast";
-import { Key, ExternalLink, Trash2 } from "lucide-react";
+import { Key, ExternalLink, Trash2, Save, Loader2 } from "lucide-react";
 import { saveAppSetting, deleteAppSetting } from "@/app/actions/adminSettings";
 import { confirmSwal } from "./confirmSwal";
 
@@ -112,9 +112,19 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
           <button
             onClick={handleSaveApiKey}
             disabled={loading || !apiKey.trim()}
-            className="w-full md:w-auto px-6 py-2.5 md:py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] text-white font-bold transition-all disabled:opacity-50 shadow-sm shadow-orange-500/20 cursor-pointer"
+            className="w-full md:w-auto flex items-center justify-center gap-2 px-6 py-2.5 md:py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold transition-all disabled:opacity-50 shadow-sm shadow-orange-500/20 cursor-pointer"
           >
-            {loading ? "Menyimpan..." : "Simpan"}
+            {loading ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Menyimpan...</span>
+              </>
+            ) : (
+              <>
+                <Save className="w-4 h-4" />
+                <span>Simpan Perubahan</span>
+              </>
+            )}
           </button>
         </div>
       </div>

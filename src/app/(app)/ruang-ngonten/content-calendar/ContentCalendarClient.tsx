@@ -5,7 +5,7 @@ import { getBlueprintAction } from "@/app/actions/blueprint";
 import { getContentCalendarAction } from "@/app/actions/toolsData";
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Calendar, ChevronLeft, ChevronRight, X, Save, Trash2, Check, FileText } from 'lucide-react';
+import { Calendar, ChevronLeft, ChevronRight, X, Save, Trash2, Check, FileText, Loader2 } from 'lucide-react';
 
 export default function ContentCalendarClient() {
   const { data: initialData } = useSWR("contentCalendar", getContentCalendarAction);
@@ -365,7 +365,7 @@ export default function ContentCalendarClient() {
                 className={`flex items-center gap-2 px-6 py-2.5 rounded-xl font-bold transition-all text-sm shadow-sm ${savedSuccess ? 'bg-green-500 text-white border-green-500' : 'bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white border-transparent shadow-orange-500/20'} border disabled:opacity-70 cursor-pointer`}
               >
                 {isSaving ? (
-                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <Loader2 className="w-4 h-4 animate-spin" />
                 ) : savedSuccess ? (
                   <Check size={16} strokeWidth={3} />
                 ) : (

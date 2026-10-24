@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Bot, Pencil, Plus, Check } from "lucide-react";
+import { Bot, Pencil, Plus, Check, Save } from "lucide-react";
 import { Modal } from "@/components/ui/Modal";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -131,7 +131,7 @@ export function InstagramAgentModals({
               disabled={isSubmittingAgent || !editAgentName.trim()}
               isLoading={isSubmittingAgent}
               loadingText="Menyimpan..."
-              icon={<Check className="w-3.5 h-3.5" />}
+              icon={<Save className="w-3.5 h-3.5" />}
             >
               Simpan Perubahan
             </Button>
