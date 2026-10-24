@@ -7,7 +7,7 @@ import {
 } from "@/app/(app)/ruang-riset/instagram/types";
 import { getResolvedRisetConfig } from "@/lib/riset-config";
 
-// In-memory cache (15 minutes TTL) for fast repeated lookups
+// In-memory cache (15 minutes TTL) for fast repeated lookups & rate-limit protection
 const RISET_CACHE_TTL_MS = 15 * 60 * 1000;
 const risetMemoryCache = new Map<
   string,
@@ -129,7 +129,7 @@ function enrichPostsAndProfile(
 
     return {
       ...p,
-      viewsCount: Math.max(100, viewsCount),
+      viewsCount: Math.max(1, viewsCount),
     };
   });
 
@@ -287,117 +287,361 @@ async function fetchDirectInstagramApi(targetUsername: string) {
 }
 
 // ============================================================================
-// 2. Optional Background Scrapers (Web Session / RapidAPI / Meta BD if configured)
+// 2. Backend Instagram Session Extractor (INSTAGRAM_SESSION_ID in .env / AppSetting)
+// Uses Authenticated Meta Comet Relay GraphQL (PolarisProfilePageContentQuery + PolarisProfilePostsQuery)
+// Pulls 100% REAL Profile + Real Feed Posts, Carousels, & Reels for ANY Public Account
 // ============================================================================
+function computeJazoest(token: string): string {
+  let sum = 0;
+  for (let i = 0; i < token.length; i++) {
+    sum += token.charCodeAt(i);
+  }
+  return `2${sum}`;
+}
+
 async function fetchFromInstagramWebSession(
   targetUsername: string,
   rawSessionId: string
 ) {
   if (!rawSessionId) return null;
-  const sessionId = rawSessionId
+  const rawCleaned = rawSessionId
     .trim()
     .replace(/^sessionid=/i, "")
     .split(";")[0]
     .trim();
-  if (!sessionId) return null;
+  if (!rawCleaned) return null;
 
-  const headers: Record<string, string> = {
-    "x-ig-app-id": "936619743392459",
-    "User-Agent":
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
-    Accept: "*/*",
-    "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
-    Referer: `https://www.instagram.com/${targetUsername}/`,
-    "X-ASBD-ID": "129477",
-    "X-IG-WWW-Claim": "0",
-    "X-Requested-With": "XMLHttpRequest",
-    Cookie: `sessionid=${sessionId};`,
-  };
+  // Ensure sessionid is properly URL-encoded if user pasted decoded colons
+  const sessionId = rawCleaned.includes(":")
+    ? encodeURIComponent(rawCleaned)
+    : rawCleaned;
+
+  // Automatically extract ds_user_id from sessionid prefix (<user_id>%3A... or <user_id>:...)
+  const dsUserId = sessionId.split(/%3A|:/i)[0] || "";
 
   try {
-    const profileRes = await fetch(
-      `https://www.instagram.com/api/v1/users/web_profile_info/?username=${encodeURIComponent(
-        targetUsername
-      )}`,
-      { headers, cache: "no-store" }
+    // Step 1: Fetch target profile HTML with sessionid cookie to acquire fresh CSRF, LSD, fb_dtsg, actorID & profile_id
+    const pageRes = await fetch(
+      `https://www.instagram.com/${encodeURIComponent(targetUsername)}/`,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+          Accept:
+            "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+          "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
+          "Sec-Fetch-Dest": "document",
+          "Sec-Fetch-Mode": "navigate",
+          "Sec-Fetch-Site": "none",
+          Cookie: `sessionid=${sessionId}; ds_user_id=${dsUserId}; ig_nrcb=1;`,
+        },
+        cache: "no-store",
+      }
     );
-    if (!profileRes.ok) return null;
 
-    const profileJson = await profileRes.json();
-    const user = profileJson?.data?.user;
-    if (!user) return null;
+    if (!pageRes.ok) {
+      console.warn(
+        "fetchFromInstagramWebSession HTML status:",
+        pageRes.status
+      );
+      return null;
+    }
 
-    const rawProfile = {
-      username: user.username || targetUsername,
-      fullName: user.full_name || user.username || targetUsername,
-      profilePicUrl: user.profile_pic_url_hd || user.profile_pic_url || "",
-      isVerified: Boolean(user.is_verified),
-      biography: user.biography || "",
-      externalUrl: user.external_url || undefined,
-      followersCount: user.edge_followed_by?.count ?? user.follower_count ?? 0,
-      followingCount: user.edge_follow?.count ?? user.following_count ?? 0,
-      mediaCount:
-        user.edge_owner_to_timeline_media?.count ?? user.media_count ?? 0,
+    const setCookies =
+      typeof pageRes.headers.getSetCookie === "function"
+        ? pageRes.headers.getSetCookie()
+        : [];
+    const cookieJar: Record<string, string> = {
+      sessionid: sessionId,
+      ds_user_id: dsUserId,
+      ig_nrcb: "1",
     };
 
-    const timelineEdges = [
-      ...(user.edge_owner_to_timeline_media?.edges || []),
-      ...(user.edge_felix_video_timeline?.edges || []),
-    ];
+    for (const sc of setCookies) {
+      const [pair] = sc.split(";");
+      const eqIdx = pair.indexOf("=");
+      if (eqIdx > 0) {
+        const k = pair.slice(0, eqIdx).trim();
+        const v = pair.slice(eqIdx + 1).trim();
+        if (v) cookieJar[k] = v;
+      }
+    }
 
-    const rawPosts = timelineEdges
-      .map((edge: any) => {
-        const n = edge?.node;
-        if (!n) return null;
-        const code = n.shortcode || n.code || n.id;
-        if (!code) return null;
-        const isVideo =
-          Boolean(n.is_video) ||
-          n.__typename === "GraphVideo" ||
-          n.product_type === "clips";
-        const isCarousel =
-          n.__typename === "GraphSidecar" ||
-          n.product_type === "carousel_container";
+    const html = await pageRes.text();
+    const csrfToken =
+      cookieJar.csrftoken ||
+      html.match(/"csrf_token":"([^"]+)"/)?.[1] ||
+      "";
+    if (csrfToken) cookieJar.csrftoken = csrfToken;
 
-        return {
-          id: String(n.id || code),
-          shortcode: String(code),
-          caption:
-            n.edge_media_to_caption?.edges?.[0]?.node?.text ||
-            n.caption?.text ||
-            "",
-          mediaType: (isVideo
-            ? "VIDEO"
-            : isCarousel
-            ? "CAROUSEL_ALBUM"
-            : "IMAGE") as "VIDEO" | "IMAGE" | "CAROUSEL_ALBUM",
-          thumbnailUrl: n.display_url || n.thumbnail_src || "",
-          permalink: isVideo
-            ? `https://www.instagram.com/reel/${code}/`
-            : `https://www.instagram.com/p/${code}/`,
-          likesCount:
-            n.edge_liked_by?.count ??
-            n.edge_media_preview_like?.count ??
-            n.like_count ??
-            0,
-          commentsCount:
-            n.edge_media_to_comment?.count ?? n.comment_count ?? 0,
-          viewsCount:
-            n.video_view_count ?? n.play_count ?? n.view_count ?? undefined,
-          timestamp: n.taken_at_timestamp
-            ? new Date(n.taken_at_timestamp * 1000).toISOString()
-            : new Date().toISOString(),
-        };
+    const lsdToken =
+      html.match(/"LSD",\[\],\{"token":"([^"]+)"\}/)?.[1] || "";
+    const fbDtsg =
+      html.match(/"DTSGInitialData",\[\],\{"token":"([^"]+)"\}/)?.[1] || "";
+    const actorId = html.match(/"actorID":"([^"]+)"/)?.[1] || "0";
+    const spinR = html.match(/"__spin_r":([0-9]+)/)?.[1] || "1051603083";
+    const profileId =
+      (
+        html.match(/"profile_id":"([0-9]+)"/) ||
+        html.match(/"page_id":"profilePage_([0-9]+)"/)
+      )?.[1] || "";
+
+    if (!lsdToken || !fbDtsg) {
+      console.warn("fetchFromInstagramWebSession missing LSD or fb_dtsg");
+      return null;
+    }
+
+    const cookieHeader = Object.entries(cookieJar)
+      .map(([k, v]) => `${k}=${v}`)
+      .join("; ");
+
+    const commonGqlHeaders: Record<string, string> = {
+      "User-Agent":
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+      "Content-Type": "application/x-www-form-urlencoded",
+      Accept: "*/*",
+      "Accept-Language": "en-US,en;q=0.9,id;q=0.8",
+      "X-IG-App-ID": "936619743392459",
+      "X-IG-D": "www",
+      "X-FB-LSD": lsdToken,
+      "X-CSRFToken": csrfToken,
+      "X-ASBD-ID": "129477",
+      "Sec-Fetch-Dest": "empty",
+      "Sec-Fetch-Mode": "cors",
+      "Sec-Fetch-Site": "same-origin",
+      Referer: `https://www.instagram.com/${targetUsername}/`,
+      Origin: "https://www.instagram.com",
+      Cookie: cookieHeader,
+    };
+
+    const jazoest = computeJazoest(fbDtsg);
+
+    // Step 2: Execute PolarisProfilePageContentQuery (28717443601247930) & PolarisProfilePostsQuery (29156678094015645) in parallel
+    const postVars = {
+      data: {
+        count: 33,
+        include_reel_media_seen_timestamp: true,
+        include_relationship_info: true,
+        latest_besties_reel_media: true,
+        latest_reel_media: true,
+      },
+      username: targetUsername,
+      __relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider: true,
+      __relay_internal__pv__PolarisShortDramaEnabledrelayprovider: false,
+      __relay_internal__pv__PolarisSEOIsCrawlerrelayprovider: false,
+      __relay_internal__pv__PolarisThreadsStyleCommentsEnabledrelayprovider: true,
+      __relay_internal__pv__PolarisReelsRecoDebugOverlayEnabledrelayprovider: false,
+    };
+
+    const postBody = new URLSearchParams({
+      av: actorId,
+      __d: "www",
+      __user: "0",
+      __a: "1",
+      __req: "2",
+      dpr: "2",
+      __ccg: "EXCELLENT",
+      __rev: spinR,
+      fb_dtsg: fbDtsg,
+      jazoest,
+      lsd: lsdToken,
+      fb_api_caller_class: "RelayModern",
+      fb_api_req_friendly_name: "PolarisProfilePostsQuery",
+      variables: JSON.stringify(postVars),
+      server_timestamps: "true",
+      doc_id: "29156678094015645",
+    });
+
+    const profilePromise = profileId
+      ? fetch("https://www.instagram.com/graphql/query", {
+          method: "POST",
+          headers: {
+            ...commonGqlHeaders,
+            "X-FB-Friendly-Name": "PolarisProfilePageContentQuery",
+          },
+          body: new URLSearchParams({
+            av: actorId,
+            __d: "www",
+            __user: "0",
+            __a: "1",
+            __req: "1",
+            dpr: "2",
+            __ccg: "EXCELLENT",
+            __rev: spinR,
+            fb_dtsg: fbDtsg,
+            jazoest,
+            lsd: lsdToken,
+            fb_api_caller_class: "RelayModern",
+            fb_api_req_friendly_name: "PolarisProfilePageContentQuery",
+            variables: JSON.stringify({
+              enable_integrity_filters: true,
+              id: profileId,
+              render_surface: "PROFILE",
+              __relay_internal__pv__PolarisCannesGuardianExperienceEnabledrelayprovider: true,
+              __relay_internal__pv__PolarisCASB976ProfileEnabledrelayprovider: false,
+              __relay_internal__pv__PolarisProfileInformTreatmentBannerEnabledrelayprovider: false,
+              __relay_internal__pv__PolarisWebSchoolsEnabledrelayprovider: false,
+              __relay_internal__pv__PolarisProfileRingsGradientEnabledrelayprovider: false,
+              __relay_internal__pv__PolarisRepostsConsumptionEnabledrelayprovider: false,
+              __relay_internal__pv__PolarisShortDramaEnabledrelayprovider: false,
+            }),
+            server_timestamps: "true",
+            doc_id: "28717443601247930",
+          }).toString(),
+          cache: "no-store",
+        })
+          .then(async (r) => {
+            const txt = (await r.text()).replace(/^for\s*\(;;\);/, "");
+            return txt.startsWith("{") ? JSON.parse(txt) : null;
+          })
+          .catch(() => null)
+      : Promise.resolve(null);
+
+    const postsPromise = fetch("https://www.instagram.com/graphql/query", {
+      method: "POST",
+      headers: {
+        ...commonGqlHeaders,
+        "X-FB-Friendly-Name": "PolarisProfilePostsQuery",
+      },
+      body: postBody.toString(),
+      cache: "no-store",
+    })
+      .then(async (r) => {
+        const txt = (await r.text()).replace(/^for\s*\(;;\);/, "");
+        return txt.startsWith("{") ? JSON.parse(txt) : null;
       })
-      .filter(Boolean) as any[];
+      .catch(() => null);
 
+    const [profileJson, postsJson] = await Promise.all([
+      profilePromise,
+      postsPromise,
+    ]);
+
+    const edges =
+      postsJson?.data?.xdt_api__v1__feed__user_timeline_graphql_connection
+        ?.edges || [];
+    const firstNodeUser = edges[0]?.node?.user;
+    const gqlUser = profileJson?.data?.user || firstNodeUser;
+
+    if (!gqlUser && edges.length === 0) {
+      return null;
+    }
+
+    const rawProfile = {
+      username: gqlUser?.username || targetUsername,
+      fullName:
+        gqlUser?.full_name || gqlUser?.username || targetUsername,
+      profilePicUrl:
+        gqlUser?.hd_profile_pic_url_info?.url ||
+        gqlUser?.profile_pic_url_hd ||
+        gqlUser?.profile_pic_url ||
+        firstNodeUser?.hd_profile_pic_url_info?.url ||
+        firstNodeUser?.profile_pic_url ||
+        "",
+      isVerified: Boolean(
+        gqlUser?.is_verified ?? firstNodeUser?.is_verified
+      ),
+      biography: gqlUser?.biography || "",
+      externalUrl:
+        gqlUser?.external_url ||
+        gqlUser?.bio_links?.[0]?.url ||
+        undefined,
+      followersCount:
+        gqlUser?.follower_count ??
+        gqlUser?.edge_followed_by?.count ??
+        0,
+      followingCount:
+        gqlUser?.following_count ??
+        gqlUser?.edge_follow?.count ??
+        0,
+      mediaCount:
+        gqlUser?.media_count ??
+        gqlUser?.edge_owner_to_timeline_media?.count ??
+        edges.length,
+    };
+
+    const postMap = new Map<
+      string,
+      {
+        id: string;
+        shortcode: string;
+        caption: string;
+        mediaType: "VIDEO" | "IMAGE" | "CAROUSEL_ALBUM";
+        thumbnailUrl: string;
+        permalink: string;
+        likesCount: number;
+        commentsCount: number;
+        viewsCount?: number;
+        timestamp: string;
+      }
+    >();
+
+    for (const edge of edges) {
+      const m = edge?.node;
+      if (!m) continue;
+      const code = m.code || m.shortcode || m.pk || m.id;
+      if (!code) continue;
+
+      const isVideo =
+        m.media_type === 2 ||
+        m.product_type === "clips" ||
+        Boolean(m.video_versions?.length);
+      const isCarousel =
+        m.media_type === 8 ||
+        m.product_type === "carousel_container" ||
+        Boolean(m.carousel_media?.length);
+
+      const thumb =
+        m.image_versions2?.candidates?.[0]?.url ||
+        m.carousel_media?.[0]?.image_versions2?.candidates?.[0]?.url ||
+        m.display_uri ||
+        m.display_url ||
+        "";
+
+      const viewsCount =
+        m.view_count ?? m.play_count ?? m.video_view_count ?? undefined;
+      const likesCount = Math.max(0, m.like_count ?? 0);
+      const commentsCount = Math.max(0, m.comment_count ?? 0);
+      const caption =
+        typeof m.caption === "string" ? m.caption : m.caption?.text || "";
+
+      postMap.set(String(code), {
+        id: String(m.pk || m.id || code),
+        shortcode: String(code),
+        caption,
+        mediaType: isVideo
+          ? "VIDEO"
+          : isCarousel
+          ? "CAROUSEL_ALBUM"
+          : "IMAGE",
+        thumbnailUrl: thumb,
+        permalink: isVideo
+          ? `https://www.instagram.com/reel/${code}/`
+          : `https://www.instagram.com/p/${code}/`,
+        likesCount,
+        commentsCount,
+        viewsCount:
+          typeof viewsCount === "number" && viewsCount > 0
+            ? viewsCount
+            : undefined,
+        timestamp: m.taken_at
+          ? new Date(m.taken_at * 1000).toISOString()
+          : new Date().toISOString(),
+      });
+    }
+
+    const rawPosts = Array.from(postMap.values());
     if (rawPosts.length === 0) return null;
     return enrichPostsAndProfile(rawProfile, rawPosts);
-  } catch {
+  } catch (err) {
+    console.error("fetchFromInstagramWebSession error:", err);
     return null;
   }
 }
 
+// ============================================================================
+// 3. RapidAPI Instagram Scraper (Fallback if RAPIDAPI_KEY is in .env)
+// ============================================================================
 async function fetchFromRapidApiInstagramScraper(
   targetUsername: string,
   apiKey: string,
@@ -501,9 +745,7 @@ async function fetchFromRapidApiInstagramScraper(
 }
 
 // ============================================================================
-// 3. Zero-Config Real Instagram Post Hydrator via Meta Crawler Protocol
-// Fetches LIVE Fresh Thumbnail (`og:image`), LIVE Likes, LIVE Comments, & Caption
-// directly from https://www.instagram.com/p/{shortcode}/ with zero login required!
+// 4. Verified Shortcode Hydrator (For @creativemuslim.co when sessionid is not yet set)
 // ============================================================================
 const VERIFIED_ACCOUNT_SHORTCODES: Record<
   string,
@@ -527,7 +769,6 @@ const VERIFIED_ACCOUNT_SHORTCODES: Record<
 
 async function hydrateLiveInstagramPostByShortcode(
   code: string,
-  targetUsername: string,
   baselineViews?: number
 ) {
   try {
@@ -620,281 +861,107 @@ async function hydrateLiveInstagramPostByShortcode(
       viewsCount: computedViews,
       timestamp,
     };
-  } catch (err) {
-    console.warn(`hydrateLiveInstagramPostByShortcode(${code}) error:`, err);
+  } catch {
     return null;
   }
 }
 
-// ============================================================================
-// 4. Automatic Zero-Config Public Account Analyzer (Works for ANY Instagram Account!)
-// Fetches 100% REAL Live Profile (Photo, Followers, Following, Posts Count, Bio)
-// + Hydrates real posts or generates niche-accurate content analytics automatically
-// ============================================================================
-const VISUAL_COVERS = [
-  "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1600132806370-bf17e65e942f?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1522542550221-31fd19575a2d?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1498050108023-c5249f4df085?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1512486130939-2c4f79935e4f?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1581291518655-9523c932deda?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?auto=format&fit=crop&w=600&q=80",
-  "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
-];
-
-function buildNicheHooksFromBio(
-  username: string,
-  fullName: string,
-  bio: string
-): string[] {
-  const combined = `${username} ${fullName} ${bio}`.toLowerCase();
-
-  if (
-    combined.includes("parenting") ||
-    combined.includes("anak") ||
-    combined.includes("keluarga") ||
-    combined.includes("ibu") ||
-    combined.includes("ayah") ||
-    combined.includes("papa") ||
-    combined.includes("mama")
-  ) {
-    return [
-      `Kesalahan komunikasi orang tua yang sering tidak disadari saat mendidik anak di usia emas.`,
-      `3 Kalimat positif yang wajib diucapkan setiap pagi agar anak tumbuh percaya diri dan mandiri.`,
-      `Cara menghadapi anak tantrum di tempat umum tanpa bentakan dan tetap penuh kasih sayang.`,
-      `Rahasia membangun kedekatan emosional antara ayah, ibu, dan anak di tengah kesibukan kerja.`,
-      `Tips menjaga kewarasan emosi orang tua agar rumah selalu jadi tempat pulang paling nyaman.`,
-      `Pola asuh Islami yang lembut namun tegas dalam menanamkan adab sejak dini.`,
-      `Kenapa anak lebih suka bercerita ke orang lain dibanding ke orang tuanya sendiri? Ini solusinya.`,
-      `Jadwal rutinitas harian anak yang membantu membatasi screen time gadget secara alami.`,
-      `Cara mengenalkan tanggung jawab dan empati pada anak lewat aktivitas sederhana di rumah.`,
-      `Bongkar rahasia keharmonisan suami istri dalam berbagi peran pengasuhan anak.`,
-      `5 Kalimat terlarang yang bisa melukai harga diri anak sampai ia dewasa.`,
-      `Strategi menyiapkan bekal mental dan spiritual anak menghadapi pergaulan masa kini.`,
-    ];
-  }
-
-  if (
-    combined.includes("dokter") ||
-    combined.includes("dr.") ||
-    combined.includes("sehat") ||
-    combined.includes("medis") ||
-    combined.includes("olahraga")
-  ) {
-    return [
-      `3 Kebiasaan sepele setiap pagi yang diam-diam merusak metabolisme tubuh di usia 20-30an.`,
-      `Fakta medis di balik mitos kesehatan yang masih sering dipercaya masyarakat Indonesia.`,
-      `Cara memperbaiki pola tidur dan mengatasi bangun pagi yang selalu terasa lemas.`,
-      `Bongkar bahaya konsumsi gula berlebih terhadap fokus kerja dan kesehatan jangka panjang.`,
-      `Olahraga paling efektif 20 menit sehari untuk kamu yang sibuk kerja duduk di depan laptop.`,
-      `Tanda-tanda tubuh kekurangan cairan dan nutrisi penting yang tidak boleh diabaikan.`,
-      `Panduan memilih menu makanan harian yang ramah lambung dan menjaga energi stabil.`,
-      `Kenapa stres berkepanjangan bisa memicu berbagai keluhan fisik? Ini penjelasan ilmiahnya.`,
-      `Tips menjaga daya tahan tubuh saat cuaca tidak menentu dan jadwal aktivitas padat.`,
-      `Cara membaca sinyal kelelahan kronis sebelum tubuh benar-benar drop.`,
-      `Investasi kesehatan terbaik yang bisa kamu mulai hari ini tanpa biaya mahal.`,
-      `Evaluasi gaya hidup modern: mana yang benar-benar sehat dan mana yang sekadar tren.`,
-    ];
-  }
-
-  return [
-    `Rahasia membangun personal branding dan pertumbuhan organik seperti @${username} secara konsisten.`,
-    `Pola hook 3 detik pertama yang bikin audiens berhenti scroll dan menonton Reels sampai habis.`,
-    `Cara monetisasi konten digital dan membangun sumber penghasilan dari rumah modal smartphone.`,
-    `3 Kesalahan fatal yang bikin jangkauan akun Instagram stagnan dan cara memperbaikinya.`,
-    `Formula copywriting caption & carousel yang memancing ratusan saves dan shares organik.`,
-    `Framework perencanaan konten mingguan supaya tetap produktif ngonten tanpa burn out.`,
-    `Bongkar anatomi konten viral yang berhasil mendatangkan ribuan followers tertarget.`,
-    `Strategi mengubah penonton pasif menjadi pembeli loyal lewat pendekatan storytelling.`,
-    `Tutorial menyusun visual konten yang rapi, estetik, dan punya ciri khas kuat di mata audiens.`,
-    `Cara riset masalah utama audiens sehingga setiap konten yang diunggah selalu relevan.`,
-    `Tips menjaga konsistensi berkarya dan membangun komunitas yang aktif berinteraksi di komentar.`,
-    `Langkah praktis memulai bisnis produk digital dari nol hingga menghasilkan konversi rutin.`,
-  ];
-}
-
-async function fetchAutomaticPublicAccountData(targetUsername: string) {
+async function fetchLivePublicProfileAndHydratedPosts(targetUsername: string) {
   const cleanUser = targetUsername.toLowerCase().trim().replace(/^@/, "");
 
-  // 1. Fetch LIVE Profile Header via Meta Crawler UA (100% Real Avatar, Followers, Bio, Posts Count)
-  let liveProfile: {
-    username: string;
-    fullName: string;
-    profilePicUrl: string;
-    isVerified: boolean;
-    biography: string;
-    externalUrl?: string;
-    followersCount: number;
-    followingCount: number;
-    mediaCount: number;
-  } | null = null;
-
-  const userAgents = [
-    "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
-    "Twitterbot/1.0",
-    "TelegramBot (like TwitterBot)",
-  ];
-
-  for (const ua of userAgents) {
-    try {
-      const res = await fetch(
-        `https://www.instagram.com/${encodeURIComponent(cleanUser)}/`,
-        {
-          headers: {
-            "User-Agent": ua,
-            Accept:
-              "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9",
-          },
-          cache: "no-store",
-        }
-      );
-
-      if (!res.ok) continue;
-      const html = await res.text();
-
-      const ogTitle = html.match(
-        /<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i
-      )?.[1];
-      const ogImage = html.match(
-        /<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i
-      )?.[1];
-      const ogDesc = html.match(
-        /<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/i
-      )?.[1];
-      const nameDesc =
-        html.match(
-          /<meta\s+content=["']([\s\S]*?)["']\s+name=["']description["']/i
-        )?.[1] ||
-        html.match(
-          /<meta\s+name=["']description["']\s+content=["']([\s\S]*?)["']/i
-        )?.[1];
-
-      const fullDesc = ogDesc || nameDesc || "";
-      const followersMatch = fullDesc.match(/([\d\.,\w]+)\s+Followers/i);
-      const followingMatch = fullDesc.match(/([\d\.,\w]+)\s+Following/i);
-      const postsMatch = fullDesc.match(/([\d\.,\w]+)\s+Posts/i);
-
-      if (followersMatch && ogTitle && ogTitle.includes("(")) {
-        const followersCount = parseCompactCount(followersMatch[1]);
-        const followingCount = followingMatch
-          ? parseCompactCount(followingMatch[1])
-          : 0;
-        const mediaCount = postsMatch ? parseCompactCount(postsMatch[1]) : 0;
-
-        let fullName = cleanUser;
-        const nameMatch = ogTitle.match(/^([^\(]+)\s*\((?:@|&#064;)/);
-        if (nameMatch) {
-          fullName = decodeHtmlEntities(nameMatch[1]).trim();
-        }
-
-        let biography = "";
-        const bioSplit = (nameDesc || ogDesc || "").split(
-          /on Instagram:\s*(?:&quot;|["'])?/i
-        );
-        if (bioSplit[1]) {
-          biography = decodeHtmlEntities(
-            bioSplit[1].replace(/(?:&quot;|["'])\s*$/, "")
-          ).trim();
-        }
-
-        liveProfile = {
-          username: cleanUser,
-          fullName: fullName || cleanUser,
-          profilePicUrl: ogImage ? ogImage.replace(/&amp;/g, "&") : "",
-          isVerified: followersCount > 50000,
-          biography,
-          externalUrl: `https://www.instagram.com/${cleanUser}/`,
-          followersCount,
-          followingCount,
-          mediaCount,
-        };
-        break;
-      }
-    } catch {
-      // try next UA
+  const res = await fetch(
+    `https://www.instagram.com/${encodeURIComponent(cleanUser)}/`,
+    {
+      headers: {
+        "User-Agent":
+          "facebookexternalhit/1.1 (+http://www.facebook.com/externalhit_uatext.php)",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.9",
+      },
+      cache: "no-store",
     }
-  }
+  ).catch(() => null);
 
-  if (!liveProfile) {
+  if (!res || !res.ok) return null;
+  const html = await res.text();
+
+  const ogTitle = html.match(
+    /<meta\s+property=["']og:title["']\s+content=["']([^"']+)["']/i
+  )?.[1];
+  const ogImage = html.match(
+    /<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i
+  )?.[1];
+  const ogDesc = html.match(
+    /<meta\s+property=["']og:description["']\s+content=["']([^"']+)["']/i
+  )?.[1];
+  const nameDesc =
+    html.match(
+      /<meta\s+content=["']([\s\S]*?)["']\s+name=["']description["']/i
+    )?.[1] ||
+    html.match(
+      /<meta\s+name=["']description["']\s+content=["']([\s\S]*?)["']/i
+    )?.[1];
+
+  const fullDesc = ogDesc || nameDesc || "";
+  const followersMatch = fullDesc.match(/([\d\.,\w]+)\s+Followers/i);
+  const followingMatch = fullDesc.match(/([\d\.,\w]+)\s+Following/i);
+  const postsMatch = fullDesc.match(/([\d\.,\w]+)\s+Posts/i);
+
+  if (!followersMatch || !ogTitle || !ogTitle.includes("(")) {
     return null;
   }
 
-  // 2. If we have verified real shortcodes for this account (e.g. @creativemuslim.co),
-  // hydrate ALL of them LIVE from Instagram (`https://www.instagram.com/p/{code}/`) concurrently!
+  const followersCount = parseCompactCount(followersMatch[1]);
+  const followingCount = followingMatch
+    ? parseCompactCount(followingMatch[1])
+    : 0;
+  const mediaCount = postsMatch ? parseCompactCount(postsMatch[1]) : 0;
+
+  let fullName = cleanUser;
+  const nameMatch = ogTitle.match(/^([^\(]+)\s*\((?:@|&#064;)/);
+  if (nameMatch) {
+    fullName = decodeHtmlEntities(nameMatch[1]).trim();
+  }
+
+  let biography = "";
+  const bioSplit = (nameDesc || ogDesc || "").split(
+    /on Instagram:\s*(?:&quot;|["'])?/i
+  );
+  if (bioSplit[1]) {
+    biography = decodeHtmlEntities(
+      bioSplit[1].replace(/(?:&quot;|["'])\s*$/, "")
+    ).trim();
+  }
+
+  const liveProfile = {
+    username: cleanUser,
+    fullName: fullName || cleanUser,
+    profilePicUrl: ogImage ? ogImage.replace(/&amp;/g, "&") : "",
+    isVerified: followersCount > 50000,
+    biography,
+    externalUrl: `https://www.instagram.com/${cleanUser}/`,
+    followersCount,
+    followingCount,
+    mediaCount,
+  };
+
   const verifiedCodes = VERIFIED_ACCOUNT_SHORTCODES[cleanUser];
   if (verifiedCodes && verifiedCodes.length > 0) {
     const hydrated = await Promise.all(
       verifiedCodes.map((item) =>
-        hydrateLiveInstagramPostByShortcode(
-          item.code,
-          cleanUser,
-          item.baselineViews
-        )
+        hydrateLiveInstagramPostByShortcode(item.code, item.baselineViews)
       )
     );
     const validLivePosts = hydrated.filter(Boolean) as NonNullable<
       (typeof hydrated)[number]
     >[];
     if (validLivePosts.length > 0) {
-      return {
-        source: "instagram_live_hydrated",
-        data: enrichPostsAndProfile(liveProfile, validLivePosts),
-      };
+      return enrichPostsAndProfile(liveProfile, validLivePosts);
     }
   }
 
-  // 3. For any other public account, calibrate posts to their REAL live follower count & REAL bio niche
-  const followers = Math.max(1000, liveProfile.followersCount || 15000);
-  const baseAvgViews = Math.max(
-    600,
-    Math.min(450000, Math.round(followers * 0.045))
-  );
-  const multipliers = [
-    9.2, 6.4, 4.5, 2.8, 2.1, 1.5, 1.2, 1.0, 0.85, 0.7, 0.55, 0.4,
-  ];
-  const hooks = buildNicheHooksFromBio(
-    liveProfile.username,
-    liveProfile.fullName,
-    liveProfile.biography
-  );
-
-  const calibratedPosts = multipliers.map((mult, idx) => {
-    const views = Math.max(150, Math.round(baseAvgViews * mult));
-    const likes = Math.max(
-      12,
-      Math.round(views * (0.052 + ((idx % 4) * 0.008)))
-    );
-    const comments = Math.max(2, Math.round(likes * (0.06 + ((idx % 3) * 0.03))));
-    const hook = hooks[idx % hooks.length];
-    const thumb = VISUAL_COVERS[idx % VISUAL_COVERS.length];
-
-    return {
-      id: `${cleanUser}_${idx + 1}`,
-      shortcode: `${cleanUser}_${idx + 1}`,
-      caption: `${hook}\n\nBagikan pendapatmu di kolom komentar dan simpan postingan @${cleanUser} ini sebagai referensi konten berikutnya!`,
-      mediaType: (idx % 3 === 1 ? "CAROUSEL_ALBUM" : "VIDEO") as
-        | "VIDEO"
-        | "CAROUSEL_ALBUM",
-      thumbnailUrl: thumb,
-      permalink: `https://www.instagram.com/${cleanUser}/`,
-      likesCount: likes,
-      commentsCount: comments,
-      viewsCount: views,
-      timestamp: new Date(
-        Date.now() - (idx + 1) * 86400000 * 2.5
-      ).toISOString(),
-    };
-  });
-
-  return {
-    source: "instagram_public_live",
-    data: enrichPostsAndProfile(liveProfile, calibratedPosts),
-  };
+  return enrichPostsAndProfile(liveProfile, []);
 }
 
 export async function POST(request: NextRequest) {
@@ -958,7 +1025,6 @@ export async function POST(request: NextRequest) {
       .split("?")[0]
       .toLowerCase();
 
-    // Check memory cache first unless forceRefresh is requested
     if (!forceRefresh) {
       const cached = risetMemoryCache.get(cleanUsername);
       if (cached && cached.expiresAt > Date.now() && cached.posts.length > 0) {
@@ -974,7 +1040,7 @@ export async function POST(request: NextRequest) {
 
     const cfg = await getResolvedRisetConfig();
 
-    // 1. Direct Instagram Graph API (for accounts connected in our DB, e.g. @ruangngontenmuslim)
+    // 1. Direct Instagram Graph API (for accounts connected in DB, e.g. @ruangngontenmuslim)
     const directData = await fetchDirectInstagramApi(cleanUsername);
     if (directData && directData.posts.length > 0) {
       risetMemoryCache.set(cleanUsername, {
@@ -991,7 +1057,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // 2. Optional Background Session / RapidAPI if configured in env/DB
+    // 2. Pilihan A: Server-side INSTAGRAM_SESSION_ID in .env (or AppSetting)
     if (cfg.instagramSessionId) {
       const sessionData = await fetchFromInstagramWebSession(
         cleanUsername,
@@ -1013,6 +1079,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // 3. Optional RapidAPI fallback if RAPIDAPI_KEY is in .env
     if (cfg.rapidApiKey) {
       const rapidData = await fetchFromRapidApiInstagramScraper(
         cleanUsername,
@@ -1035,20 +1102,14 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // 3. Automatic Zero-Config Public Account Fetcher + Live Shortcode Hydrator
-    const autoData = await fetchAutomaticPublicAccountData(cleanUsername);
-    if (autoData && autoData.data.posts.length > 0) {
-      risetMemoryCache.set(cleanUsername, {
-        expiresAt: Date.now() + RISET_CACHE_TTL_MS,
-        source: autoData.source,
-        profile: autoData.data.profile,
-        posts: autoData.data.posts,
-      });
+    // 4. Live Public Profile + Verified Shortcode Hydrator (Never invents fake Unsplash posts!)
+    const liveData = await fetchLivePublicProfileAndHydratedPosts(cleanUsername);
+    if (liveData) {
       return NextResponse.json({
         success: true,
-        source: autoData.source,
-        profile: autoData.data.profile,
-        posts: autoData.data.posts,
+        source: "instagram_public_live",
+        profile: liveData.profile,
+        posts: liveData.posts,
       });
     }
 
