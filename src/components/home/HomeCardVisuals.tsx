@@ -14,7 +14,7 @@ import {
 
 export function RuangBelajarVisual() {
   return (
-    <div className="relative w-full overflow-hidden aspect-[344/145] lg:aspect-[4/3] rounded-lg">
+    <div className="relative w-full overflow-hidden aspect-[16/9] lg:aspect-[4/3] rounded-lg">
       <div
         data-active="true"
         className="iso-stage pointer-events-none absolute -z-10 aspect-[1642/1200] max-w-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out group-hover:scale-[1.05] text-gray-900 dark:text-white"
@@ -172,7 +172,7 @@ export function RuangBelajarVisual() {
 
 export function RuangNgontenVisual() {
   return (
-    <div className="relative w-full overflow-hidden aspect-[344/145] lg:aspect-[4/3] rounded-lg">
+    <div className="relative w-full overflow-hidden aspect-[16/9] lg:aspect-[4/3] rounded-lg">
       <div
         data-active="true"
         className="iso-stage pointer-events-none absolute -z-10 aspect-[1642/1200] max-w-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out group-hover:scale-[1.05] text-gray-600 dark:text-gray-400 w-[200%] md:w-[270%]"
@@ -354,7 +354,7 @@ export function RuangNgontenVisual() {
 
 export function RuangAutomationVisual() {
   return (
-    <div className="relative w-full overflow-hidden aspect-[344/145] lg:aspect-[4/3] rounded-lg">
+    <div className="relative w-full overflow-hidden aspect-[16/9] lg:aspect-[4/3] rounded-lg">
       <div
         data-active="true"
         className="iso-stage pointer-events-none absolute -z-10 aspect-[1642/1200] max-w-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out group-hover:scale-[1.05] text-gray-600 dark:text-gray-400"
@@ -512,7 +512,7 @@ export function RuangAutomationVisual() {
 
 export function RuangRisetVisual() {
   return (
-    <div className="relative w-full overflow-hidden aspect-[344/145] lg:aspect-[4/3] rounded-lg">
+    <div className="relative w-full overflow-hidden aspect-[16/9] lg:aspect-[4/3] rounded-lg">
       <div
         data-active="true"
         className="iso-stage pointer-events-none absolute -z-10 aspect-[1642/1200] max-w-none -translate-x-1/2 -translate-y-1/2 transition-transform duration-700 ease-out group-hover:scale-[1.05] text-gray-900 dark:text-white"
