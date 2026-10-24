@@ -95,7 +95,7 @@ export default function RuangRisetClient({
     const syncFromUrl = () => {
       const params = new URLSearchParams(window.location.search);
       const platformParam = params.get("platform");
-      if (platformParam === "instagram") {
+      if (platformParam === "instagram" && isLoggedIn && (isPro || isAdmin)) {
         setSelectedPlatform("instagram");
         window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: "instagram" }));
       } else {
@@ -105,7 +105,7 @@ export default function RuangRisetClient({
     };
 
     const handlePlatformChange = (e: any) => {
-      if (e.detail === "instagram") {
+      if (e.detail === "instagram" && isLoggedIn && (isPro || isAdmin)) {
         setSelectedPlatform("instagram");
       } else {
         setSelectedPlatform(null);
@@ -119,7 +119,7 @@ export default function RuangRisetClient({
       window.removeEventListener("popstate", syncFromUrl);
       window.removeEventListener("riset-platform-change", handlePlatformChange);
     };
-  }, []);
+  }, [isLoggedIn, isPro, isAdmin]);
 
   // Handle click on Instagram Research Card
   const handleSelectInstagram = () => {
@@ -150,7 +150,8 @@ export default function RuangRisetClient({
       {selectedPlatform === "instagram" ? (
         <InstagramResearchStudio
           onBackToPlatformHub={handleBackToHub}
-          defaultUsername="papamenyapa"
+          defaultUsername="creativemuslim.co"
+          isAdmin={isAdmin}
         />
       ) : (
         <>

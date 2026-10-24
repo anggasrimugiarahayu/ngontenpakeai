@@ -80,8 +80,8 @@ export async function POST(req: NextRequest) {
             select: { proToolsExpiredAt: true, proAutomationExpiredAt: true }
           });
 
-          // Tools
-          if (order.orderType.includes("TOOLS") || cat === "tools" || cat === "plus" || order.orderType === "PRO_PLUS") {
+          // Tools & Riset
+          if (order.orderType.includes("TOOLS") || order.orderType.includes("RISET") || cat === "tools" || cat === "riset" || cat === "plus" || order.orderType === "PRO_PLUS" || order.orderType === "PRO_PLUS_1Y") {
             const baseDate = (currentUser?.proToolsExpiredAt && new Date(currentUser.proToolsExpiredAt) > new Date())
               ? new Date(currentUser.proToolsExpiredAt)
               : new Date();
