@@ -355,8 +355,7 @@ export function AdminRuangBelajarModals({
             </div>
             <form
               action={async (formData) => {
-                setLoading(true);
-                await createProduct({
+                const newPayload = {
                   title: formData.get("title") as string,
                   slug: formData.get("slug") as string,
                   categoryId: formData.get("categoryId") as string,
@@ -385,11 +384,17 @@ export function AdminRuangBelajarModals({
                   originalPrice: formData.get("originalPrice")
                     ? parseInt(formData.get("originalPrice") as string)
                     : 0,
-                });
-                mutate("pengaturan");
-                setLoading(false);
+                };
                 setShowAddProduct(false);
                 setUploadedUrls({});
+                toast.success("E-book berhasil ditambahkan!");
+                try {
+                  await createProduct(newPayload);
+                  mutate("pengaturan");
+                } catch (err) {
+                  console.error("Gagal menambahkan e-book:", err);
+                  toast.error("Gagal menambahkan e-book.");
+                }
               }}
               className="flex flex-col gap-3"
             >
@@ -766,8 +771,8 @@ export function AdminRuangBelajarModals({
             </div>
             <form
               action={async (formData) => {
-                setLoading(true);
-                await updateProduct(editingProduct.id, {
+                const prodId = editingProduct.id;
+                const updatePayload = {
                   title: formData.get("title") as string,
                   slug: formData.get("slug") as string,
                   categoryId: formData.get("categoryId") as string,
@@ -802,11 +807,20 @@ export function AdminRuangBelajarModals({
                   originalPrice: formData.get("originalPrice")
                     ? parseInt(formData.get("originalPrice") as string)
                     : 0,
-                });
-                mutate("pengaturan");
-                setLoading(false);
+                };
+
+                // Langsung tutup modal seketika dan beri toast sukses
                 setEditingProduct(null);
                 setUploadedUrls({});
+                toast.success("Perubahan e-book berhasil disimpan!");
+
+                try {
+                  await updateProduct(prodId, updatePayload);
+                  mutate("pengaturan");
+                } catch (err) {
+                  console.error("Gagal update e-book:", err);
+                  toast.error("Gagal menyimpan perubahan e-book.");
+                }
               }}
               className="flex flex-col gap-3"
             >

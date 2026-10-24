@@ -295,11 +295,22 @@ export async function deleteProduct(id: string) {
 }
 
 export async function updateProduct(id: string, data: any) {
-  if (data.slug) {
-    const existing = await prisma.digitalProduct.findFirst({ where: { slug: data.slug, id: { not: id } } });
-    if (existing) {
-      data.slug = `${data.slug}-${Math.random().toString(36).substring(2, 6)}`;
-    }
+  // Jalankan pengecekan duplikasi slug dan pengambilan data produk lama secara paralel (menghemat 1 roundtrip network)
+  const [existing, oldProduct] = await Promise.all([
+    data.slug
+      ? prisma.digitalProduct.findFirst({
+          where: { slug: data.slug, id: { not: id } },
+          select: { id: true },
+        })
+      : Promise.resolve(null),
+    prisma.digitalProduct.findUnique({
+      where: { id },
+      select: { coverUrl: true, coverUrl2: true, coverUrl3: true },
+    }),
+  ]);
+
+  if (existing && data.slug) {
+    data.slug = `${data.slug}-${Math.random().toString(36).substring(2, 6)}`;
   }
   const { categoryId, ...restData } = data;
 
@@ -318,24 +329,24 @@ export async function updateProduct(id: string, data: any) {
     delete restData.coverUrl3;
   }
 
-  // Bersihkan file fisik di disk jika cover lama diganti atau dihapus
-  const oldProduct = await prisma.digitalProduct.findUnique({
-    where: { id },
-    select: { coverUrl: true, coverUrl2: true, coverUrl3: true },
-  });
+  // Bersihkan file fisik di disk jika cover lama diganti atau dihapus (non-blocking)
   if (oldProduct) {
+    const cleanupPromises: Promise<any>[] = [];
     if (restData.coverUrl !== undefined && oldProduct.coverUrl && oldProduct.coverUrl !== restData.coverUrl && oldProduct.coverUrl.startsWith("/uploads/")) {
-      await deletePhysicalUploadFile(oldProduct.coverUrl);
+      cleanupPromises.push(deletePhysicalUploadFile(oldProduct.coverUrl));
     }
     if (restData.coverUrl2 !== undefined && oldProduct.coverUrl2 && oldProduct.coverUrl2 !== restData.coverUrl2 && oldProduct.coverUrl2.startsWith("/uploads/")) {
-      await deletePhysicalUploadFile(oldProduct.coverUrl2);
+      cleanupPromises.push(deletePhysicalUploadFile(oldProduct.coverUrl2));
     }
     if (restData.coverUrl3 !== undefined && oldProduct.coverUrl3 && oldProduct.coverUrl3 !== restData.coverUrl3 && oldProduct.coverUrl3.startsWith("/uploads/")) {
-      await deletePhysicalUploadFile(oldProduct.coverUrl3);
+      cleanupPromises.push(deletePhysicalUploadFile(oldProduct.coverUrl3));
+    }
+    if (cleanupPromises.length > 0) {
+      Promise.all(cleanupPromises).catch(console.error);
     }
   }
 
-  await prisma.digitalProduct.update({
+  const updated = await prisma.digitalProduct.update({
     where: { id },
     data: {
       ...restData,
@@ -343,6 +354,7 @@ export async function updateProduct(id: string, data: any) {
     },
   });
   revalidateEbookCatalog(data.slug);
+  return updated;
 }
 
 export async function createVoucher(data: { code: string; discountType: string; discountValue: number; digitalProductId: string }) {
