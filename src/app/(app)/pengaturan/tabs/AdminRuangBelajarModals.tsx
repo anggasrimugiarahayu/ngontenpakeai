@@ -93,8 +93,10 @@ export function AdminRuangBelajarModals({
             </div>
 
             <form
-              action={async (formData) => {
+              onSubmit={async (e) => {
+                e.preventDefault();
                 setIsSaving(true);
+                const formData = new FormData(e.currentTarget);
                 try {
                   await createCategory({
                     name: formData.get("name"),
@@ -389,7 +391,10 @@ export function AdminRuangBelajarModals({
               </button>
             </div>
             <form
-              action={async (formData) => {
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setIsSaving(true);
+                const formData = new FormData(e.currentTarget);
                 const newPayload = {
                   title: formData.get("title") as string,
                   slug: formData.get("slug") as string,
@@ -420,7 +425,6 @@ export function AdminRuangBelajarModals({
                     ? parseInt(formData.get("originalPrice") as string)
                     : 0,
                 };
-                setIsSaving(true);
                 try {
                   await createProduct(newPayload);
                   mutate("pengaturan");
@@ -834,7 +838,10 @@ export function AdminRuangBelajarModals({
               </button>
             </div>
             <form
-              action={async (formData) => {
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setIsSaving(true);
+                const formData = new FormData(e.currentTarget);
                 const prodId = editingProduct.id;
                 const updatePayload = {
                   title: formData.get("title") as string,
@@ -873,7 +880,6 @@ export function AdminRuangBelajarModals({
                     : 0,
                 };
 
-                setIsSaving(true);
                 try {
                   await updateProduct(prodId, updatePayload);
                   mutate("pengaturan");
