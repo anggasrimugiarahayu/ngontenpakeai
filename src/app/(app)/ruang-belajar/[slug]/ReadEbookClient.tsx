@@ -169,7 +169,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                        <div className="absolute top-0 left-0 w-1 h-full bg-rn-accent"></div>
                        <div className="flex items-center justify-between mb-2">
                          <span className="text-sm font-bold text-gray-900 dark:text-white">{isFree ? "E-Book Gratis" : (isPremiumEbook ? "Eksklusif Premium" : "E-Book PRO")}</span>
-                         <span className="bg-rn-accent/10 text-rn-accent px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider">Hak Milik Seumur Hidup</span>
+                         <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-orange-500 shadow-sm">Akses Selamanya</span>
                        </div>
                        <div className="text-2xl font-black text-gray-900 dark:text-white mb-1">
                          Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
@@ -179,7 +179,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                            ? "Silakan klaim e-book ini secara gratis (Rp 0) untuk memasukkannya ke dalam Brankas Perpustakaan Pribadi Anda seumur hidup."
                            : isPremiumEbook 
                              ? "E-book ini sangat eksklusif. Beli sekarang dan dapatkan akses penuh untuk membaca dan mendownload selamanya." 
-                             : isPro ? "Sebagai member Paket E-Book, Anda berhak mengklaim e-book ini secara gratis!" : "Beli satuan untuk hak milik seumur hidup, atau berlangganan Paket E-Book untuk akses gratis!"}
+                             : isPro ? "Sebagai member Paket E-Book, Anda berhak mengklaim e-book ini secara gratis!" : "Beli e-book satuan atau pilih Paket E-Book PRO untuk mendapatkan akses selamanya ke lebih banyak e-book PRO!"}
                        </p>
                      </div>
                      
@@ -227,7 +227,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                                    href="/?pricing=true&cat=ebook" 
                                    className="w-full flex items-center justify-center gap-2 bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 hover:bg-orange-100 dark:hover:bg-orange-500/20 px-6 py-3.5 rounded-xl font-bold transition-all border border-orange-200 dark:border-orange-500/20"
                                  >
-                                   <Crown className="w-5 h-5" /> Beli Paket E-Book (Akses Semua E-book PRO)
+                                   <Crown className="w-5 h-5" /> Beli Paket E-Book PRO
                                  </Link>
                                )}
                              </div>
