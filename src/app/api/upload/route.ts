@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { writeFile, mkdir, unlink } from "fs/promises";
+import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import { deletePhysicalUploadFile } from "@/lib/server-uploads";
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,26 +67,12 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Remove file from /public/uploads/ if it points to local storage
-    if (url.startsWith("/uploads/")) {
-      const fileName = path.basename(url);
-      const uploadDir = path.join(process.cwd(), "public/uploads");
-      const filePath = path.join(uploadDir, fileName);
-
-      // Prevent path traversal outside uploads directory
-      if (!filePath.startsWith(uploadDir)) {
-        return NextResponse.json({ error: "Akses ditolak" }, { status: 403 });
-      }
-
-      try {
-        await unlink(filePath);
-      } catch (err: any) {
-        // Ignore if file doesn't exist
-        if (err.code !== "ENOENT") {
-          console.error("Error saat menghapus file fisik:", err);
-        }
-      }
-
-      return NextResponse.json({ success: true, message: "File fisik berhasil dihapus" });
+    if (url.includes("/uploads/")) {
+      const deleted = await deletePhysicalUploadFile(url);
+      return NextResponse.json({
+        success: true,
+        message: deleted ? "File fisik berhasil dihapus" : "File sudah tidak ada atau URL dibersihkan"
+      });
     }
 
     return NextResponse.json({ success: true, message: "URL dibersihkan" });

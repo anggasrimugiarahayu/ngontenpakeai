@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { attachComputedBuyerCounts } from "@/lib/product-buyers";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
+import { deletePhysicalUploadFile } from "@/lib/server-uploads";
 import { HomepageCardConfig } from "@/lib/homepage-cards";
 import { getCachedHomepageCards } from "@/lib/cache";
 
@@ -280,6 +281,15 @@ export async function deleteCategory(id: string) {
 }
 
 export async function deleteProduct(id: string) {
+  const prod = await prisma.digitalProduct.findUnique({
+    where: { id },
+    select: { coverUrl: true, coverUrl2: true, coverUrl3: true },
+  });
+  if (prod) {
+    if (prod.coverUrl) await deletePhysicalUploadFile(prod.coverUrl);
+    if (prod.coverUrl2) await deletePhysicalUploadFile(prod.coverUrl2);
+    if (prod.coverUrl3) await deletePhysicalUploadFile(prod.coverUrl3);
+  }
   await prisma.digitalProduct.delete({ where: { id } });
   revalidateEbookCatalog();
 }
@@ -292,6 +302,12 @@ export async function updateProduct(id: string, data: any) {
     }
   }
   const { categoryId, ...restData } = data;
+
+  // Pastikan string kosong "" dinormalisasi menjadi null
+  if (restData.coverUrl === "") restData.coverUrl = null;
+  if (restData.coverUrl2 === "") restData.coverUrl2 = null;
+  if (restData.coverUrl3 === "") restData.coverUrl3 = null;
+
   if (typeof restData.coverUrl === "string" && restData.coverUrl.startsWith("/api/ebook-cover/")) {
     delete restData.coverUrl;
   }
@@ -301,6 +317,24 @@ export async function updateProduct(id: string, data: any) {
   if (typeof restData.coverUrl3 === "string" && restData.coverUrl3.startsWith("/api/ebook-cover/")) {
     delete restData.coverUrl3;
   }
+
+  // Bersihkan file fisik di disk jika cover lama diganti atau dihapus
+  const oldProduct = await prisma.digitalProduct.findUnique({
+    where: { id },
+    select: { coverUrl: true, coverUrl2: true, coverUrl3: true },
+  });
+  if (oldProduct) {
+    if (restData.coverUrl !== undefined && oldProduct.coverUrl && oldProduct.coverUrl !== restData.coverUrl && oldProduct.coverUrl.startsWith("/uploads/")) {
+      await deletePhysicalUploadFile(oldProduct.coverUrl);
+    }
+    if (restData.coverUrl2 !== undefined && oldProduct.coverUrl2 && oldProduct.coverUrl2 !== restData.coverUrl2 && oldProduct.coverUrl2.startsWith("/uploads/")) {
+      await deletePhysicalUploadFile(oldProduct.coverUrl2);
+    }
+    if (restData.coverUrl3 !== undefined && oldProduct.coverUrl3 && oldProduct.coverUrl3 !== restData.coverUrl3 && oldProduct.coverUrl3.startsWith("/uploads/")) {
+      await deletePhysicalUploadFile(oldProduct.coverUrl3);
+    }
+  }
+
   await prisma.digitalProduct.update({
     where: { id },
     data: {

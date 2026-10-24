@@ -362,11 +362,11 @@ export function AdminRuangBelajarModals({
                   categoryId: formData.get("categoryId") as string,
                   description: formData.get("description") as string,
                   coverUrl:
-                    uploadedUrls["coverUrlInput"] || (formData.get("coverUrl") as string),
+                    uploadedUrls["coverUrlInput"] || (formData.get("coverUrl") as string) || null,
                   coverUrl2:
-                    uploadedUrls["coverUrl2Input"] || (formData.get("coverUrl2") as string),
+                    uploadedUrls["coverUrl2Input"] || (formData.get("coverUrl2") as string) || null,
                   coverUrl3:
-                    uploadedUrls["coverUrl3Input"] || (formData.get("coverUrl3") as string),
+                    uploadedUrls["coverUrl3Input"] || (formData.get("coverUrl3") as string) || null,
                   fileUrl: formData.get("fileUrl") as string,
                   accessLevel: formData.get("accessLevel") as string,
                   isProOnly:
@@ -774,15 +774,15 @@ export function AdminRuangBelajarModals({
                   description: formData.get("description") as string,
                   coverUrl:
                     uploadedUrls["editCoverUrlInput"] !== undefined
-                      ? uploadedUrls["editCoverUrlInput"]
+                      ? (uploadedUrls["editCoverUrlInput"] || null)
                       : (formData.get("coverUrl") as string) || null,
                   coverUrl2:
                     uploadedUrls["editCoverUrl2Input"] !== undefined
-                      ? uploadedUrls["editCoverUrl2Input"]
+                      ? (uploadedUrls["editCoverUrl2Input"] || null)
                       : (formData.get("coverUrl2") as string) || null,
                   coverUrl3:
                     uploadedUrls["editCoverUrl3Input"] !== undefined
-                      ? uploadedUrls["editCoverUrl3Input"]
+                      ? (uploadedUrls["editCoverUrl3Input"] || null)
                       : (formData.get("coverUrl3") as string) || null,
                   fileUrl: formData.get("fileUrl") as string,
                   accessLevel: formData.get("accessLevel") as string,

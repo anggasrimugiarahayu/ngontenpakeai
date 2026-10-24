@@ -83,6 +83,16 @@ export function AdminRuangBelajarTab({
       const res = await fetch("/api/upload", { method: "POST", body: formData });
       const data = await res.json();
       if (data.url) {
+        // Hapus file lama jika sebelumnya sudah mengunggah file di slot ini pada sesi saat ini
+        const prevSessionUrl = uploadedUrls[targetInputId];
+        if (prevSessionUrl && prevSessionUrl !== data.url && prevSessionUrl.startsWith("/uploads/")) {
+          fetch("/api/upload", {
+            method: "DELETE",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ url: prevSessionUrl }),
+          }).catch(console.error);
+        }
+
         const input = document.getElementById(targetInputId) as HTMLInputElement;
         if (input) {
           input.value = data.url;
@@ -136,56 +146,52 @@ export function AdminRuangBelajarTab({
         ? editingProduct[fieldKey]
         : "";
 
-    setLoading(true);
-    try {
-      if (currentUrl) {
-        await fetch("/api/upload", {
-          method: "DELETE",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: currentUrl }),
-        });
-      }
+    // 1. OPTIMISTIC UI UPDATE: Langsung bersihkan tampilan seketika (0 ms) tanpa jeda
+    setUploadedUrls((prev) => ({ ...prev, [targetInputId]: "" }));
 
-      setUploadedUrls((prev) => ({ ...prev, [targetInputId]: "" }));
+    const input = document.getElementById(targetInputId) as HTMLInputElement;
+    if (input) {
+      input.value = "";
+    }
 
-      const input = document.getElementById(targetInputId) as HTMLInputElement;
-      if (input) {
-        input.value = "";
-      }
+    const fileInput = document.getElementById(
+      "file-" + targetInputId
+    ) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = "";
+    }
 
-      const fileInput = document.getElementById(
-        "file-" + targetInputId
-      ) as HTMLInputElement;
-      if (fileInput) {
-        fileInput.value = "";
-      }
+    const img = document.getElementById(
+      "preview-" + targetInputId
+    ) as HTMLImageElement;
+    if (img) {
+      img.src = "";
+      img.classList.add("hidden");
+      img.classList.remove("ring-2", "ring-green-500", "opacity-100", "z-10");
+    }
 
-      const img = document.getElementById(
-        "preview-" + targetInputId
-      ) as HTMLImageElement;
-      if (img) {
-        img.src = "";
-        img.classList.add("hidden");
-        img.classList.remove("ring-2", "ring-green-500", "opacity-100", "z-10");
-      }
+    const labelEl = document.getElementById("label-" + targetInputId);
+    if (labelEl) {
+      labelEl.innerText = defaultLabel;
+      labelEl.classList.remove("text-green-500", "text-red-500");
+      labelEl.classList.add("text-gray-400");
+    }
 
-      const labelEl = document.getElementById("label-" + targetInputId);
-      if (labelEl) {
-        labelEl.innerText = defaultLabel;
-        labelEl.classList.remove("text-green-500", "text-red-500");
-        labelEl.classList.add("text-gray-400");
-      }
+    if (editingProduct && fieldKey) {
+      setEditingProduct((prev: any) => ({ ...prev, [fieldKey]: "" }));
+    }
 
-      if (editingProduct && fieldKey) {
-        setEditingProduct((prev: any) => ({ ...prev, [fieldKey]: "" }));
-      }
+    toast.success("Gambar berhasil dihapus!");
 
-      toast.success("Gambar berhasil dihapus dari server!");
-    } catch (err) {
-      console.error(err);
-      toast.error("Gagal menghapus gambar.");
-    } finally {
-      setLoading(false);
+    // 2. BACKGROUND SERVER DELETE: Hapus file fisik di server di latar belakang tanpa memblokir UI
+    if (currentUrl) {
+      fetch("/api/upload", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: currentUrl }),
+      }).catch((err) => {
+        console.error("Gagal menghapus file di server:", err);
+      });
     }
   };
 
