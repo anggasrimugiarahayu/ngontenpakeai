@@ -1190,7 +1190,7 @@ export default function RuangAutomationClient({
       askContactInvalidMessage: config.askContactInvalidMessage || "Waduh, format emailnya kayaknya belum pas nih kak 😅 Coba cek dan ketik ulang email aktif kamu ya 🙏",
       featureLinkTracking: config.featureLinkTracking ?? true,
       replyHeartReaction: config.replyHeartReaction ?? false,
-      isActive: (rule.name || "").includes("(Salinan)") ? true : (rule.isActive ?? true),
+      isActive: rule.isActive ?? true,
     });
     setIsTargetDropdownOpen(false);
     setIsFrequencyDropdownOpen(false);
