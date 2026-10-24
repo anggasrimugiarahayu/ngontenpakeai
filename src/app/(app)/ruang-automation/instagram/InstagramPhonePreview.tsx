@@ -529,7 +529,7 @@ export function InstagramPhonePreview({
                     }
                     avatarUrl={previewAvatarUrl}
                     resolvePreviewVariables={resolvePreviewVariables}
-                    defaultSlideImage={selectedPost?.image || feedPosts[0]?.image || ""}
+                    defaultSlideImage={selectedPost?.thumb || selectedPost?.image || feedPosts[0]?.thumb || feedPosts[0]?.image || ""}
                     simulatedButtonId={simulatedButtonId}
                     setSimulatedButtonId={(id) => setSimulatedButtonId(id)}
                     simulatedQrId={simulatedLiveQrId}
@@ -587,7 +587,9 @@ export function InstagramPhonePreview({
                                   {
                                     id: "slide_followup_1",
                                     image:
+                                      selectedPost?.thumb ||
                                       selectedPost?.image ||
+                                      feedPosts[0]?.thumb ||
                                       feedPosts[0]?.image ||
                                       "",
                                     title: "Follow Up Materi",
@@ -609,7 +611,7 @@ export function InstagramPhonePreview({
                         }}
                         avatarUrl={previewAvatarUrl}
                         resolvePreviewVariables={resolvePreviewVariables}
-                        defaultSlideImage={selectedPost?.image || feedPosts[0]?.image || ""}
+                        defaultSlideImage={selectedPost?.thumb || selectedPost?.image || feedPosts[0]?.thumb || feedPosts[0]?.image || ""}
                         simulatedButtonId={null}
                         setSimulatedButtonId={() => {}}
                         simulatedQrId={null}
@@ -772,6 +774,7 @@ export function InstagramPhonePreview({
                           <img
                             src={previewAvatarUrl}
                             alt={previewUsername}
+                            referrerPolicy="no-referrer"
                             className="w-full h-full object-cover rounded-full"
                             onError={(e) => {
                               (e.currentTarget as HTMLImageElement).src = "/images/instagram/rcm-avatar.png";
@@ -786,11 +789,17 @@ export function InstagramPhonePreview({
 
                   {/* Post Media Container (Aspect 4:5 Portrait) */}
                   <div className="w-full aspect-[4/5] bg-gray-100 dark:bg-white/5 flex flex-col items-center justify-center text-center overflow-hidden">
-                    {ruleFormData.targetOtomasi === "Postingan Tertentu" && selectedPost?.image ? (
+                    {ruleFormData.targetOtomasi === "Postingan Tertentu" && (selectedPost?.thumb || selectedPost?.image) ? (
                       <img
-                        src={selectedPost.image}
+                        src={selectedPost.thumb || selectedPost.image}
                         alt={selectedPost.title || "Post"}
+                        referrerPolicy="no-referrer"
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          if (selectedPost?.image && e.currentTarget.src !== selectedPost.image) {
+                            e.currentTarget.src = selectedPost.image;
+                          }
+                        }}
                       />
                     ) : (
                       <div className="flex flex-col items-center justify-center p-4 text-center text-gray-400">

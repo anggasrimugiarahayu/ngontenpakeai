@@ -739,7 +739,12 @@ export async function getInstagramFeedMediaAction(limit: number = 12, accountId?
     // Jika berhasil mendapatkan data feed asli dari Meta
     if (mediaItems.length > 0) {
       const formattedPosts = mediaItems.map((item: any) => {
-        const img = item.media_url || item.thumbnail_url || "";
+        const isVideo = item.media_type === "VIDEO";
+        // Untuk Reels/Video: item.thumbnail_url adalah gambar cover JPG, sedangkan item.media_url adalah video MP4
+        const coverImg = isVideo
+          ? (item.thumbnail_url || item.media_url || "")
+          : (item.media_url || item.thumbnail_url || "");
+        const videoUrl = isVideo ? (item.media_url || null) : null;
         const dateObj = item.timestamp ? new Date(item.timestamp) : new Date();
         const formattedDate = dateObj.toLocaleDateString("id-ID", {
           day: "numeric",
@@ -750,8 +755,9 @@ export async function getInstagramFeedMediaAction(limit: number = 12, accountId?
         return {
           id: item.id,
           title: item.caption ? (item.caption.length > 45 ? item.caption.slice(0, 45) + "..." : item.caption) : "Postingan Instagram",
-          image: img,
-          thumb: item.thumbnail_url || img,
+          image: coverImg,
+          thumb: item.thumbnail_url || coverImg,
+          videoUrl,
           caption: item.caption || "",
           likes: typeof item.like_count === "number" ? item.like_count : 0,
           comments: typeof item.comments_count === "number" ? item.comments_count : 0,
