@@ -301,7 +301,8 @@ function computeJazoest(token: string): string {
 
 async function fetchFromInstagramWebSession(
   targetUsername: string,
-  rawSessionId: string
+  rawSessionId: string,
+  requestedLimit: number = 60
 ) {
   if (!rawSessionId) return null;
   const rawCleaned = rawSessionId
@@ -517,9 +518,91 @@ async function fetchFromInstagramWebSession(
       postsPromise,
     ]);
 
-    const edges =
-      postsJson?.data?.xdt_api__v1__feed__user_timeline_graphql_connection
-        ?.edges || [];
+    const initialConn =
+      postsJson?.data?.xdt_api__v1__feed__user_timeline_graphql_connection;
+    const edges = [...(initialConn?.edges || [])];
+    let hasNextPage = Boolean(initialConn?.page_info?.has_next_page);
+    let endCursor = initialConn?.page_info?.end_cursor;
+
+    // Auto-paginate if user requested more posts (e.g. 50 or 100 posts)
+    let pageIndex = 2;
+    while (
+      hasNextPage &&
+      endCursor &&
+      edges.length < requestedLimit &&
+      pageIndex <= 3
+    ) {
+      try {
+        const pageVars = {
+          after: endCursor,
+          data: {
+            count: 33,
+            include_reel_media_seen_timestamp: true,
+            include_relationship_info: true,
+            latest_besties_reel_media: true,
+            latest_reel_media: true,
+          },
+          username: targetUsername,
+          __relay_internal__pv__PolarisMultiCaptionCarouselEnabledrelayprovider: true,
+          __relay_internal__pv__PolarisShortDramaEnabledrelayprovider: false,
+          __relay_internal__pv__PolarisSEOIsCrawlerrelayprovider: false,
+          __relay_internal__pv__PolarisThreadsStyleCommentsEnabledrelayprovider: true,
+          __relay_internal__pv__PolarisReelsRecoDebugOverlayEnabledrelayprovider: false,
+        };
+
+        const pageBody = new URLSearchParams({
+          av: actorId,
+          __d: "www",
+          __user: "0",
+          __a: "1",
+          __req: String(pageIndex + 1),
+          dpr: "2",
+          __ccg: "EXCELLENT",
+          __rev: spinR,
+          fb_dtsg: fbDtsg,
+          jazoest,
+          lsd: lsdToken,
+          fb_api_caller_class: "RelayModern",
+          fb_api_req_friendly_name:
+            "PolarisProfilePostsTabContentQuery_connection",
+          variables: JSON.stringify(pageVars),
+          server_timestamps: "true",
+          doc_id: "28544666141895803",
+        });
+
+        const nextRes = await fetch("https://www.instagram.com/graphql/query", {
+          method: "POST",
+          headers: {
+            ...commonGqlHeaders,
+            "X-FB-Friendly-Name":
+              "PolarisProfilePostsTabContentQuery_connection",
+          },
+          body: pageBody.toString(),
+          cache: "no-store",
+        });
+
+        const nextText = (await nextRes.text()).replace(/^for\s*\(;;\);/, "");
+        if (nextText.startsWith("{")) {
+          const nextJson = JSON.parse(nextText);
+          const nextConn =
+            nextJson?.data
+              ?.xdt_api__v1__feed__user_timeline_graphql_connection;
+          const nextEdges = nextConn?.edges || [];
+          if (nextEdges.length > 0) {
+            edges.push(...nextEdges);
+            hasNextPage = Boolean(nextConn?.page_info?.has_next_page);
+            endCursor = nextConn?.page_info?.end_cursor;
+          } else {
+            break;
+          }
+        } else {
+          break;
+        }
+      } catch {
+        break;
+      }
+      pageIndex++;
+    }
     const firstNodeUser = edges[0]?.node?.user;
     const gqlUser = profileJson?.data?.user || firstNodeUser;
 
@@ -1008,6 +1091,9 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const rawUsername = body.username;
+    const rawLimit = body.limit;
+    const requestedLimit =
+      rawLimit === "all" ? 100 : Math.max(25, Number(rawLimit) || 60);
     const forceRefresh = Boolean(body.forceRefresh);
 
     if (!rawUsername || typeof rawUsername !== "string" || !rawUsername.trim()) {
@@ -1027,7 +1113,11 @@ export async function POST(request: NextRequest) {
 
     if (!forceRefresh) {
       const cached = risetMemoryCache.get(cleanUsername);
-      if (cached && cached.expiresAt > Date.now() && cached.posts.length > 0) {
+      if (
+        cached &&
+        cached.expiresAt > Date.now() &&
+        cached.posts.length >= Math.min(requestedLimit, cached.profile.mediaCount)
+      ) {
         return NextResponse.json({
           success: true,
           source: cached.source,
@@ -1061,7 +1151,8 @@ export async function POST(request: NextRequest) {
     if (cfg.instagramSessionId) {
       const sessionData = await fetchFromInstagramWebSession(
         cleanUsername,
-        cfg.instagramSessionId
+        cfg.instagramSessionId,
+        requestedLimit
       );
       if (sessionData && sessionData.posts.length > 0) {
         risetMemoryCache.set(cleanUsername, {

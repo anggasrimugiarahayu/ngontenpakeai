@@ -28,6 +28,7 @@ interface Props {
   totalCount: number;
   onExport: () => void;
   onResetFilters: () => void;
+  onApply?: () => void;
 }
 
 export function InstagramSortToolbar({
@@ -43,6 +44,7 @@ export function InstagramSortToolbar({
   totalCount,
   onExport,
   onResetFilters,
+  onApply,
 }: Props) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
@@ -162,6 +164,10 @@ export function InstagramSortToolbar({
           <SortFeedFilterDropdown
             isOpen={isFilterOpen}
             onClose={() => setIsFilterOpen(false)}
+            onApply={() => {
+              setIsFilterOpen(false);
+              if (onApply) onApply();
+            }}
             filterMode={filterMode}
             setFilterMode={setFilterMode}
             postLimit={postLimit}

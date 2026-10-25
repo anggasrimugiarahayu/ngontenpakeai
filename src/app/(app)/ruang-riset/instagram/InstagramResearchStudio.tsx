@@ -86,9 +86,16 @@ export function InstagramResearchStudio({
     filterMode === "date";
 
   // Function to execute research in 1 click
-  const handleSearch = async (userToSearch: string) => {
+  const handleSearch = async (
+    userToSearch: string,
+    limitOverride?: PostLimit
+  ) => {
     const clean = userToSearch.trim().replace(/^@/, "");
     if (!clean) return;
+
+    const targetLimit = limitOverride ?? postLimit;
+    const numericLimit =
+      targetLimit === "all" ? 100 : Math.max(50, Number(targetLimit) || 50);
 
     setIsLoading(true);
     setError(null);
@@ -114,7 +121,10 @@ export function InstagramResearchStudio({
       const res = await fetch("/api/ruang-riset/instagram", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: clean }),
+        body: JSON.stringify({
+          username: clean,
+          limit: numericLimit,
+        }),
       });
 
       const data = await res.json();
@@ -140,6 +150,16 @@ export function InstagramResearchStudio({
       clearTimeout(timer1);
       clearTimeout(timer2);
       clearTimeout(timer3);
+    }
+  };
+
+  const handleApplyFilters = () => {
+    setIsSearchFilterOpen(false);
+    if (profile && filterMode === "posts") {
+      const needed = postLimit === "all" ? 100 : postLimit;
+      if (posts.length < needed && profile.mediaCount > posts.length) {
+        handleSearch(profile.username, postLimit);
+      }
     }
   };
 
@@ -250,6 +270,7 @@ export function InstagramResearchStudio({
               <SortFeedFilterDropdown
                 isOpen={isSearchFilterOpen}
                 onClose={() => setIsSearchFilterOpen(false)}
+                onApply={handleApplyFilters}
                 filterMode={filterMode}
                 setFilterMode={setFilterMode}
                 postLimit={postLimit}
@@ -332,6 +353,7 @@ export function InstagramResearchStudio({
               totalCount={posts.length}
               onExport={handleExportCSV}
               onResetFilters={handleResetFilters}
+              onApply={handleApplyFilters}
             />
 
             <InstagramFeedGrid
