@@ -10,10 +10,8 @@ import {
 import { SortFeedFilterDropdown } from "./SortFeedFilterDropdown";
 import {
   Download,
-  Users,
   SlidersHorizontal,
   ArrowUpDown,
-  Check,
   RotateCcw,
 } from "lucide-react";
 
@@ -47,17 +45,16 @@ export function InstagramSortToolbar({
   onResetFilters,
 }: Props) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
-  const [isSelectMode, setIsSelectMode] = useState(false);
 
-  // Title dynamic matching SortFeed Image 4
+  // Dynamic clean title
   const getSortTitle = () => {
     switch (sortOption) {
-      case "likes":
-        return "Most Liked Posts";
       case "outlier":
         return "Highest Outlier Posts";
       case "views":
         return "Most Viewed Posts";
+      case "likes":
+        return "Most Liked Posts";
       case "comments":
         return "Most Commented Posts";
       case "newest":
@@ -65,115 +62,103 @@ export function InstagramSortToolbar({
       case "oldest":
         return "Oldest Posts";
       default:
-        return "Most Liked Posts";
+        return "Highest Outlier Posts";
     }
   };
 
   const isCustomized =
-    sortOption !== "likes" ||
+    sortOption !== "outlier" ||
     (filterMode === "posts" && postLimit !== 25) ||
     filterMode === "date";
 
   return (
-    <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl p-4 sm:p-5 shadow-xs space-y-3.5 relative">
+    <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl p-4 sm:p-5 shadow-xs relative">
       {/* ========================================================================= */}
-      {/* BARIS ATAS: Judul Kiri & Aksi Kanan (Persis Lampiran SortFeed) */}
+      {/* BARIS UTAMA: Judul & Jumlah Postingan (Kiri) + Satu Tombol Export CSV (Kanan) */}
       {/* ========================================================================= */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3 border-b border-gray-100 dark:border-[#2C3246]">
-        {/* Kiri: Judul Dinamis & Jumlah Postingan */}
-        <div>
-          <h3 className="text-xl sm:text-2xl font-bold font-heading text-gray-900 dark:text-white tracking-tight">
+        {/* Kiri: Judul & Post Counter */}
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <h3 className="text-lg sm:text-xl font-bold font-heading text-gray-900 dark:text-white tracking-tight">
             {getSortTitle()}
           </h3>
-          <p className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-            Showing <span className="font-bold text-gray-900 dark:text-white">{totalFiltered}</span> Posts
-            {totalFiltered !== totalCount && (
-              <span className="text-gray-400 ml-1">
-                (dari total {totalCount} postingan)
-              </span>
-            )}
-          </p>
+          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300">
+            {totalFiltered} {totalFiltered !== totalCount ? `dari total ${totalCount}` : ""} Postingan
+          </span>
         </div>
 
-        {/* Kanan: [👥 Similar New] | [📥 Download X] | [📤 Export X] */}
-        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap self-stretch sm:self-auto justify-end">
-          {/* Similar Button */}
-          <button
-            type="button"
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors cursor-pointer"
-          >
-            <Users className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-            <span>Similar</span>
-            <span className="text-[10px] font-bold px-1.5 py-0.2 rounded-md bg-orange-500/10 text-rn-accent border border-orange-500/20">
-              New
-            </span>
-          </button>
-
-          {/* Download Count Button */}
+        {/* Kanan: HANYA 1 TOMBOL AKSI UTAMA (Export CSV) */}
+        <div className="flex items-center self-stretch sm:self-auto justify-end">
           <button
             type="button"
             onClick={onExport}
             disabled={totalFiltered === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors cursor-pointer disabled:opacity-50"
-          >
-            <Download className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-            <span>Download {totalFiltered}</span>
-          </button>
-
-          {/* Export Primary Button (Warna Standar App Kita) */}
-          <button
-            type="button"
-            onClick={onExport}
-            disabled={totalFiltered === 0}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold text-xs sm:text-sm shadow-sm shadow-orange-500/20 transition-all transform active:scale-95 disabled:opacity-50 cursor-pointer shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold text-xs sm:text-sm shadow-sm shadow-orange-500/20 transition-all transform active:scale-95 disabled:opacity-50 cursor-pointer"
           >
             <Download className="w-4 h-4" />
-            <span>Export {totalFiltered}</span>
+            <span>Export CSV</span>
           </button>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* BARIS KEDUA (SUB-BAR): Filters, Sort by, Clear all, Select (Persis Lampiran) */}
+      {/* SUB-BARIS: Filter & Sort Controls Ringkas & Simpel */}
       {/* ========================================================================= */}
-      <div className="flex items-center justify-between gap-3 text-xs">
-        {/* Sisi Kiri: [ ≡ Filters ] [ ⇅ Sort by ] [ Clear all ] */}
+      <div className="flex items-center justify-between gap-3 text-xs pt-0.5">
         <div className="flex items-center gap-3 sm:gap-4 flex-wrap relative">
-          {/* Filters Button */}
+          {/* Tombol Pengaturan Filter & Urutan Tunggal */}
           <button
             type="button"
             onClick={() => setIsFilterOpen((prev) => !prev)}
-            className="inline-flex items-center gap-1.5 font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 hover:bg-gray-100 dark:bg-[#0F172A] dark:hover:bg-[#1E293B] border border-gray-200 dark:border-[#2C3246] font-semibold text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
           >
             <SlidersHorizontal className="w-3.5 h-3.5 text-rn-accent" />
-            <span>Filters</span>
+            <span>Filter & Limit</span>
           </button>
 
-          {/* Sort by Button */}
-          <button
-            type="button"
-            onClick={() => setIsFilterOpen((prev) => !prev)}
-            className="inline-flex items-center gap-1.5 font-semibold text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
-          >
-            <ArrowUpDown className="w-3.5 h-3.5 text-rn-accent" />
-            <span>
-              Sort by: <strong className="text-gray-900 dark:text-white capitalize">{sortOption}</strong>
-            </span>
-          </button>
+          {/* Quick Sort Selector Langsung */}
+          <div className="inline-flex items-center gap-1.5 text-gray-600 dark:text-gray-300 font-medium">
+            <ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />
+            <span className="hidden sm:inline text-gray-400">Urutkan:</span>
+            <select
+              value={sortOption}
+              onChange={(e) => setSortOption(e.target.value as SortOption)}
+              className="bg-transparent font-bold text-gray-900 dark:text-white border-0 focus:outline-none focus:ring-0 cursor-pointer text-xs"
+            >
+              <option value="outlier" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                Outlier Score (Paling Viral)
+              </option>
+              <option value="views" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                Views Terbanyak
+              </option>
+              <option value="likes" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                Likes Terbanyak
+              </option>
+              <option value="comments" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                Komentar Terbanyak
+              </option>
+              <option value="newest" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                Postingan Terbaru
+              </option>
+              <option value="oldest" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                Postingan Terlama
+              </option>
+            </select>
+          </div>
 
-          {/* Clear all */}
+          {/* Reset Filter (jika dikustomisasi) */}
           {isCustomized && (
             <button
               type="button"
               onClick={onResetFilters}
-              className="inline-flex items-center gap-1 text-gray-400 hover:text-rose-500 font-medium transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-gray-400 hover:text-rose-500 font-medium transition-colors cursor-pointer ml-1"
             >
               <RotateCcw className="w-3 h-3" />
-              <span>Clear all</span>
+              <span>Reset</span>
             </button>
           )}
 
-          {/* Dropdown Modal anchored here if opened from toolbar */}
+          {/* Modal Filter Dropdown jika dibuka */}
           <SortFeedFilterDropdown
             isOpen={isFilterOpen}
             onClose={() => setIsFilterOpen(false)}
@@ -187,22 +172,6 @@ export function InstagramSortToolbar({
             setSortOption={setSortOption}
             onReset={onResetFilters}
           />
-        </div>
-
-        {/* Sisi Kanan: [ ✓ Select ] */}
-        <div>
-          <button
-            type="button"
-            onClick={() => setIsSelectMode((prev) => !prev)}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-              isSelectMode
-                ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
-                : "text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white"
-            }`}
-          >
-            <Check className="w-3.5 h-3.5" />
-            <span>{isSelectMode ? "Selected" : "Select"}</span>
-          </button>
         </div>
       </div>
     </div>
