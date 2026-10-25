@@ -24,7 +24,6 @@ export const EXPORT_HEADERS = [
   "Outlier Score",
   "Tingkat Viralitas",
   "Engagement Rate (%)",
-  "Hook / Kalimat Pertama",
   "Caption Lengkap",
   "Tanggal Posting",
 ];
@@ -62,7 +61,6 @@ export function getExportRows(posts: InstagramPostItem[], profile: InstagramTarg
       outlierScore: post.outlierScore.toFixed(1) + "x",
       tierLabel,
       engagementRate: post.engagementRate.toFixed(2) + "%",
-      hookText: post.hookText || "",
       caption: post.caption || "",
       date: formatIsoDate(post.timestamp),
     };
@@ -105,7 +103,6 @@ export async function exportToCSV(
         escapeCSV(r.outlierScore),
         escapeCSV(r.tierLabel),
         escapeCSV(r.engagementRate),
-        escapeCSV(r.hookText),
         escapeCSV(r.caption),
         escapeCSV(r.date),
       ].join(",")
@@ -152,7 +149,6 @@ export async function exportToExcel(
           r.outlierScore,
           r.tierLabel,
           r.engagementRate,
-          cleanTextForTSV(r.hookText),
           cleanTextForTSV(r.caption),
           r.date,
         ].join("\t")
@@ -177,7 +173,6 @@ export async function exportToExcel(
         escapeCSV(r.outlierScore),
         escapeCSV(r.tierLabel),
         escapeCSV(r.engagementRate),
-        escapeCSV(r.hookText),
         escapeCSV(r.caption),
         escapeCSV(r.date),
       ].join(",")
@@ -220,7 +215,6 @@ export async function exportToGoogleSheets(
         r.outlierScore,
         r.tierLabel,
         r.engagementRate,
-        cleanTextForTSV(r.hookText),
         cleanTextForTSV(r.caption),
         r.date,
       ].join("\t")
@@ -307,7 +301,13 @@ export async function downloadMediaAsset(url: string, filename: string): Promise
 
 /**
  * DOWNLOAD ALL MEDIA INTO A SINGLE STRUCTURED ZIP FILE
- * Folder inside ZIP: [username]-posts/[index]-[shortcode].[ext]
+ * Folder inside ZIP:
+ * [username]-posts/
+ *   ├── 01-[shortcode]-[type]/
+ *   │     ├── video.mp4 (atau slide-01.jpg, slide-02.jpg...)
+ *   │     └── caption.txt
+ *   ├── 02-[shortcode]-[type]/
+ *   │     └── ...
  * ZIP Name: media-instagram-[username]-[YYYY-MM-DD].zip
  */
 export async function downloadPostsAsZip(
@@ -318,30 +318,88 @@ export async function downloadPostsAsZip(
   if (!posts || posts.length === 0) return false;
 
   const zip = new JSZip();
-  const folderName = `${username}-posts`;
-  const folder = zip.folder(folderName)!;
+  const rootFolderName = `${username}-posts`;
+  const rootFolder = zip.folder(rootFolderName)!;
 
   for (let i = 0; i < posts.length; i++) {
     const post = posts[i];
     const isVideo = post.mediaType === "VIDEO" && Boolean(post.videoUrl);
-    const mediaUrl = isVideo ? post.videoUrl! : post.thumbnailUrl;
-    const ext = isVideo ? "mp4" : "jpg";
-    const postType = isVideo ? "reels" : post.mediaType === "CAROUSEL_ALBUM" ? "carousel" : "photo";
+    const isCarousel =
+      post.mediaType === "CAROUSEL_ALBUM" &&
+      Array.isArray(post.carouselMedia) &&
+      post.carouselMedia.length > 0;
+    const postType = isVideo ? "reels" : isCarousel ? "carousel" : "photo";
     const rankPrefix = String(i + 1).padStart(2, "0");
-    const filename = `${rankPrefix}-${post.shortcode || post.id}-${postType}.${ext}`;
+    const subfolderName = `${rankPrefix}-${post.shortcode || post.id}-${postType}`;
+    const postFolder = rootFolder.folder(subfolderName)!;
 
     if (onProgress) {
       onProgress(i + 1, posts.length);
     }
 
     try {
-      const res = await fetch(mediaUrl);
-      if (res.ok) {
-        const buffer = await res.arrayBuffer();
-        folder.file(filename, buffer);
+      if (isVideo && post.videoUrl) {
+        // Unduh video mp4
+        const res = await fetch(post.videoUrl);
+        if (res.ok) {
+          const buffer = await res.arrayBuffer();
+          postFolder.file("video.mp4", buffer);
+        }
+        // Juga unduh cover jika ada
+        if (post.thumbnailUrl) {
+          try {
+            const coverRes = await fetch(post.thumbnailUrl);
+            if (coverRes.ok) {
+              const coverBuf = await coverRes.arrayBuffer();
+              postFolder.file("cover.jpg", coverBuf);
+            }
+          } catch {
+            // ignore
+          }
+        }
+      } else if (isCarousel && post.carouselMedia) {
+        // Unduh semua slide carousel ke dalam foldernya
+        for (let s = 0; s < post.carouselMedia.length; s++) {
+          const slideUrl = post.carouselMedia[s];
+          try {
+            const res = await fetch(slideUrl);
+            if (res.ok) {
+              const buffer = await res.arrayBuffer();
+              const slideNum = String(s + 1).padStart(2, "0");
+              postFolder.file(`slide-${slideNum}.jpg`, buffer);
+            }
+          } catch (e) {
+            console.warn(`Gagal mengunduh slide #${s + 1}:`, e);
+          }
+        }
+      } else if (post.thumbnailUrl) {
+        // Single image
+        const res = await fetch(post.thumbnailUrl);
+        if (res.ok) {
+          const buffer = await res.arrayBuffer();
+          postFolder.file("photo.jpg", buffer);
+        }
       }
+
+      // Tambahkan teks caption & metadata postingan di file caption.txt
+      const captionText = [
+        `Link Postingan: ${post.permalink}`,
+        `Tipe Media: ${post.mediaType}`,
+        `Views: ${post.viewsCount}`,
+        `Likes: ${post.likesCount}`,
+        `Comments: ${post.commentsCount}`,
+        `Outlier Score: ${post.outlierScore}x (${post.outlierTier})`,
+        `Engagement Rate: ${post.engagementRate}%`,
+        `Tanggal Posting: ${formatIsoDate(post.timestamp)}`,
+        "",
+        "========================================",
+        "CAPTION LENGKAP:",
+        "========================================",
+        post.caption || "(Tanpa Caption)",
+      ].join("\n");
+      postFolder.file("caption.txt", captionText);
     } catch (err) {
-      console.warn(`Gagal mengunduh media post #${i + 1}:`, err);
+      console.warn(`Gagal memproses media post #${i + 1}:`, err);
     }
   }
 

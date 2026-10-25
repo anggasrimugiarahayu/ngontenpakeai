@@ -153,9 +153,9 @@ export function InstagramFeedGrid({
             {/* Thumbnail Image */}
             <img
               src={post.thumbnailUrl}
-              alt={post.hookText || "Instagram post"}
+              alt={post.caption || "Instagram post"}
               loading="lazy"
-              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              className="w-full h-full object-cover"
             />
 
             {/* Gradient Overlay Normal (Non-Hover) untuk teks terbaca jelas */}
