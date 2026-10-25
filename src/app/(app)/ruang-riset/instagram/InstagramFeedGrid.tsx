@@ -146,7 +146,11 @@ export function InstagramFeedGrid({
                 onSelectPost(post);
               }
             }}
-            className={`group relative aspect-[3/4] overflow-hidden bg-white dark:bg-[#141B31] border-r border-b border-gray-200/80 dark:border-[#2C3246] cursor-pointer transition-all duration-200 ${
+            style={{
+              transform: "translateZ(0)",
+              contain: "paint layout",
+            }}
+            className={`group relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-[#121727] border-r border-b border-gray-200/80 dark:border-[#2C3246] cursor-pointer ${
               isSelected ? "ring-2 ring-orange-500 ring-inset z-30" : ""
             }`}
           >
@@ -154,20 +158,23 @@ export function InstagramFeedGrid({
             <img
               src={post.thumbnailUrl}
               alt={post.caption || "Instagram post"}
+              loading="eager"
               decoding="async"
-              className="w-full h-full object-cover"
+              fetchPriority="high"
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover select-none pointer-events-none"
             />
 
             {/* Gradient Overlay Normal (Non-Hover) untuk teks terbaca jelas */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none transition-opacity duration-200 group-hover:opacity-0" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none transition-opacity duration-150 group-hover:opacity-0" />
 
             {/* ========================================================================= */}
             {/* TAMPILAN NORMAL (NON-HOVER) */}
             {/* ========================================================================= */}
 
             {/* Kiri Atas: Badge Petir (⚡ / ⚡⚡ / ⚡⚡⚡) */}
-            <div className="absolute top-2.5 left-2.5 z-10 transition-opacity duration-200 group-hover:opacity-0 pointer-events-none">
-              <div className="flex items-center gap-0.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white border border-white/10 text-xs shadow-sm">
+            <div className="absolute top-2.5 left-2.5 z-10 transition-opacity duration-150 group-hover:opacity-0 pointer-events-none">
+              <div className="flex items-center gap-0.5 px-2 py-1 rounded-lg bg-black/70 text-white border border-white/10 text-xs shadow-sm">
                 {Array.from({ length: boltCount }).map((_, i) => (
                   <Zap key={i} className="w-3 h-3 fill-white text-white" />
                 ))}
@@ -175,13 +182,13 @@ export function InstagramFeedGrid({
             </div>
 
             {/* Kanan Atas: Media Type Icon (Layers untuk Carousel, Play untuk Reels) */}
-            <div className="absolute top-2.5 right-2.5 z-10 transition-opacity duration-200 group-hover:opacity-0 pointer-events-none">
+            <div className="absolute top-2.5 right-2.5 z-10 transition-opacity duration-150 group-hover:opacity-0 pointer-events-none">
               {isReel ? (
-                <div className="w-6 h-6 rounded-md bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/15 shadow-sm">
+                <div className="w-6 h-6 rounded-md bg-black/60 flex items-center justify-center text-white border border-white/15 shadow-sm">
                   <Play className="w-3 h-3 fill-white text-white ml-0.5" />
                 </div>
               ) : isCarousel ? (
-                <div className="w-6 h-6 rounded-md bg-black/50 backdrop-blur-md flex items-center justify-center text-white border border-white/15 shadow-sm">
+                <div className="w-6 h-6 rounded-md bg-black/60 flex items-center justify-center text-white border border-white/15 shadow-sm">
                   <Layers className="w-3.5 h-3.5 text-white" />
                 </div>
               ) : null}
@@ -205,7 +212,7 @@ export function InstagramFeedGrid({
             )}
 
             {/* Bawah Normal: Like Counter & Info Singkat */}
-            <div className="absolute bottom-2.5 inset-x-2.5 z-10 flex items-center justify-between text-white text-[11px] font-semibold transition-opacity duration-200 group-hover:opacity-0 pointer-events-none drop-shadow-md">
+            <div className="absolute bottom-2.5 inset-x-2.5 z-10 flex items-center justify-between text-white text-[11px] font-semibold transition-opacity duration-150 group-hover:opacity-0 pointer-events-none drop-shadow-md">
               <div className="flex items-center gap-1">
                 <Heart className="w-3 h-3 fill-white text-white" />
                 <span>{formatCompact(post.likesCount)}</span>
@@ -222,10 +229,10 @@ export function InstagramFeedGrid({
             {/* ========================================================================= */}
             {/* TAMPILAN HOVER (SAAT KURSOR DIDEKATKAN KE KARTU) */}
             {/* ========================================================================= */}
-            <div className="absolute inset-0 bg-black/65 backdrop-blur-[1.5px] p-3 sm:p-3.5 flex flex-col justify-between z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+            <div className="absolute inset-0 bg-black/75 p-3 sm:p-3.5 flex flex-col justify-between z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none group-hover:pointer-events-auto">
               {/* Baris Atas Hover: Badge Petir di Kiri & Tombol Pop-out (↗) di Kanan */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-0.5 px-2 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white border border-white/10 text-xs shadow-sm">
+                <div className="flex items-center gap-0.5 px-2 py-1 rounded-lg bg-black/70 text-white border border-white/10 text-xs shadow-sm">
                   {Array.from({ length: boltCount }).map((_, i) => (
                     <Zap key={i} className="w-3 h-3 fill-white text-white" />
                   ))}
@@ -237,7 +244,7 @@ export function InstagramFeedGrid({
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={(e) => e.stopPropagation()}
-                    className="w-7 h-7 rounded-lg bg-white/15 hover:bg-white/25 active:scale-95 backdrop-blur-md flex items-center justify-center text-white transition-all cursor-pointer"
+                    className="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 flex items-center justify-center text-white transition-colors cursor-pointer"
                     title="Buka Postingan Asli di Instagram"
                   >
                     <ArrowUpRight className="w-4 h-4" />
@@ -285,10 +292,10 @@ export function InstagramFeedGrid({
                       e.stopPropagation();
                       handleBookmark(post);
                     }}
-                    className={`w-7 h-7 rounded-md backdrop-blur-md flex items-center justify-center text-white transition-all active:scale-95 cursor-pointer ${
+                    className={`w-7 h-7 rounded-md flex items-center justify-center text-white transition-colors active:scale-95 cursor-pointer ${
                       isBookmarked
-                        ? "bg-amber-500/80 hover:bg-amber-500 text-white shadow-sm"
-                        : "bg-white/15 hover:bg-white/25 text-white"
+                        ? "bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
+                        : "bg-white/20 hover:bg-white/30 text-white"
                     }`}
                     title={isBookmarked ? "Hapus dari Bookmark" : "Simpan ke Bookmark"}
                   >
@@ -303,7 +310,7 @@ export function InstagramFeedGrid({
                       e.stopPropagation();
                       handleDownloadMedia(post);
                     }}
-                    className="w-7 h-7 rounded-md bg-white/15 hover:bg-white/25 active:scale-95 backdrop-blur-md flex items-center justify-center text-white transition-all cursor-pointer"
+                    className="w-7 h-7 rounded-md bg-white/20 hover:bg-white/30 active:scale-95 flex items-center justify-center text-white transition-colors cursor-pointer"
                     title={isReel ? "Download Video Reels (.mp4)" : "Download Gambar (.jpg)"}
                   >
                     <Download className="w-3.5 h-3.5" />
