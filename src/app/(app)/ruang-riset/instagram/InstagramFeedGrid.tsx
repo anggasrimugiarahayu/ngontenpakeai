@@ -125,7 +125,7 @@ export function InstagramFeedGrid({
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-px bg-gray-200/80 dark:bg-[#2C3246]">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 bg-white dark:bg-[#141B31]">
       {posts.map((post) => {
         const isReel = post.mediaType === "VIDEO";
         const isCarousel = post.mediaType === "CAROUSEL_ALBUM";
@@ -146,15 +146,15 @@ export function InstagramFeedGrid({
                 onSelectPost(post);
               }
             }}
-            className={`group relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-[#0F172A] cursor-pointer transition-all duration-200 ${
+            className={`group relative aspect-[3/4] overflow-hidden bg-white dark:bg-[#141B31] border-r border-b border-gray-200/80 dark:border-[#2C3246] cursor-pointer transition-all duration-200 ${
               isSelected ? "ring-2 ring-orange-500 ring-inset z-30" : ""
             }`}
           >
-            {/* Thumbnail Image */}
+            {/* Thumbnail Image (Instan cache, tanpa lazy reload flickering) */}
             <img
               src={post.thumbnailUrl}
               alt={post.caption || "Instagram post"}
-              loading="lazy"
+              decoding="async"
               className="w-full h-full object-cover"
             />
 
