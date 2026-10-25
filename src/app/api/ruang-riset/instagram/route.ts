@@ -92,6 +92,8 @@ function enrichPostsAndProfile(
     caption?: string;
     mediaType: "VIDEO" | "IMAGE" | "CAROUSEL_ALBUM";
     thumbnailUrl: string;
+    videoUrl?: string;
+    carouselMedia?: string[];
     permalink: string;
     likesCount: number;
     commentsCount: number;
@@ -167,6 +169,10 @@ function enrichPostsAndProfile(
 
     const proxiedThumb =
       toProxiedImageUrl(p.thumbnailUrl) || proxiedProfilePic;
+    const proxiedVideo = toProxiedImageUrl(p.videoUrl);
+    const proxiedCarousel = Array.isArray(p.carouselMedia)
+      ? p.carouselMedia.map((u) => toProxiedImageUrl(u)).filter(Boolean)
+      : undefined;
 
     return {
       id: p.id,
@@ -174,8 +180,13 @@ function enrichPostsAndProfile(
       permalink: p.permalink,
       caption: captionText,
       mediaType: p.mediaType,
-      mediaUrl: proxiedThumb,
+      mediaUrl: proxiedVideo || proxiedThumb,
       thumbnailUrl: proxiedThumb,
+      videoUrl: proxiedVideo || undefined,
+      carouselMedia:
+        proxiedCarousel && proxiedCarousel.length > 0
+          ? proxiedCarousel
+          : undefined,
       viewsCount: p.viewsCount,
       likesCount: p.likesCount,
       commentsCount: p.commentsCount,
@@ -651,6 +662,8 @@ async function fetchFromInstagramWebSession(
         caption: string;
         mediaType: "VIDEO" | "IMAGE" | "CAROUSEL_ALBUM";
         thumbnailUrl: string;
+        videoUrl?: string;
+        carouselMedia?: string[];
         permalink: string;
         likesCount: number;
         commentsCount: number;
@@ -681,6 +694,17 @@ async function fetchFromInstagramWebSession(
         m.display_url ||
         "";
 
+      const videoUrl = isVideo ? m.video_versions?.[0]?.url || undefined : undefined;
+      const carouselMedia =
+        isCarousel && Array.isArray(m.carousel_media)
+          ? m.carousel_media
+              .map(
+                (c: any) =>
+                  c.image_versions2?.candidates?.[0]?.url || c.display_url
+              )
+              .filter(Boolean)
+          : undefined;
+
       const viewsCount =
         m.view_count ?? m.play_count ?? m.video_view_count ?? undefined;
       const likesCount = Math.max(0, m.like_count ?? 0);
@@ -698,6 +722,8 @@ async function fetchFromInstagramWebSession(
           ? "CAROUSEL_ALBUM"
           : "IMAGE",
         thumbnailUrl: thumb,
+        videoUrl,
+        carouselMedia,
         permalink: isVideo
           ? `https://www.instagram.com/reel/${code}/`
           : `https://www.instagram.com/p/${code}/`,

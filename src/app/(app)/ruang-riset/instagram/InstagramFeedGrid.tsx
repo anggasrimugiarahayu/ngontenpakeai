@@ -89,8 +89,11 @@ export function InstagramFeedGrid({
                   <Play className="w-3 h-3 fill-white text-white ml-0.5" />
                 </div>
               ) : isCarousel ? (
-                <div className="w-6 h-6 rounded-md bg-black/45 backdrop-blur-md flex items-center justify-center text-white border border-white/15 shadow-sm">
+                <div className="px-1.5 h-6 rounded-md bg-black/45 backdrop-blur-md flex items-center justify-center gap-1 text-white border border-white/15 shadow-sm text-[10px] font-bold">
                   <Layers className="w-3 h-3 text-white" />
+                  {post.carouselMedia && post.carouselMedia.length > 1 && (
+                    <span>{post.carouselMedia.length}</span>
+                  )}
                 </div>
               ) : null}
             </div>

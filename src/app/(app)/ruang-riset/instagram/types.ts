@@ -25,6 +25,8 @@ export interface InstagramPostItem {
   mediaType: MediaType;
   mediaUrl: string;
   thumbnailUrl: string;
+  videoUrl?: string;
+  carouselMedia?: string[];
   viewsCount: number;
   likesCount: number;
   commentsCount: number;
