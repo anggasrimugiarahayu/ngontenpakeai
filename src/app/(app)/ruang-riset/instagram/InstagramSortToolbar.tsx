@@ -13,9 +13,9 @@ import {
   SlidersHorizontal,
   ArrowUpDown,
   RotateCcw,
-  Users,
   Check,
   Share2,
+  Copy,
   X,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -31,7 +31,7 @@ interface Props {
   setDateFilter: (val: DateFilter) => void;
   totalFiltered: number;
   totalCount: number;
-  onExport: () => void;
+  onExportAction: (format: "sheets" | "excel" | "csv" | "json", action: "download" | "copy") => void;
   onDownloadMedia?: () => void;
   onResetFilters: () => void;
   onApply?: () => void;
@@ -53,7 +53,7 @@ export function InstagramSortToolbar({
   setDateFilter,
   totalFiltered,
   totalCount,
-  onExport,
+  onExportAction,
   onDownloadMedia,
   onResetFilters,
   onApply,
@@ -64,6 +64,7 @@ export function InstagramSortToolbar({
   onClearSelection,
 }: Props) {
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
   // Dynamic clean title
   const getSortTitle = () => {
@@ -92,10 +93,17 @@ export function InstagramSortToolbar({
 
   const activeCount = isSelectMode && selectedCount > 0 ? selectedCount : totalFiltered;
 
+  const exportFormats: { id: "sheets" | "excel" | "csv" | "json"; label: string }[] = [
+    { id: "sheets", label: "Google Sheets" },
+    { id: "excel", label: "Excel" },
+    { id: "csv", label: "CSV" },
+    { id: "json", label: "JSON" },
+  ];
+
   return (
     <div className="w-full p-4 sm:p-5 border-b border-gray-100 dark:border-[#2C3246] relative">
       {/* ========================================================================= */}
-      {/* BARIS 1: Judul & Subtitle (Kiri) + Tombol Similar, Download, Export (Kanan) */}
+      {/* BARIS 1: Judul & Subtitle (Kiri) + Tombol Download & Export (Kanan) */}
       {/* ========================================================================= */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3.5">
         {/* Kiri: Judul & Subtitle */}
@@ -109,48 +117,86 @@ export function InstagramSortToolbar({
           </p>
         </div>
 
-        {/* Kanan: 3 Tombol Aksi (Similar, Download, Export) */}
-        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap self-stretch sm:self-auto justify-end">
-          {/* 1. Similar (New) */}
-          <button
-            type="button"
-            onClick={() => {
-              toast("Menemukan pola konten serupa dengan performa outlier tinggi!", {
-                icon: "💡",
-              });
-            }}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-[#1E293B] dark:hover:bg-[#2A374F] text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
-          >
-            <Users className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-            <span>Similar</span>
-            <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-orange-500/15 text-orange-600 dark:bg-orange-500/25 dark:text-orange-400">
-              New
-            </span>
-          </button>
-
-          {/* 2. Download Media Post/Reels */}
+        {/* Kanan: 2 Tombol Aksi (Download ZIP & Export Dropdown) */}
+        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap self-stretch sm:self-auto justify-end relative">
+          {/* 1. Download Media ZIP */}
           <button
             type="button"
             onClick={onDownloadMedia}
             disabled={totalFiltered === 0}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-[#1E293B] dark:hover:bg-[#2A374F] text-gray-700 dark:text-gray-200 transition-colors disabled:opacity-50 cursor-pointer"
-            title="Download file media foto & video Reels postingan"
+            title="Download semua file media (video Reels & foto) dalam bentuk file ZIP rapi"
           >
             <Download className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
             <span>Download {activeCount}</span>
           </button>
 
-          {/* 3. Export Data CSV (Outline Button) */}
-          <button
-            type="button"
-            onClick={onExport}
-            disabled={totalFiltered === 0}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border border-gray-300 dark:border-[#384260] bg-white hover:bg-gray-50 dark:bg-transparent dark:hover:bg-[#1E293B] text-gray-800 dark:text-white transition-colors disabled:opacity-50 cursor-pointer"
-            title="Export data metrik dan link ke spreadsheet CSV"
-          >
-            <Share2 className="w-3.5 h-3.5 text-gray-600 dark:text-gray-300" />
-            <span>Export {activeCount}</span>
-          </button>
+          {/* 2. Export Button dengan Dropdown Popup Multi-Format */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsExportMenuOpen((prev) => !prev)}
+              disabled={totalFiltered === 0}
+              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50 cursor-pointer ${
+                isExportMenuOpen
+                  ? "border-orange-500 ring-2 ring-orange-500/20 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-500/10"
+                  : "border-gray-300 dark:border-[#384260] bg-white hover:bg-gray-50 dark:bg-transparent dark:hover:bg-[#1E293B] text-gray-800 dark:text-white"
+              }`}
+              title="Export data ke Google Sheets, Excel, CSV, atau JSON"
+            >
+              <Share2 className="w-3.5 h-3.5" />
+              <span>Export {activeCount}</span>
+            </button>
+
+            {/* Dropdown Menu Export Multi-Format (Sesuai Referensi Screenshot 2) */}
+            {isExportMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40 bg-transparent"
+                  onClick={() => setIsExportMenuOpen(false)}
+                />
+                <div className="absolute right-0 top-full mt-2 z-50 w-56 sm:w-64 bg-white dark:bg-[#161B2E] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-2xl p-1.5 text-xs text-gray-800 dark:text-gray-200 animate-in zoom-in-95 fade-in duration-150">
+                  {exportFormats.map((fmt) => (
+                    <div
+                      key={fmt.id}
+                      className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-[#1E293B] transition-colors group"
+                    >
+                      <span className="font-semibold text-gray-900 dark:text-white text-xs">
+                        {fmt.label}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        {/* Tombol Download */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsExportMenuOpen(false);
+                            onExportAction(fmt.id, "download");
+                          }}
+                          title={`Download file ${fmt.label}`}
+                          className="p-1 rounded text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+
+                        {/* Tombol Copy Clipboard */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsExportMenuOpen(false);
+                            onExportAction(fmt.id, "copy");
+                          }}
+                          title={`Copy data ${fmt.label} ke clipboard`}
+                          className="p-1 rounded text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 

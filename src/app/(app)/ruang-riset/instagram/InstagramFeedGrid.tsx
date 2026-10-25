@@ -232,17 +232,16 @@ export function InstagramFeedGrid({
                 </div>
 
                 {!isSelectMode && (
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onSelectPost(post);
-                    }}
+                  <a
+                    href={post.permalink}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
                     className="w-7 h-7 rounded-lg bg-white/15 hover:bg-white/25 active:scale-95 backdrop-blur-md flex items-center justify-center text-white transition-all cursor-pointer"
-                    title="Buka Detail Postingan"
+                    title="Buka Postingan Asli di Instagram"
                   >
                     <ArrowUpRight className="w-4 h-4" />
-                  </button>
+                  </a>
                 )}
               </div>
 

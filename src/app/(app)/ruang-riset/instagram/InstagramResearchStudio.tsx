@@ -14,7 +14,13 @@ import { InstagramSortToolbar } from "./InstagramSortToolbar";
 import { InstagramFeedGrid } from "./InstagramFeedGrid";
 import { InstagramPostModal } from "./InstagramPostModal";
 import { SortFeedFilterDropdown } from "./SortFeedFilterDropdown";
-import { exportPostsToCSV, downloadBatchMediaAssets } from "./exportUtils";
+import {
+  exportToCSV,
+  exportToExcel,
+  exportToGoogleSheets,
+  exportToJSON,
+  downloadPostsAsZip,
+} from "./exportUtils";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import toast from "react-hot-toast";
@@ -229,15 +235,53 @@ export function InstagramResearchStudio({
     return result;
   }, [posts, sortOption, filterMode, postLimit, dateFilter]);
 
-  const handleExportCSV = () => {
+  const handleExportAction = async (
+    format: "sheets" | "excel" | "csv" | "json",
+    action: "download" | "copy"
+  ) => {
     if (!profile) return;
     const targetPosts =
       isSelectMode && selectedPostIds.length > 0
         ? filteredAndSortedPosts.filter((p) => selectedPostIds.includes(p.id))
         : filteredAndSortedPosts;
 
-    exportPostsToCSV(targetPosts, profile);
-    toast.success(`Berhasil mengekspor ${targetPosts.length} postingan ke CSV!`);
+    if (targetPosts.length === 0) {
+      toast.error("Tidak ada postingan yang dipilih");
+      return;
+    }
+
+    const formatLabel =
+      format === "sheets"
+        ? "Google Sheets"
+        : format === "excel"
+        ? "Excel"
+        : format === "csv"
+        ? "CSV"
+        : "JSON";
+
+    try {
+      let ok = false;
+      if (format === "sheets") {
+        ok = await exportToGoogleSheets(targetPosts, profile, action);
+      } else if (format === "excel") {
+        ok = await exportToExcel(targetPosts, profile, action);
+      } else if (format === "csv") {
+        ok = await exportToCSV(targetPosts, profile, action);
+      } else if (format === "json") {
+        ok = await exportToJSON(targetPosts, profile, action);
+      }
+
+      if (ok) {
+        if (action === "copy") {
+          toast.success(`Data ${formatLabel} berhasil disalin ke clipboard!`);
+        } else {
+          toast.success(`File ${formatLabel} berhasil diunduh!`);
+        }
+      }
+    } catch (err) {
+      console.error("Export error:", err);
+      toast.error(`Gagal mengekspor data ${formatLabel}`);
+    }
   };
 
   const handleDownloadMediaBatch = async () => {
@@ -252,13 +296,31 @@ export function InstagramResearchStudio({
       return;
     }
 
-    toast.loading(`Mengunduh ${targetPosts.length} file media postingan...`, {
-      id: "batch-dl",
-      duration: 2500,
+    const toastId = "zip-dl-toast";
+    toast.loading(`Menyiapkan ${targetPosts.length} file media ke dalam ZIP...`, {
+      id: toastId,
     });
 
-    await downloadBatchMediaAssets(targetPosts, profile.username);
-    toast.success("Pengunduhan media selesai!", { id: "batch-dl" });
+    try {
+      const ok = await downloadPostsAsZip(
+        targetPosts,
+        profile.username,
+        (curr, total) => {
+          toast.loading(`Mengunduh media (${curr}/${total}) ke dalam ZIP...`, {
+            id: toastId,
+          });
+        }
+      );
+
+      if (ok) {
+        toast.success("File ZIP berhasil dibuat dan diunduh!", { id: toastId });
+      } else {
+        toast.error("Gagal mengunduh file ZIP", { id: toastId });
+      }
+    } catch (err) {
+      console.error("ZIP download error:", err);
+      toast.error("Terjadi kesalahan saat membuat file ZIP", { id: toastId });
+    }
   };
 
   return (
@@ -402,7 +464,7 @@ export function InstagramResearchStudio({
               setDateFilter={setDateFilter}
               totalFiltered={filteredAndSortedPosts.length}
               totalCount={posts.length}
-              onExport={handleExportCSV}
+              onExportAction={handleExportAction}
               onDownloadMedia={handleDownloadMediaBatch}
               onResetFilters={handleResetFilters}
               onApply={handleApplyFilters}
