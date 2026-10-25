@@ -114,16 +114,18 @@ export function InstagramFeedGrid({
 
   if (!posts || posts.length === 0) {
     return (
-      <EmptyState
-        icon={<Film className="w-6 h-6" />}
-        title="Tidak ada konten yang cocok"
-        description="Coba ganti kata kunci pencarian atau ubah pengaturan filter."
-      />
+      <div className="p-8 sm:p-12">
+        <EmptyState
+          icon={<Film className="w-6 h-6" />}
+          title="Tidak ada konten yang cocok"
+          description="Coba ganti kata kunci pencarian atau ubah pengaturan filter."
+        />
+      </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-3.5 md:gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-px bg-gray-200/80 dark:bg-[#2C3246]">
       {posts.map((post) => {
         const isReel = post.mediaType === "VIDEO";
         const isCarousel = post.mediaType === "CAROUSEL_ALBUM";
@@ -144,10 +146,8 @@ export function InstagramFeedGrid({
                 onSelectPost(post);
               }
             }}
-            className={`group relative aspect-[4/5] rounded-xl overflow-hidden bg-gray-100 dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] cursor-pointer shadow-xs transition-all duration-300 ${
-              isSelected
-                ? "ring-2 ring-orange-500 ring-offset-2 dark:ring-offset-[#141B31]"
-                : "hover:shadow-xl"
+            className={`group relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-[#0F172A] cursor-pointer transition-all duration-200 ${
+              isSelected ? "ring-2 ring-orange-500 ring-inset z-30" : ""
             }`}
           >
             {/* Thumbnail Image */}

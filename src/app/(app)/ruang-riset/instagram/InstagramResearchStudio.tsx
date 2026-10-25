@@ -413,17 +413,15 @@ export function InstagramResearchStudio({
               onClearSelection={handleClearSelection}
             />
 
-            <div className="p-4 sm:p-5">
-              <InstagramFeedGrid
-                posts={filteredAndSortedPosts}
-                profile={profile}
-                sortOption={sortOption}
-                onSelectPost={(post) => setSelectedPost(post)}
-                isSelectMode={isSelectMode}
-                selectedIds={selectedPostIds}
-                onToggleSelect={handleToggleSelect}
-              />
-            </div>
+            <InstagramFeedGrid
+              posts={filteredAndSortedPosts}
+              profile={profile}
+              sortOption={sortOption}
+              onSelectPost={(post) => setSelectedPost(post)}
+              isSelectMode={isSelectMode}
+              selectedIds={selectedPostIds}
+              onToggleSelect={handleToggleSelect}
+            />
           </div>
 
           {/* 3. Post Inspect Modal */}
