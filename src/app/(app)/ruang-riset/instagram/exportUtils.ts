@@ -72,3 +72,59 @@ export function exportPostsToCSV(
   document.body.removeChild(link);
   URL.revokeObjectURL(url);
 }
+
+/**
+ * Download a single media file (video MP4 or image JPG) directly to the user's computer.
+ */
+export async function downloadMediaAsset(url: string, filename: string): Promise<boolean> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Gagal mengambil media");
+    const blob = await res.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = blobUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 2000);
+    return true;
+  } catch (err) {
+    console.error("Download media error:", err);
+    // Fallback: buka di tab baru jika blob download diblokir browser
+    window.open(url, "_blank");
+    return false;
+  }
+}
+
+/**
+ * Batch download multiple media files sequentially with delay to avoid browser blocking.
+ */
+export async function downloadBatchMediaAssets(
+  posts: InstagramPostItem[],
+  username: string,
+  onProgress?: (current: number, total: number) => void
+): Promise<void> {
+  if (!posts || posts.length === 0) return;
+
+  for (let i = 0; i < posts.length; i++) {
+    const post = posts[i];
+    const isVideo = post.mediaType === "VIDEO" && Boolean(post.videoUrl);
+    const mediaUrl = isVideo ? post.videoUrl! : post.thumbnailUrl;
+    const ext = isVideo ? "mp4" : "jpg";
+    const filename = `${username}-${post.shortcode || post.id}.${ext}`;
+
+    if (onProgress) {
+      onProgress(i + 1, posts.length);
+    }
+
+    await downloadMediaAsset(mediaUrl, filename);
+
+    if (i < posts.length - 1) {
+      // Tunggu 400ms antar file agar browser tidak memblokir multi-download
+      await new Promise((resolve) => setTimeout(resolve, 400));
+    }
+  }
+}
+

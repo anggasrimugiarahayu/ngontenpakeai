@@ -14,9 +14,10 @@ import { InstagramSortToolbar } from "./InstagramSortToolbar";
 import { InstagramFeedGrid } from "./InstagramFeedGrid";
 import { InstagramPostModal } from "./InstagramPostModal";
 import { SortFeedFilterDropdown } from "./SortFeedFilterDropdown";
-import { exportPostsToCSV } from "./exportUtils";
+import { exportPostsToCSV, downloadBatchMediaAssets } from "./exportUtils";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
+import toast from "react-hot-toast";
 import {
   Search,
   AlertCircle,
@@ -163,12 +164,35 @@ export function InstagramResearchStudio({
     }
   };
 
+  // Selection Mode State (untuk Bulk Select Postingan)
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
+
   // Reset all filters to default
   const handleResetFilters = () => {
     setFilterMode("posts");
     setPostLimit(25);
     setDateFilter("all");
     setSortOption("outlier");
+    setSelectedPostIds([]);
+  };
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedPostIds((prev) =>
+      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
+    );
+  };
+
+  const handleSelectAll = () => {
+    if (selectedPostIds.length === filteredAndSortedPosts.length) {
+      setSelectedPostIds([]);
+    } else {
+      setSelectedPostIds(filteredAndSortedPosts.map((p) => p.id));
+    }
+  };
+
+  const handleClearSelection = () => {
+    setSelectedPostIds([]);
   };
 
   // Filtered & Sorted Posts
@@ -207,7 +231,34 @@ export function InstagramResearchStudio({
 
   const handleExportCSV = () => {
     if (!profile) return;
-    exportPostsToCSV(filteredAndSortedPosts, profile);
+    const targetPosts =
+      isSelectMode && selectedPostIds.length > 0
+        ? filteredAndSortedPosts.filter((p) => selectedPostIds.includes(p.id))
+        : filteredAndSortedPosts;
+
+    exportPostsToCSV(targetPosts, profile);
+    toast.success(`Berhasil mengekspor ${targetPosts.length} postingan ke CSV!`);
+  };
+
+  const handleDownloadMediaBatch = async () => {
+    if (!profile) return;
+    const targetPosts =
+      isSelectMode && selectedPostIds.length > 0
+        ? filteredAndSortedPosts.filter((p) => selectedPostIds.includes(p.id))
+        : filteredAndSortedPosts;
+
+    if (targetPosts.length === 0) {
+      toast.error("Tidak ada postingan yang dipilih");
+      return;
+    }
+
+    toast.loading(`Mengunduh ${targetPosts.length} file media postingan...`, {
+      id: "batch-dl",
+      duration: 2500,
+    });
+
+    await downloadBatchMediaAssets(targetPosts, profile.username);
+    toast.success("Pengunduhan media selesai!", { id: "batch-dl" });
   };
 
   return (
@@ -338,8 +389,8 @@ export function InstagramResearchStudio({
           {/* 1. Profile Header (Clean & Compact) */}
           <InstagramProfileHeader profile={profile} />
 
-          {/* 2. Galeri Feed & Toolbar (Clean & Simple) */}
-          <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
+          {/* 2. Unified Galeri Feed & Toolbar Card (Menyambung Mulus Sesuai Referensi) */}
+          <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200/90 dark:border-[#2C3246] rounded-2xl shadow-xs overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
             <InstagramSortToolbar
               sortOption={sortOption}
               setSortOption={setSortOption}
@@ -352,16 +403,27 @@ export function InstagramResearchStudio({
               totalFiltered={filteredAndSortedPosts.length}
               totalCount={posts.length}
               onExport={handleExportCSV}
+              onDownloadMedia={handleDownloadMediaBatch}
               onResetFilters={handleResetFilters}
               onApply={handleApplyFilters}
+              isSelectMode={isSelectMode}
+              setIsSelectMode={setIsSelectMode}
+              selectedCount={selectedPostIds.length}
+              onSelectAll={handleSelectAll}
+              onClearSelection={handleClearSelection}
             />
 
-            <InstagramFeedGrid
-              posts={filteredAndSortedPosts}
-              profile={profile}
-              sortOption={sortOption}
-              onSelectPost={(post) => setSelectedPost(post)}
-            />
+            <div className="p-4 sm:p-5">
+              <InstagramFeedGrid
+                posts={filteredAndSortedPosts}
+                profile={profile}
+                sortOption={sortOption}
+                onSelectPost={(post) => setSelectedPost(post)}
+                isSelectMode={isSelectMode}
+                selectedIds={selectedPostIds}
+                onToggleSelect={handleToggleSelect}
+              />
+            </div>
           </div>
 
           {/* 3. Post Inspect Modal */}
