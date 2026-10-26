@@ -14,8 +14,13 @@ import {
   Check,
   Share2,
   Copy,
-  ChevronDown,
-  X,
+  SlidersHorizontal,
+  Heart,
+  Play,
+  Zap,
+  MessageSquare,
+  Clock,
+  Info,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -34,6 +39,13 @@ interface Props {
   onDownloadMedia?: () => void;
   onResetFilters: () => void;
   onApply?: () => void;
+  // Multi-select props
+  isSelectMode?: boolean;
+  onToggleSelectMode?: () => void;
+  selectedCount?: number;
+  onSelectAll?: () => void;
+  // Filter modal
+  onOpenFilterModal?: () => void;
 }
 
 export function InstagramSortToolbar({
@@ -51,6 +63,11 @@ export function InstagramSortToolbar({
   onDownloadMedia,
   onResetFilters,
   onApply,
+  isSelectMode = false,
+  onToggleSelectMode,
+  selectedCount = 0,
+  onSelectAll,
+  onOpenFilterModal,
 }: Props) {
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
@@ -66,26 +83,28 @@ export function InstagramSortToolbar({
         return "Most Liked Posts";
       case "comments":
         return "Most Commented Posts";
-      case "newest":
-        return "Latest Posts";
       case "oldest":
         return "Oldest Posts";
+      case "newest":
+        return "Latest Posts";
       default:
         return "Top Outlier Posts";
     }
   };
 
-  const sortOptions: { value: SortOption; label: string }[] = [
-    { value: "outlier", label: "Outlier Score" },
-    { value: "views", label: "Views Terbanyak" },
-    { value: "likes", label: "Likes Terbanyak" },
-    { value: "comments", label: "Komentar Terbanyak" },
-    { value: "newest", label: "Postingan Terbaru" },
-    { value: "oldest", label: "Postingan Terlama" },
+  // Exact 5 sort options matching Image 3 with icons
+  const sortOptions: {
+    value: SortOption;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    hasInfo?: boolean;
+  }[] = [
+    { value: "likes", label: "Likes", icon: Heart },
+    { value: "views", label: "Views", icon: Play },
+    { value: "outlier", label: "Outlier score", icon: Zap, hasInfo: true },
+    { value: "comments", label: "Comments", icon: MessageSquare },
+    { value: "oldest", label: "Oldest", icon: Clock },
   ];
-
-  const currentSortLabel =
-    sortOptions.find((o) => o.value === sortOption)?.label || "Outlier Score";
 
   const isCustomized =
     sortOption !== "outlier" ||
@@ -99,12 +118,14 @@ export function InstagramSortToolbar({
     { id: "json", label: "JSON" },
   ];
 
+  const displayCount = isSelectMode && selectedCount > 0 ? selectedCount : totalFiltered;
+
   return (
-    <div className="w-full p-4 sm:p-5 border-b border-gray-100 dark:border-[#2C3246] relative">
+    <div className="w-full relative bg-white dark:bg-[#141B31] border-b border-gray-200/80 dark:border-[#2C3246]">
       {/* ========================================================================= */}
       {/* BARIS 1: Judul & Subtitle (Kiri) + Tombol Download & Export (Kanan) */}
       {/* ========================================================================= */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3.5">
+      <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
         {/* Kiri: Judul & Subtitle */}
         <div>
           <h3 className="text-lg sm:text-xl font-bold font-heading text-gray-900 dark:text-white tracking-tight">
@@ -116,38 +137,38 @@ export function InstagramSortToolbar({
           </p>
         </div>
 
-        {/* Kanan: 2 Tombol Aksi (Download ZIP & Export Dropdown) */}
-        <div className="w-full sm:w-auto grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5 relative">
-          {/* 1. Download Media ZIP */}
+        {/* Kanan: 2 Tombol Aksi (Download & Export) */}
+        <div className="w-full sm:w-auto flex items-center gap-2 sm:gap-3 justify-end relative">
+          {/* 1. Download Media */}
           <button
             type="button"
             onClick={onDownloadMedia}
-            disabled={totalFiltered === 0}
-            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-[#1E293B] dark:hover:bg-[#2A374F] text-gray-700 dark:text-gray-200 transition-colors disabled:opacity-50 cursor-pointer"
-            title="Download semua file media (video Reels & foto) dalam bentuk file ZIP rapi"
+            disabled={totalFiltered === 0 || (isSelectMode && selectedCount === 0)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors disabled:opacity-50 cursor-pointer"
+            title="Download media postingan (foto/video/zip)"
           >
             <Download className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-            <span>Download {totalFiltered}</span>
+            <span>Download {isSelectMode && selectedCount > 0 ? `(${selectedCount})` : totalFiltered}</span>
           </button>
 
-          {/* 2. Export Button dengan Dropdown Popup Multi-Format */}
+          {/* 2. Export Button dengan Border Frame */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setIsExportMenuOpen((prev) => !prev)}
-              disabled={totalFiltered === 0}
-              className={`w-full inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50 cursor-pointer ${
+              disabled={totalFiltered === 0 || (isSelectMode && selectedCount === 0)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50 cursor-pointer ${
                 isExportMenuOpen
                   ? "border-orange-500 ring-2 ring-orange-500/20 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-500/10"
-                  : "border-gray-300 dark:border-[#384260] bg-white hover:bg-gray-50 dark:bg-transparent dark:hover:bg-[#1E293B] text-gray-800 dark:text-white"
+                  : "border-gray-200 dark:border-[#384260] bg-white dark:bg-[#1A2238] hover:bg-gray-50 dark:hover:bg-[#202945] text-gray-800 dark:text-white shadow-2xs"
               }`}
               title="Export data ke Google Sheets, Excel, CSV, atau JSON"
             >
-              <Share2 className="w-3.5 h-3.5" />
-              <span>Export {totalFiltered}</span>
+              <Share2 className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              <span>Export {isSelectMode && selectedCount > 0 ? `(${selectedCount})` : totalFiltered}</span>
             </button>
 
-            {/* Dropdown Menu Export Multi-Format (Sesuai Referensi Screenshot 2) */}
+            {/* Dropdown Menu Export Multi-Format */}
             {isExportMenuOpen && (
               <>
                 <div
@@ -164,7 +185,6 @@ export function InstagramSortToolbar({
                         {fmt.label}
                       </span>
                       <div className="flex items-center gap-1.5">
-                        {/* Tombol Download */}
                         <button
                           type="button"
                           onClick={() => {
@@ -176,8 +196,6 @@ export function InstagramSortToolbar({
                         >
                           <Download className="w-3.5 h-3.5" />
                         </button>
-
-                        {/* Tombol Copy Clipboard */}
                         <button
                           type="button"
                           onClick={() => {
@@ -200,40 +218,48 @@ export function InstagramSortToolbar({
       </div>
 
       {/* ========================================================================= */}
-      {/* BARIS 2: Sort By (Compact & Rapi) */}
+      {/* GARIS PEMBATAS TEGAS (DIVIDER HORIZONTAL) */}
       {/* ========================================================================= */}
-      <div className="pt-2.5 text-xs flex items-center justify-between gap-2.5 relative">
-        <div className="flex items-center gap-2 sm:gap-3">
-          {/* Custom Selector Sort by (Style Ruang Automation / Custom Select) */}
+      <div className="w-full border-t border-gray-200/90 dark:border-[#2C3246]" />
+
+      {/* ========================================================================= */}
+      {/* BARIS 2: Filters, Sort By (Statis), Clear all (Kiri) + Select (Kanan) */}
+      {/* ========================================================================= */}
+      <div className="px-4 py-3 sm:px-5 text-xs flex items-center justify-between gap-3 relative">
+        {/* Kiri: Filters, Sort by, Clear all */}
+        <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+          {/* Tombol ≡ Filters */}
+          <button
+            type="button"
+            onClick={onOpenFilterModal}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+            <span>Filters</span>
+          </button>
+
+          {/* Tombol ⇅ Sort by (Teks selalu ringkas "Sort by" sesuai arahan user) */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setIsSortDropdownOpen((prev) => !prev)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-[#384260] text-xs font-semibold text-gray-800 dark:text-gray-200 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
             >
-              <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-              <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 shrink-0">
-                Sort by:
-              </span>
-              <span className="font-bold text-gray-900 dark:text-white">
-                {currentSortLabel}
-              </span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${
-                  isSortDropdownOpen ? "rotate-180" : ""
-                }`}
-              />
+              <ArrowUpDown className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              <span>Sort by</span>
             </button>
 
+            {/* Popup Menu Sort By Persis Seperti Image 3 */}
             {isSortDropdownOpen && (
               <>
                 <div
                   className="fixed inset-0 z-40 bg-transparent"
                   onClick={() => setIsSortDropdownOpen(false)}
                 />
-                <div className="absolute left-0 top-full mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-2xl py-1.5 z-50 min-w-[190px] animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute left-0 top-full mt-2 bg-white dark:bg-[#161B2E] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl z-50 min-w-[210px] overflow-hidden animate-in fade-in zoom-in-95 duration-150 divide-y divide-gray-100 dark:divide-white/5">
                   {sortOptions.map((opt) => {
                     const isSelected = sortOption === opt.value;
+                    const IconComponent = opt.icon;
                     return (
                       <button
                         key={opt.value}
@@ -242,16 +268,25 @@ export function InstagramSortToolbar({
                           setSortOption(opt.value);
                           setIsSortDropdownOpen(false);
                         }}
-                        className={`w-full px-3.5 py-2 text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                        className={`w-full px-4 py-3 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
                           isSelected
                             ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                            : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5"
                         }`}
                       >
-                        <span>{opt.label}</span>
-                        {isSelected && (
-                          <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
-                        )}
+                        <div className="flex items-center gap-2.5">
+                          <IconComponent className="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
+                          <span>{opt.label}</span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          {opt.hasInfo && (
+                            <Info className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
+                          )}
+                          {isSelected && (
+                            <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
+                          )}
+                        </div>
                       </button>
                     );
                   })}
@@ -259,23 +294,54 @@ export function InstagramSortToolbar({
               </>
             )}
           </div>
+
+          {/* Tombol Clear all */}
+          {isCustomized && (
+            <button
+              type="button"
+              onClick={onResetFilters}
+              className="text-xs font-medium text-gray-400 hover:text-rose-500 transition-colors cursor-pointer"
+              title="Reset ke pengaturan default"
+            >
+              Clear all
+            </button>
+          )}
         </div>
 
-        {/* Clear all (jika filter dikustomisasi) */}
-        {isCustomized && (
-          <button
-            type="button"
-            onClick={onResetFilters}
-            className="inline-flex items-center gap-1 text-gray-400 hover:text-rose-500 font-medium text-[11px] shrink-0 cursor-pointer pl-1"
-            title="Reset ke pengaturan default"
-          >
-            <RotateCcw className="w-3 h-3" />
-            <span className="hidden sm:inline">Clear all</span>
-            <span className="sm:hidden">Reset</span>
-          </button>
-        )}
+        {/* Kanan: Tombol ✓ Select (Multi-Select Mode) */}
+        <div className="flex items-center gap-2">
+          {isSelectMode ? (
+            <div className="flex items-center gap-2">
+              {onSelectAll && (
+                <button
+                  type="button"
+                  onClick={onSelectAll}
+                  className="text-[11px] font-semibold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer"
+                >
+                  {selectedCount === totalFiltered ? "Batal Semua" : "Pilih Semua"}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onToggleSelectMode}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Selesai ({selectedCount})</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={onToggleSelectMode}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+            >
+              <Check className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              <span>Select</span>
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
 }
-

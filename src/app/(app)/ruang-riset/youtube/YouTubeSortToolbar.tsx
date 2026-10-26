@@ -12,8 +12,14 @@ import {
   Download,
   Share2,
   Copy,
-  ChevronDown,
   Check,
+  SlidersHorizontal,
+  Heart,
+  Play,
+  Zap,
+  MessageSquare,
+  Clock,
+  Info,
 } from "lucide-react";
 import {
   exportYouTubeToCSV,
@@ -31,6 +37,18 @@ interface Props {
   videos: YouTubeVideoItem[];
   profile: YouTubeChannelProfile;
   totalFilteredCount: number;
+  onDownloadMedia?: () => void;
+  onResetFilters?: () => void;
+  isCustomized?: boolean;
+  // Multi-select props
+  isSelectMode?: boolean;
+  onToggleSelectMode?: () => void;
+  selectedCount?: number;
+  onSelectAll?: () => void;
+  // Filter modal
+  onOpenFilterModal?: () => void;
+  // Target videos for export (if selection mode is active)
+  targetVideosForExport?: YouTubeVideoItem[];
 }
 
 export function YouTubeSortToolbar({
@@ -41,6 +59,15 @@ export function YouTubeSortToolbar({
   videos,
   profile,
   totalFilteredCount,
+  onDownloadMedia,
+  onResetFilters,
+  isCustomized = false,
+  isSelectMode = false,
+  onToggleSelectMode,
+  selectedCount = 0,
+  onSelectAll,
+  onOpenFilterModal,
+  targetVideosForExport,
 }: Props) {
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
@@ -48,30 +75,33 @@ export function YouTubeSortToolbar({
   const getSortTitle = () => {
     switch (sortOption) {
       case "outlier":
-        return "Top Outlier Videos";
+        return "Top Outlier Posts";
       case "views":
-        return "Most Viewed Videos";
+        return "Most Viewed Posts";
       case "likes":
-        return "Most Liked Videos";
-      case "newest":
-        return "Latest Videos";
+        return "Most Liked Posts";
+      case "comments":
+        return "Most Commented Posts";
       case "oldest":
-        return "Oldest Videos";
+        return "Oldest Posts";
       default:
-        return "Top Outlier Videos";
+        return "Top Outlier Posts";
     }
   };
 
-  const sortOptions: { value: YouTubeSortOption; label: string }[] = [
-    { value: "outlier", label: "Outlier Score" },
-    { value: "views", label: "Views Terbanyak" },
-    { value: "likes", label: "Likes Terbanyak" },
-    { value: "newest", label: "Video Terbaru" },
-    { value: "oldest", label: "Video Terlama" },
+  // Exact 5 sort options matching Image 3 with icons
+  const sortOptions: {
+    value: YouTubeSortOption;
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    hasInfo?: boolean;
+  }[] = [
+    { value: "likes", label: "Likes", icon: Heart },
+    { value: "views", label: "Views", icon: Play },
+    { value: "outlier", label: "Outlier score", icon: Zap, hasInfo: true },
+    { value: "comments", label: "Comments", icon: MessageSquare },
+    { value: "oldest", label: "Oldest", icon: Clock },
   ];
-
-  const currentSortLabel =
-    sortOptions.find((o) => o.value === sortOption)?.label || "Outlier Score";
 
   const exportFormats: { id: "sheets" | "excel" | "csv" | "json"; label: string }[] = [
     { id: "sheets", label: "Google Sheets" },
@@ -80,24 +110,28 @@ export function YouTubeSortToolbar({
     { id: "json", label: "JSON" },
   ];
 
+  const activeVideos = targetVideosForExport && targetVideosForExport.length > 0
+    ? targetVideosForExport
+    : videos;
+
   const handleExportAction = async (
     format: "sheets" | "excel" | "csv" | "json",
     action: "download" | "copy"
   ) => {
     try {
       if (format === "sheets") {
-        const ok = await copyYouTubeToGoogleSheets(videos, profile);
+        const ok = await copyYouTubeToGoogleSheets(activeVideos, profile);
         if (ok) {
           toast.success("Data Google Sheets berhasil disalin ke clipboard!");
         }
       } else if (format === "excel") {
-        exportYouTubeToExcel(videos, profile);
+        exportYouTubeToExcel(activeVideos, profile);
         toast.success("File Excel berhasil diunduh!");
       } else if (format === "csv") {
-        exportYouTubeToCSV(videos, profile);
+        exportYouTubeToCSV(activeVideos, profile);
         toast.success("File CSV berhasil diunduh!");
       } else if (format === "json") {
-        exportYouTubeToJSON(videos, profile);
+        exportYouTubeToJSON(activeVideos, profile);
         toast.success("File JSON berhasil diunduh!");
       }
     } catch (err) {
@@ -110,92 +144,113 @@ export function YouTubeSortToolbar({
   const regularCount = videos.filter((v) => !v.isShorts).length;
 
   return (
-    <div className="w-full p-4 sm:p-5 border-b border-gray-100 dark:border-[#2C3246] relative">
+    <div className="w-full relative bg-white dark:bg-[#141B31] border-b border-gray-200/80 dark:border-[#2C3246]">
       {/* ========================================================================= */}
-      {/* BARIS 1: Judul & Subtitle (Kiri) + Tombol Export (Kanan) Identik dengan IG */}
+      {/* BARIS 1: Judul & Subtitle (Kiri) + Tombol Download & Export (Kanan) */}
       {/* ========================================================================= */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 pb-3.5">
+      <div className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+        {/* Kiri: Judul & Subtitle */}
         <div>
           <h3 className="text-lg sm:text-xl font-bold font-heading text-gray-900 dark:text-white tracking-tight">
             {getSortTitle()}
           </h3>
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-            Showing {totalFilteredCount} Konten
+            Showing {totalFilteredCount} Posts
             {totalFilteredCount !== videos.length && ` (dari total ${videos.length})`}
           </p>
         </div>
 
-        {/* Kanan: Tombol Export Dropdown Multi-Format */}
-        <div className="relative">
+        {/* Kanan: 2 Tombol Aksi (Download & Export) */}
+        <div className="w-full sm:w-auto flex items-center gap-2 sm:gap-3 justify-end relative">
+          {/* 1. Download Media (ZIP / Thumbnail + Link) */}
           <button
             type="button"
-            onClick={() => setIsExportMenuOpen((prev) => !prev)}
-            disabled={totalFilteredCount === 0}
-            className={`w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50 cursor-pointer ${
-              isExportMenuOpen
-                ? "border-orange-500 ring-2 ring-orange-500/20 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-500/10"
-                : "border-gray-300 dark:border-[#384260] bg-white hover:bg-gray-50 dark:bg-transparent dark:hover:bg-[#1E293B] text-gray-800 dark:text-white"
-            }`}
+            onClick={onDownloadMedia}
+            disabled={totalFilteredCount === 0 || (isSelectMode && selectedCount === 0)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors disabled:opacity-50 cursor-pointer"
+            title="Download thumbnail dan info video"
           >
-            <Share2 className="w-3.5 h-3.5" />
-            <span>Export {totalFilteredCount}</span>
+            <Download className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+            <span>Download {isSelectMode && selectedCount > 0 ? `(${selectedCount})` : totalFilteredCount}</span>
           </button>
 
-          {isExportMenuOpen && (
-            <>
-              <div
-                className="fixed inset-0 z-40 bg-transparent"
-                onClick={() => setIsExportMenuOpen(false)}
-              />
-              <div className="absolute right-0 top-full mt-2 z-50 w-56 sm:w-64 bg-white dark:bg-[#161B2E] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-2xl p-1.5 text-xs text-gray-800 dark:text-gray-200 animate-in zoom-in-95 fade-in duration-150">
-                {exportFormats.map((fmt) => (
-                  <div
-                    key={fmt.id}
-                    className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-[#1E293B] transition-colors group"
-                  >
-                    <span className="font-semibold text-gray-900 dark:text-white text-xs">
-                      {fmt.label}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      {/* Tombol Download */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          handleExportAction(fmt.id, "download");
-                        }}
-                        title={`Download file ${fmt.label}`}
-                        className="p-1 rounded text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                      >
-                        <Download className="w-3.5 h-3.5" />
-                      </button>
+          {/* 2. Export Button dengan Border Frame */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsExportMenuOpen((prev) => !prev)}
+              disabled={totalFilteredCount === 0 || (isSelectMode && selectedCount === 0)}
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50 cursor-pointer ${
+                isExportMenuOpen
+                  ? "border-orange-500 ring-2 ring-orange-500/20 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-500/10"
+                  : "border-gray-200 dark:border-[#384260] bg-white dark:bg-[#1A2238] hover:bg-gray-50 dark:hover:bg-[#202945] text-gray-800 dark:text-white shadow-2xs"
+              }`}
+              title="Export data video ke Google Sheets, Excel, CSV, atau JSON"
+            >
+              <Share2 className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              <span>Export {isSelectMode && selectedCount > 0 ? `(${selectedCount})` : totalFilteredCount}</span>
+            </button>
 
-                      {/* Tombol Copy Clipboard */}
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setIsExportMenuOpen(false);
-                          handleExportAction(fmt.id, "copy");
-                        }}
-                        title={`Copy data ${fmt.label} ke clipboard`}
-                        className="p-1 rounded text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-white/10 transition-colors cursor-pointer"
-                      >
-                        <Copy className="w-3.5 h-3.5" />
-                      </button>
+            {/* Dropdown Menu Export Multi-Format */}
+            {isExportMenuOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40 bg-transparent"
+                  onClick={() => setIsExportMenuOpen(false)}
+                />
+                <div className="absolute right-0 top-full mt-2 z-50 w-56 sm:w-64 bg-white dark:bg-[#161B2E] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-2xl p-1.5 text-xs text-gray-800 dark:text-gray-200 animate-in zoom-in-95 fade-in duration-150">
+                  {exportFormats.map((fmt) => (
+                    <div
+                      key={fmt.id}
+                      className="flex items-center justify-between px-3 py-2.5 rounded-lg hover:bg-gray-50 dark:hover:bg-[#1E293B] transition-colors group"
+                    >
+                      <span className="font-semibold text-gray-900 dark:text-white text-xs">
+                        {fmt.label}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsExportMenuOpen(false);
+                            handleExportAction(fmt.id, "download");
+                          }}
+                          title={`Download file ${fmt.label}`}
+                          className="p-1 rounded text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                        >
+                          <Download className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsExportMenuOpen(false);
+                            handleExportAction(fmt.id, "copy");
+                          }}
+                          title={`Copy data ${fmt.label} ke clipboard`}
+                          className="p-1 rounded text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-200 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* BARIS 2: Tab Format Pills + Custom Sort by Dropdown (Style Ruang Automation) */}
+      {/* GARIS PEMBATAS TEGAS (DIVIDER HORIZONTAL) */}
       {/* ========================================================================= */}
-      <div className="pt-2.5 text-xs flex flex-wrap items-center justify-between gap-2.5">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+      <div className="w-full border-t border-gray-200/90 dark:border-[#2C3246]" />
+
+      {/* ========================================================================= */}
+      {/* BARIS 2: Tab Format, Filters, Sort By (Statis) + Select (Kanan) */}
+      {/* ========================================================================= */}
+      <div className="px-4 py-3 sm:px-5 text-xs flex flex-wrap items-center justify-between gap-3 relative">
+        {/* Kiri: Tab Format Pills + Filters + Sort by + Clear all */}
+        <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
           {/* Format Tabs Pills */}
           <div className="inline-flex items-center gap-1 p-0.5 bg-gray-100 dark:bg-[#0F172A] rounded-lg border border-gray-200/60 dark:border-[#2C3246] shrink-0">
             <button
@@ -234,36 +289,38 @@ export function YouTubeSortToolbar({
             </button>
           </div>
 
-          {/* Custom Selector Sort by (Style Ruang Automation / Custom Select) */}
+          {/* Tombol ≡ Filters */}
+          <button
+            type="button"
+            onClick={onOpenFilterModal}
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+            <span>Filters</span>
+          </button>
+
+          {/* Tombol ⇅ Sort by (Teks selalu ringkas "Sort by" sesuai arahan user) */}
           <div className="relative">
             <button
               type="button"
               onClick={() => setIsSortDropdownOpen((prev) => !prev)}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-[#384260] text-xs font-semibold text-gray-800 dark:text-gray-200 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
             >
-              <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-              <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 shrink-0">
-                Sort by:
-              </span>
-              <span className="font-bold text-gray-900 dark:text-white">
-                {currentSortLabel}
-              </span>
-              <ChevronDown
-                className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${
-                  isSortDropdownOpen ? "rotate-180" : ""
-                }`}
-              />
+              <ArrowUpDown className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              <span>Sort by</span>
             </button>
 
+            {/* Popup Menu Sort By Persis Seperti Image 3 */}
             {isSortDropdownOpen && (
               <>
                 <div
                   className="fixed inset-0 z-40 bg-transparent"
                   onClick={() => setIsSortDropdownOpen(false)}
                 />
-                <div className="absolute left-0 top-full mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-2xl py-1.5 z-50 min-w-[190px] animate-in fade-in zoom-in-95 duration-150">
+                <div className="absolute left-0 top-full mt-2 bg-white dark:bg-[#161B2E] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl z-50 min-w-[210px] overflow-hidden animate-in fade-in zoom-in-95 duration-150 divide-y divide-gray-100 dark:divide-white/5">
                   {sortOptions.map((opt) => {
                     const isSelected = sortOption === opt.value;
+                    const IconComponent = opt.icon;
                     return (
                       <button
                         key={opt.value}
@@ -272,16 +329,25 @@ export function YouTubeSortToolbar({
                           onSortOptionChange(opt.value);
                           setIsSortDropdownOpen(false);
                         }}
-                        className={`w-full px-3.5 py-2 text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                        className={`w-full px-4 py-3 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
                           isSelected
                             ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
-                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                            : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5"
                         }`}
                       >
-                        <span>{opt.label}</span>
-                        {isSelected && (
-                          <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
-                        )}
+                        <div className="flex items-center gap-2.5">
+                          <IconComponent className="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
+                          <span>{opt.label}</span>
+                        </div>
+
+                        <div className="flex items-center gap-1.5">
+                          {opt.hasInfo && (
+                            <Info className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
+                          )}
+                          {isSelected && (
+                            <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
+                          )}
+                        </div>
                       </button>
                     );
                   })}
@@ -289,6 +355,52 @@ export function YouTubeSortToolbar({
               </>
             )}
           </div>
+
+          {/* Tombol Clear all */}
+          {isCustomized && onResetFilters && (
+            <button
+              type="button"
+              onClick={onResetFilters}
+              className="text-xs font-medium text-gray-400 hover:text-rose-500 transition-colors cursor-pointer"
+              title="Reset ke pengaturan default"
+            >
+              Clear all
+            </button>
+          )}
+        </div>
+
+        {/* Kanan: Tombol ✓ Select (Multi-Select Mode) */}
+        <div className="flex items-center gap-2">
+          {isSelectMode ? (
+            <div className="flex items-center gap-2">
+              {onSelectAll && (
+                <button
+                  type="button"
+                  onClick={onSelectAll}
+                  className="text-[11px] font-semibold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer"
+                >
+                  {selectedCount === totalFilteredCount ? "Batal Semua" : "Pilih Semua"}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={onToggleSelectMode}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              >
+                <Check className="w-3.5 h-3.5" />
+                <span>Selesai ({selectedCount})</span>
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={onToggleSelectMode}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+            >
+              <Check className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              <span>Select</span>
+            </button>
+          )}
         </div>
       </div>
     </div>

@@ -2,11 +2,14 @@
 
 import React from "react";
 import { YouTubeVideoItem } from "./types";
-import { Play, Flame, Clock, Eye, Sparkles } from "lucide-react";
+import { Play, Flame, Clock, Eye, Sparkles, Check } from "lucide-react";
 
 interface Props {
   videos: YouTubeVideoItem[];
   onSelectVideo: (video: YouTubeVideoItem) => void;
+  isSelectMode?: boolean;
+  selectedVideoIds?: Set<string>;
+  onToggleSelectVideo?: (videoId: string) => void;
 }
 
 function formatViews(num: number): string {
@@ -19,7 +22,13 @@ function formatViews(num: number): string {
   return num.toLocaleString("id-ID");
 }
 
-export function YouTubeFeedGrid({ videos, onSelectVideo }: Props) {
+export function YouTubeFeedGrid({
+  videos,
+  onSelectVideo,
+  isSelectMode = false,
+  selectedVideoIds = new Set(),
+  onToggleSelectVideo,
+}: Props) {
   if (videos.length === 0) {
     return (
       <div className="w-full text-center py-16 px-4">
@@ -37,17 +46,41 @@ export function YouTubeFeedGrid({ videos, onSelectVideo }: Props) {
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 p-4 sm:p-5">
       {videos.map((video) => {
         const isViralOutlier = video.outlierScore >= 2.0;
         const isSuperViral = video.outlierScore >= 5.0;
+        const isSelected = selectedVideoIds.has(video.id);
 
         return (
           <div
             key={video.id}
-            onClick={() => onSelectVideo(video)}
-            className="group relative flex flex-col bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl overflow-hidden hover:border-orange-500/50 hover:shadow-lg transition-all duration-200 cursor-pointer"
+            onClick={() => {
+              if (isSelectMode) {
+                onToggleSelectVideo?.(video.id);
+              } else {
+                onSelectVideo(video);
+              }
+            }}
+            className={`group relative flex flex-col bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl overflow-hidden hover:border-orange-500/50 hover:shadow-lg transition-all duration-200 cursor-pointer ${
+              isSelected ? "ring-3 ring-orange-500" : ""
+            }`}
           >
+            {/* Select Checkbox (Saat Mode Select Aktif) */}
+            {isSelectMode && (
+              <div className="absolute top-2.5 right-2.5 z-30">
+                <div
+                  className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all shadow-md ${
+                    isSelected
+                      ? "bg-orange-500 text-white ring-2 ring-white"
+                      : "bg-black/60 text-transparent border border-white/40 backdrop-blur-xs hover:border-white"
+                  }`}
+                >
+                  <Check className={`w-3.5 h-3.5 ${isSelected ? "opacity-100 text-white" : "opacity-0"}`} strokeWidth={3} />
+                </div>
+              </div>
+            )}
+
             {/* Thumbnail Area */}
             <div className={`relative w-full overflow-hidden bg-gray-950 ${video.isShorts ? "aspect-[9/14]" : "aspect-[16/9]"}`}>
               <img
@@ -57,12 +90,14 @@ export function YouTubeFeedGrid({ videos, onSelectVideo }: Props) {
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               />
 
-              {/* Gradient Overlay saat Hover */}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <div className="w-11 h-11 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
-                  <Play className="w-5 h-5 fill-current ml-0.5" />
+              {/* Gradient Overlay saat Hover (hanya saat tidak dalam select mode) */}
+              {!isSelectMode && (
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+                    <Play className="w-5 h-5 fill-current ml-0.5" />
+                  </div>
                 </div>
-              </div>
+              )}
 
               {/* Badges Top: Outlier Score & Shorts */}
               <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
@@ -83,7 +118,7 @@ export function YouTubeFeedGrid({ videos, onSelectVideo }: Props) {
                   </span>
                 )}
 
-                {video.isShorts && (
+                {video.isShorts && !isSelectMode && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-600 text-white shadow-sm">
                     SHORTS
                   </span>

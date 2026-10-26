@@ -87,6 +87,42 @@ export function InstagramResearchStudio({
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [sortOption, setSortOption] = useState<SortOption>("outlier");
 
+  // Multi-select state
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedPostIds, setSelectedPostIds] = useState<Set<string>>(new Set());
+
+  // Filter modal state
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  const handleToggleSelectMode = () => {
+    setIsSelectMode((prev) => {
+      if (prev) {
+        setSelectedPostIds(new Set());
+      }
+      return !prev;
+    });
+  };
+
+  const handleToggleSelectPost = (postId: string) => {
+    setSelectedPostIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(postId)) {
+        next.delete(postId);
+      } else {
+        next.add(postId);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedPostIds.size === filteredAndSortedPosts.length) {
+      setSelectedPostIds(new Set());
+    } else {
+      setSelectedPostIds(new Set(filteredAndSortedPosts.map((p) => p.id)));
+    }
+  };
+
   const isFilterCustomized =
     sortOption !== "outlier" ||
     (filterMode === "posts" && postLimit !== 25) ||
@@ -217,7 +253,9 @@ export function InstagramResearchStudio({
     action: "download" | "copy"
   ) => {
     if (!profile) return;
-    const targetPosts = filteredAndSortedPosts;
+    const targetPosts = isSelectMode && selectedPostIds.size > 0
+      ? filteredAndSortedPosts.filter((p) => selectedPostIds.has(p.id))
+      : filteredAndSortedPosts;
 
     if (targetPosts.length === 0) {
       toast.error("Tidak ada postingan untuk diekspor");
@@ -260,7 +298,9 @@ export function InstagramResearchStudio({
 
   const handleDownloadMediaBatch = async () => {
     if (!profile) return;
-    const targetPosts = filteredAndSortedPosts;
+    const targetPosts = isSelectMode && selectedPostIds.size > 0
+      ? filteredAndSortedPosts.filter((p) => selectedPostIds.has(p.id))
+      : filteredAndSortedPosts;
 
     if (targetPosts.length === 0) {
       toast.error("Tidak ada postingan untuk diunduh");
@@ -439,6 +479,11 @@ export function InstagramResearchStudio({
               onDownloadMedia={handleDownloadMediaBatch}
               onResetFilters={handleResetFilters}
               onApply={handleApplyFilters}
+              isSelectMode={isSelectMode}
+              onToggleSelectMode={handleToggleSelectMode}
+              selectedCount={selectedPostIds.size}
+              onSelectAll={handleSelectAll}
+              onOpenFilterModal={() => setIsFilterModalOpen(true)}
             />
 
             <InstagramFeedGrid
@@ -446,8 +491,28 @@ export function InstagramResearchStudio({
               profile={profile}
               sortOption={sortOption}
               onSelectPost={(post) => setSelectedPost(post)}
+              isSelectMode={isSelectMode}
+              selectedPostIds={selectedPostIds}
+              onToggleSelectPost={handleToggleSelectPost}
             />
           </div>
+
+          {/* Modal Filters Sesuai Image 2 */}
+          <SortFeedFilterDropdown
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            onApply={handleApplyFilters}
+            filterMode={filterMode}
+            setFilterMode={setFilterMode}
+            postLimit={postLimit}
+            setPostLimit={setPostLimit}
+            dateFilter={dateFilter}
+            setDateFilter={setDateFilter}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
+            onReset={handleResetFilters}
+            totalFilteredCount={filteredAndSortedPosts.length}
+          />
 
           {/* 3. Post Inspect Modal */}
           <InstagramPostModal

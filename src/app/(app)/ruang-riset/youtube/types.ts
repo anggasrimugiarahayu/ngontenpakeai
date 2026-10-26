@@ -38,8 +38,9 @@ export interface YouTubeVideoItem {
 }
 
 export type YouTubeSortOption =
-  | "outlier"
   | "likes"
   | "views"
-  | "newest"
-  | "oldest";
+  | "outlier"
+  | "comments"
+  | "oldest"
+  | "newest";

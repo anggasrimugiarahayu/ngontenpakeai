@@ -15,6 +15,7 @@ import { YouTubeSortToolbar } from "./YouTubeSortToolbar";
 import { YouTubeFeedGrid } from "./YouTubeFeedGrid";
 import { YouTubeVideoModal } from "./YouTubeVideoModal";
 import { YouTubeSortFeedFilterDropdown } from "./YouTubeSortFeedFilterDropdown";
+import { downloadYouTubeMediaBatch } from "./exportUtils";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import toast from "react-hot-toast";
@@ -86,10 +87,55 @@ export function YouTubeResearchStudio({
   const [dateFilter, setDateFilter] = useState<YouTubeDateFilter>("all");
   const [sortOption, setSortOption] = useState<YouTubeSortOption>("outlier");
 
+  // Multi-select state
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedVideoIds, setSelectedVideoIds] = useState<Set<string>>(new Set());
+
+  // Filter modal state
+  const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  const handleToggleSelectMode = () => {
+    setIsSelectMode((prev) => {
+      if (prev) {
+        setSelectedVideoIds(new Set());
+      }
+      return !prev;
+    });
+  };
+
+  const handleToggleSelectVideo = (videoId: string) => {
+    setSelectedVideoIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(videoId)) {
+        next.delete(videoId);
+      } else {
+        next.add(videoId);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedVideoIds.size === filteredAndSortedVideos.length) {
+      setSelectedVideoIds(new Set());
+    } else {
+      setSelectedVideoIds(new Set(filteredAndSortedVideos.map((v) => v.id)));
+    }
+  };
+
+  const handleResetFilters = () => {
+    setFilterMode("videos");
+    setFormatFilter("all");
+    setVideoLimit("all");
+    setDateFilter("all");
+    setSortOption("outlier");
+  };
+
   const isFilterCustomized =
     sortOption !== "outlier" ||
     (filterMode === "videos" && videoLimit !== "all") ||
-    filterMode === "date";
+    filterMode === "date" ||
+    formatFilter !== "all";
 
   const handleSearch = async (targetHandle?: string, forceRefresh = false) => {
     const handleToQuery = (targetHandle || channelInput).trim();
@@ -160,15 +206,6 @@ export function YouTubeResearchStudio({
     }
   };
 
-  const handleResetFilters = () => {
-    setFilterMode("videos");
-    setVideoLimit("all");
-    setDateFilter("all");
-    setSortOption("outlier");
-    setIsSearchFilterOpen(false);
-    toast.success("Filter telah direset ke default");
-  };
-
   const handleApplyFilters = () => {
     setIsSearchFilterOpen(false);
     toast.success("Filter berhasil diterapkan");
@@ -198,6 +235,9 @@ export function YouTubeResearchStudio({
       if (sortOption === "views" || sortOption === "likes") {
         return b.viewsCount - a.viewsCount;
       }
+      if (sortOption === "comments") {
+        return b.outlierScore - a.outlierScore;
+      }
       if (sortOption === "oldest") {
         return (
           new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
@@ -218,6 +258,50 @@ export function YouTubeResearchStudio({
 
     return result;
   }, [videos, formatFilter, dateFilter, sortOption, videoLimit]);
+
+  const targetVideosForExport = useMemo(() => {
+    if (isSelectMode && selectedVideoIds.size > 0) {
+      return filteredAndSortedVideos.filter((v) => selectedVideoIds.has(v.id));
+    }
+    return filteredAndSortedVideos;
+  }, [filteredAndSortedVideos, isSelectMode, selectedVideoIds]);
+
+  const handleDownloadMediaBatch = async () => {
+    if (!profile) return;
+    const targets = targetVideosForExport;
+
+    if (targets.length === 0) {
+      toast.error("Tidak ada video untuk diunduh");
+      return;
+    }
+
+    const toastId = "yt-zip-dl";
+    toast.loading(`Menyiapkan ${targets.length} thumbnail & info ke dalam ZIP...`, {
+      id: toastId,
+    });
+
+    try {
+      const ok = await downloadYouTubeMediaBatch(
+        targets,
+        profile,
+        (curr, total) => {
+          toast.loading(`Mengunduh file (${curr}/${total}) ke dalam ZIP...`, {
+            id: toastId,
+          });
+        }
+      );
+      if (ok) {
+        toast.success(`Berhasil mengunduh ${targets.length} file ZIP!`, {
+          id: toastId,
+        });
+      } else {
+        toast.error("Gagal mengunduh file ZIP", { id: toastId });
+      }
+    } catch (e) {
+      console.error("Download ZIP error:", e);
+      toast.error("Terjadi kesalahan saat mengunduh ZIP", { id: toastId });
+    }
+  };
 
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-300 pb-16">
@@ -372,15 +456,42 @@ export function YouTubeResearchStudio({
               videos={videos}
               profile={profile}
               totalFilteredCount={filteredAndSortedVideos.length}
+              onDownloadMedia={handleDownloadMediaBatch}
+              onResetFilters={handleResetFilters}
+              isCustomized={isFilterCustomized}
+              isSelectMode={isSelectMode}
+              onToggleSelectMode={handleToggleSelectMode}
+              selectedCount={selectedVideoIds.size}
+              onSelectAll={handleSelectAll}
+              onOpenFilterModal={() => setIsFilterModalOpen(true)}
+              targetVideosForExport={targetVideosForExport}
             />
 
-            <div className="p-4 sm:p-5">
-              <YouTubeFeedGrid
-                videos={filteredAndSortedVideos}
-                onSelectVideo={setActiveModalVideo}
-              />
-            </div>
+            <YouTubeFeedGrid
+              videos={filteredAndSortedVideos}
+              onSelectVideo={setActiveModalVideo}
+              isSelectMode={isSelectMode}
+              selectedVideoIds={selectedVideoIds}
+              onToggleSelectVideo={handleToggleSelectVideo}
+            />
           </div>
+
+          {/* Modal Filters Sesuai Image 2 */}
+          <YouTubeSortFeedFilterDropdown
+            isOpen={isFilterModalOpen}
+            onClose={() => setIsFilterModalOpen(false)}
+            onApply={() => setIsFilterModalOpen(false)}
+            filterMode={filterMode}
+            setFilterMode={setFilterMode}
+            videoLimit={videoLimit}
+            setVideoLimit={setVideoLimit}
+            dateFilter={dateFilter}
+            setDateFilter={setDateFilter}
+            sortOption={sortOption}
+            setSortOption={setSortOption}
+            onReset={handleResetFilters}
+            totalFilteredCount={filteredAndSortedVideos.length}
+          />
         </div>
       )}
 

@@ -177,6 +177,62 @@ export function exportYouTubeToJSON(videos: YouTubeVideoItem[], profile: YouTube
   triggerDownload(blob, `Riset_YouTube_${profile.customUrl.replace(/[^a-zA-Z0-9_]/g, "")}_${Date.now()}.json`);
 }
 
+export async function downloadYouTubeMediaBatch(
+  videos: YouTubeVideoItem[],
+  profile: YouTubeChannelProfile,
+  onProgress?: (current: number, total: number) => void
+): Promise<boolean> {
+  const zip = new JSZip();
+  const safeHandle = profile.customUrl.replace(/[^a-zA-Z0-9_]/g, "") || "channel";
+  const root = zip.folder(`youtube-${safeHandle}`);
+  if (!root) return false;
+
+  for (let i = 0; i < videos.length; i++) {
+    const video = videos[i];
+    if (onProgress) onProgress(i + 1, videos.length);
+    const cleanTitle = (video.title || "video").slice(0, 30).replace(/[^a-zA-Z0-9_ -]/g, "").trim();
+    const folderName = `${String(i + 1).padStart(2, "0")}_${video.id}_${cleanTitle}`;
+    const vidFolder = root.folder(folderName);
+    if (!vidFolder) continue;
+
+    // Fetch thumbnail via image proxy or direct
+    try {
+      if (video.thumbnailUrl) {
+        const proxyUrl = `/api/ruang-riset/image-proxy?url=${encodeURIComponent(video.thumbnailUrl)}`;
+        const thumbRes = await fetch(proxyUrl);
+        if (thumbRes.ok) {
+          const buf = await thumbRes.arrayBuffer();
+          vidFolder.file("thumbnail.jpg", buf);
+        }
+      }
+    } catch (e) {
+      console.warn("Failed fetching thumbnail:", e);
+    }
+
+    // Video details text file
+    const infoText = [
+      `Channel: ${profile.title} (${profile.customUrl})`,
+      `Judul: ${video.title}`,
+      `Link Video: ${video.permalink}`,
+      `Views: ${video.viewsText} (${video.viewsCount})`,
+      `Outlier Score: ${video.outlierScore.toFixed(1)}x (${video.outlierTier})`,
+      `Tipe: ${video.isShorts ? "Shorts" : "Video Reguler"}`,
+      `Durasi: ${video.duration}`,
+      `Tanggal: ${video.publishedText}`,
+    ].join("\n");
+    vidFolder.file("info.txt", infoText);
+  }
+
+  const zipBlob = await zip.generateAsync({
+    type: "blob",
+    compression: "DEFLATE",
+    compressionOptions: { level: 6 },
+  });
+
+  triggerDownload(zipBlob, `YouTube_Media_${safeHandle}_${Date.now()}.zip`);
+  return true;
+}
+
 function escapeHTML(str: string) {
   return str
     .replace(/&/g, "&amp;")

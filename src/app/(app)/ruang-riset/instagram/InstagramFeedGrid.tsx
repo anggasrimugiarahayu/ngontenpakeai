@@ -12,6 +12,7 @@ import {
   Download,
   ArrowUpRight,
   Film,
+  Check,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { downloadMediaAsset } from "./exportUtils";
@@ -43,6 +44,9 @@ interface Props {
   profile: InstagramTargetProfile;
   sortOption?: SortOption;
   onSelectPost: (post: InstagramPostItem) => void;
+  isSelectMode?: boolean;
+  selectedPostIds?: Set<string>;
+  onToggleSelectPost?: (postId: string) => void;
 }
 
 function formatCompact(num: number): string {
@@ -56,6 +60,9 @@ export function InstagramFeedGrid({
   profile,
   sortOption = "outlier",
   onSelectPost,
+  isSelectMode = false,
+  selectedPostIds = new Set(),
+  onToggleSelectPost,
 }: Props) {
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(() => {
     if (typeof window === "undefined") return new Set();
@@ -128,16 +135,40 @@ export function InstagramFeedGrid({
         const boltCount =
           post.outlierScore >= 8 ? 3 : post.outlierScore >= 4 ? 2 : post.outlierScore >= 1.8 ? 1 : 1;
 
+        const isSelected = selectedPostIds.has(post.id);
+
         return (
           <div
             key={post.id}
-            onClick={() => onSelectPost(post)}
+            onClick={() => {
+              if (isSelectMode) {
+                onToggleSelectPost?.(post.id);
+              } else {
+                onSelectPost(post);
+              }
+            }}
             style={{
               transform: "translateZ(0)",
               contain: "paint layout",
             }}
-            className="group relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-[#121727] border-r border-b border-gray-200/80 dark:border-[#2C3246] cursor-pointer"
+            className={`group relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-[#121727] border-r border-b border-gray-200/80 dark:border-[#2C3246] cursor-pointer transition-all ${
+              isSelected ? "ring-3 ring-orange-500 ring-inset" : ""
+            }`}
           >
+            {/* Select Checkbox (Saat Mode Select Aktif) */}
+            {isSelectMode && (
+              <div className="absolute top-2.5 right-2.5 z-30">
+                <div
+                  className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all shadow-md ${
+                    isSelected
+                      ? "bg-orange-500 text-white ring-2 ring-white"
+                      : "bg-black/60 text-transparent border border-white/40 backdrop-blur-xs hover:border-white"
+                  }`}
+                >
+                  <Check className={`w-3.5 h-3.5 ${isSelected ? "opacity-100 text-white" : "opacity-0"}`} strokeWidth={3} />
+                </div>
+              </div>
+            )}
             {/* Thumbnail Image (Instan cache, tanpa lazy reload flickering) */}
             <img
               src={post.thumbnailUrl}
