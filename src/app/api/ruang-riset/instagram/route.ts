@@ -6,6 +6,7 @@ import {
   InstagramTargetProfile,
 } from "@/app/(app)/ruang-riset/instagram/types";
 import { getResolvedRisetConfig } from "@/lib/riset-config";
+import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
 
 // In-memory cache (15 minutes TTL) for fast repeated lookups & rate-limit protection
 const RISET_CACHE_TTL_MS = 15 * 60 * 1000;
@@ -1080,28 +1081,30 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Verify PRO or Admin access on server
+    // Verify PRO Riset or Admin access on server
     const isAdminEmail =
       session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
     let hasAccess = isAdminEmail;
     if (!hasAccess) {
-      const dbUser = await prisma.user.findUnique({
-        where: { id: session.user.id },
-        select: {
-          role: true,
-          proToolsExpiredAt: true,
-          proAutomationExpiredAt: true,
-        },
-      });
-      const now = new Date();
-      hasAccess = Boolean(
-        dbUser?.role === "ADMIN" ||
-          dbUser?.role === "PRO" ||
-          (dbUser?.proToolsExpiredAt &&
-            new Date(dbUser.proToolsExpiredAt) > now) ||
-          (dbUser?.proAutomationExpiredAt &&
-            new Date(dbUser.proAutomationExpiredAt) > now)
-      );
+      const [dbUser, userOrders] = await Promise.all([
+        prisma.user.findUnique({
+          where: { id: session.user.id },
+          select: {
+            email: true,
+            role: true,
+            hasProBook: true,
+            proToolsExpiredAt: true,
+            proAutomationExpiredAt: true,
+            proRisetExpiredAt: true,
+          },
+        }),
+        prisma.order.findMany({
+          where: { userId: session.user.id, status: "SUCCESS" },
+          select: { orderType: true, status: true, createdAt: true },
+        }),
+      ]);
+      const subStatus = computeUserSubscriptionStatus(dbUser, userOrders);
+      hasAccess = subStatus.hasRiset || subStatus.isAdmin;
     }
 
     if (!hasAccess) {

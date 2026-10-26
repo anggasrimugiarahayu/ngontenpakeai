@@ -82,14 +82,22 @@ export const getCachedAppUser = unstable_cache(
     try {
       return await prisma.user.findUnique({
         where: { id: userId },
-        select: { role: true, proToolsExpiredAt: true, proAutomationExpiredAt: true, onboardingCompleted: true, email: true }
+        select: {
+          role: true,
+          hasProBook: true,
+          proToolsExpiredAt: true,
+          proAutomationExpiredAt: true,
+          proRisetExpiredAt: true,
+          onboardingCompleted: true,
+          email: true,
+        },
       });
     } catch (e) {
       console.error("Failed to fetch app user in cache:", e);
       return null;
     }
   },
-  ['app-user-profile'],
+  ['app-user-profile-v2'],
   { revalidate: 300, tags: ['user-session'] }
 );
 

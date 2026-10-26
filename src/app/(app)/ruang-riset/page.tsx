@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
-import { getCachedAppUser } from "@/lib/cache";
+import { getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
+import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
 import RuangRisetClient from "./RuangRisetClient";
 
 export const metadata = {
@@ -19,14 +20,12 @@ export default async function RuangRisetPage({
   let isPro = isAdmin;
   if (!isAdmin && session?.user?.id) {
     try {
-      const dbUser = await getCachedAppUser(session.user.id);
-      const hasPro = !!(
-        ((dbUser as any)?.proExpiredAt && new Date((dbUser as any).proExpiredAt) > new Date()) ||
-        ((dbUser as any)?.proToolsExpiredAt && new Date((dbUser as any).proToolsExpiredAt) > new Date()) ||
-        ((dbUser as any)?.proAutomationExpiredAt && new Date((dbUser as any).proAutomationExpiredAt) > new Date()) ||
-        dbUser?.role === "ADMIN"
-      );
-      isPro = hasPro;
+      const [dbUser, userOrders] = await Promise.all([
+        getCachedAppUser(session.user.id),
+        getCachedUserOrders(session.user.id).catch(() => []),
+      ]);
+      const subStatus = computeUserSubscriptionStatus(dbUser, userOrders);
+      isPro = subStatus.hasRiset || subStatus.isAdmin;
     } catch (err) {
       console.error("Error checking pro status in RuangRisetPage:", err);
     }

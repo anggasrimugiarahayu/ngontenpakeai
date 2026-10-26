@@ -43,10 +43,12 @@ model User {
   email            String?           @unique
   phone            String?
   emailVerified    DateTime?         @map("email_verified")
-  role             String            @default("USER")
-  proToolsExpiredAt DateTime?         @map("pro_tools_expired_at")
-  proAutomationExpiredAt DateTime?    @map("pro_automation_expired_at")
-  image            String?
+  role                   String             @default("USER")
+  hasProBook             Boolean            @default(false) @map("has_pro_book")
+  proToolsExpiredAt      DateTime?          @map("pro_tools_expired_at")
+  proAutomationExpiredAt DateTime?          @map("pro_automation_expired_at")
+  proRisetExpiredAt      DateTime?          @map("pro_riset_expired_at")
+  image                  String?
   googleApiKey     String?           @map("google_api_key")
   onboardingCompleted Boolean           @default(false) @map("onboarding_completed")
   preferences         Json?

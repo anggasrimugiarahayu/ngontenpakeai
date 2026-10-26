@@ -3,6 +3,11 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { unstable_cache, revalidatePath, revalidateTag } from "next/cache";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
+import {
+  addDurationToExpiry,
+  computeUserSubscriptionStatus,
+  resolvePackageMeta,
+} from "@/lib/subscription-utils";
 
 async function populateOrderAddons(orders: any[]) {
   if (!orders || orders.length === 0) return orders;
@@ -36,11 +41,11 @@ export async function calculateDashboardStats() {
   const sixtyDaysAgo = new Date();
   sixtyDaysAgo.setDate(now.getDate() - 60);
 
-  // Run all 13 queries concurrently in a single parallel roundtrip
+  // Run all queries concurrently in a single parallel roundtrip
   const [
     totalUsers,
     totalProducts,
-    userRoles,
+    activeProUsersCount,
     analyticsGroup,
     successfulOrders,
     topProducts,
@@ -50,11 +55,39 @@ export async function calculateDashboardStats() {
     viewsLast30,
     viewsPrev30,
     ordersLast30,
-    analyticsLast30
+    analyticsLast30,
+    pricingSetting,
   ] = await Promise.all([
     prisma.user.count().catch(() => 0),
     prisma.digitalProduct.count().catch(() => 0),
-    prisma.user.groupBy({ by: ['role'], _count: { id: true } }).catch(() => []),
+    prisma.user
+      .count({
+        where: {
+          OR: [
+            { role: "ADMIN" },
+            { hasProBook: true },
+            { proToolsExpiredAt: { gt: now } },
+            { proAutomationExpiredAt: { gt: now } },
+            { proRisetExpiredAt: { gt: now } },
+            {
+              orders: {
+                some: {
+                  status: "SUCCESS",
+                  orderType: {
+                    in: [
+                      "PRO_BOOK",
+                      "PRO_BOOK_PRO",
+                      "PRO_PLUS",
+                      "PRO_PLUS_1Y",
+                    ],
+                  },
+                },
+              },
+            },
+          ],
+        },
+      })
+      .catch(() => 0),
     prisma.productAnalytics.groupBy({ by: ['digitalProductId'], _sum: { views: true, clicks: true } }).catch(() => []),
     prisma.order.aggregate({
       _sum: { amount: true },
@@ -108,23 +141,23 @@ export async function calculateDashboardStats() {
     prisma.productAnalytics.findMany({
       where: { date: { gte: thirtyDaysAgo } },
       select: { date: true, views: true, clicks: true }
-    }).catch(() => [])
+    }).catch(() => []),
+
+    prisma.appSetting
+      .findUnique({ where: { key: "PRICING_PACKAGES" } })
+      .catch(() => null),
   ]);
 
-  let totalUsersFree = 0;
-  let totalUsersPro = 0;
-  let totalSubscribers = 0;
+  let rawPricingConfig: any = null;
+  if (pricingSetting?.value) {
+    try {
+      rawPricingConfig = JSON.parse(pricingSetting.value);
+    } catch {}
+  }
 
-  userRoles.forEach(ur => {
-    if (ur.role === 'PRO') {
-      totalUsersPro += ur._count.id;
-      totalSubscribers += ur._count.id;
-    } else if (ur.role === 'ADMIN') {
-      totalUsersPro += ur._count.id;
-    } else {
-      totalUsersFree += ur._count.id;
-    }
-  });
+  const totalUsersPro = activeProUsersCount;
+  const totalUsersFree = Math.max(0, totalUsers - totalUsersPro);
+  const totalSubscribers = activeProUsersCount;
 
   let totalViews = 0;
   let totalClicks = 0;
@@ -185,26 +218,14 @@ export async function calculateDashboardStats() {
 
   const getProductImage = (p: any, productDef: any) => {
     if (productDef?.coverUrl) return productDef.coverUrl;
-    switch(p.orderType) {
-      case "PRO_BOOK": return "/img_paket/paket_ebook.png";
-      case "PRO_TOOLS": return "/img_paket/paket_tools.png";
-      case "PRO_AUTOMATION": return "/img_paket/paket_lengkap.png";
-      case "PRO_PLUS": return "/img_paket/paket_lengkap.png";
-      case "TOOLS": return "/img_paket/paket_tools.png";
-      default: return "/img_paket/paket_ebook.png";
-    }
+    const meta = resolvePackageMeta(p.orderType || "", rawPricingConfig);
+    return meta.image || "/img_paket/paket_ebook.png";
   };
 
   const getProductTitle = (p: any, productDef: any) => {
     if (productDef?.title) return productDef.title;
-    switch(p.orderType) {
-      case "PRO_BOOK": return "Paket PRO BOOK";
-      case "PRO_TOOLS": return "Paket PRO TOOLS";
-      case "PRO_AUTOMATION": return "Paket PRO AUTOMATION";
-      case "PRO_PLUS": return "Paket PRO PLUS";
-      case "TOOLS": return "Tools";
-      default: return "Unknown Product";
-    }
+    const meta = resolvePackageMeta(p.orderType || "", rawPricingConfig);
+    return meta.name;
   };
 
   const realProductSales = topProducts.map(p => {
@@ -246,7 +267,8 @@ export async function calculateDashboardStats() {
     salesGrowth: parseFloat(salesGrowth.toFixed(2)),
     viewsGrowth: parseFloat(viewsGrowth.toFixed(2)),
     salesChartData,
-    viewsChartData
+    viewsChartData,
+    pricingConfig: rawPricingConfig,
   };
 }
 
@@ -377,5 +399,308 @@ export async function getAudienceInsightsAction() {
   } catch (error) {
     console.error("Error fetching audience insights:", error);
     return null;
+  }
+}
+
+export async function getDashboardUsersAction(
+  page = 1,
+  limit = 15,
+  search = "",
+  filter = "all"
+) {
+  const session = await auth();
+  if (
+    !session?.user?.id ||
+    session?.user?.email?.toLowerCase() !== "anggasrimugiarahayu@gmail.com"
+  ) {
+    return { users: [], total: 0 };
+  }
+
+  const now = new Date();
+  const where: any = {};
+
+  if (search && search.trim()) {
+    const q = search.trim();
+    where.OR = [
+      { name: { contains: q, mode: "insensitive" } },
+      { email: { contains: q, mode: "insensitive" } },
+      { phone: { contains: q, mode: "insensitive" } },
+    ];
+  }
+
+  if (filter === "pro") {
+    where.AND = [
+      ...(where.AND || []),
+      {
+        OR: [
+          { role: "ADMIN" },
+          { hasProBook: true },
+          { proToolsExpiredAt: { gt: now } },
+          { proAutomationExpiredAt: { gt: now } },
+          { proRisetExpiredAt: { gt: now } },
+          {
+            orders: {
+              some: {
+                status: "SUCCESS",
+                orderType: {
+                  in: ["PRO_BOOK", "PRO_BOOK_PRO", "PRO_PLUS", "PRO_PLUS_1Y"],
+                },
+              },
+            },
+          },
+        ],
+      },
+    ];
+  } else if (filter === "free") {
+    where.AND = [
+      ...(where.AND || []),
+      { role: { not: "ADMIN" } },
+      { hasProBook: false },
+      {
+        OR: [
+          { proToolsExpiredAt: null },
+          { proToolsExpiredAt: { lte: now } },
+        ],
+      },
+      {
+        OR: [
+          { proAutomationExpiredAt: null },
+          { proAutomationExpiredAt: { lte: now } },
+        ],
+      },
+      {
+        OR: [
+          { proRisetExpiredAt: null },
+          { proRisetExpiredAt: { lte: now } },
+        ],
+      },
+    ];
+  }
+
+  const [rawUsers, total, pricingSetting] = await Promise.all([
+    prisma.user
+      .findMany({
+        where,
+        take: limit,
+        skip: (page - 1) * limit,
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          phone: true,
+          image: true,
+          role: true,
+          hasProBook: true,
+          proToolsExpiredAt: true,
+          proAutomationExpiredAt: true,
+          proRisetExpiredAt: true,
+          orders: {
+            where: { status: "SUCCESS" },
+            select: {
+              id: true,
+              orderType: true,
+              status: true,
+              amount: true,
+              createdAt: true,
+            },
+            orderBy: { createdAt: "desc" },
+          },
+          _count: {
+            select: {
+              orders: true,
+              usages: true,
+              ownedProducts: true,
+            },
+          },
+        },
+        orderBy: { id: "desc" },
+      })
+      .catch(() => []),
+    prisma.user.count({ where }).catch(() => 0),
+    prisma.appSetting
+      .findUnique({ where: { key: "PRICING_PACKAGES" } })
+      .catch(() => null),
+  ]);
+
+  let rawPricingConfig: any = null;
+  if (pricingSetting?.value) {
+    try {
+      rawPricingConfig = JSON.parse(pricingSetting.value);
+    } catch {}
+  }
+
+  const enrichedUsers = rawUsers.map((u: any) => {
+    const subStatus = computeUserSubscriptionStatus(
+      u,
+      u.orders || [],
+      rawPricingConfig
+    );
+    return {
+      ...u,
+      subStatus,
+    };
+  });
+
+  return {
+    users: JSON.parse(JSON.stringify(enrichedUsers)),
+    total,
+  };
+}
+
+export async function adminUpdateUserAccessAction(params: {
+  userId: string;
+  target: "book" | "tools" | "automation" | "riset" | "plus" | "revoke_all";
+  mode: "grant" | "revoke";
+  days?: number;
+}) {
+  const session = await auth();
+  if (
+    !session?.user?.id ||
+    session?.user?.email?.toLowerCase() !== "anggasrimugiarahayu@gmail.com"
+  ) {
+    return { success: false, message: "Unauthorized" };
+  }
+
+  const { userId, target, mode, days = 30 } = params;
+  if (!userId) {
+    return { success: false, message: "User ID tidak valid" };
+  }
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        hasProBook: true,
+        proToolsExpiredAt: true,
+        proAutomationExpiredAt: true,
+        proRisetExpiredAt: true,
+      },
+    });
+
+    if (!user) {
+      return { success: false, message: "User tidak ditemukan" };
+    }
+
+    const now = new Date();
+    const updateData: Record<string, any> = {};
+
+    if (target === "revoke_all") {
+      updateData.hasProBook = false;
+      updateData.proToolsExpiredAt = null;
+      updateData.proAutomationExpiredAt = null;
+      updateData.proRisetExpiredAt = null;
+      if (user.role !== "ADMIN") {
+        updateData.role = "FREE";
+      }
+    } else if (target === "book") {
+      updateData.hasProBook = mode === "grant";
+      if (mode === "grant" && user.role !== "ADMIN") {
+        updateData.role = "PRO";
+      }
+    } else if (target === "tools") {
+      updateData.proToolsExpiredAt =
+        mode === "grant"
+          ? addDurationToExpiry(user.proToolsExpiredAt, days, now)
+          : null;
+      if (mode === "grant" && user.role !== "ADMIN") {
+        updateData.role = "PRO";
+      }
+    } else if (target === "automation") {
+      updateData.proAutomationExpiredAt =
+        mode === "grant"
+          ? addDurationToExpiry(user.proAutomationExpiredAt, days, now)
+          : null;
+      if (mode === "grant" && user.role !== "ADMIN") {
+        updateData.role = "PRO";
+      }
+    } else if (target === "riset") {
+      updateData.proRisetExpiredAt =
+        mode === "grant"
+          ? addDurationToExpiry(user.proRisetExpiredAt, days, now)
+          : null;
+      if (mode === "grant" && user.role !== "ADMIN") {
+        updateData.role = "PRO";
+      }
+    } else if (target === "plus") {
+      if (mode === "grant") {
+        updateData.hasProBook = true;
+        updateData.proToolsExpiredAt = addDurationToExpiry(
+          user.proToolsExpiredAt,
+          days,
+          now
+        );
+        updateData.proAutomationExpiredAt = addDurationToExpiry(
+          user.proAutomationExpiredAt,
+          days,
+          now
+        );
+        updateData.proRisetExpiredAt = addDurationToExpiry(
+          user.proRisetExpiredAt,
+          days,
+          now
+        );
+        if (user.role !== "ADMIN") {
+          updateData.role = "PRO";
+        }
+      }
+    }
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: updateData,
+    });
+
+    // If granting book or plus, also unlock active PRO ebooks in userOwnedProduct
+    if (mode === "grant" && (target === "book" || target === "plus")) {
+      const proProducts = await prisma.digitalProduct.findMany({
+        where: { isActive: true, accessLevel: "PRO" },
+        select: { id: true },
+      });
+      if (proProducts.length > 0) {
+        await prisma.userOwnedProduct
+          .createMany({
+            data: proProducts.map((p) => ({
+              userId,
+              digitalProductId: p.id,
+            })),
+            skipDuplicates: true,
+          })
+          .catch(() => null);
+      }
+    }
+
+    const tags = [
+      "admin-dashboard-stats",
+      "user-session",
+      "user-ownership",
+      "user-orders",
+    ];
+    for (const tag of tags) {
+      try {
+        (revalidateTag as any)(tag, "default");
+      } catch {
+        try {
+          (revalidateTag as any)(tag);
+        } catch {}
+      }
+    }
+
+    try {
+      revalidatePath("/", "layout");
+    } catch {}
+
+    return {
+      success: true,
+      message: "Status akses user berhasil diperbarui!",
+    };
+  } catch (error: any) {
+    console.error("adminUpdateUserAccessAction error:", error);
+    return {
+      success: false,
+      message: error?.message || "Gagal memperbarui akses user",
+    };
   }
 }

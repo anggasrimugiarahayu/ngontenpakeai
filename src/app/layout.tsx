@@ -9,6 +9,7 @@ import { Footer } from "@/components/layout/Footer";
 import { Toaster } from "react-hot-toast";
 
 import { getCachedMemberCount, getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
+import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
 import SWRProvider from "@/components/layout/SWRProvider";
 import { NavigationProgressBar } from "@/components/layout/NavigationProgressBar";
 
@@ -41,25 +42,9 @@ export default async function RootLayout({
         getCachedUserOrders(session.user.id)
       ]);
       if (dbUser) {
-        userRole = dbUser.role || "USER";
-        
-        // Calculate badge dynamically
-        const hasTools = dbUser.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date();
-        const hasAutomation = (dbUser as any).proAutomationExpiredAt && new Date((dbUser as any).proAutomationExpiredAt) > new Date();
-        const isAdmin = dbUser.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
-        
-        // Check if they ever bought PRO_BOOK or PRO_PLUS from cached orders
-        const hasBook = userOrders.some(
-          (o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS"
-        ) || isAdmin;
-        
-        const activePackagesCount = [hasBook, hasTools, hasAutomation].filter(Boolean).length;
-
-        if (isAdmin) badgeName = "ADMIN";
-        else if (activePackagesCount >= 2) badgeName = "PRO PLUS";
-        else if (hasAutomation) badgeName = "PRO AUTO";
-        else if (hasTools) badgeName = "PRO TOOLS";
-        else if (hasBook) badgeName = "PRO BOOK";
+        const subStatus = computeUserSubscriptionStatus(dbUser, userOrders);
+        userRole = subStatus.isAdmin ? "ADMIN" : subStatus.isPro ? "PRO" : "USER";
+        badgeName = subStatus.badgeName;
       }
     }
   } catch (error) {

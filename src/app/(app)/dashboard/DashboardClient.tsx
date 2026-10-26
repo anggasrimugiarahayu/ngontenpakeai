@@ -16,6 +16,8 @@ import toast from "react-hot-toast";
 import dynamic from "next/dynamic";
 import { DashboardMainTab } from "./tabs/DashboardMainTab";
 import { DashboardOrdersTab } from "./tabs/DashboardOrdersTab";
+import { DashboardUsersTab } from "./tabs/DashboardUsersTab";
+import { resolvePackageMeta } from "@/lib/subscription-utils";
 import "react-day-picker/dist/style.css";
 
 const DashboardStatisticsTab = dynamic(
@@ -42,48 +44,24 @@ export default function DashboardClient({
   user: any;
   initialData?: any;
 }) {
-  const getOrderImage = (order: any) => {
-    if (order.product?.coverUrl) return order.product.coverUrl;
-    switch (order.orderType) {
-      case "PRO_BOOK":
-        return "/img_paket/paket_ebook.png";
-      case "PRO_TOOLS":
-        return "/img_paket/paket_tools.png";
-      case "PRO_AUTOMATION":
-        return "/img_paket/paket_lengkap.png";
-      case "PRO_PLUS":
-        return "/img_paket/paket_lengkap.png";
-      case "TOOLS":
-        return "/img_paket/paket_tools.png";
-      default:
-        return "/img_paket/paket_ebook.png";
-    }
-  };
-
-  const getOrderTitle = (order: any) => {
-    if (order.product?.title) return order.product.title;
-    switch (order.orderType) {
-      case "PRO_BOOK":
-        return "Paket PRO BOOK";
-      case "PRO_TOOLS":
-        return "Paket PRO TOOLS";
-      case "PRO_AUTOMATION":
-        return "Paket PRO AUTOMATION";
-      case "PRO_PLUS":
-        return "Paket PRO PLUS";
-      case "TOOLS":
-        return "Akses Tools";
-      default:
-        return "Unknown Product";
-    }
-  };
-
   const { data, mutate } = useSWR("dashboard", () => getDashboardDataAction(false), {
     fallbackData: initialData,
     revalidateOnFocus: false,
     revalidateIfStale: false,
     dedupingInterval: 60000,
   });
+
+  const getOrderImage = (order: any) => {
+    if (order.product?.coverUrl) return order.product.coverUrl;
+    const meta = resolvePackageMeta(order.orderType || "", data?.pricingConfig);
+    return meta.image || "/img_paket/paket_ebook.png";
+  };
+
+  const getOrderTitle = (order: any) => {
+    if (order.product?.title) return order.product.title;
+    const meta = resolvePackageMeta(order.orderType || "", data?.pricingConfig);
+    return meta.name;
+  };
   const { data: insightsData, mutate: mutateInsights } = useSWR(
     "insights",
     getAudienceInsightsAction,
@@ -297,6 +275,7 @@ export default function DashboardClient({
             { id: "main", label: "Main" },
             { id: "statistics", label: "Statistics" },
             { id: "orders", label: "Orders" },
+            { id: "users", label: "Kelola User" },
             { id: "insights", label: "Insights" },
           ].map((tab) => (
             <button
@@ -365,6 +344,15 @@ export default function DashboardClient({
             formatIDR={formatIDR}
             getOrderImage={getOrderImage}
             getOrderTitle={getOrderTitle}
+          />
+        )}
+
+        {activeTab === "users" && (
+          <DashboardUsersTab
+            onAccessUpdated={async () => {
+              const freshData = await getDashboardDataAction(true);
+              if (freshData) await mutate(freshData, false);
+            }}
           />
         )}
 

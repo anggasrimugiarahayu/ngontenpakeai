@@ -5,6 +5,7 @@ import { unstable_cache, revalidatePath, revalidateTag as nextRevalidateTag } fr
 import { attachComputedBuyerCounts } from "@/lib/product-buyers";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
 import { getCachedAppUser, getCachedUserOrders, getCachedUserOwnedProducts } from "@/lib/cache";
+import { computeUserSubscriptionStatus, isBookPackageOrder } from "@/lib/subscription-utils";
 
 function safeRevalidateTag(tag: string) {
   try {
@@ -145,11 +146,9 @@ export async function getRuangBelajarDataAction() {
   }
 
   if (session?.user?.id && userObj) {
-    isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
-    const hasBookPackage = userOrders.some(
-      (o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS"
-    );
-    isPro = hasBookPackage || isAdmin;
+    const subStatus = computeUserSubscriptionStatus(userObj, userOrders);
+    isAdmin = subStatus.isAdmin || session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    isPro = subStatus.hasBook || isAdmin;
     ownedProductIds = userProducts.map((up: any) => up.digitalProductId);
   }
 
@@ -165,7 +164,7 @@ export async function getEbookDetailAction(slug: string) {
   const session = await auth();
   const userId = session?.user?.id;
 
-  const [, cachedEbook, userProducts, userOrders] = await Promise.all([
+  const [userObj, cachedEbook, userProducts, userOrders] = await Promise.all([
     userId ? getCachedAppUser(userId) : Promise.resolve(null),
     getCachedEbookBySlug(slug),
     userId ? getCachedUserOwnedProducts(userId).catch(() => []) : Promise.resolve([]),
@@ -203,11 +202,9 @@ export async function getEbookDetailAction(slug: string) {
     favoriteCount,
   };
 
-  const isAdmin = session?.user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
-  const hasBookPackage = userOrders.some(
-    (o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS"
-  );
-  const isPro = hasBookPackage || isAdmin;
+  const subStatus = computeUserSubscriptionStatus(userObj, userOrders);
+  const isAdmin = subStatus.isAdmin || session?.user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const isPro = subStatus.hasBook || isAdmin;
   const ownedProductIds = userProducts.map((up: any) => up.digitalProductId);
 
   return {
@@ -273,18 +270,18 @@ export async function claimFreeEbook(productId: string) {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const userId = session.user.id;
-  const [user, product, hasBookPackage] = await Promise.all([
+  const [user, product, userOrders] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId } }),
     prisma.digitalProduct.findUnique({
       where: { id: productId },
       select: { id: true, accessLevel: true },
     }),
-    prisma.order.findFirst({
+    prisma.order.findMany({
       where: {
         userId,
         status: "SUCCESS",
-        orderType: { in: ["PRO_BOOK", "PRO_PLUS"] },
       },
+      select: { orderType: true, status: true },
     }),
   ]);
 
@@ -295,8 +292,9 @@ export async function claimFreeEbook(productId: string) {
   const isProEbook = product.accessLevel === "PRO";
 
   const isAdmin = user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com" || user.role === "ADMIN";
+  const hasBookPackage = user.hasProBook || userOrders.some((o) => isBookPackageOrder(o.orderType));
 
-  const canClaimProEbook = isAdmin || !!hasBookPackage;
+  const canClaimProEbook = isAdmin || hasBookPackage;
 
   if (!isFree && !(isProEbook && canClaimProEbook)) {
     throw new Error(

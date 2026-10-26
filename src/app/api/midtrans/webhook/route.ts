@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidateTag, revalidatePath } from "next/cache";
 import { coreApi } from "@/lib/midtrans";
 import prisma from "@/lib/prisma";
-import { mergePricingConfig } from "@/lib/pricing-packages";
+import { calculateSubscriptionFulfillment } from "@/lib/subscription-utils";
 
 export async function POST(req: NextRequest) {
   try {
@@ -66,56 +66,47 @@ export async function POST(req: NextRequest) {
             });
           }
         } else {
-          // Dynamic PRO subscription & package fulfillment
-          let updateData: any = { role: "PRO" };
-          
+          // Dynamic PRO subscription & package fulfillment (4 independent pillars: Ebook, Tools, Automation, Riset)
           const setting = await tx.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
-          const pricingConfig = mergePricingConfig(setting?.value ? JSON.parse(setting.value as string) : null);
-          const targetPkg = pricingConfig[order.orderType] || pricingConfig.packages?.[order.orderType];
-          const durationDays = targetPkg?.durationDays ?? 30;
-          const cat = targetPkg?.category;
+          const rawConfig = setting?.value ? JSON.parse(setting.value as string) : null;
 
           const currentUser = await tx.user.findUnique({
             where: { id: order.userId },
-            select: { proToolsExpiredAt: true, proAutomationExpiredAt: true }
+            select: {
+              role: true,
+              hasProBook: true,
+              proToolsExpiredAt: true,
+              proAutomationExpiredAt: true,
+              proRisetExpiredAt: true,
+            },
           });
 
-          // Tools & Riset
-          if (order.orderType.includes("TOOLS") || order.orderType.includes("RISET") || cat === "tools" || cat === "riset" || cat === "plus" || order.orderType === "PRO_PLUS" || order.orderType === "PRO_PLUS_1Y") {
-            const baseDate = (currentUser?.proToolsExpiredAt && new Date(currentUser.proToolsExpiredAt) > new Date())
-              ? new Date(currentUser.proToolsExpiredAt)
-              : new Date();
-            baseDate.setDate(baseDate.getDate() + (durationDays > 0 ? durationDays : 30));
-            updateData.proToolsExpiredAt = baseDate;
-          }
-
-          // Automation
-          if (order.orderType.includes("AUTO") || cat === "automation" || cat === "plus" || order.orderType === "PRO_PLUS") {
-            const baseDate = (currentUser?.proAutomationExpiredAt && new Date(currentUser.proAutomationExpiredAt) > new Date())
-              ? new Date(currentUser.proAutomationExpiredAt)
-              : new Date();
-            baseDate.setDate(baseDate.getDate() + (durationDays > 0 ? durationDays : 30));
-            updateData.proAutomationExpiredAt = baseDate;
-          }
+          const { meta, updateData } = calculateSubscriptionFulfillment({
+            orderType: order.orderType,
+            currentUser,
+            rawPricingConfig: rawConfig,
+          });
 
           await tx.user.update({
             where: { id: order.userId },
-            data: updateData
+            data: updateData,
           });
 
           // Unlock bundled E-books from PRICING_PACKAGES config + any add-on E-books purchased with the package
-          const allGrantIds = Array.from(new Set([
-            ...(targetPkg?.bundledProductIds || []),
-            ...(order.addonIds && Array.isArray(order.addonIds) ? (order.addonIds as string[]) : [])
-          ])).filter(Boolean);
+          const allGrantIds = Array.from(
+            new Set([
+              ...(meta.bundledProductIds || []),
+              ...(order.addonIds && Array.isArray(order.addonIds) ? (order.addonIds as string[]) : []),
+            ])
+          ).filter(Boolean);
 
           if (allGrantIds.length > 0) {
             await tx.userOwnedProduct.createMany({
               data: allGrantIds.map((pid) => ({
                 userId: order.userId,
-                digitalProductId: pid
+                digitalProductId: pid,
               })),
-              skipDuplicates: true
+              skipDuplicates: true,
             });
           }
         }
@@ -134,10 +125,12 @@ export async function POST(req: NextRequest) {
       revalidateTag("user-ownership", "default");
       revalidateTag("user-orders", "default");
       revalidateTag("user-session", "default");
+      revalidatePath("/");
       revalidatePath("/ruang-belajar");
       revalidatePath("/ruang-ngonten");
       revalidatePath("/ruang-riset");
       revalidatePath("/ruang-automation");
+      revalidatePath("/pengaturan");
       revalidatePath("/dashboard");
     } catch (e) {
       console.error("Failed to revalidate tags:", e);

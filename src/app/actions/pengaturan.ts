@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { revalidatePath, unstable_cache } from "next/cache";
 import { getAiModels, getAppSettings, getFeatures, getCategories, getProducts } from "@/app/actions/adminSettings";
 import { getCachedFeatures, getCachedAppUser, getCachedUserOrders, getCachedUserUsages } from "@/lib/cache";
+import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
 
 export const getCachedAdminConfig = unstable_cache(
   async () => {
@@ -26,21 +27,28 @@ export async function getPengaturanDataAction() {
 
   const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
   
-  const [features, usages, dbUser, userOrders, adminData] = await Promise.all([
+  const [features, usages, dbUser, userOrders, adminData, pricingConfig] = await Promise.all([
     getCachedFeatures(),
     getCachedUserUsages(session.user.id),
     getCachedAppUser(session.user.id),
     getCachedUserOrders(session.user.id),
-    isAdmin ? getCachedAdminConfig() : Promise.resolve(null)
+    isAdmin ? getCachedAdminConfig() : Promise.resolve(null),
+    getCachedPricingPackages().catch(() => null),
   ]);
 
-  const hasTools = !!(dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > new Date());
-  const hasAutomation = !!((dbUser as any)?.proAutomationExpiredAt && new Date((dbUser as any).proAutomationExpiredAt) > new Date());
-  const hasBook = userOrders.some((o: any) => o.orderType === "PRO_BOOK" || o.orderType === "PRO_PLUS");
-  const isPro = isAdmin || hasTools || hasAutomation || hasBook || false;
+  const subStatus = computeUserSubscriptionStatus(dbUser, userOrders, pricingConfig);
+  const {
+    hasBook,
+    hasTools,
+    hasAutomation,
+    hasRiset,
+    isPro,
+    isFullyPro,
+    badgeName,
+  } = subStatus;
   
   const ownedEbooks = userOrders
-    .filter((o: any) => o.product && o.orderType !== 'PRO_TOOLS' && o.orderType !== 'PRO_AUTOMATION')
+    .filter((o: any) => o.product && o.orderType === "EBOOK")
     .map((o: any) => o.product.title);
 
   const userData = { 
@@ -49,12 +57,18 @@ export async function getPengaturanDataAction() {
     hasBook,
     hasTools,
     hasAutomation,
-    proExpiredAt: dbUser?.proToolsExpiredAt || null,
-    proAutomationExpiredAt: (dbUser as any)?.proAutomationExpiredAt || null,
-    ownedEbooks
+    hasRiset,
+    isFullyPro,
+    badgeName,
+    proExpiredAt: subStatus.proToolsExpiredAt,
+    proToolsExpiredAt: subStatus.proToolsExpiredAt,
+    proAutomationExpiredAt: subStatus.proAutomationExpiredAt,
+    proRisetExpiredAt: subStatus.proRisetExpiredAt,
+    ownedEbooks,
+    pricingConfig,
   };
 
-  return JSON.parse(JSON.stringify({ userData, adminData, isPro, isAdmin, dbUser, userOrders }));
+  return JSON.parse(JSON.stringify({ userData, adminData, isPro, isAdmin: subStatus.isAdmin || isAdmin, dbUser, userOrders }));
 }
 
 export const getCachedPricingPackages = unstable_cache(
