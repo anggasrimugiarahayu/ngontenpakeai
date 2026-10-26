@@ -43,41 +43,6 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
     (proAutomationExpiredAt && proAutomationExpiredAt.getTime() > now && proAutomationExpiredAt.getTime() - now < sevenDaysMs) ||
     (proRisetExpiredAt && proRisetExpiredAt.getTime() > now && proRisetExpiredAt.getTime() - now < sevenDaysMs);
 
-  const pillars = [
-    {
-      label: "Ruang Belajar (E-Book PRO)",
-      active: hasBook,
-      statusText: hasBook ? "Aktif Selamanya" : "Free / Satuan",
-    },
-    {
-      label: "Ruang Ngonten (AI Tools)",
-      active: hasTools,
-      statusText: hasTools && proToolsExpiredAt
-        ? `Aktif s/d ${format(proToolsExpiredAt, "d MMM yyyy", { locale: id })}`
-        : hasTools
-        ? "Aktif (Unlimited)"
-        : "Kuota Free (3x/fitur)",
-    },
-    {
-      label: "Ruang Automation",
-      active: hasAutomation,
-      statusText: hasAutomation && proAutomationExpiredAt
-        ? `Aktif s/d ${format(proAutomationExpiredAt, "d MMM yyyy", { locale: id })}`
-        : hasAutomation
-        ? "Aktif"
-        : "Terkunci (PRO)",
-    },
-    {
-      label: "Ruang Riset",
-      active: hasRiset,
-      statusText: hasRiset && proRisetExpiredAt
-        ? `Aktif s/d ${format(proRisetExpiredAt, "d MMM yyyy", { locale: id })}`
-        : hasRiset
-        ? "Aktif"
-        : "Terkunci (PRO)",
-    },
-  ];
-
   return (
     <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31]">
       <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -95,7 +60,7 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
             )}
           </div>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Status akses paket dan kuota aktif kamu di setiap ruang.
+            Penggunaan fitur dan kuota aktif kamu.
           </p>
         </div>
         
@@ -108,34 +73,6 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
             Perpanjang Paket
           </Link>
         ) : null}
-      </div>
-
-      {/* 4-Pillar Subscription Status Grid */}
-      <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-        {pillars.map((pillar) => (
-          <div
-            key={pillar.label}
-            className="flex items-center justify-between p-3.5 rounded-xl border border-gray-100 dark:border-[#2C3246] bg-gray-50/60 dark:bg-[#0D1322]/60"
-          >
-            <div>
-              <div className="text-xs font-bold text-gray-900 dark:text-white">
-                {pillar.label}
-              </div>
-              <div className="text-[11px] text-gray-500 dark:text-gray-400 mt-0.5">
-                {pillar.statusText}
-              </div>
-            </div>
-            <span
-              className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase shrink-0 ${
-                pillar.active
-                  ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
-                  : "bg-gray-200/70 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-              }`}
-            >
-              {pillar.active ? "PRO" : "FREE"}
-            </span>
-          </div>
-        ))}
       </div>
 
       <div className="mb-6">
