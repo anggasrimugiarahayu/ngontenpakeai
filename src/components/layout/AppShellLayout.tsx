@@ -24,6 +24,7 @@ import {
   Menu,
   X,
   ChevronLeft,
+  ArrowLeft,
   Lock,
   LayoutGrid,
   Settings,
@@ -322,6 +323,8 @@ export default function AppShellLayout({
       window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: plat }));
       window.dispatchEvent(new Event("app-shallow-navigate"));
       setIsOpen(false);
+    } else if (href === "/") {
+      setIsOpen(false);
     } else if ((href === "/" || href === "/?pricing=true") && (activePath === "/" || activePath === "" || activePath.startsWith("/?"))) {
       e.preventDefault();
       const isPricing = href === "/?pricing=true";
@@ -332,9 +335,19 @@ export default function AppShellLayout({
     }
   };
 
-  const isToolsMode = activePath.startsWith("/ruang-ngonten/") && activePath !== "/ruang-ngonten" && activePath !== "/ruang-ngonten/";
-  const isAutomationMode = activePath.startsWith("/ruang-automation") && !!activePlatform;
-  const isRisetMode = activePath.startsWith("/ruang-riset") && !!activeRisetPlatform;
+  const isHomepage = activePath === "/" || activePath === "";
+  const isEbookDetail =
+    activePath.startsWith("/ruang-belajar/") &&
+    activePath !== "/ruang-belajar" &&
+    activePath !== "/ruang-belajar/";
+  const isToolsMode =
+    activePath.startsWith("/ruang-ngonten/") &&
+    activePath !== "/ruang-ngonten" &&
+    activePath !== "/ruang-ngonten/";
+  const isAutomationMode =
+    activePath.startsWith("/ruang-automation") && !!activePlatform;
+  const isRisetMode =
+    activePath.startsWith("/ruang-riset") && !!activeRisetPlatform;
 
   let GLOBAL_NAV_ITEMS = [];
 
@@ -393,7 +406,15 @@ export default function AppShellLayout({
     itemsToRender = RISET_TOOLS;
     backHref = "/ruang-riset";
     drawerTitle = "Menu Riset";
+  } else if (isEbookDetail) {
+    backHref = "/ruang-belajar";
+    drawerTitle = "Ruang Belajar";
+  } else {
+    backHref = "/";
+    drawerTitle = "Navigasi";
   }
+
+  const showBackButton = !isHomepage;
 
   return (
     <div className="flex flex-1 w-full relative">
@@ -508,18 +529,18 @@ export default function AppShellLayout({
           })}
         </div>
 
-        {(isToolsMode || isAutomationMode || isRisetMode) && (
+        {showBackButton && (
           <div className="p-2 border-t border-gray-100 dark:border-[#2C3246]/60 mt-auto">
             <Link
               prefetch={true}
               href={backHref}
               onClick={(e) => handleToolNav(e, backHref)}
-              title={!isExpanded ? "Back" : undefined}
+              title={!isExpanded ? (backHref === "/" ? "Kembali ke Beranda" : "Back") : undefined}
               className={`flex items-center rounded-xl transition-all duration-200 text-gray-600 dark:text-gray-400 hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-500/10 dark:hover:text-orange-400 ${
                 isExpanded ? "px-3 py-3 gap-3" : "justify-center w-10 h-10 mx-auto"
               }`}
             >
-              <LayoutGrid size={isExpanded ? 18 : 20} className="shrink-0" />
+              <ArrowLeft size={isExpanded ? 18 : 20} className="shrink-0" />
               {isExpanded && <span className="text-sm font-medium whitespace-nowrap truncate">Back</span>}
             </Link>
           </div>
@@ -641,15 +662,18 @@ export default function AppShellLayout({
             })}
           </div>
 
-          {(isToolsMode || isAutomationMode || isRisetMode) && (
+          {showBackButton && (
             <div className="p-4 border-t border-gray-100 dark:border-[#2C3246]/60 mt-auto">
               <Link
                 prefetch={true}
                 href={backHref}
-                onClick={(e) => handleToolNav(e, backHref)}
+                onClick={(e) => {
+                  setIsOpen(false);
+                  handleToolNav(e, backHref);
+                }}
                 className="flex items-center gap-3 px-3 py-3 rounded-xl font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/5 transition-colors hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-500/10 dark:hover:text-orange-400"
               >
-                <LayoutGrid size={18} />
+                <ArrowLeft size={18} />
                 <span className="text-sm">Back</span>
               </Link>
             </div>
