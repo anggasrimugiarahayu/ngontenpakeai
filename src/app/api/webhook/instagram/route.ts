@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     const origin =
       req.nextUrl.origin && !req.nextUrl.origin.includes("localhost")
         ? req.nextUrl.origin
-        : "https://ruangcreativemuslim-seven.vercel.app";
+        : process.env.NEXTAUTH_URL || "https://www.ruangcreativemuslim.com";
 
     // Proses setiap entry secara terisolasi per modul
     for (const entry of entries) {

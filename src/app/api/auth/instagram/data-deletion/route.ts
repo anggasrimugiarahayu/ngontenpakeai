@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const origin = req.nextUrl.origin || "https://ngontenpakeai.vercel.app";
+  const origin = req.nextUrl.origin || "https://www.ruangcreativemuslim.com";
   const confirmationCode = `del_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
   
   return NextResponse.json({
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Status Penghapusan Data Pengguna - Ngonten Pake AI</title>
+  <title>Status Penghapusan Data Pengguna - ruangcreativemuslim</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -124,7 +124,7 @@ export async function GET(req: NextRequest) {
     </div>
     <h1>Penghapusan Data Berhasil</h1>
     <p>
-      Permintaan penghapusan data akun Instagram dan riwayat automasi Anda dari platform <strong>Ngonten Pake AI</strong> telah selesai diproses secara permanen sesuai dengan Kebijakan Privasi Meta & Platform Terms.
+      Permintaan penghapusan data akun Instagram dan riwayat automasi Anda dari platform <strong>ruangcreativemuslim</strong> telah selesai diproses secara permanen sesuai dengan Kebijakan Privasi Meta & Platform Terms.
     </p>
     <div class="code-box">
       Kode Konfirmasi: <strong>${code}</strong>
@@ -146,6 +146,6 @@ export async function GET(req: NextRequest) {
     success: true,
     confirmation_code: code,
     status: "COMPLETED",
-    message: "Permintaan penghapusan data telah diproses sesuai dengan kebijakan privasi Meta & Ngonten Pake AI.",
+    message: "Permintaan penghapusan data telah diproses sesuai dengan kebijakan privasi Meta & ruangcreativemuslim.",
   });
 }

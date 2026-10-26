@@ -3,8 +3,8 @@ import Link from "next/link";
 import { ShieldCheck, Lock, Eye, RefreshCw, Trash2, Mail, ArrowLeft, CheckCircle2 } from "lucide-react";
 
 export const metadata = {
-  title: "Kebijakan Privasi | Ngonten Pake AI",
-  description: "Kebijakan privasi dan perlindungan data pengguna platform Ngonten Pake AI, termasuk integrasi resmi Meta & Instagram Graph API.",
+  title: "Kebijakan Privasi | ruangcreativemuslim",
+  description: "Kebijakan privasi dan perlindungan data pengguna platform ruangcreativemuslim, termasuk integrasi resmi Meta & Instagram Graph API.",
 };
 
 export default function KebijakanPrivasiPage() {
@@ -30,7 +30,7 @@ export default function KebijakanPrivasiPage() {
               Kebijakan Privasi
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Terakhir diperbarui: {lastUpdated} • Komitmen Keamanan Data & Integrasi Meta Platform
+              Terakhir diperbarui: {lastUpdated} • Komitmen Keamanan Data &amp; Integrasi Meta Platform
             </p>
           </div>
         </div>
@@ -45,7 +45,7 @@ export default function KebijakanPrivasiPage() {
             Prinsip Utama Perlindungan Privasi Kami:
           </p>
           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            <strong>Ngonten Pake AI</strong> menghormati dan melindungi privasi setiap pengguna. Kami <strong>TIDAK PERNAH</strong> memperjualbelikan, menyewakan, atau mendistribusikan data pribadi, token akses, atau percakapan Anda kepada pihak ketiga mana pun untuk tujuan periklanan atau komersialisasi pihak luar.
+            <strong>ruangcreativemuslim</strong> menghormati dan melindungi privasi setiap pengguna. Kami <strong>TIDAK PERNAH</strong> memperjualbelikan, menyewakan, atau mendistribusikan data pribadi, token akses, atau percakapan Anda kepada pihak ketiga mana pun untuk tujuan periklanan atau komersialisasi pihak luar.
           </p>
         </div>
 
@@ -55,7 +55,7 @@ export default function KebijakanPrivasiPage() {
             1. Pendahuluan
           </h2>
           <p className="text-gray-600 dark:text-gray-300">
-            Kebijakan Privasi ini menjelaskan bagaimana platform <strong>Ngonten Pake AI</strong> (&quot;kami&quot;, &quot;layanan&quot;) mengumpulkan, menggunakan, menyimpan, dan melindungi informasi pribadi Anda saat menggunakan aplikasi web kami, termasuk fitur automasi interaksi media sosial (Ruang Automation) yang terintegrasi resmi dengan <strong>Meta Graph API</strong> (Instagram).
+            Kebijakan Privasi ini menjelaskan bagaimana platform <strong>ruangcreativemuslim</strong> (&quot;kami&quot;, &quot;layanan&quot;) mengumpulkan, menggunakan, menyimpan, dan melindungi informasi pribadi Anda saat menggunakan aplikasi web kami, termasuk fitur automasi interaksi media sosial (Ruang Automation) yang terintegrasi resmi dengan <strong>Meta Graph API</strong> (Instagram).
           </p>
           <p className="text-gray-600 dark:text-gray-300">
             Dengan mendaftar, mengakses, atau menggunakan layanan kami, Anda menyetujui pengumpulan dan penggunaan informasi sesuai dengan ketentuan dalam kebijakan ini.
@@ -85,7 +85,7 @@ export default function KebijakanPrivasiPage() {
               </ul>
             </li>
             <li>
-              <strong>Data Event & Interaksi Real-Time:</strong> Melalui Webhook resmi Meta, sistem kami memproses event komentar publik pada postingan Anda dan pesan langsung (DM) yang masuk semata-mata untuk mencocokkan kata kunci (*keywords*) dan memicu aturan balasan otomatis (*auto-reply*) yang Anda konfigurasikan.
+              <strong>Data Event &amp; Interaksi Real-Time:</strong> Melalui Webhook resmi Meta, sistem kami memproses event komentar publik pada postingan Anda dan pesan langsung (DM) yang masuk semata-mata untuk mencocokkan kata kunci (*keywords*) dan memicu aturan balasan otomatis (*auto-reply*) yang Anda konfigurasikan.
             </li>
             <li>
               <strong>Log Eksekusi Automasi:</strong> Riwayat status keberhasilan balasan (SENT / FAILED) dan username pengirim komentar/DM untuk menampilkan statistik pada dasbor Anda.
@@ -148,7 +148,7 @@ export default function KebijakanPrivasiPage() {
               <strong>Memutuskan Koneksi Mandiri:</strong> Anda dapat kapan saja mengklik tombol <em>&quot;Putuskan Akun&quot;</em> di dalam menu Ruang Automation. Begitu diputuskan, token akses dan sinkronisasi akan langsung dihapus.
             </li>
             <li>
-              <strong>Pencabutan Akses via Meta/Facebook:</strong> Anda dapat mencabut akses aplikasi kami melalui akun Facebook/Instagram Anda pada menu: <em>Pengaturan &amp; Privasi &gt; Pengaturan &gt; Izin &gt; Aplikasi dan Situs Web</em> &gt; Pilih &quot;Ngonten Pake AI&quot; &gt; Hapus.
+              <strong>Pencabutan Akses via Meta/Facebook:</strong> Anda dapat mencabut akses aplikasi kami melalui akun Facebook/Instagram Anda pada menu: <em>Pengaturan &amp; Privasi &gt; Pengaturan &gt; Izin &gt; Aplikasi dan Situs Web</em> &gt; Pilih &quot;ruangcreativemuslim&quot; &gt; Hapus.
             </li>
             <li>
               <strong>Callback Penghapusan Data Otomatis:</strong> Sistem kami telah menyediakan endpoint penghapusan data otomatis sesuai pedoman kepatuhan Meta di:{" "}
@@ -157,7 +157,7 @@ export default function KebijakanPrivasiPage() {
               </code>.
             </li>
             <li>
-              <strong>Permintaan Penghapusan Manual:</strong> Anda dapat mengajukan permohonan penghapusan seluruh riwayat akun dan data Anda kapan saja dengan mengirimkan email ke <a href="mailto:anggasrimugiarahayu@gmail.com" className="text-blue-600 dark:text-blue-400 font-medium hover:underline">anggasrimugiarahayu@gmail.com</a>. Permintaan Anda akan diselesaikan dalam waktu maksimal 3x24 jam kerja.
+              <strong>Permintaan Penghapusan Manual:</strong> Anda dapat mengajukan permohonan penghapusan seluruh riwayat akun dan data Anda kapan saja dengan mengirimkan email ke <a href="mailto:ruangcreativemuslim@gmail.com" className="text-blue-600 dark:text-blue-400 font-medium hover:underline">ruangcreativemuslim@gmail.com</a>. Permintaan Anda akan diselesaikan dalam waktu maksimal 3x24 jam kerja.
             </li>
           </ul>
         </section>
@@ -168,7 +168,7 @@ export default function KebijakanPrivasiPage() {
             6. Kepatuhan Terhadap Kebijakan Meta Platform
           </h2>
           <p className="text-gray-600 dark:text-gray-300">
-            Ngonten Pake AI tunduk dan mematuhi sepenuhnya <strong>Meta Platform Terms</strong> dan <strong>Developer Policies</strong>. Kami melarang keras penggunaan layanan automasi kami untuk tindakan spam, penipuan (*scam/phishing*), pelecehan, atau aktivitas ilegal yang bertentangan dengan Standar Komunitas Meta.
+            ruangcreativemuslim tunduk dan mematuhi sepenuhnya <strong>Meta Platform Terms</strong> dan <strong>Developer Policies</strong>. Kami melarang keras penggunaan layanan automasi kami untuk tindakan spam, penipuan (*scam/phishing*), pelecehan, atau aktivitas ilegal yang bertentangan dengan Standar Komunitas Meta.
           </p>
         </section>
 
@@ -179,13 +179,12 @@ export default function KebijakanPrivasiPage() {
             7. Kontak &amp; Dukungan Pengembang
           </h2>
           <p className="text-gray-600 dark:text-gray-300">
-            Jika Anda memiliki pertanyaan mengenai Kebijakan Privasi ini atau pengelolaan data di aplikasi Ngonten Pake AI, silakan hubungi tim kami:
+            Jika Anda memiliki pertanyaan mengenai Kebijakan Privasi ini atau pengelolaan data di aplikasi ruangcreativemuslim, silakan hubungi tim kami:
           </p>
           <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#0E1322] border border-gray-200 dark:border-[#232D42] text-xs sm:text-sm space-y-1">
-            <p><strong>Platform:</strong> Ngonten Pake AI</p>
-            <p><strong>Pengembang &amp; Pengelola Data:</strong> Angga Sri Mugi Rahayu</p>
-            <p><strong>Email Resmi:</strong> <a href="mailto:anggasrimugiarahayu@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">anggasrimugiarahayu@gmail.com</a></p>
-            <p><strong>Website:</strong> <a href="https://ngontenpakeai.vercel.app" target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">https://ngontenpakeai.vercel.app</a></p>
+            <p><strong>Platform:</strong> ruangcreativemuslim</p>
+            <p><strong>Email Resmi:</strong> <a href="mailto:ruangcreativemuslim@gmail.com" className="text-blue-600 dark:text-blue-400 hover:underline">ruangcreativemuslim@gmail.com</a></p>
+            <p><strong>Website:</strong> <a href="https://www.ruangcreativemuslim.com" target="_blank" rel="noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">https://www.ruangcreativemuslim.com</a></p>
           </div>
         </section>
       </div>

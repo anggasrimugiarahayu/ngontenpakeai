@@ -3,8 +3,8 @@ import Link from "next/link";
 import { FileText, ArrowLeft, ShieldAlert, CheckCircle2, UserCheck, Scale, AlertTriangle, Mail } from "lucide-react";
 
 export const metadata = {
-  title: "Syarat & Ketentuan Layanan | Ngonten Pake AI",
-  description: "Syarat dan ketentuan penggunaan layanan Ngonten Pake AI, aturan penggunaan automasi media sosial, dan hak serta kewajiban pengguna.",
+  title: "Syarat & Ketentuan Layanan | ruangcreativemuslim",
+  description: "Syarat dan ketentuan penggunaan layanan ruangcreativemuslim, aturan penggunaan automasi media sosial, dan hak serta kewajiban pengguna.",
 };
 
 export default function SyaratKetentuanPage() {
@@ -30,7 +30,7 @@ export default function SyaratKetentuanPage() {
               Syarat &amp; Ketentuan Layanan
             </h1>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-              Terakhir diperbarui: {lastUpdated} • Perjanjian Penggunaan Platform Ngonten Pake AI
+              Terakhir diperbarui: {lastUpdated} • Perjanjian Penggunaan Platform ruangcreativemuslim
             </p>
           </div>
         </div>
@@ -45,7 +45,7 @@ export default function SyaratKetentuanPage() {
             Ketentuan Umum Penggunaan
           </p>
           <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-            Selamat datang di <strong>Ngonten Pake AI</strong>. Dengan mengakses dan menggunakan platform kami, Anda menyetujui untuk terikat oleh Syarat dan Ketentuan ini serta mematuhi seluruh hukum yang berlaku dan kebijakan pihak ketiga yang terintegrasi (termasuk Meta Platform Terms).
+            Selamat datang di <strong>ruangcreativemuslim</strong>. Dengan mengakses dan menggunakan platform kami, Anda menyetujui untuk terikat oleh Syarat dan Ketentuan ini serta mematuhi seluruh hukum yang berlaku dan kebijakan pihak ketiga yang terintegrasi (termasuk Meta Platform Terms).
           </p>
         </div>
 
@@ -55,7 +55,7 @@ export default function SyaratKetentuanPage() {
             1. Definisi Layanan
           </h2>
           <p className="text-gray-600 dark:text-gray-300">
-            <strong>Ngonten Pake AI</strong> adalah platform produktivitas konten digital berbasis web yang menyediakan berbagai modul:
+            <strong>ruangcreativemuslim</strong> adalah platform produktivitas konten digital berbasis web yang menyediakan berbagai modul:
           </p>
           <ul className="list-disc pl-5 space-y-1 text-gray-600 dark:text-gray-300 text-xs sm:text-sm">
             <li><strong>Ruang Belajar:</strong> Akses materi edukasi, modul strategi, dan E-Book digital PRO.</li>
@@ -143,9 +143,9 @@ export default function SyaratKetentuanPage() {
             Untuk pertanyaan atau klarifikasi lebih lanjut mengenai Syarat &amp; Ketentuan ini, silakan hubungi:
           </p>
           <div className="p-4 rounded-2xl bg-gray-50 dark:bg-[#0E1322] border border-gray-200 dark:border-[#232D42] text-xs sm:text-sm space-y-1">
-            <p><strong>Platform:</strong> Ngonten Pake AI</p>
-            <p><strong>Email Dukungan:</strong> <a href="mailto:anggasrimugiarahayu@gmail.com" className="text-indigo-600 dark:text-indigo-400 hover:underline">anggasrimugiarahayu@gmail.com</a></p>
-            <p><strong>Website Resmi:</strong> <a href="https://ngontenpakeai.vercel.app" target="_blank" rel="noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">https://ngontenpakeai.vercel.app</a></p>
+            <p><strong>Platform:</strong> ruangcreativemuslim</p>
+            <p><strong>Email Dukungan:</strong> <a href="mailto:ruangcreativemuslim@gmail.com" className="text-indigo-600 dark:text-indigo-400 hover:underline">ruangcreativemuslim@gmail.com</a></p>
+            <p><strong>Website Resmi:</strong> <a href="https://www.ruangcreativemuslim.com" target="_blank" rel="noreferrer" className="text-indigo-600 dark:text-indigo-400 hover:underline">https://www.ruangcreativemuslim.com</a></p>
           </div>
         </section>
       </div>

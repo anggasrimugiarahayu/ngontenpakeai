@@ -40,7 +40,7 @@ export async function POST(req: Request) {
       from: `"${userName}" <${process.env.GMAIL_EMAIL}>`, // Gunakan email terautentikasi sebagai pengirim
       to: process.env.GMAIL_EMAIL, // Kirim ke inbox admin (Gmail sendiri)
       replyTo: userEmail, // Supaya kalau dibalas langsung masuk ke email user
-      subject: `[Bantuan Ngonten Pake AI] ${subject}`,
+      subject: `[Bantuan ruangcreativemuslim] ${subject}`,
       text: `Dari: ${userName} (${userEmail})\n\nPesan:\n${message}`,
       html: `
         <div style="font-family: sans-serif; padding: 20px; border: 1px solid #ddd; border-radius: 8px;">

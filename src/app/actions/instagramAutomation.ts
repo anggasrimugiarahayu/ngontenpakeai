@@ -1165,7 +1165,7 @@ function wrapTrackedLink(rawUrl: string, trackLinks: boolean, ruleId: string, lo
   const baseUrl =
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.NEXTAUTH_URL ||
-    "https://ruangcreativemuslim-seven.vercel.app";
+    "https://www.ruangcreativemuslim.com";
 
   const params = new URLSearchParams();
   params.set("url", cleanUrl);

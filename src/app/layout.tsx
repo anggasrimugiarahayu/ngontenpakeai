@@ -14,8 +14,19 @@ import SWRProvider from "@/components/layout/SWRProvider";
 import { NavigationProgressBar } from "@/components/layout/NavigationProgressBar";
 
 export const metadata: Metadata = {
-  title: "Ruang Ngonten - Strategi Faceless Creator",
-  description: "Panduan ngonten untuk bangun akun sosmed dari nol tanpa harus nunjukin wajah.",
+  metadataBase: new URL("https://www.ruangcreativemuslim.com"),
+  title: "ruangcreativemuslim - Strategi Faceless Creator & Automasi AI",
+  description: "Platform produktivitas ngonten & automasi cerdas dari nol tanpa harus nunjukin wajah.",
+  icons: {
+    icon: [
+      { url: "/icon.png", type: "image/png" },
+      { url: "/favicon.ico" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: ["/icon.png"],
+  },
 };
 
 export const viewport = {
