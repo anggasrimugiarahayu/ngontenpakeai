@@ -3,6 +3,7 @@
 import React from "react";
 import { YouTubeVideoItem } from "./types";
 import { Play, Flame, Clock, Eye, Sparkles, Check } from "lucide-react";
+import { useFlipGridAnimation } from "@/hooks/useFlipGridAnimation";
 
 interface Props {
   videos: YouTubeVideoItem[];
@@ -29,6 +30,8 @@ export function YouTubeFeedGrid({
   selectedVideoIds = new Set(),
   onToggleSelectVideo,
 }: Props) {
+  const { registerCard } = useFlipGridAnimation(videos);
+
   if (videos.length === 0) {
     return (
       <div className="w-full text-center py-16 px-4">
@@ -55,6 +58,7 @@ export function YouTubeFeedGrid({
         return (
           <div
             key={video.id}
+            ref={registerCard(video.id)}
             onClick={() => {
               if (isSelectMode) {
                 onToggleSelectVideo?.(video.id);
@@ -62,7 +66,7 @@ export function YouTubeFeedGrid({
                 onSelectVideo(video);
               }
             }}
-            className={`group relative flex flex-col bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl overflow-hidden hover:border-orange-500/50 hover:shadow-lg transition-all duration-200 cursor-pointer ${
+            className={`group relative flex flex-col bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl overflow-hidden hover:border-orange-500/50 hover:shadow-lg transition-colors duration-150 cursor-pointer ${
               isSelected ? "ring-3 ring-orange-500" : ""
             }`}
           >

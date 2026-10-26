@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { downloadMediaAsset } from "./exportUtils";
+import { useFlipGridAnimation } from "@/hooks/useFlipGridAnimation";
 import toast from "react-hot-toast";
 
 function InstagramIcon({ className = "" }: { className?: string }) {
@@ -64,6 +65,8 @@ export function InstagramFeedGrid({
   selectedPostIds = new Set(),
   onToggleSelectPost,
 }: Props) {
+  const { registerCard } = useFlipGridAnimation(posts);
+
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(() => {
     if (typeof window === "undefined") return new Set();
     try {
@@ -140,6 +143,7 @@ export function InstagramFeedGrid({
         return (
           <div
             key={post.id}
+            ref={registerCard(post.id)}
             onClick={() => {
               if (isSelectMode) {
                 onToggleSelectPost?.(post.id);
@@ -147,11 +151,7 @@ export function InstagramFeedGrid({
                 onSelectPost(post);
               }
             }}
-            style={{
-              transform: "translateZ(0)",
-              contain: "paint layout",
-            }}
-            className={`group relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-[#121727] border-r border-b border-gray-200/80 dark:border-[#2C3246] cursor-pointer transition-all ${
+            className={`group relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-[#121727] border-r border-b border-gray-200/80 dark:border-[#2C3246] cursor-pointer transition-colors duration-150 ${
               isSelected ? "ring-3 ring-orange-500 ring-inset" : ""
             }`}
           >
