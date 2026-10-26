@@ -15,6 +15,13 @@ const youtubeMemoryCache = new Map<
   }
 >();
 
+const STANDARD_HEADERS = {
+  "User-Agent":
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+  "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
+  Cookie: "CONSENT=PENDING+999; SOCS=CAESEwgDEgk2MTQ5MTAzNjcaAmVuIAEaBgiA_LyaBg;",
+};
+
 function cleanChannelHandle(input: string): string {
   if (!input) return "";
   let clean = input.trim();
@@ -26,14 +33,66 @@ function cleanChannelHandle(input: string): string {
       const match = pathname.match(/@([a-zA-Z0-9_.-]+)/);
       if (match) return `@${match[1]}`;
       const channelMatch = pathname.match(/\/channel\/([a-zA-Z0-9_.-]+)/);
-      if (channelMatch) return channelMatch[1];
+      if (channelMatch) return `channel/${channelMatch[1]}`;
     } catch {}
   }
   clean = clean.replace(/^(https?:\/\/)?(www\.)?youtube\.com\/?/i, "");
-  if (!clean.startsWith("@") && !clean.startsWith("UC")) {
+  // Remove trailing slashes and subroutes like /videos or /shorts
+  clean = clean.replace(/\/(videos|shorts|featured|community|playlists)$/i, "").trim();
+
+  if (!clean.startsWith("@") && !clean.startsWith("channel/") && !clean.startsWith("UC")) {
     clean = `@${clean}`;
   }
   return clean;
+}
+
+async function resolveChannelBySearch(rawQuery: string): Promise<string | null> {
+  try {
+    const cleanQuery = rawQuery.replace(/^@/, "").trim();
+    if (!cleanQuery) return null;
+    const url = `https://www.youtube.com/results?search_query=${encodeURIComponent(
+      cleanQuery
+    )}&sp=EgIQAg%3D%3D`;
+
+    const res = await fetch(url, {
+      headers: STANDARD_HEADERS,
+      cache: "no-store",
+    });
+    if (!res.ok) return null;
+
+    const html = await res.text();
+    const match =
+      html.match(/var ytInitialData = ({[\s\S]*?});<\/script>/) ||
+      html.match(/ytInitialData\s*=\s*({[\s\S]+?});/);
+    if (!match) return null;
+
+    const data = JSON.parse(match[1]);
+    const contents =
+      data?.contents?.twoColumnSearchResultsRenderer?.primaryContents
+        ?.sectionListRenderer?.contents || [];
+
+    for (const section of contents) {
+      const items = section.itemSectionRenderer?.contents || [];
+      for (const item of items) {
+        if (item.channelRenderer) {
+          const cr = item.channelRenderer;
+          const navUrl =
+            cr.navigationEndpoint?.browseEndpoint?.canonicalBaseUrl ||
+            cr.navigationEndpoint?.commandMetadata?.webCommandMetadata?.url ||
+            "";
+          if (navUrl.startsWith("/@")) {
+            return navUrl.replace("/", ""); // returns "@corbuzier"
+          }
+          if (cr.channelId) {
+            return `channel/${cr.channelId}`;
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.warn("YouTube channel search resolution error:", err);
+  }
+  return null;
 }
 
 function parseViews(text?: string | null): number {
@@ -62,6 +121,33 @@ function parseDurationSeconds(str?: string | null): number {
     return parts[0] * 60 + parts[1];
   }
   return parts[0] || 0;
+}
+
+function parseRelativeDateToISO(text?: string | null): string {
+  if (!text) return new Date().toISOString();
+  const now = Date.now();
+  const lower = text.toLowerCase();
+  const numMatch = lower.match(/\d+/);
+  const num = numMatch ? parseInt(numMatch[0], 10) : 1;
+
+  let msAgo = 0;
+  if (/detik|second/i.test(lower)) {
+    msAgo = num * 1000;
+  } else if (/menit|minute/i.test(lower)) {
+    msAgo = num * 60 * 1000;
+  } else if (/jam|hour/i.test(lower)) {
+    msAgo = num * 3600 * 1000;
+  } else if (/hari|day/i.test(lower)) {
+    msAgo = num * 24 * 3600 * 1000;
+  } else if (/minggu|week/i.test(lower)) {
+    msAgo = num * 7 * 24 * 3600 * 1000;
+  } else if (/bulan|month/i.test(lower)) {
+    msAgo = num * 30 * 24 * 3600 * 1000;
+  } else if (/tahun|year/i.test(lower)) {
+    msAgo = num * 365 * 24 * 3600 * 1000;
+  }
+
+  return new Date(now - msAgo).toISOString();
 }
 
 export async function POST(request: NextRequest) {
@@ -119,8 +205,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const targetHandle = cleanChannelHandle(rawInput);
-    const cacheKey = targetHandle.toLowerCase();
+    let targetHandle = cleanChannelHandle(rawInput);
+    let cacheKey = targetHandle.toLowerCase();
 
     // Check memory cache
     if (!forceRefresh) {
@@ -135,23 +221,34 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch Videos Tab and Shorts Tab in parallel
-    const baseUrl = `https://www.youtube.com/${targetHandle}`;
-    const userAgent =
-      "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-    const headers = {
-      "User-Agent": userAgent,
-      "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8,en;q=0.7",
-    };
+    let baseUrl = `https://www.youtube.com/${targetHandle}`;
 
-    const [videosRes, shortsRes] = await Promise.all([
-      fetch(`${baseUrl}/videos`, { headers, cache: "no-store" }).catch(() => null),
-      fetch(`${baseUrl}/shorts`, { headers, cache: "no-store" }).catch(() => null),
+    let [videosRes, shortsRes] = await Promise.all([
+      fetch(`${baseUrl}/videos`, { headers: STANDARD_HEADERS, cache: "no-store" }).catch(() => null),
+      fetch(`${baseUrl}/shorts`, { headers: STANDARD_HEADERS, cache: "no-store" }).catch(() => null),
     ]);
+
+    // If initial handle fetch fails (e.g. 404 because user typed full channel name like "deddy corbuzier"),
+    // perform Smart Channel Search Resolution
+    if (!videosRes || !videosRes.ok) {
+      const resolvedHandle = await resolveChannelBySearch(rawInput);
+      if (resolvedHandle && resolvedHandle !== targetHandle) {
+        targetHandle = resolvedHandle;
+        cacheKey = targetHandle.toLowerCase();
+        baseUrl = `https://www.youtube.com/${targetHandle}`;
+
+        // Retry fetch with resolved handle
+        [videosRes, shortsRes] = await Promise.all([
+          fetch(`${baseUrl}/videos`, { headers: STANDARD_HEADERS, cache: "no-store" }).catch(() => null),
+          fetch(`${baseUrl}/shorts`, { headers: STANDARD_HEADERS, cache: "no-store" }).catch(() => null),
+        ]);
+      }
+    }
 
     if (!videosRes || !videosRes.ok) {
       return NextResponse.json(
         {
-          error: `Channel YouTube "${targetHandle}" tidak ditemukan atau sedang tidak dapat diakses. Pastikan nama channel sudah benar (contoh: @kokbisa).`,
+          error: `Channel YouTube "${rawInput}" tidak ditemukan atau sedang tidak dapat diakses. Pastikan nama channel sudah benar (contoh: @corbuzier atau @kokbisa).`,
         },
         { status: 404 }
       );
@@ -186,28 +283,42 @@ export async function POST(request: NextRequest) {
     const channelMeta = videosData?.metadata?.channelMetadataRenderer || {};
     const headerContent =
       videosData?.header?.pageHeaderRenderer?.content?.pageHeaderViewModel || {};
-    const metadataParts =
-      headerContent?.metadata?.contentMetadataViewModel?.metadataRows?.[1]
-        ?.metadataParts || [];
+    const metadataRows =
+      headerContent?.metadata?.contentMetadataViewModel?.metadataRows || [];
 
-    const subText =
-      metadataParts?.[0]?.text?.content ||
-      metadataParts?.[0]?.accessibilityLabel ||
-      "";
-    const videoCountText = metadataParts?.[1]?.text?.content || "";
+    // Scan all metadata rows to find subscriber count and video count
+    let subText = "";
+    let videoCountText = "";
+    for (const row of metadataRows) {
+      for (const part of row.metadataParts || []) {
+        const text = part.text?.content || part.accessibilityLabel || "";
+        if (/subscri|pelanggan/i.test(text)) {
+          subText = text;
+        } else if (/video/i.test(text)) {
+          videoCountText = text;
+        }
+      }
+    }
+
+    const channelHeader = videosData?.header?.c4TabbedHeaderRenderer || {};
+    if (!subText) {
+      subText =
+        channelHeader?.subscriberCountText?.simpleText ||
+        metadataRows[1]?.metadataParts?.[0]?.text?.content ||
+        "";
+    }
 
     const channelProfile: YouTubeChannelProfile = {
       channelId: channelMeta.externalId || "",
-      customUrl: targetHandle,
+      customUrl: targetHandle.startsWith("@") ? targetHandle : `@${channelMeta.title || targetHandle}`,
       title: channelMeta.title || targetHandle.replace("@", ""),
       avatarUrl:
         channelMeta.avatar?.thumbnails?.slice(-1)[0]?.url ||
         headerContent?.image?.sources?.slice(-1)[0]?.url ||
         "",
       bannerUrl:
-        videosData?.header?.c4TabbedHeaderRenderer?.banner?.thumbnails?.slice(
-          -1
-        )[0]?.url || undefined,
+        videosData?.header?.c4TabbedHeaderRenderer?.banner?.thumbnails?.slice(-1)[0]?.url ||
+        undefined,
       description: channelMeta.description || "",
       subscriberCount: parseViews(subText),
       subscriberCountText: subText || "Publik",
@@ -261,7 +372,7 @@ export async function POST(request: NextRequest) {
             viewsCount: viewsNum,
             viewsText: viewsStr || "0 views",
             publishedText: pubStr || "Baru saja",
-            timestamp: new Date().toISOString(),
+            timestamp: parseRelativeDateToISO(pubStr),
             duration: durationStr || "Video",
             durationSeconds: durSecs,
             isShorts: durSecs > 0 && durSecs <= 60,
@@ -290,7 +401,7 @@ export async function POST(request: NextRequest) {
             viewsCount: viewsNum,
             viewsText: viewsStr || "0 views",
             publishedText: pubStr || "Baru saja",
-            timestamp: new Date().toISOString(),
+            timestamp: parseRelativeDateToISO(pubStr),
             duration: durationStr || "Video",
             durationSeconds: durSecs,
             isShorts: durSecs > 0 && durSecs <= 60,
@@ -324,23 +435,27 @@ export async function POST(request: NextRequest) {
             if (slvm) {
               const videoId =
                 slvm.onTap?.innertubeCommand?.reelWatchEndpoint?.videoId ||
-                slvm.videoId ||
-                slvm.entityId?.replace("shorts-shelf-item-", "");
+                slvm.entityId?.replace("shorts-shelf-item-", "") ||
+                slvm.videoId;
 
               // Avoid duplicates
               if (videoId && !parsedVideos.some((v) => v.id === videoId)) {
                 const title =
+                  slvm.overlayMetadata?.primaryText?.content ||
                   slvm.overlay?.reelPlayerOverlayRenderer?.reelPlayerHeaderSupportedRenderers
                     ?.reelPlayerHeaderRenderer?.reelTitleText?.runs?.[0]?.text ||
                   slvm.accessibilityText?.split(",")?.[0] ||
                   "YouTube Short";
+
                 const viewsStr =
+                  slvm.overlayMetadata?.secondaryText?.content ||
                   slvm.accessibilityText?.split(",")?.[1]?.replace("- putar video Shorts", "").trim() ||
                   "Shorts";
+
                 const thumb =
-                  slvm.onTap?.innertubeCommand?.reelWatchEndpoint?.thumbnail
-                    ?.thumbnails?.slice(-1)[0]?.url ||
-                  `https://i.ytimg.com/vi/${videoId}/frame0.jpg`;
+                  slvm.thumbnailViewModel?.thumbnailViewModel?.image?.sources?.slice(-1)[0]?.url ||
+                  slvm.onTap?.innertubeCommand?.reelWatchEndpoint?.thumbnail?.thumbnails?.slice(-1)[0]?.url ||
+                  `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
                 parsedVideos.push({
                   id: videoId,
@@ -350,7 +465,7 @@ export async function POST(request: NextRequest) {
                   viewsCount: parseViews(viewsStr),
                   viewsText: viewsStr,
                   publishedText: "Shorts",
-                  timestamp: new Date().toISOString(),
+                  timestamp: parseRelativeDateToISO(viewsStr),
                   duration: "Shorts",
                   durationSeconds: 60,
                   isShorts: true,
