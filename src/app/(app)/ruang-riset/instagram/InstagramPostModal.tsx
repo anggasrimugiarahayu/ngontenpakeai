@@ -131,11 +131,12 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
 
         {/* ===================================================================== */}
         {/* SISI KIRI: Visual Media Preview (Video Player Asli / Carousel Slider Asli) */}
+        {/* Menggunakan Rasio Standar Instagram 3:4 Presisi Tanpa Terpotong */}
         {/* ===================================================================== */}
         <div
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
-          className="w-full md:w-1/2 bg-black flex items-center justify-center relative min-h-[300px] sm:min-h-[400px] md:min-h-[550px] overflow-hidden select-none"
+          className="w-full md:w-1/2 bg-black flex items-center justify-center relative aspect-[3/4] md:aspect-auto md:min-h-[550px] overflow-hidden select-none shrink-0"
         >
           {/* A. REELS / VIDEO PLAYER ASLI */}
           {isVideo ? (
@@ -149,7 +150,7 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
                 autoPlay
                 loop
                 muted={isVideoMuted}
-                className="w-full h-full object-contain max-h-[50vh] md:max-h-[85vh] bg-black"
+                className="w-full h-full object-contain bg-black"
               />
 
               {/* Quick Mute/Unmute toggle overlay */}
@@ -178,7 +179,7 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
                 src={slides[currentSlideIndex] || post.thumbnailUrl}
                 alt={`${post.hookText} - slide ${currentSlideIndex + 1}`}
                 key={slides[currentSlideIndex] || post.thumbnailUrl}
-                className="w-full h-full object-contain max-h-[50vh] md:max-h-[85vh] transition-opacity duration-200"
+                className="w-full h-full object-contain transition-opacity duration-200"
               />
 
               {/* Navigation Arrows for Carousel */}
@@ -246,7 +247,7 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
         {/* ===================================================================== */}
         {/* SISI KANAN: Detail Analitik & Naskah */}
         {/* ===================================================================== */}
-        <div className="w-full md:w-1/2 flex flex-col p-4 sm:p-6 overflow-y-auto max-h-[55vh] md:max-h-[92vh]">
+        <div className="w-full md:w-1/2 flex flex-col p-4 sm:p-6 overflow-y-auto flex-1 min-h-0 md:max-h-[92vh]">
           {/* Header Akun */}
           <div className="flex items-center gap-3 pb-4 border-b border-gray-100 dark:border-[#2C3246]">
             <img

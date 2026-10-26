@@ -11,7 +11,6 @@ import {
   Bookmark,
   Download,
   ArrowUpRight,
-  Check,
   Film,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -44,9 +43,6 @@ interface Props {
   profile: InstagramTargetProfile;
   sortOption?: SortOption;
   onSelectPost: (post: InstagramPostItem) => void;
-  isSelectMode?: boolean;
-  selectedIds?: string[];
-  onToggleSelect?: (id: string) => void;
 }
 
 function formatCompact(num: number): string {
@@ -60,9 +56,6 @@ export function InstagramFeedGrid({
   profile,
   sortOption = "outlier",
   onSelectPost,
-  isSelectMode = false,
-  selectedIds = [],
-  onToggleSelect,
 }: Props) {
   const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(() => {
     if (typeof window === "undefined") return new Set();
@@ -129,7 +122,6 @@ export function InstagramFeedGrid({
       {posts.map((post) => {
         const isReel = post.mediaType === "VIDEO";
         const isCarousel = post.mediaType === "CAROUSEL_ALBUM";
-        const isSelected = selectedIds.includes(post.id);
         const isBookmarked = bookmarkedIds.has(post.id);
 
         // Menentukan jumlah icon petir (Outlier Tier)
@@ -139,20 +131,12 @@ export function InstagramFeedGrid({
         return (
           <div
             key={post.id}
-            onClick={() => {
-              if (isSelectMode && onToggleSelect) {
-                onToggleSelect(post.id);
-              } else {
-                onSelectPost(post);
-              }
-            }}
+            onClick={() => onSelectPost(post)}
             style={{
               transform: "translateZ(0)",
               contain: "paint layout",
             }}
-            className={`group relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-[#121727] border-r border-b border-gray-200/80 dark:border-[#2C3246] cursor-pointer ${
-              isSelected ? "ring-2 ring-orange-500 ring-inset z-30" : ""
-            }`}
+            className="group relative aspect-[3/4] overflow-hidden bg-gray-100 dark:bg-[#121727] border-r border-b border-gray-200/80 dark:border-[#2C3246] cursor-pointer"
           >
             {/* Thumbnail Image (Instan cache, tanpa lazy reload flickering) */}
             <img
@@ -203,23 +187,6 @@ export function InstagramFeedGrid({
               ) : null}
             </div>
 
-            {/* Checkbox Jika Mode Select Aktif */}
-            {isSelectMode && (
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  if (onToggleSelect) onToggleSelect(post.id);
-                }}
-                className={`absolute top-2.5 right-2.5 z-30 w-6 h-6 rounded-md flex items-center justify-center border transition-all ${
-                  isSelected
-                    ? "bg-orange-500 border-orange-500 text-white shadow-md"
-                    : "bg-black/60 border-white/40 text-transparent hover:border-white"
-                }`}
-              >
-                <Check className="w-4 h-4 stroke-[3]" />
-              </div>
-            )}
-
             {/* Bawah Normal: Like Counter & Info Singkat (Slide jika carousel, Komentar jika ada) */}
             <div className="absolute bottom-2.5 inset-x-2.5 z-10 flex items-center justify-between text-white text-[11px] font-semibold transition-opacity duration-150 group-hover:opacity-0 pointer-events-none drop-shadow-md">
               <div className="flex items-center gap-1">
@@ -259,18 +226,16 @@ export function InstagramFeedGrid({
                   <span>{post.outlierScore}×</span>
                 </div>
 
-                {!isSelectMode && (
-                  <a
-                    href={post.permalink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                    className="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 flex items-center justify-center text-white transition-colors cursor-pointer"
-                    title="Buka Postingan Asli di Instagram"
-                  >
-                    <ArrowUpRight className="w-4 h-4" />
-                  </a>
-                )}
+                <a
+                  href={post.permalink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 flex items-center justify-center text-white transition-colors cursor-pointer"
+                  title="Buka Postingan Asli di Instagram"
+                >
+                  <ArrowUpRight className="w-4 h-4" />
+                </a>
               </div>
 
               {/* Bagian Tengah Hover: 3 Metrik Utama Bertumpuk Vertikal */}

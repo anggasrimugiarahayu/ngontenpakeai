@@ -170,35 +170,12 @@ export function InstagramResearchStudio({
     }
   };
 
-  // Selection Mode State (untuk Bulk Select Postingan)
-  const [isSelectMode, setIsSelectMode] = useState(false);
-  const [selectedPostIds, setSelectedPostIds] = useState<string[]>([]);
-
   // Reset all filters to default
   const handleResetFilters = () => {
     setFilterMode("posts");
     setPostLimit(25);
     setDateFilter("all");
     setSortOption("outlier");
-    setSelectedPostIds([]);
-  };
-
-  const handleToggleSelect = (id: string) => {
-    setSelectedPostIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    );
-  };
-
-  const handleSelectAll = () => {
-    if (selectedPostIds.length === filteredAndSortedPosts.length) {
-      setSelectedPostIds([]);
-    } else {
-      setSelectedPostIds(filteredAndSortedPosts.map((p) => p.id));
-    }
-  };
-
-  const handleClearSelection = () => {
-    setSelectedPostIds([]);
   };
 
   // Filtered & Sorted Posts
@@ -240,13 +217,10 @@ export function InstagramResearchStudio({
     action: "download" | "copy"
   ) => {
     if (!profile) return;
-    const targetPosts =
-      isSelectMode && selectedPostIds.length > 0
-        ? filteredAndSortedPosts.filter((p) => selectedPostIds.includes(p.id))
-        : filteredAndSortedPosts;
+    const targetPosts = filteredAndSortedPosts;
 
     if (targetPosts.length === 0) {
-      toast.error("Tidak ada postingan yang dipilih");
+      toast.error("Tidak ada postingan untuk diekspor");
       return;
     }
 
@@ -286,13 +260,10 @@ export function InstagramResearchStudio({
 
   const handleDownloadMediaBatch = async () => {
     if (!profile) return;
-    const targetPosts =
-      isSelectMode && selectedPostIds.length > 0
-        ? filteredAndSortedPosts.filter((p) => selectedPostIds.includes(p.id))
-        : filteredAndSortedPosts;
+    const targetPosts = filteredAndSortedPosts;
 
     if (targetPosts.length === 0) {
-      toast.error("Tidak ada postingan yang dipilih");
+      toast.error("Tidak ada postingan untuk diunduh");
       return;
     }
 
@@ -468,11 +439,6 @@ export function InstagramResearchStudio({
               onDownloadMedia={handleDownloadMediaBatch}
               onResetFilters={handleResetFilters}
               onApply={handleApplyFilters}
-              isSelectMode={isSelectMode}
-              setIsSelectMode={setIsSelectMode}
-              selectedCount={selectedPostIds.length}
-              onSelectAll={handleSelectAll}
-              onClearSelection={handleClearSelection}
             />
 
             <InstagramFeedGrid
@@ -480,9 +446,6 @@ export function InstagramResearchStudio({
               profile={profile}
               sortOption={sortOption}
               onSelectPost={(post) => setSelectedPost(post)}
-              isSelectMode={isSelectMode}
-              selectedIds={selectedPostIds}
-              onToggleSelect={handleToggleSelect}
             />
           </div>
 
