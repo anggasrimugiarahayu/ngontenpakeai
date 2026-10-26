@@ -124,8 +124,8 @@ export function SortFeedFilterDropdown({
         {/* Section 1: Filters (Limit / Tanggal) */}
         <div className="py-2.5 space-y-2">
           <div className="flex items-center justify-between">
-            <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-              Filter Kategori
+            <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-left">
+              Filters
             </p>
           </div>
 
@@ -244,8 +244,8 @@ export function SortFeedFilterDropdown({
 
         {/* Section 2: Sort by (Compact List) */}
         <div className="pt-2 border-t border-gray-100 dark:border-[#2C3246] space-y-1">
-          <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider">
-            Urutkan Berdasarkan
+          <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 text-left">
+            Sort
           </p>
 
           <div className="space-y-0.5">
@@ -378,7 +378,7 @@ export function SortFeedFilterDropdown({
             onClick={handleApply}
             className="px-3 py-1.5 rounded-lg bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold text-xs shadow-sm shadow-orange-500/20 transition-all cursor-pointer transform active:scale-95"
           >
-            Terapkan & Tampilkan
+            Apply Filter
           </button>
         </div>
       </div>
