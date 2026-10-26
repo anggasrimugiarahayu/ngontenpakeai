@@ -385,22 +385,27 @@ export function YouTubeResearchStudio({
         <div className="space-y-6">
           <YouTubeProfileHeader profile={profile} />
 
-          <YouTubeSortToolbar
-            formatFilter={formatFilter}
-            onFormatFilterChange={setFormatFilter}
-            sortOption={sortOption}
-            onSortOptionChange={setSortOption}
-            searchQuery={searchQuery}
-            onSearchQueryChange={setSearchQuery}
-            videos={videos}
-            profile={profile}
-            totalFilteredCount={filteredAndSortedVideos.length}
-          />
+          {/* Unified Galeri Feed & Toolbar Card (Menyambung Mulus Sesuai Referensi IG) */}
+          <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200/90 dark:border-[#2C3246] rounded-2xl shadow-xs overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
+            <YouTubeSortToolbar
+              formatFilter={formatFilter}
+              onFormatFilterChange={setFormatFilter}
+              sortOption={sortOption}
+              onSortOptionChange={setSortOption}
+              searchQuery={searchQuery}
+              onSearchQueryChange={setSearchQuery}
+              videos={videos}
+              profile={profile}
+              totalFilteredCount={filteredAndSortedVideos.length}
+            />
 
-          <YouTubeFeedGrid
-            videos={filteredAndSortedVideos}
-            onSelectVideo={setActiveModalVideo}
-          />
+            <div className="p-4 sm:p-5">
+              <YouTubeFeedGrid
+                videos={filteredAndSortedVideos}
+                onSelectVideo={setActiveModalVideo}
+              />
+            </div>
+          </div>
         </div>
       )}
 

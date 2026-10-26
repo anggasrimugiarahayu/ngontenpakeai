@@ -22,8 +22,8 @@ function formatViews(num: number): string {
 export function YouTubeFeedGrid({ videos, onSelectVideo }: Props) {
   if (videos.length === 0) {
     return (
-      <div className="w-full text-center py-16 px-4 bg-white dark:bg-[#141B2D] border border-gray-200 dark:border-[#232D42] rounded-3xl">
-        <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gray-100 dark:bg-gray-800 text-gray-400 flex items-center justify-center">
+      <div className="w-full text-center py-16 px-4">
+        <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gray-100 dark:bg-[#1E293B] text-gray-400 flex items-center justify-center">
           <Play className="w-6 h-6" />
         </div>
         <h3 className="font-bold text-gray-900 dark:text-white text-base mb-1">
@@ -46,7 +46,7 @@ export function YouTubeFeedGrid({ videos, onSelectVideo }: Props) {
           <div
             key={video.id}
             onClick={() => onSelectVideo(video)}
-            className="group relative flex flex-col bg-white dark:bg-[#141B2D] border border-gray-200 dark:border-[#232D42] rounded-2xl overflow-hidden hover:border-red-500/50 hover:shadow-lg transition-all duration-200 cursor-pointer"
+            className="group relative flex flex-col bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl overflow-hidden hover:border-orange-500/50 hover:shadow-lg transition-all duration-200 cursor-pointer"
           >
             {/* Thumbnail Area */}
             <div className={`relative w-full overflow-hidden bg-gray-950 ${video.isShorts ? "aspect-[9/14]" : "aspect-[16/9]"}`}>
@@ -104,7 +104,7 @@ export function YouTubeFeedGrid({ videos, onSelectVideo }: Props) {
                 {video.title}
               </h4>
 
-              <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-100 dark:border-[#232D42]/60">
+              <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-100 dark:border-[#2C3246]/60">
                 <span className="flex items-center gap-1 font-semibold text-gray-700 dark:text-gray-300">
                   <Eye className="w-3.5 h-3.5 text-blue-500" />
                   <span>{formatViews(video.viewsCount)} views</span>

@@ -7,10 +7,8 @@ import {
   PostLimit,
   DateFilter,
 } from "./types";
-import { SortFeedFilterDropdown } from "./SortFeedFilterDropdown";
 import {
   Download,
-  SlidersHorizontal,
   ArrowUpDown,
   RotateCcw,
   Check,
@@ -53,7 +51,6 @@ export function InstagramSortToolbar({
   onResetFilters,
   onApply,
 }: Props) {
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
   // Dynamic clean title
@@ -189,22 +186,12 @@ export function InstagramSortToolbar({
       </div>
 
       {/* ========================================================================= */}
-      {/* BARIS 2: Filters & Sort By (Unified 1 Baris Elegan di Mobile & Desktop) */}
+      {/* BARIS 2: Sort By (Compact & Rapi) */}
       {/* ========================================================================= */}
       <div className="pt-2.5 text-xs flex items-center justify-between gap-2.5 relative">
-        <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-          {/* Tombol Filters */}
-          <button
-            type="button"
-            onClick={() => setIsFilterOpen((prev) => !prev)}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-[#1E293B] dark:hover:bg-[#2A374F] font-semibold text-gray-800 dark:text-gray-200 transition-colors cursor-pointer shrink-0"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-orange-500" />
-            <span>Filters</span>
-          </button>
-
-          {/* Selector Sort by Bersanding Rapi */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] min-w-0 flex-1">
+        <div className="flex items-center gap-2 sm:gap-3">
+          {/* Selector Sort by Ringkas & Tidak Melar */}
+          <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shrink-0">
             <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
             <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 shrink-0 hidden sm:inline">
               Sort by:
@@ -215,10 +202,10 @@ export function InstagramSortToolbar({
             <select
               value={sortOption}
               onChange={(e) => setSortOption(e.target.value as SortOption)}
-              className="bg-transparent font-bold text-gray-900 dark:text-white border-0 focus:outline-none focus:ring-0 cursor-pointer text-xs w-full truncate"
+              className="bg-transparent font-bold text-gray-900 dark:text-white border-0 focus:outline-none focus:ring-0 cursor-pointer text-xs w-auto"
             >
               <option value="outlier" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Outlier Score (Paling Viral)
+                Outlier Score
               </option>
               <option value="views" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
                 Views Terbanyak
@@ -252,25 +239,6 @@ export function InstagramSortToolbar({
             <span className="sm:hidden">Reset</span>
           </button>
         )}
-
-        {/* Modal Filter Dropdown jika dibuka (Satu instansi untuk mobile & desktop) */}
-        <SortFeedFilterDropdown
-          isOpen={isFilterOpen}
-          onClose={() => setIsFilterOpen(false)}
-          onApply={() => {
-            setIsFilterOpen(false);
-            if (onApply) onApply();
-          }}
-          filterMode={filterMode}
-          setFilterMode={setFilterMode}
-          postLimit={postLimit}
-          setPostLimit={setPostLimit}
-          dateFilter={dateFilter}
-          setDateFilter={setDateFilter}
-          sortOption={sortOption}
-          setSortOption={setSortOption}
-          onReset={onResetFilters}
-        />
       </div>
     </div>
   );
