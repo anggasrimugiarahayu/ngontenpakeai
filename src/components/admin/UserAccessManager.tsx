@@ -199,8 +199,8 @@ export function UserAccessManager({
           </select>
         </div>
 
-        {/* Quick Actions: Beri PRO PLUS & Reset FREE */}
-        <div className="flex flex-col sm:flex-row gap-2">
+        {/* Quick Actions: Beri PRO PLUS & Reset FREE (Atas & Bawah, lega & rapi) */}
+        <div className="flex flex-col gap-2 w-full">
           <button
             onClick={() =>
               handleUpdateAccess({
@@ -210,9 +210,9 @@ export function UserAccessManager({
               })
             }
             disabled={processingKey !== null}
-            className="flex-1 flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white transition-all disabled:opacity-50 cursor-pointer"
+            className="w-full flex items-center justify-center gap-1.5 py-2.5 px-4 rounded-xl text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white transition-all disabled:opacity-50 cursor-pointer shadow-xs"
           >
-            <Crown size={14} />
+            <Crown size={14} className="shrink-0" />
             <span>Beri PRO PLUS (+{selectedDays} Hari)</span>
           </button>
 
@@ -225,10 +225,10 @@ export function UserAccessManager({
                 })
               }
               disabled={processingKey !== null}
-              className="flex items-center justify-center gap-1.5 py-2.5 px-3 rounded-xl text-xs font-bold border border-red-500/30 bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all disabled:opacity-50 cursor-pointer"
+              className="w-full flex items-center justify-center gap-1.5 py-2 px-4 rounded-xl text-xs font-bold border border-red-500/30 bg-red-500/10 text-red-500 hover:bg-red-500/20 transition-all disabled:opacity-50 cursor-pointer"
             >
-              <Trash2 size={13} />
-              <span>Reset FREE</span>
+              <Trash2 size={13} className="shrink-0" />
+              <span>Reset ke Status FREE</span>
             </button>
           )}
         </div>

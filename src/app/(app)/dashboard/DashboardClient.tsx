@@ -6,7 +6,7 @@ import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import {
   getDashboardDataAction,
   getDashboardOrdersAction,
-  getDashboardUsersAction,
+  getAllDashboardUsersAction,
   getAudienceInsightsAction,
   revalidateDashboardAction,
 } from "@/app/actions/dashboard";
@@ -85,41 +85,21 @@ export default function DashboardClient({
   const [isRefreshing, setIsRefreshing] = useState(false);
   const itemsPerPage = 5;
 
-  // Persistent state & SWR for Kelola User tab
+  // Persistent state & Single SWR Cache for Kelola User tab
   const usersPerPage = 10;
   const [userPage, setUserPage] = useState(1);
   const [userSearch, setUserSearch] = useState("");
-  const [debouncedUserSearch, setDebouncedUserSearch] = useState("");
   const [userFilter, setUserFilter] = useState<"all" | "pro" | "free">("all");
   const [selectedUser, setSelectedUser] = useState<any>(
     data?.initialUsersData?.users?.[0] || null
   );
   const [isUserMobileModalOpen, setIsUserMobileModalOpen] = useState(false);
 
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedUserSearch(userSearch);
-    }, 350);
-    return () => clearTimeout(timer);
-  }, [userSearch]);
-
-  const isDefaultUsersQuery =
-    userPage === 1 && !debouncedUserSearch && userFilter === "all";
-
-  const { data: usersData, mutate: mutateUsers } = useSWR(
-    ["dashboard-users", userPage, debouncedUserSearch, userFilter],
-    () =>
-      getDashboardUsersAction(
-        userPage,
-        usersPerPage,
-        debouncedUserSearch,
-        userFilter,
-        false
-      ),
+  const { data: allUsersData, mutate: mutateAllUsers } = useSWR(
+    "dashboard-all-users",
+    () => getAllDashboardUsersAction(false),
     {
-      fallbackData: isDefaultUsersQuery
-        ? data?.initialUsersData
-        : undefined,
+      fallbackData: data?.initialUsersData,
       revalidateOnFocus: false,
       revalidateIfStale: false,
       keepPreviousData: true,
@@ -127,26 +107,55 @@ export default function DashboardClient({
     }
   );
 
-  const serverUsers = usersData?.users || [];
-  const totalServerUsers = usersData?.total ?? data?.totalUsers ?? 0;
+  const allUsersList = allUsersData?.users || [];
+
+  // Instant 0ms Client-Side Filtering
+  const filteredUsers = React.useMemo(() => {
+    let list = allUsersList;
+
+    if (userFilter === "pro") {
+      list = list.filter((u: any) => u.subStatus?.isPro);
+    } else if (userFilter === "free") {
+      list = list.filter((u: any) => !u.subStatus?.isPro);
+    }
+
+    if (userSearch.trim()) {
+      const q = userSearch.toLowerCase().trim();
+      list = list.filter((u: any) => {
+        const name = (u.name || "").toLowerCase();
+        const email = (u.email || "").toLowerCase();
+        const phone = (u.phone || "").toLowerCase();
+        return name.includes(q) || email.includes(q) || phone.includes(q);
+      });
+    }
+
+    return list;
+  }, [allUsersList, userFilter, userSearch]);
+
+  const totalFilteredUsers = filteredUsers.length;
+
+  const paginatedUsers = React.useMemo(() => {
+    const start = (userPage - 1) * usersPerPage;
+    return filteredUsers.slice(start, start + usersPerPage);
+  }, [filteredUsers, userPage, usersPerPage]);
 
   React.useEffect(() => {
-    if (serverUsers.length === 0) {
+    if (paginatedUsers.length === 0) {
       setSelectedUser(null);
     } else if (typeof window !== "undefined" && window.innerWidth >= 1024) {
       if (
         !selectedUser ||
-        !serverUsers.some((u: any) => u.id === selectedUser.id)
+        !filteredUsers.some((u: any) => u.id === selectedUser.id)
       ) {
-        setSelectedUser(serverUsers[0]);
+        setSelectedUser(paginatedUsers[0]);
       } else {
-        const updatedMatch = serverUsers.find(
+        const updatedMatch = filteredUsers.find(
           (u: any) => u.id === selectedUser.id
         );
         if (updatedMatch) setSelectedUser(updatedMatch);
       }
     }
-  }, [serverUsers]);
+  }, [filteredUsers, paginatedUsers]);
 
   const handleUserSelect = (u: any) => {
     setSelectedUser(u);
@@ -162,13 +171,7 @@ export default function DashboardClient({
 
       const [freshData, freshUsers] = await Promise.all([
         getDashboardDataAction(true),
-        getDashboardUsersAction(
-          userPage,
-          usersPerPage,
-          debouncedUserSearch,
-          userFilter,
-          true
-        ),
+        getAllDashboardUsersAction(true),
       ]);
       if (freshData) {
         await mutate(freshData, false);
@@ -176,9 +179,9 @@ export default function DashboardClient({
         await mutate();
       }
       if (freshUsers) {
-        await mutateUsers(freshUsers, false);
+        await mutateAllUsers(freshUsers, false);
       } else {
-        await mutateUsers();
+        await mutateAllUsers();
       }
       mutateInsights();
       const res = await getDashboardOrdersAction(
@@ -434,8 +437,8 @@ export default function DashboardClient({
 
         {activeTab === "users" && (
           <DashboardUsersTab
-            users={serverUsers}
-            totalUsers={totalServerUsers}
+            users={paginatedUsers}
+            totalUsers={totalFilteredUsers}
             itemsPerPage={usersPerPage}
             userPage={userPage}
             setUserPage={setUserPage}
@@ -451,12 +454,12 @@ export default function DashboardClient({
             onAccessUpdated={async (updatedUser: any) => {
               if (updatedUser) {
                 setSelectedUser(updatedUser);
-                if (usersData?.users) {
-                  await mutateUsers(
+                if (allUsersData?.users) {
+                  await mutateAllUsers(
                     {
-                      ...usersData,
-                      users: usersData.users.map((u: any) =>
-                        u.id === updatedUser.id ? updatedUser : u
+                      ...allUsersData,
+                      users: allUsersData.users.map((u: any) =>
+                        u.id === updatedUser.id ? { ...u, ...updatedUser } : u
                       ),
                     },
                     false
@@ -464,16 +467,10 @@ export default function DashboardClient({
                 }
               }
               const [freshUsers, freshData] = await Promise.all([
-                getDashboardUsersAction(
-                  userPage,
-                  usersPerPage,
-                  debouncedUserSearch,
-                  userFilter,
-                  true
-                ),
+                getAllDashboardUsersAction(true),
                 getDashboardDataAction(true),
               ]);
-              if (freshUsers) await mutateUsers(freshUsers, false);
+              if (freshUsers) await mutateAllUsers(freshUsers, false);
               if (freshData) await mutate(freshData, false);
             }}
           />

@@ -251,7 +251,7 @@ export async function calculateDashboardStats() {
 
   const [enrichedFullOrders, initialUsersData] = await Promise.all([
     populateOrderAddons(fullOrders),
-    fetchDashboardUsersData(1, 10, "", "all").catch(() => ({
+    fetchAllDashboardUsersData().catch(() => ({
       users: [],
       total: 0,
     })),
@@ -410,79 +410,10 @@ export async function getAudienceInsightsAction() {
   }
 }
 
-async function fetchDashboardUsersData(
-  page = 1,
-  limit = 10,
-  search = "",
-  filter = "all"
-) {
-  const now = new Date();
-  const where: any = {};
-
-  if (search && search.trim()) {
-    const q = search.trim();
-    where.OR = [
-      { name: { contains: q, mode: "insensitive" } },
-      { email: { contains: q, mode: "insensitive" } },
-      { phone: { contains: q, mode: "insensitive" } },
-    ];
-  }
-
-  if (filter === "pro") {
-    where.AND = [
-      ...(where.AND || []),
-      {
-        OR: [
-          { role: "ADMIN" },
-          { hasProBook: true },
-          { proToolsExpiredAt: { gt: now } },
-          { proAutomationExpiredAt: { gt: now } },
-          { proRisetExpiredAt: { gt: now } },
-          {
-            orders: {
-              some: {
-                status: "SUCCESS",
-                orderType: {
-                  in: ["PRO_BOOK", "PRO_BOOK_PRO", "PRO_PLUS", "PRO_PLUS_1Y"],
-                },
-              },
-            },
-          },
-        ],
-      },
-    ];
-  } else if (filter === "free") {
-    where.AND = [
-      ...(where.AND || []),
-      { role: { not: "ADMIN" } },
-      { hasProBook: false },
-      {
-        OR: [
-          { proToolsExpiredAt: null },
-          { proToolsExpiredAt: { lte: now } },
-        ],
-      },
-      {
-        OR: [
-          { proAutomationExpiredAt: null },
-          { proAutomationExpiredAt: { lte: now } },
-        ],
-      },
-      {
-        OR: [
-          { proRisetExpiredAt: null },
-          { proRisetExpiredAt: { lte: now } },
-        ],
-      },
-    ];
-  }
-
-  const [rawUsers, total, pricingSetting] = await Promise.all([
+export async function fetchAllDashboardUsersData() {
+  const [rawUsers, pricingSetting] = await Promise.all([
     prisma.user
       .findMany({
-        where,
-        take: limit,
-        skip: (page - 1) * limit,
         select: {
           id: true,
           name: true,
@@ -521,7 +452,6 @@ async function fetchDashboardUsersData(
         orderBy: { id: "desc" },
       })
       .catch(() => []),
-    prisma.user.count({ where }).catch(() => 0),
     prisma.appSetting
       .findUnique({ where: { key: "PRICING_PACKAGES" } })
       .catch(() => null),
@@ -567,23 +497,17 @@ async function fetchDashboardUsersData(
 
   return {
     users: JSON.parse(JSON.stringify(enrichedUsers)),
-    total,
+    total: enrichedUsers.length,
   };
 }
 
-export const getCachedDashboardUsers = unstable_cache(
-  fetchDashboardUsersData,
-  ["admin-users-list"],
+export const getCachedAllDashboardUsers = unstable_cache(
+  fetchAllDashboardUsersData,
+  ["admin-all-users-list"],
   { revalidate: 3600, tags: ["admin-users-list", "admin-dashboard-stats"] }
 );
 
-export async function getDashboardUsersAction(
-  page = 1,
-  limit = 10,
-  search = "",
-  filter = "all",
-  forceFresh = false
-) {
+export async function getAllDashboardUsersAction(forceFresh = false) {
   const session = await auth();
   if (
     !session?.user?.id ||
@@ -593,10 +517,12 @@ export async function getDashboardUsersAction(
   }
 
   if (forceFresh) {
-    return fetchDashboardUsersData(page, limit, search, filter);
+    return fetchAllDashboardUsersData();
   }
-  return getCachedDashboardUsers(page, limit, search, filter);
+  return getCachedAllDashboardUsers();
 }
+
+export const getDashboardUsersAction = getAllDashboardUsersAction;
 
 export async function adminUpdateUserAccessAction(params: {
   userId: string;
