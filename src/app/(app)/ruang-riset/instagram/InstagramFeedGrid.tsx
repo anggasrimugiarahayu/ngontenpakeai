@@ -172,12 +172,21 @@ export function InstagramFeedGrid({
             {/* TAMPILAN NORMAL (NON-HOVER) */}
             {/* ========================================================================= */}
 
-            {/* Kiri Atas: Badge Petir (⚡ / ⚡⚡ / ⚡⚡⚡) */}
+            {/* Kiri Atas: Badge Outlier Score (⚡ 7.7×) */}
             <div className="absolute top-2.5 left-2.5 z-10 transition-opacity duration-150 group-hover:opacity-0 pointer-events-none">
-              <div className="flex items-center gap-0.5 px-2 py-1 rounded-lg bg-black/70 text-white border border-white/10 text-xs shadow-sm">
-                {Array.from({ length: boltCount }).map((_, i) => (
-                  <Zap key={i} className="w-3 h-3 fill-white text-white" />
-                ))}
+              <div
+                className={`flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/75 border border-white/10 text-[11px] font-bold shadow-sm ${
+                  post.outlierScore >= 4 ? "text-amber-300" : "text-white"
+                }`}
+              >
+                <Zap
+                  className={`w-3 h-3 ${
+                    post.outlierScore >= 4
+                      ? "fill-amber-300 text-amber-300"
+                      : "fill-white text-white"
+                  }`}
+                />
+                <span>{post.outlierScore}×</span>
               </div>
             </div>
 
@@ -211,19 +220,22 @@ export function InstagramFeedGrid({
               </div>
             )}
 
-            {/* Bawah Normal: Like Counter & Info Singkat */}
+            {/* Bawah Normal: Like Counter & Info Singkat (Slide jika carousel, Komentar jika ada) */}
             <div className="absolute bottom-2.5 inset-x-2.5 z-10 flex items-center justify-between text-white text-[11px] font-semibold transition-opacity duration-150 group-hover:opacity-0 pointer-events-none drop-shadow-md">
               <div className="flex items-center gap-1">
                 <Heart className="w-3 h-3 fill-white text-white" />
                 <span>{formatCompact(post.likesCount)}</span>
               </div>
-              <div className="text-[10px] text-white/70 font-normal">
-                {post.carouselMedia && post.carouselMedia.length > 1 ? (
-                  <span>1/{post.carouselMedia.length}</span>
-                ) : (
-                  <span>@{profile.username}</span>
-                )}
-              </div>
+              {post.carouselMedia && post.carouselMedia.length > 1 ? (
+                <div className="text-[10px] text-white/90 font-medium px-1.5 py-0.5 rounded bg-black/60 border border-white/10">
+                  1/{post.carouselMedia.length}
+                </div>
+              ) : post.commentsCount > 0 ? (
+                <div className="flex items-center gap-1 text-[10px] text-white/80 font-normal">
+                  <MessageSquare className="w-2.5 h-2.5 text-white/70" />
+                  <span>{formatCompact(post.commentsCount)}</span>
+                </div>
+              ) : null}
             </div>
 
             {/* ========================================================================= */}
@@ -232,10 +244,19 @@ export function InstagramFeedGrid({
             <div className="absolute inset-0 bg-black/75 p-3 sm:p-3.5 flex flex-col justify-between z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none group-hover:pointer-events-auto">
               {/* Baris Atas Hover: Badge Petir di Kiri & Tombol Pop-out (↗) di Kanan */}
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-0.5 px-2 py-1 rounded-lg bg-black/70 text-white border border-white/10 text-xs shadow-sm">
-                  {Array.from({ length: boltCount }).map((_, i) => (
-                    <Zap key={i} className="w-3 h-3 fill-white text-white" />
-                  ))}
+                <div
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/70 border border-white/10 text-[11px] font-bold shadow-sm ${
+                    post.outlierScore >= 4 ? "text-amber-300" : "text-white"
+                  }`}
+                >
+                  <Zap
+                    className={`w-3 h-3 ${
+                      post.outlierScore >= 4
+                        ? "fill-amber-300 text-amber-300"
+                        : "fill-white text-white"
+                    }`}
+                  />
+                  <span>{post.outlierScore}×</span>
                 </div>
 
                 {!isSelectMode && (

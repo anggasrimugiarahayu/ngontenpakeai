@@ -118,13 +118,13 @@ export function InstagramSortToolbar({
         </div>
 
         {/* Kanan: 2 Tombol Aksi (Download ZIP & Export Dropdown) */}
-        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap self-stretch sm:self-auto justify-end relative">
+        <div className="w-full sm:w-auto grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5 relative">
           {/* 1. Download Media ZIP */}
           <button
             type="button"
             onClick={onDownloadMedia}
             disabled={totalFiltered === 0}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-[#1E293B] dark:hover:bg-[#2A374F] text-gray-700 dark:text-gray-200 transition-colors disabled:opacity-50 cursor-pointer"
+            className="inline-flex items-center justify-center gap-1.5 px-3 py-2 sm:py-1.5 rounded-lg text-xs font-semibold bg-gray-100 hover:bg-gray-200 dark:bg-[#1E293B] dark:hover:bg-[#2A374F] text-gray-700 dark:text-gray-200 transition-colors disabled:opacity-50 cursor-pointer"
             title="Download semua file media (video Reels & foto) dalam bentuk file ZIP rapi"
           >
             <Download className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
@@ -137,7 +137,7 @@ export function InstagramSortToolbar({
               type="button"
               onClick={() => setIsExportMenuOpen((prev) => !prev)}
               disabled={totalFiltered === 0}
-              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50 cursor-pointer ${
+              className={`w-full inline-flex items-center justify-center gap-1.5 px-3.5 py-2 sm:py-1.5 rounded-lg text-xs font-semibold border transition-all disabled:opacity-50 cursor-pointer ${
                 isExportMenuOpen
                   ? "border-orange-500 ring-2 ring-orange-500/20 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-500/10"
                   : "border-gray-300 dark:border-[#384260] bg-white hover:bg-gray-50 dark:bg-transparent dark:hover:bg-[#1E293B] text-gray-800 dark:text-white"
@@ -201,122 +201,222 @@ export function InstagramSortToolbar({
       </div>
 
       {/* ========================================================================= */}
-      {/* BARIS 2: Filters, Sort By, Clear All (Kiri) + Select (Kanan) */}
+      {/* BARIS 2: Filters, Sort By, Clear All + Select */}
       {/* ========================================================================= */}
-      <div className="flex items-center justify-between gap-3 pt-2 text-xs">
-        {/* Kiri: Filters, Sort by, Clear all */}
-        <div className="flex items-center gap-3 sm:gap-4 flex-wrap relative">
-          {/* Tombol Filters */}
-          <button
-            type="button"
-            onClick={() => setIsFilterOpen((prev) => !prev)}
-            className="inline-flex items-center gap-1.5 font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors cursor-pointer"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-rn-accent" />
-            <span>Filters</span>
-          </button>
-
-          {/* Selector Sort by Langsung */}
-          <div className="inline-flex items-center gap-1 font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
-            <ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />
-            <span>Sort by:</span>
-            <select
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value as SortOption)}
-              className="bg-transparent font-bold text-gray-900 dark:text-white border-0 focus:outline-none focus:ring-0 cursor-pointer text-xs ml-0.5"
-            >
-              <option value="outlier" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Outlier Score (Paling Viral)
-              </option>
-              <option value="views" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Views Terbanyak
-              </option>
-              <option value="likes" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Likes Terbanyak
-              </option>
-              <option value="comments" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Komentar Terbanyak
-              </option>
-              <option value="newest" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Postingan Terbaru
-              </option>
-              <option value="oldest" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Postingan Terlama
-              </option>
-            </select>
-          </div>
-
-          {/* Clear all (jika filter dikustomisasi) */}
-          {isCustomized && (
+      <div className="pt-2.5 text-xs">
+        {/* DESKTOP VIEW (sm ke atas) */}
+        <div className="hidden sm:flex items-center justify-between gap-3">
+          {/* Kiri: Filters, Sort by, Clear all */}
+          <div className="flex items-center gap-3 sm:gap-4 relative">
+            {/* Tombol Filters */}
             <button
               type="button"
-              onClick={onResetFilters}
-              className="inline-flex items-center gap-1 text-gray-400 hover:text-rose-500 font-medium transition-colors cursor-pointer ml-1"
+              onClick={() => setIsFilterOpen((prev) => !prev)}
+              className="inline-flex items-center gap-1.5 font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors cursor-pointer"
             >
-              <RotateCcw className="w-3 h-3" />
-              <span>Clear all</span>
+              <SlidersHorizontal className="w-3.5 h-3.5 text-orange-500" />
+              <span>Filters</span>
             </button>
-          )}
 
-          {/* Modal Filter Dropdown jika dibuka */}
-          <SortFeedFilterDropdown
-            isOpen={isFilterOpen}
-            onClose={() => setIsFilterOpen(false)}
-            onApply={() => {
-              setIsFilterOpen(false);
-              if (onApply) onApply();
-            }}
-            filterMode={filterMode}
-            setFilterMode={setFilterMode}
-            postLimit={postLimit}
-            setPostLimit={setPostLimit}
-            dateFilter={dateFilter}
-            setDateFilter={setDateFilter}
-            sortOption={sortOption}
-            setSortOption={setSortOption}
-            onReset={onResetFilters}
-          />
-        </div>
+            {/* Selector Sort by Langsung */}
+            <div className="inline-flex items-center gap-1 font-medium text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors">
+              <ArrowUpDown className="w-3.5 h-3.5 text-gray-400" />
+              <span>Sort by:</span>
+              <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value as SortOption)}
+                className="bg-transparent font-bold text-gray-900 dark:text-white border-0 focus:outline-none focus:ring-0 cursor-pointer text-xs ml-0.5"
+              >
+                <option value="outlier" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                  Outlier Score (Paling Viral)
+                </option>
+                <option value="views" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                  Views Terbanyak
+                </option>
+                <option value="likes" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                  Likes Terbanyak
+                </option>
+                <option value="comments" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                  Komentar Terbanyak
+                </option>
+                <option value="newest" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                  Postingan Terbaru
+                </option>
+                <option value="oldest" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                  Postingan Terlama
+                </option>
+              </select>
+            </div>
 
-        {/* Kanan: Tombol Select / Mode Pemilihan */}
-        <div className="flex items-center gap-2">
-          {isSelectMode ? (
-            <div className="flex items-center gap-2">
-              <span className="text-[11px] font-bold text-orange-500">
-                {selectedCount} Terpilih
-              </span>
+            {/* Clear all (jika filter dikustomisasi) */}
+            {isCustomized && (
               <button
                 type="button"
-                onClick={onSelectAll}
-                className="text-[11px] font-semibold text-gray-600 dark:text-gray-300 hover:underline cursor-pointer"
+                onClick={onResetFilters}
+                className="inline-flex items-center gap-1 text-gray-400 hover:text-rose-500 font-medium transition-colors cursor-pointer ml-1"
               >
-                Pilih Semua
+                <RotateCcw className="w-3 h-3" />
+                <span>Clear all</span>
               </button>
+            )}
+          </div>
+
+          {/* Kanan: Tombol Select / Mode Pemilihan */}
+          <div className="flex items-center gap-2">
+            {isSelectMode ? (
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] font-bold text-orange-500">
+                  {selectedCount} Terpilih
+                </span>
+                <button
+                  type="button"
+                  onClick={onSelectAll}
+                  className="text-[11px] font-semibold text-gray-600 dark:text-gray-300 hover:underline cursor-pointer"
+                >
+                  Pilih Semua
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (setIsSelectMode) setIsSelectMode(false);
+                    if (onClearSelection) onClearSelection();
+                  }}
+                  className="inline-flex items-center gap-1 px-2 py-1 rounded bg-gray-100 dark:bg-[#1E293B] text-gray-600 dark:text-gray-300 text-[11px] font-semibold hover:text-rose-500 cursor-pointer"
+                >
+                  <X className="w-3 h-3" />
+                  <span>Batal</span>
+                </button>
+              </div>
+            ) : (
               <button
                 type="button"
                 onClick={() => {
-                  if (setIsSelectMode) setIsSelectMode(false);
-                  if (onClearSelection) onClearSelection();
+                  if (setIsSelectMode) setIsSelectMode(true);
                 }}
-                className="inline-flex items-center gap-1 px-2 py-1 rounded bg-gray-100 dark:bg-[#1E293B] text-gray-600 dark:text-gray-300 text-[11px] font-semibold hover:text-rose-500 cursor-pointer"
+                className="inline-flex items-center gap-1 font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors cursor-pointer"
               >
-                <X className="w-3 h-3" />
-                <span>Batal</span>
+                <Check className="w-3.5 h-3.5" />
+                <span>Select</span>
               </button>
-            </div>
-          ) : (
+            )}
+          </div>
+        </div>
+
+        {/* MOBILE VIEW (layar ponsel < sm) */}
+        <div className="sm:hidden flex flex-col gap-2">
+          {/* Sub-baris 1: Filters (Kiri) & Select (Kanan) */}
+          <div className="flex items-center justify-between gap-2">
             <button
               type="button"
-              onClick={() => {
-                if (setIsSelectMode) setIsSelectMode(true);
-              }}
-              className="inline-flex items-center gap-1 font-semibold text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors cursor-pointer"
+              onClick={() => setIsFilterOpen((prev) => !prev)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-[#1E293B] dark:hover:bg-[#2A374F] font-semibold text-gray-800 dark:text-gray-200 transition-colors cursor-pointer"
             >
-              <Check className="w-3.5 h-3.5" />
-              <span>Select</span>
+              <SlidersHorizontal className="w-3.5 h-3.5 text-orange-500" />
+              <span>Filters</span>
             </button>
-          )}
+
+            {/* Select controls di Mobile */}
+            <div>
+              {isSelectMode ? (
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[11px] font-bold text-orange-500">
+                    {selectedCount} Terpilih
+                  </span>
+                  <button
+                    type="button"
+                    onClick={onSelectAll}
+                    className="text-[11px] font-semibold text-gray-600 dark:text-gray-300 hover:underline cursor-pointer"
+                  >
+                    Semua
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (setIsSelectMode) setIsSelectMode(false);
+                      if (onClearSelection) onClearSelection();
+                    }}
+                    className="inline-flex items-center gap-0.5 px-1.5 py-1 rounded bg-gray-100 dark:bg-[#1E293B] text-gray-600 dark:text-gray-300 text-[11px] font-semibold"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (setIsSelectMode) setIsSelectMode(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-100 hover:bg-gray-200 dark:bg-[#1E293B] dark:hover:bg-[#2A374F] font-semibold text-gray-800 dark:text-gray-200 transition-colors cursor-pointer"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>Select</span>
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Sub-baris 2: Sort by Selector Rapi Full-Width */}
+          <div className="flex items-center justify-between gap-2 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246]">
+            <div className="flex items-center gap-1.5 min-w-0 flex-1">
+              <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 shrink-0">Sort:</span>
+              <select
+                value={sortOption}
+                onChange={(e) => setSortOption(e.target.value as SortOption)}
+                className="bg-transparent font-bold text-gray-900 dark:text-white border-0 focus:outline-none focus:ring-0 cursor-pointer text-xs w-full truncate"
+              >
+                <option value="outlier" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                  Outlier Score (Paling Viral)
+                </option>
+                <option value="views" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                  Views Terbanyak
+                </option>
+                <option value="likes" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                  Likes Terbanyak
+                </option>
+                <option value="comments" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                  Komentar Terbanyak
+                </option>
+                <option value="newest" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                  Postingan Terbaru
+                </option>
+                <option value="oldest" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
+                  Postingan Terlama
+                </option>
+              </select>
+            </div>
+
+            {isCustomized && (
+              <button
+                type="button"
+                onClick={onResetFilters}
+                className="inline-flex items-center gap-1 text-gray-400 hover:text-rose-500 font-medium text-[11px] shrink-0 pl-1.5 border-l border-gray-200 dark:border-[#2C3246]"
+              >
+                <RotateCcw className="w-3 h-3" />
+                <span>Reset</span>
+              </button>
+            )}
+          </div>
         </div>
+
+        {/* Modal Filter Dropdown jika dibuka (Satu instansi untuk mobile & desktop) */}
+        <SortFeedFilterDropdown
+          isOpen={isFilterOpen}
+          onClose={() => setIsFilterOpen(false)}
+          onApply={() => {
+            setIsFilterOpen(false);
+            if (onApply) onApply();
+          }}
+          filterMode={filterMode}
+          setFilterMode={setFilterMode}
+          postLimit={postLimit}
+          setPostLimit={setPostLimit}
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          sortOption={sortOption}
+          setSortOption={setSortOption}
+          onReset={onResetFilters}
+        />
       </div>
     </div>
   );

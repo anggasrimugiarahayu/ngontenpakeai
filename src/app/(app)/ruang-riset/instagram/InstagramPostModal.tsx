@@ -13,8 +13,6 @@ import {
   Heart,
   TrendingUp,
   Calendar,
-  Film,
-  Layers,
   ChevronLeft,
   ChevronRight,
   Volume2,
@@ -163,7 +161,7 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
                     setIsVideoMuted(videoRef.current.muted);
                   }
                 }}
-                className="absolute top-4 right-4 z-20 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition-colors cursor-pointer"
+                className="absolute top-4 right-14 md:right-4 z-20 p-2 rounded-full bg-black/60 hover:bg-black/80 text-white backdrop-blur-md transition-colors cursor-pointer"
                 title={isVideoMuted ? "Aktifkan Suara" : "Bisukan"}
               >
                 {isVideoMuted ? (
@@ -210,13 +208,13 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
                     </button>
                   )}
 
-                  {/* Slide Counter Badge di Atas Kanan */}
-                  <div className="absolute top-4 right-4 z-20 px-2.5 py-1 rounded-full bg-black/65 backdrop-blur-md text-white text-xs font-bold border border-white/15 shadow-sm">
+                  {/* Slide Counter Badge di Atas Kanan (di samping tombol X pada mobile) */}
+                  <div className="absolute top-4 right-14 md:right-4 z-20 px-2.5 py-1 rounded-full bg-black/70 text-white text-xs font-bold border border-white/15 shadow-sm">
                     {currentSlideIndex + 1} / {slides.length}
                   </div>
 
-                  {/* Bottom Dot Pagination */}
-                  <div className="absolute bottom-4 left-1/2 -translate-y-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/65 backdrop-blur-md max-w-[85%] overflow-x-auto border border-white/10 shadow-sm">
+                  {/* Bottom Dot Pagination - Presisi di Tengah-tengah */}
+                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/70 max-w-[85%] overflow-x-auto border border-white/10 shadow-sm pointer-events-auto">
                     {slides.map((_, idx) => (
                       <button
                         key={idx}
@@ -242,26 +240,6 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
               <Flame className="w-4 h-4 fill-amber-300 text-amber-300" />
               <span>{post.outlierScore}× Viral Outlier</span>
             </span>
-          </div>
-
-          {/* Media Type Indicator di Kiri Bawah */}
-          <div className="absolute bottom-4 left-4 z-10 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-white/90 text-xs font-semibold flex items-center gap-1.5 border border-white/10 shadow-sm">
-            {post.mediaType === "VIDEO" ? (
-              <>
-                <Film className="w-3.5 h-3.5 text-orange-400" />
-                <span>Instagram Reels</span>
-              </>
-            ) : isCarousel ? (
-              <>
-                <Layers className="w-3.5 h-3.5 text-purple-400" />
-                <span>Carousel ({slides.length} Slide)</span>
-              </>
-            ) : (
-              <>
-                <Layers className="w-3.5 h-3.5 text-purple-400" />
-                <span>Instagram Foto</span>
-              </>
-            )}
           </div>
         </div>
 
