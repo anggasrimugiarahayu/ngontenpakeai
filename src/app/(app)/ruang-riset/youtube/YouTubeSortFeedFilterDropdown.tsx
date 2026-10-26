@@ -16,6 +16,7 @@ import {
   Heart,
   Play,
   Zap,
+  MessageSquare,
   Clock,
   X,
 } from "lucide-react";
@@ -248,28 +249,6 @@ export function YouTubeSortFeedFilterDropdown({
           </p>
 
           <div className="space-y-0.5">
-            {/* Outlier score (Viral) */}
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setSortOption("outlier");
-              }}
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                sortOption === "outlier"
-                  ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
-                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Zap className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
-                <span>Outlier score (Viralitas ⚡)</span>
-              </div>
-              {sortOption === "outlier" && (
-                <Check className="w-3.5 h-3.5 text-rn-accent" />
-              )}
-            </button>
-
             {/* Likes */}
             <button
               type="button"
@@ -284,8 +263,8 @@ export function YouTubeSortFeedFilterDropdown({
               }`}
             >
               <div className="flex items-center gap-2">
-                <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
-                <span>Likes Terbanyak</span>
+                <Heart className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                <span>Likes</span>
               </div>
               {sortOption === "likes" && (
                 <Check className="w-3.5 h-3.5 text-rn-accent" />
@@ -306,32 +285,54 @@ export function YouTubeSortFeedFilterDropdown({
               }`}
             >
               <div className="flex items-center gap-2">
-                <Play className="w-3.5 h-3.5 text-orange-500 fill-orange-500" />
-                <span>Views Terbanyak</span>
+                <Play className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                <span>Views</span>
               </div>
               {sortOption === "views" && (
                 <Check className="w-3.5 h-3.5 text-rn-accent" />
               )}
             </button>
 
-            {/* Newest */}
+            {/* Outlier score */}
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setSortOption("newest");
+                setSortOption("outlier");
               }}
               className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
-                sortOption === "newest"
+                sortOption === "outlier"
                   ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
                   : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
               }`}
             >
               <div className="flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5 text-emerald-500" />
-                <span>Newest (Terbaru)</span>
+                <Zap className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                <span>Outlier score</span>
               </div>
-              {sortOption === "newest" && (
+              {sortOption === "outlier" && (
+                <Check className="w-3.5 h-3.5 text-rn-accent" />
+              )}
+            </button>
+
+            {/* Comments */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSortOption("comments");
+              }}
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                sortOption === "comments"
+                  ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <MessageSquare className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                <span>Comments</span>
+              </div>
+              {sortOption === "comments" && (
                 <Check className="w-3.5 h-3.5 text-rn-accent" />
               )}
             </button>
@@ -350,8 +351,8 @@ export function YouTubeSortFeedFilterDropdown({
               }`}
             >
               <div className="flex items-center gap-2">
-                <Clock className="w-3.5 h-3.5 text-gray-400" />
-                <span>Oldest (Terlama)</span>
+                <Clock className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                <span>Oldest</span>
               </div>
               {sortOption === "oldest" && (
                 <Check className="w-3.5 h-3.5 text-rn-accent" />
