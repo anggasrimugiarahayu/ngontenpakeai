@@ -14,6 +14,7 @@ import { InstagramSortToolbar } from "./InstagramSortToolbar";
 import { InstagramFeedGrid } from "./InstagramFeedGrid";
 import { InstagramPostModal } from "./InstagramPostModal";
 import { SortFeedFilterDropdown } from "./SortFeedFilterDropdown";
+import { InstagramCardFilterModal } from "./InstagramCardFilterModal";
 import {
   exportToCSV,
   exportToExcel,
@@ -497,8 +498,8 @@ export function InstagramResearchStudio({
             />
           </div>
 
-          {/* Modal Filters Sesuai Image 2 */}
-          <SortFeedFilterDropdown
+          {/* Modal Filters Sesuai Image 2 (Hanya Untuk Card Toolbar) */}
+          <InstagramCardFilterModal
             isOpen={isFilterModalOpen}
             onClose={() => setIsFilterModalOpen(false)}
             onApply={handleApplyFilters}

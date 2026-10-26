@@ -15,6 +15,7 @@ import { YouTubeSortToolbar } from "./YouTubeSortToolbar";
 import { YouTubeFeedGrid } from "./YouTubeFeedGrid";
 import { YouTubeVideoModal } from "./YouTubeVideoModal";
 import { YouTubeSortFeedFilterDropdown } from "./YouTubeSortFeedFilterDropdown";
+import { YouTubeCardFilterModal } from "./YouTubeCardFilterModal";
 import { downloadYouTubeMediaBatch } from "./exportUtils";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
@@ -476,8 +477,8 @@ export function YouTubeResearchStudio({
             />
           </div>
 
-          {/* Modal Filters Sesuai Image 2 */}
-          <YouTubeSortFeedFilterDropdown
+          {/* Modal Filters Sesuai Image 2 (Hanya Untuk Card Toolbar) */}
+          <YouTubeCardFilterModal
             isOpen={isFilterModalOpen}
             onClose={() => setIsFilterModalOpen(false)}
             onApply={() => setIsFilterModalOpen(false)}
