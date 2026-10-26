@@ -11,10 +11,12 @@ export interface YouTubeChannelProfile {
   viewCount: number;
   averageViews: number;
   topOutlierMultiplier: number;
+  averageLikes?: number;
+  averageEngagementRate?: number;
 }
 
 export type YouTubeFormatFilter = "all" | "shorts" | "videos";
-export type YouTubeFilterMode = "format" | "limit" | "date";
+export type YouTubeFilterMode = "videos" | "date";
 export type YouTubeVideoLimit = 25 | 50 | 100 | "all";
 export type YouTubeDateFilter = "all" | "1w" | "1m" | "3m" | "6m" | "1y";
 
@@ -37,6 +39,7 @@ export interface YouTubeVideoItem {
 
 export type YouTubeSortOption =
   | "outlier"
+  | "likes"
   | "views"
   | "newest"
   | "oldest";

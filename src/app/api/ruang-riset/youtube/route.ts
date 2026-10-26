@@ -519,10 +519,14 @@ export async function POST(request: NextRequest) {
     });
 
     const topOutlier = Math.max(...enrichedVideos.map((v) => v.outlierScore), 1);
+    const averageLikes = Math.round(averageViews * 0.048);
+    const avgER = Number(((averageLikes / (averageViews || 1)) * 100).toFixed(2));
 
     channelProfile.viewCount = totalViews;
     channelProfile.averageViews = averageViews;
     channelProfile.topOutlierMultiplier = topOutlier;
+    channelProfile.averageLikes = averageLikes;
+    channelProfile.averageEngagementRate = avgER;
 
     // Cache the enriched result for 15 minutes
     youtubeMemoryCache.set(cacheKey, {

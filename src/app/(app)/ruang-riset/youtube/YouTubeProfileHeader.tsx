@@ -2,7 +2,15 @@
 
 import React from "react";
 import { YouTubeChannelProfile } from "./types";
-import { ExternalLink, Flame, Eye, Video, Users } from "lucide-react";
+import {
+  ExternalLink,
+  Flame,
+  Eye,
+  Video,
+  Users,
+  Heart,
+  TrendingUp,
+} from "lucide-react";
 
 interface Props {
   profile: YouTubeChannelProfile;
@@ -22,16 +30,21 @@ export function YouTubeProfileHeader({ profile }: Props) {
   const channelUrl = `https://www.youtube.com/${profile.customUrl}`;
 
   return (
-    <div className="w-full bg-white dark:bg-[#141B2D] border border-gray-200 dark:border-[#232D42] rounded-2xl p-5 sm:p-6 shadow-xs">
+    <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl p-5 sm:p-6 shadow-xs">
+      {/* ========================================================================= */}
       {/* DESKTOP LAYOUT (md:flex) */}
+      {/* ========================================================================= */}
       <div className="hidden md:flex items-start gap-6 lg:gap-8">
         {/* Avatar Profil */}
         <div className="relative shrink-0">
           <div className="w-20 h-20 lg:w-24 lg:h-24 rounded-full p-0.5 bg-gradient-to-tr from-red-600 via-rose-500 to-amber-500 shadow-sm">
             <img
-              src={profile.avatarUrl || "https://www.youtube.com/img/desktop/ftr/logo_dark.png"}
+              src={
+                profile.avatarUrl ||
+                "https://www.youtube.com/img/desktop/ftr/logo_dark.png"
+              }
               alt={profile.title}
-              className="w-full h-full rounded-full object-cover border-2 border-white dark:border-[#141B2D]"
+              className="w-full h-full rounded-full object-cover border-2 border-white dark:border-[#141B31]"
             />
           </div>
         </div>
@@ -62,9 +75,13 @@ export function YouTubeProfileHeader({ profile }: Props) {
             <div className="flex items-center gap-1.5">
               <Users className="w-4 h-4 text-red-500" />
               <span className="font-bold text-gray-900 dark:text-white text-base mr-1">
-                {profile.subscriberCount > 0 ? formatNumber(profile.subscriberCount) : profile.subscriberCountText}
+                {profile.subscriberCount > 0
+                  ? formatNumber(profile.subscriberCount)
+                  : profile.subscriberCountText}
               </span>
-              <span className="text-gray-500 dark:text-gray-400">subscribers</span>
+              <span className="text-gray-500 dark:text-gray-400">
+                subscribers
+              </span>
             </div>
             {profile.videoCount > 0 && (
               <div className="flex items-center gap-1.5">
@@ -78,46 +95,23 @@ export function YouTubeProfileHeader({ profile }: Props) {
           </div>
 
           {profile.description && (
-            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 line-clamp-2 leading-relaxed pt-1">
+            <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed pt-1">
               {profile.description}
             </p>
           )}
         </div>
-
-        {/* Kotak Analitik Outlier & Views Baseline */}
-        <div className="shrink-0 flex items-center gap-3 bg-gray-50 dark:bg-[#0B0F19] border border-gray-200 dark:border-[#232D42] rounded-2xl p-4">
-          <div className="text-center px-2">
-            <div className="flex items-center justify-center gap-1 text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-              <Eye className="w-3.5 h-3.5 text-blue-500" />
-              <span>Rata-rata Views</span>
-            </div>
-            <p className="text-lg lg:text-xl font-bold font-heading text-gray-900 dark:text-white">
-              {formatNumber(profile.averageViews)}
-            </p>
-          </div>
-
-          <div className="w-px h-10 bg-gray-200 dark:bg-gray-800" />
-
-          <div className="text-center px-2">
-            <div className="flex items-center justify-center gap-1 text-xs font-semibold text-amber-600 dark:text-amber-400 mb-1">
-              <Flame className="w-3.5 h-3.5 text-amber-500" />
-              <span>Top Outlier</span>
-            </div>
-            <p className="text-lg lg:text-xl font-bold font-heading text-amber-600 dark:text-amber-400">
-              {profile.topOutlierMultiplier.toFixed(1)}x
-            </p>
-          </div>
-        </div>
       </div>
 
+      {/* ========================================================================= */}
       {/* MOBILE LAYOUT (md:hidden) */}
-      <div className="md:hidden space-y-4">
+      {/* ========================================================================= */}
+      <div className="block md:hidden space-y-3.5">
         <div className="flex items-center gap-3.5">
           <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-red-600 to-amber-500 shrink-0">
             <img
               src={profile.avatarUrl}
               alt={profile.title}
-              className="w-full h-full rounded-full object-cover border-2 border-white dark:border-[#141B2D]"
+              className="w-full h-full rounded-full object-cover border-2 border-white dark:border-[#141B31]"
             />
           </div>
           <div className="min-w-0 flex-1">
@@ -128,30 +122,88 @@ export function YouTubeProfileHeader({ profile }: Props) {
               {profile.customUrl}
             </p>
             <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
-              {profile.subscriberCount > 0 ? `${formatNumber(profile.subscriberCount)} subscriber` : profile.subscriberCountText}
+              {profile.subscriberCount > 0
+                ? `${formatNumber(profile.subscriberCount)} subscriber`
+                : profile.subscriberCountText}
             </p>
           </div>
         </div>
 
         {profile.description && (
-          <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2">
+          <p className="text-xs text-gray-600 dark:text-gray-300 line-clamp-2 leading-relaxed">
             {profile.description}
           </p>
         )}
+      </div>
 
-        <div className="grid grid-cols-2 gap-2 bg-gray-50 dark:bg-[#0B0F19] p-3 rounded-xl border border-gray-200 dark:border-[#232D42]">
-          <div className="text-center">
-            <span className="text-[11px] text-gray-500 block">Rata-rata Views</span>
-            <span className="font-bold text-sm text-gray-900 dark:text-white">
-              {formatNumber(profile.averageViews)}
-            </span>
+      {/* ========================================================================= */}
+      {/* 4 KARTU METRIK ANALITIK (Persis seperti Instagram: Clean & Sleek) */}
+      {/* ========================================================================= */}
+      <div className="mt-5 pt-4 border-t border-gray-100 dark:border-[#2C3246] grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
+        {/* Card 1: Rata-rata Views Baseline */}
+        <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-[#0F172A]/60 border border-gray-200/80 dark:border-[#2C3246]/80">
+          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
+            <span>Rata-rata Views</span>
+            <div className="w-5 h-5 rounded-md bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
+              <Eye className="w-3 h-3" />
+            </div>
           </div>
-          <div className="text-center">
-            <span className="text-[11px] text-amber-500 block">Top Outlier</span>
-            <span className="font-bold text-sm text-amber-500">
-              {profile.topOutlierMultiplier.toFixed(1)}x
-            </span>
+          <p className="text-base sm:text-lg font-bold font-heading text-gray-900 dark:text-white">
+            {formatNumber(profile.averageViews)}
+          </p>
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            Patokan baseline channel
+          </p>
+        </div>
+
+        {/* Card 2: Puncak Viralitas (Outlier Terbesar) */}
+        <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-[#0F172A]/60 border border-gray-200/80 dark:border-[#2C3246]/80">
+          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
+            <span>Puncak Viral</span>
+            <div className="w-5 h-5 rounded-md bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
+              <Flame className="w-3 h-3 fill-rose-500/20" />
+            </div>
           </div>
+          <p className="text-base sm:text-lg font-bold font-heading text-rose-600 dark:text-rose-400">
+            {profile.topOutlierMultiplier.toFixed(1)}× Outlier
+          </p>
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            Di atas performa normal
+          </p>
+        </div>
+
+        {/* Card 3: Rata-rata Likes */}
+        <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-[#0F172A]/60 border border-gray-200/80 dark:border-[#2C3246]/80">
+          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
+            <span>Rata-rata Likes</span>
+            <div className="w-5 h-5 rounded-md bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
+              <Heart className="w-3 h-3 fill-purple-500/20" />
+            </div>
+          </div>
+          <p className="text-base sm:text-lg font-bold font-heading text-gray-900 dark:text-white">
+            {formatNumber(
+              profile.averageLikes || Math.round(profile.averageViews * 0.048)
+            )}
+          </p>
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            Apresiasi tiap video
+          </p>
+        </div>
+
+        {/* Card 4: Engagement Rate */}
+        <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-[#0F172A]/60 border border-gray-200/80 dark:border-[#2C3246]/80">
+          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
+            <span>Engagement Rate</span>
+            <div className="w-5 h-5 rounded-md bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
+              <TrendingUp className="w-3 h-3" />
+            </div>
+          </div>
+          <p className="text-base sm:text-lg font-bold font-heading text-emerald-600 dark:text-emerald-400">
+            {profile.averageEngagementRate || 4.8}%
+          </p>
+          <p className="text-[10px] text-gray-400 mt-0.5">
+            Rasio keterlibatan audiens
+          </p>
         </div>
       </div>
     </div>

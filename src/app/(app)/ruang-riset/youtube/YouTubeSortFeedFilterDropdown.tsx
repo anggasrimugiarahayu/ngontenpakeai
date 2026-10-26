@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import {
   YouTubeSortOption,
   YouTubeFilterMode,
-  YouTubeFormatFilter,
   YouTubeVideoLimit,
   YouTubeDateFilter,
 } from "./types";
@@ -12,14 +11,13 @@ import {
   SlidersHorizontal,
   Grid,
   Calendar,
-  Layers,
   ChevronDown,
   Check,
+  Heart,
   Play,
   Zap,
   Clock,
   X,
-  Flame,
 } from "lucide-react";
 
 interface Props {
@@ -28,8 +26,6 @@ interface Props {
   onApply?: () => void;
   filterMode: YouTubeFilterMode;
   setFilterMode: (val: YouTubeFilterMode) => void;
-  formatFilter: YouTubeFormatFilter;
-  setFormatFilter: (val: YouTubeFormatFilter) => void;
   videoLimit: YouTubeVideoLimit;
   setVideoLimit: (val: YouTubeVideoLimit) => void;
   dateFilter: YouTubeDateFilter;
@@ -45,8 +41,6 @@ export function YouTubeSortFeedFilterDropdown({
   onApply,
   filterMode,
   setFilterMode,
-  formatFilter,
-  setFormatFilter,
   videoLimit,
   setVideoLimit,
   dateFilter,
@@ -59,17 +53,11 @@ export function YouTubeSortFeedFilterDropdown({
 
   if (!isOpen) return null;
 
-  const formatOptions: { label: string; value: YouTubeFormatFilter }[] = [
-    { label: "Semua Format (Shorts & Video)", value: "all" },
-    { label: "Khusus YouTube Shorts", value: "shorts" },
-    { label: "Khusus Video Reguler", value: "videos" },
-  ];
-
-  const limitOptions: { label: string; value: YouTubeVideoLimit }[] = [
-    { label: "Latest 25 Konten", value: 25 },
-    { label: "Latest 50 Konten", value: 50 },
-    { label: "Latest 100 Konten", value: 100 },
-    { label: "Semua Konten Ditemukan", value: "all" },
+  const videoLimitOptions: { label: string; value: YouTubeVideoLimit }[] = [
+    { label: "Latest 25 Videos", value: 25 },
+    { label: "Latest 50 Videos", value: 50 },
+    { label: "Latest 100 Videos", value: 100 },
+    { label: "All Videos", value: "all" },
   ];
 
   const dateFilterOptions: { label: string; value: YouTubeDateFilter }[] = [
@@ -81,20 +69,12 @@ export function YouTubeSortFeedFilterDropdown({
     { label: "Semua Tanggal", value: "all" },
   ];
 
-  let currentSelectLabel = "Semua Format";
-  if (filterMode === "format") {
-    currentSelectLabel =
-      formatOptions.find((o) => o.value === formatFilter)?.label ||
-      "Semua Format";
-  } else if (filterMode === "limit") {
-    currentSelectLabel =
-      limitOptions.find((o) => o.value === videoLimit)?.label ||
-      "Latest 25 Konten";
-  } else if (filterMode === "date") {
-    currentSelectLabel =
-      dateFilterOptions.find((o) => o.value === dateFilter)?.label ||
-      "Semua Tanggal";
-  }
+  const currentSelectLabel =
+    filterMode === "videos"
+      ? videoLimitOptions.find((o) => o.value === videoLimit)?.label ||
+        "Latest 25 Videos"
+      : dateFilterOptions.find((o) => o.value === dateFilter)?.label ||
+        "Semua Tanggal";
 
   const handleApply = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -113,10 +93,10 @@ export function YouTubeSortFeedFilterDropdown({
         }}
       />
 
-      {/* Kontainer Dropdown: Compact, Sleek, Sesuai Style App */}
+      {/* Kontainer Dropdown: Compact, Sleek, Sesuai Style App & Identik dengan Instagram */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="absolute top-full right-0 mt-1.5 z-50 w-72 sm:w-84 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-2xl p-3 sm:p-3.5 text-gray-900 dark:text-white animate-in zoom-in-95 fade-in duration-150"
+        className="absolute top-full right-0 mt-1.5 z-50 w-72 sm:w-80 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-2xl p-3 sm:p-3.5 text-gray-900 dark:text-white animate-in zoom-in-95 fade-in duration-150"
       >
         {/* Header Dropdown (Compact) */}
         <div className="flex items-center justify-between pb-2 border-b border-gray-100 dark:border-[#2C3246]">
@@ -140,7 +120,7 @@ export function YouTubeSortFeedFilterDropdown({
           </button>
         </div>
 
-        {/* Section 1: Filters (Format / Limit / Tanggal) */}
+        {/* Section 1: Filters (Videos Limit / Tanggal) */}
         <div className="py-2.5 space-y-2">
           <div className="flex items-center justify-between">
             <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-400 uppercase tracking-wider">
@@ -148,39 +128,23 @@ export function YouTubeSortFeedFilterDropdown({
             </p>
           </div>
 
-          {/* Tab Switcher: [ Format ] | [ Limit ] | [ Date ] */}
-          <div className="grid grid-cols-3 gap-1 p-0.5 bg-gray-100 dark:bg-[#0F172A] rounded-lg border border-gray-200/60 dark:border-[#2C3246]">
+          {/* Tab Switcher: [ ⊞ Videos ] | [ 📅 Date ] */}
+          <div className="grid grid-cols-2 gap-1 p-0.5 bg-gray-100 dark:bg-[#0F172A] rounded-lg border border-gray-200/60 dark:border-[#2C3246]">
             <button
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                setFilterMode("format");
+                setFilterMode("videos");
                 setIsDropdownOpen(false);
               }}
-              className={`flex items-center justify-center gap-1 py-1 px-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-                filterMode === "format"
-                  ? "bg-white dark:bg-[#141B31] text-gray-900 dark:text-white shadow-2xs"
-                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              }`}
-            >
-              <Layers className="w-3 h-3" />
-              <span>Format</span>
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setFilterMode("limit");
-                setIsDropdownOpen(false);
-              }}
-              className={`flex items-center justify-center gap-1 py-1 px-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-                filterMode === "limit"
+              className={`flex items-center justify-center gap-1.5 py-1 px-2 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                filterMode === "videos"
                   ? "bg-white dark:bg-[#141B31] text-gray-900 dark:text-white shadow-2xs"
                   : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
               }`}
             >
               <Grid className="w-3 h-3" />
-              <span>Jumlah</span>
+              <span>Videos</span>
             </button>
             <button
               type="button"
@@ -189,18 +153,18 @@ export function YouTubeSortFeedFilterDropdown({
                 setFilterMode("date");
                 setIsDropdownOpen(false);
               }}
-              className={`flex items-center justify-center gap-1 py-1 px-1.5 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+              className={`flex items-center justify-center gap-1.5 py-1 px-2 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
                 filterMode === "date"
                   ? "bg-white dark:bg-[#141B31] text-gray-900 dark:text-white shadow-2xs"
                   : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
               }`}
             >
               <Calendar className="w-3 h-3" />
-              <span>Tanggal</span>
+              <span>Date</span>
             </button>
           </div>
 
-          {/* Dynamic Select Dropdown */}
+          {/* Dynamic Select Dropdown (Videos / Date options) */}
           <div className="relative">
             <button
               type="button"
@@ -210,9 +174,9 @@ export function YouTubeSortFeedFilterDropdown({
               }}
               className="w-full flex items-center justify-between px-3 py-1.5 rounded-lg border border-orange-500/80 ring-1 ring-orange-500/20 bg-white dark:bg-[#141B31] text-xs font-semibold text-gray-900 dark:text-white cursor-pointer"
             >
-              <span className="truncate">{currentSelectLabel}</span>
+              <span>{currentSelectLabel}</span>
               <ChevronDown
-                className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 shrink-0 ${
+                className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${
                   isDropdownOpen ? "rotate-180" : ""
                 }`}
               />
@@ -220,87 +184,58 @@ export function YouTubeSortFeedFilterDropdown({
 
             {/* Expanded Dropdown List */}
             {isDropdownOpen && (
-              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-lg shadow-xl overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-100 max-h-56 overflow-y-auto">
-                {filterMode === "format" &&
-                  formatOptions.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setFormatFilter(opt.value);
-                        setIsDropdownOpen(false);
-                      }}
-                      className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium hover:bg-gray-50 dark:hover:bg-[#1f2947] transition-colors cursor-pointer border-b border-gray-50 dark:border-[#2C3246]/50 last:border-0"
-                    >
-                      <span
-                        className={
-                          formatFilter === opt.value
-                            ? "font-bold text-gray-900 dark:text-white"
-                            : "text-gray-600 dark:text-gray-300"
-                        }
+              <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-lg shadow-xl overflow-hidden z-20 animate-in fade-in zoom-in-95 duration-100">
+                {filterMode === "videos"
+                  ? videoLimitOptions.map((opt) => (
+                      <button
+                        key={String(opt.value)}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setVideoLimit(opt.value);
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium hover:bg-gray-50 dark:hover:bg-[#1f2947] transition-colors cursor-pointer border-b border-gray-50 dark:border-[#2C3246]/50 last:border-0"
                       >
-                        {opt.label}
-                      </span>
-                      {formatFilter === opt.value && (
-                        <Check className="w-3.5 h-3.5 text-rn-accent" />
-                      )}
-                    </button>
-                  ))}
-
-                {filterMode === "limit" &&
-                  limitOptions.map((opt) => (
-                    <button
-                      key={String(opt.value)}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setVideoLimit(opt.value);
-                        setIsDropdownOpen(false);
-                      }}
-                      className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium hover:bg-gray-50 dark:hover:bg-[#1f2947] transition-colors cursor-pointer border-b border-gray-50 dark:border-[#2C3246]/50 last:border-0"
-                    >
-                      <span
-                        className={
-                          videoLimit === opt.value
-                            ? "font-bold text-gray-900 dark:text-white"
-                            : "text-gray-600 dark:text-gray-300"
-                        }
+                        <span
+                          className={
+                            videoLimit === opt.value
+                              ? "font-bold text-gray-900 dark:text-white"
+                              : "text-gray-600 dark:text-gray-300"
+                          }
+                        >
+                          {opt.label}
+                        </span>
+                        {videoLimit === opt.value && (
+                          <Check className="w-3.5 h-3.5 text-rn-accent" />
+                        )}
+                      </button>
+                    ))
+                  : dateFilterOptions.map((opt) => (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDateFilter(opt.value);
+                          setIsDropdownOpen(false);
+                        }}
+                        className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium hover:bg-gray-50 dark:hover:bg-[#1f2947] transition-colors cursor-pointer border-b border-gray-50 dark:border-[#2C3246]/50 last:border-0"
                       >
-                        {opt.label}
-                      </span>
-                      {videoLimit === opt.value && (
-                        <Check className="w-3.5 h-3.5 text-rn-accent" />
-                      )}
-                    </button>
-                  ))}
-
-                {filterMode === "date" &&
-                  dateFilterOptions.map((opt) => (
-                    <button
-                      key={opt.value}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setDateFilter(opt.value);
-                        setIsDropdownOpen(false);
-                      }}
-                      className="w-full flex items-center justify-between px-3 py-1.5 text-xs font-medium hover:bg-gray-50 dark:hover:bg-[#1f2947] transition-colors cursor-pointer border-b border-gray-50 dark:border-[#2C3246]/50 last:border-0"
-                    >
-                      <span
-                        className={
-                          dateFilter === opt.value
-                            ? "font-bold text-gray-900 dark:text-white"
-                            : "text-gray-600 dark:text-gray-300"
-                        }
-                      >
-                        {opt.label}
-                      </span>
-                      {dateFilter === opt.value && (
-                        <Check className="w-3.5 h-3.5 text-rn-accent" />
-                      )}
-                    </button>
-                  ))}
+                        <span
+                          className={
+                            dateFilter === opt.value
+                              ? "font-bold text-gray-900 dark:text-white"
+                              : "text-gray-600 dark:text-gray-300"
+                          }
+                        >
+                          {opt.label}
+                        </span>
+                        {dateFilter === opt.value && (
+                          <Check className="w-3.5 h-3.5 text-rn-accent" />
+                        )}
+                      </button>
+                    ))}
               </div>
             )}
           </div>
@@ -331,6 +266,28 @@ export function YouTubeSortFeedFilterDropdown({
                 <span>Outlier score (Viralitas ⚡)</span>
               </div>
               {sortOption === "outlier" && (
+                <Check className="w-3.5 h-3.5 text-rn-accent" />
+              )}
+            </button>
+
+            {/* Likes */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSortOption("likes");
+              }}
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                sortOption === "likes"
+                  ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500" />
+                <span>Likes Terbanyak</span>
+              </div>
+              {sortOption === "likes" && (
                 <Check className="w-3.5 h-3.5 text-rn-accent" />
               )}
             </button>

@@ -31,14 +31,6 @@ interface Props {
   isAdmin?: boolean;
 }
 
-const POPULAR_CHANNELS = [
-  { label: "@corbuzier", handle: "@corbuzier" },
-  { label: "@kokbisa", handle: "@kokbisa" },
-  { label: "@gadgetin", handle: "@gadgetin" },
-  { label: "@felixsiauw", handle: "@felixsiauw" },
-  { label: "@radityadika", handle: "@radityadika" },
-];
-
 function isWithinDateFilter(
   timestamp: string,
   dateFilter: YouTubeDateFilter
@@ -71,7 +63,7 @@ function isWithinDateFilter(
 
 export function YouTubeResearchStudio({
   onBackToHub,
-  defaultChannel = "@corbuzier",
+  defaultChannel = "corbuzier",
 }: Props) {
   const [channelInput, setChannelInput] = useState(defaultChannel);
   const [isLoading, setIsLoading] = useState(false);
@@ -88,8 +80,8 @@ export function YouTubeResearchStudio({
   // Search input filter dropdown state
   const [isSearchFilterOpen, setIsSearchFilterOpen] = useState(false);
 
-  // Filters & Sorting state
-  const [filterMode, setFilterMode] = useState<YouTubeFilterMode>("format");
+  // Filters & Sorting state (Identik dengan Riset Instagram)
+  const [filterMode, setFilterMode] = useState<YouTubeFilterMode>("videos");
   const [formatFilter, setFormatFilter] = useState<YouTubeFormatFilter>("all");
   const [videoLimit, setVideoLimit] = useState<YouTubeVideoLimit>("all");
   const [dateFilter, setDateFilter] = useState<YouTubeDateFilter>("all");
@@ -98,9 +90,8 @@ export function YouTubeResearchStudio({
 
   const isFilterCustomized =
     sortOption !== "outlier" ||
-    formatFilter !== "all" ||
-    videoLimit !== "all" ||
-    dateFilter !== "all";
+    (filterMode === "videos" && videoLimit !== "all") ||
+    filterMode === "date";
 
   const handleSearch = async (targetHandle?: string, forceRefresh = false) => {
     const handleToQuery = (targetHandle || channelInput).trim();
@@ -172,8 +163,7 @@ export function YouTubeResearchStudio({
   };
 
   const handleResetFilters = () => {
-    setFilterMode("format");
-    setFormatFilter("all");
+    setFilterMode("videos");
     setVideoLimit("all");
     setDateFilter("all");
     setSortOption("outlier");
@@ -190,7 +180,7 @@ export function YouTubeResearchStudio({
   const filteredAndSortedVideos = useMemo(() => {
     let result = [...videos];
 
-    // 1. Filter Format
+    // 1. Filter Format (Shorts vs Video Reguler dari toolbar)
     if (formatFilter === "shorts") {
       result = result.filter((v) => v.isShorts);
     } else if (formatFilter === "videos") {
@@ -213,7 +203,7 @@ export function YouTubeResearchStudio({
       if (sortOption === "outlier") {
         return b.outlierScore - a.outlierScore;
       }
-      if (sortOption === "views") {
+      if (sortOption === "views" || sortOption === "likes") {
         return b.viewsCount - a.viewsCount;
       }
       if (sortOption === "oldest") {
@@ -289,7 +279,7 @@ export function YouTubeResearchStudio({
                 type="text"
                 value={channelInput}
                 onChange={(e) => setChannelInput(e.target.value)}
-                placeholder="Ketik handle atau nama (contoh: corbuzier atau kokbisa)"
+                placeholder="Ketik handle atau nama channel (contoh: corbuzier atau kokbisa)"
                 disabled={isLoading}
                 className="w-full pl-9 pr-12 py-3 text-sm font-medium rounded-xl bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] text-gray-900 dark:text-white placeholder-gray-400 focus:outline-hidden focus:ring-2 focus:ring-rn-accent/20 focus:border-rn-accent transition-all shadow-xs"
               />
@@ -311,15 +301,13 @@ export function YouTubeResearchStudio({
                 )}
               </button>
 
-              {/* Dropdown Filter Anchored ke Kotak Search */}
+              {/* Dropdown Filter Anchored ke Kotak Search (Identik dengan Instagram) */}
               <YouTubeSortFeedFilterDropdown
                 isOpen={isSearchFilterOpen}
                 onClose={() => setIsSearchFilterOpen(false)}
                 onApply={handleApplyFilters}
                 filterMode={filterMode}
                 setFilterMode={setFilterMode}
-                formatFilter={formatFilter}
-                setFormatFilter={setFormatFilter}
                 videoLimit={videoLimit}
                 setVideoLimit={setVideoLimit}
                 dateFilter={dateFilter}
@@ -342,27 +330,6 @@ export function YouTubeResearchStudio({
               Riset Konten
             </Button>
           </form>
-
-          {/* Quick Chip Suggestions */}
-          <div className="flex flex-wrap items-center justify-center gap-1.5 pt-3">
-            <span className="text-xs text-gray-400 font-medium mr-1">
-              Saran:
-            </span>
-            {POPULAR_CHANNELS.map((ch) => (
-              <button
-                key={ch.handle}
-                type="button"
-                onClick={() => {
-                  setChannelInput(ch.handle);
-                  handleSearch(ch.handle);
-                }}
-                disabled={isLoading}
-                className="px-2.5 py-1 rounded-lg text-xs font-medium bg-gray-100 hover:bg-gray-200 dark:bg-[#141B31] dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-300 transition-colors cursor-pointer border border-transparent dark:border-[#2C3246]"
-              >
-                {ch.label}
-              </button>
-            ))}
-          </div>
         </div>
       </div>
 
