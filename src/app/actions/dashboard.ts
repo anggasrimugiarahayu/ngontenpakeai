@@ -249,7 +249,13 @@ export async function calculateDashboardStats() {
     };
   });
 
-  const enrichedFullOrders = await populateOrderAddons(fullOrders);
+  const [enrichedFullOrders, initialUsersData] = await Promise.all([
+    populateOrderAddons(fullOrders),
+    fetchDashboardUsersData(1, 10, "", "all").catch(() => ({
+      users: [],
+      total: 0,
+    })),
+  ]);
 
   return {
     totalUsers,
@@ -264,6 +270,7 @@ export async function calculateDashboardStats() {
     totalClicks,
     realProductSales: JSON.parse(JSON.stringify(realProductSales)),
     fullOrders: JSON.parse(JSON.stringify(enrichedFullOrders)),
+    initialUsersData: JSON.parse(JSON.stringify(initialUsersData)),
     salesGrowth: parseFloat(salesGrowth.toFixed(2)),
     viewsGrowth: parseFloat(viewsGrowth.toFixed(2)),
     salesChartData,
@@ -286,6 +293,7 @@ export async function revalidateDashboardAction() {
   
   const tags = [
     "admin-dashboard-stats",
+    "admin-users-list",
     "global-stats",
     "user-session",
     "user-ownership",
@@ -402,20 +410,12 @@ export async function getAudienceInsightsAction() {
   }
 }
 
-export async function getDashboardUsersAction(
+async function fetchDashboardUsersData(
   page = 1,
-  limit = 15,
+  limit = 10,
   search = "",
   filter = "all"
 ) {
-  const session = await auth();
-  if (
-    !session?.user?.id ||
-    session?.user?.email?.toLowerCase() !== "anggasrimugiarahayu@gmail.com"
-  ) {
-    return { users: [], total: 0 };
-  }
-
   const now = new Date();
   const where: any = {};
 
@@ -495,13 +495,18 @@ export async function getDashboardUsersAction(
           proAutomationExpiredAt: true,
           proRisetExpiredAt: true,
           orders: {
-            where: { status: "SUCCESS" },
             select: {
               id: true,
               orderType: true,
               status: true,
               amount: true,
               createdAt: true,
+              product: {
+                select: {
+                  id: true,
+                  title: true,
+                },
+              },
             },
             orderBy: { createdAt: "desc" },
           },
@@ -530,13 +535,32 @@ export async function getDashboardUsersAction(
   }
 
   const enrichedUsers = rawUsers.map((u: any) => {
+    const successOrders = (u.orders || []).filter(
+      (o: any) => o.status === "SUCCESS"
+    );
     const subStatus = computeUserSubscriptionStatus(
       u,
-      u.orders || [],
+      successOrders,
       rawPricingConfig
     );
+    const resolvedOrders = (u.orders || []).map((o: any) => {
+      if (o.orderType === "EBOOK" && o.product?.title) {
+        return {
+          ...o,
+          resolvedTitle: o.product.title,
+          resolvedPeriod: "Selamanya",
+        };
+      }
+      const meta = resolvePackageMeta(o.orderType || "", rawPricingConfig);
+      return {
+        ...o,
+        resolvedTitle: o.product?.title || meta.name,
+        resolvedPeriod: meta.periodLabel,
+      };
+    });
     return {
       ...u,
+      orders: resolvedOrders,
       subStatus,
     };
   });
@@ -545,6 +569,33 @@ export async function getDashboardUsersAction(
     users: JSON.parse(JSON.stringify(enrichedUsers)),
     total,
   };
+}
+
+export const getCachedDashboardUsers = unstable_cache(
+  fetchDashboardUsersData,
+  ["admin-users-list"],
+  { revalidate: 3600, tags: ["admin-users-list", "admin-dashboard-stats"] }
+);
+
+export async function getDashboardUsersAction(
+  page = 1,
+  limit = 10,
+  search = "",
+  filter = "all",
+  forceFresh = false
+) {
+  const session = await auth();
+  if (
+    !session?.user?.id ||
+    session?.user?.email?.toLowerCase() !== "anggasrimugiarahayu@gmail.com"
+  ) {
+    return { users: [], total: 0 };
+  }
+
+  if (forceFresh) {
+    return fetchDashboardUsersData(page, limit, search, filter);
+  }
+  return getCachedDashboardUsers(page, limit, search, filter);
 }
 
 export async function adminUpdateUserAccessAction(params: {
@@ -648,9 +699,22 @@ export async function adminUpdateUserAccessAction(params: {
       }
     }
 
-    await prisma.user.update({
+    const updatedDbUser = await prisma.user.update({
       where: { id: userId },
       data: updateData,
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        hasProBook: true,
+        proToolsExpiredAt: true,
+        proAutomationExpiredAt: true,
+        proRisetExpiredAt: true,
+        orders: {
+          where: { status: "SUCCESS" },
+          select: { orderType: true, status: true, createdAt: true },
+        },
+      },
     });
 
     // If granting book or plus, also unlock active PRO ebooks in userOwnedProduct
@@ -672,8 +736,14 @@ export async function adminUpdateUserAccessAction(params: {
       }
     }
 
+    const updatedSubStatus = computeUserSubscriptionStatus(
+      updatedDbUser,
+      updatedDbUser.orders || []
+    );
+
     const tags = [
       "admin-dashboard-stats",
+      "admin-users-list",
       "user-session",
       "user-ownership",
       "user-orders",
@@ -695,6 +765,16 @@ export async function adminUpdateUserAccessAction(params: {
     return {
       success: true,
       message: "Status akses user berhasil diperbarui!",
+      updatedFields: JSON.parse(
+        JSON.stringify({
+          role: updatedDbUser.role,
+          hasProBook: updatedDbUser.hasProBook,
+          proToolsExpiredAt: updatedDbUser.proToolsExpiredAt,
+          proAutomationExpiredAt: updatedDbUser.proAutomationExpiredAt,
+          proRisetExpiredAt: updatedDbUser.proRisetExpiredAt,
+          subStatus: updatedSubStatus,
+        })
+      ),
     };
   } catch (error: any) {
     console.error("adminUpdateUserAccessAction error:", error);
