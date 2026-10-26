@@ -95,14 +95,6 @@ export const tokens = {
     },
   },
 
-  // Tabs
-  tabs: {
-    container: "flex items-center gap-1.5 p-1 rounded-xl bg-gray-100 dark:bg-[#0A1128] border border-gray-200/60 dark:border-[#2C3246] w-fit",
-    active: "bg-white dark:bg-[#141B31] text-gray-900 dark:text-white font-bold shadow-xs",
-    inactive: "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white font-medium hover:bg-gray-200/50 dark:hover:bg-[#141B31]/50",
-    button: "px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer whitespace-nowrap",
-  },
-
   // Modal Dialogs
   modal: {
     backdrop: "fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200",

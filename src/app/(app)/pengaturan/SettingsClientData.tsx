@@ -21,8 +21,6 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
 
   const proToolsExpiredAt = userData?.proToolsExpiredAt
     ? new Date(userData.proToolsExpiredAt)
-    : userData?.proExpiredAt
-    ? new Date(userData.proExpiredAt)
     : null;
   const proAutomationExpiredAt = userData?.proAutomationExpiredAt
     ? new Date(userData.proAutomationExpiredAt)

@@ -60,7 +60,6 @@ export async function getPengaturanDataAction() {
     hasRiset,
     isFullyPro,
     badgeName,
-    proExpiredAt: subStatus.proToolsExpiredAt,
     proToolsExpiredAt: subStatus.proToolsExpiredAt,
     proAutomationExpiredAt: subStatus.proAutomationExpiredAt,
     proRisetExpiredAt: subStatus.proRisetExpiredAt,
