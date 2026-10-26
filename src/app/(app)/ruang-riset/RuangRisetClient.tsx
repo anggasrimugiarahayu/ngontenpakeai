@@ -10,12 +10,13 @@ import {
   FacebookIcon,
 } from "./components/RisetIcons";
 import { InstagramResearchStudio } from "./instagram/InstagramResearchStudio";
+import { YouTubeResearchStudio } from "./youtube/YouTubeResearchStudio";
 
 interface RuangRisetClientProps {
   isLoggedIn: boolean;
   isPro?: boolean;
   isAdmin?: boolean;
-  initialPlatform?: "instagram" | null;
+  initialPlatform?: "instagram" | "youtube" | null;
 }
 
 const RISET_PLATFORMS: RisetPlatform[] = [
@@ -34,6 +35,20 @@ const RISET_PLATFORMS: RisetPlatform[] = [
     ],
   },
   {
+    id: "youtube",
+    name: "Riset YouTube",
+    description:
+      "Bongkar Outlier Score video & Shorts kompetitor, pisahkan format konten, dan ekspor data ide.",
+    icon: YouTubeIcon,
+    badge: "Baru",
+    isActive: true,
+    points: [
+      "Bongkar Outlier Score & Video Paling Meledak",
+      "Pilah Format YouTube Shorts vs Video Reguler",
+      "Ekspor Referensi Ide ke CSV / Excel",
+    ],
+  },
+  {
     id: "tiktok",
     name: "Riset TikTok",
     description:
@@ -45,20 +60,6 @@ const RISET_PLATFORMS: RisetPlatform[] = [
       "Deteksi Audio & Sound FYP yang Sedang Naik",
       "Analisis Struktur 3 Detik Pertama Video Populer",
       "Petakan Pola Durasi & Tipe Konten Pemenang",
-    ],
-  },
-  {
-    id: "youtube",
-    name: "Riset YouTube",
-    description:
-      "Riset judul, rasio klik tayang (CTR) thumbnail, dan topik Shorts dengan pencarian tinggi.",
-    icon: YouTubeIcon,
-    badge: "Segera Hadir",
-    isActive: false,
-    points: [
-      "Bongkar Pola Judul & Thumbnail Penarik Klik",
-      "Temukan Celah Kata Kunci Volume Pencarian Tinggi",
-      "Pilah Format Durasi Shorts & Long-Form Efektif",
     ],
   },
   {
@@ -84,7 +85,7 @@ export default function RuangRisetClient({
   initialPlatform = null,
 }: RuangRisetClientProps) {
   const router = useRouter();
-  const [selectedPlatform, setSelectedPlatform] = useState<"instagram" | null>(
+  const [selectedPlatform, setSelectedPlatform] = useState<"instagram" | "youtube" | null>(
     initialPlatform
   );
 
@@ -95,9 +96,13 @@ export default function RuangRisetClient({
     const syncFromUrl = () => {
       const params = new URLSearchParams(window.location.search);
       const platformParam = params.get("platform");
-      if (platformParam === "instagram" && isLoggedIn && (isPro || isAdmin)) {
-        setSelectedPlatform("instagram");
-        window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: "instagram" }));
+      if (
+        (platformParam === "instagram" || platformParam === "youtube") &&
+        isLoggedIn &&
+        (isPro || isAdmin)
+      ) {
+        setSelectedPlatform(platformParam);
+        window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: platformParam }));
       } else {
         setSelectedPlatform(null);
         window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: null }));
@@ -105,8 +110,12 @@ export default function RuangRisetClient({
     };
 
     const handlePlatformChange = (e: any) => {
-      if (e.detail === "instagram" && isLoggedIn && (isPro || isAdmin)) {
-        setSelectedPlatform("instagram");
+      if (
+        (e.detail === "instagram" || e.detail === "youtube") &&
+        isLoggedIn &&
+        (isPro || isAdmin)
+      ) {
+        setSelectedPlatform(e.detail);
       } else {
         setSelectedPlatform(null);
       }
@@ -121,17 +130,16 @@ export default function RuangRisetClient({
     };
   }, [isLoggedIn, isPro, isAdmin]);
 
-  // Handle click on Instagram Research Card
-  const handleSelectInstagram = () => {
+  const handleSelectPlatform = (platformId: "instagram" | "youtube") => {
     if (!isLoggedIn || (!isPro && !isAdmin)) {
       window.dispatchEvent(new Event("app-loading-start"));
       router.push("/?pricing=true&cat=riset");
       return;
     }
-    setSelectedPlatform("instagram");
+    setSelectedPlatform(platformId);
     if (typeof window !== "undefined") {
-      window.history.pushState(null, "", "/ruang-riset?platform=instagram");
-      window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: "instagram" }));
+      window.history.pushState(null, "", `/ruang-riset?platform=${platformId}`);
+      window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: platformId }));
       window.dispatchEvent(new Event("app-shallow-navigate"));
     }
   };
@@ -153,9 +161,11 @@ export default function RuangRisetClient({
           defaultUsername="creativemuslim.co"
           isAdmin={isAdmin}
         />
+      ) : selectedPlatform === "youtube" ? (
+        <YouTubeResearchStudio onBackToHub={handleBackToHub} />
       ) : (
         <>
-          {/* Header - EXACT SAME CLEAN STYLE & SPACING AS RUANG NGONTEN */}
+          {/* Header */}
           <div className="flex flex-col items-center justify-center text-center gap-2 mb-8 md:mb-10">
             <div className="space-y-3 flex flex-col items-center">
               <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
@@ -167,13 +177,17 @@ export default function RuangRisetClient({
             </div>
           </div>
 
-          {/* Platform Cards Grid - EXACT SAME STYLE & GAP AS RUANG NGONTEN */}
+          {/* Platform Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
             {RISET_PLATFORMS.map((platform) => (
               <RisetPlatformCard
                 key={platform.id}
                 platform={platform}
-                onSelect={platform.id === "instagram" ? handleSelectInstagram : undefined}
+                onSelect={
+                  platform.id === "instagram" || platform.id === "youtube"
+                    ? () => handleSelectPlatform(platform.id as "instagram" | "youtube")
+                    : undefined
+                }
               />
             ))}
           </div>
