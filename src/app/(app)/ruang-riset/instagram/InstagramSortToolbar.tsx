@@ -14,6 +14,7 @@ import {
   Check,
   Share2,
   Copy,
+  ChevronDown,
   X,
 } from "lucide-react";
 import toast from "react-hot-toast";
@@ -52,6 +53,7 @@ export function InstagramSortToolbar({
   onApply,
 }: Props) {
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
 
   // Dynamic clean title
   const getSortTitle = () => {
@@ -72,6 +74,18 @@ export function InstagramSortToolbar({
         return "Top Outlier Posts";
     }
   };
+
+  const sortOptions: { value: SortOption; label: string }[] = [
+    { value: "outlier", label: "Outlier Score" },
+    { value: "views", label: "Views Terbanyak" },
+    { value: "likes", label: "Likes Terbanyak" },
+    { value: "comments", label: "Komentar Terbanyak" },
+    { value: "newest", label: "Postingan Terbaru" },
+    { value: "oldest", label: "Postingan Terlama" },
+  ];
+
+  const currentSortLabel =
+    sortOptions.find((o) => o.value === sortOption)?.label || "Outlier Score";
 
   const isCustomized =
     sortOption !== "outlier" ||
@@ -190,39 +204,60 @@ export function InstagramSortToolbar({
       {/* ========================================================================= */}
       <div className="pt-2.5 text-xs flex items-center justify-between gap-2.5 relative">
         <div className="flex items-center gap-2 sm:gap-3">
-          {/* Selector Sort by Ringkas & Tidak Melar */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shrink-0">
-            <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 shrink-0 hidden sm:inline">
-              Sort by:
-            </span>
-            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 shrink-0 sm:hidden">
-              Sort:
-            </span>
-            <select
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value as SortOption)}
-              className="bg-transparent font-bold text-gray-900 dark:text-white border-0 focus:outline-none focus:ring-0 cursor-pointer text-xs w-auto"
+          {/* Custom Selector Sort by (Style Ruang Automation / Custom Select) */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsSortDropdownOpen((prev) => !prev)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-[#384260] text-xs font-semibold text-gray-800 dark:text-gray-200 transition-all cursor-pointer"
             >
-              <option value="outlier" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Outlier Score
-              </option>
-              <option value="views" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Views Terbanyak
-              </option>
-              <option value="likes" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Likes Terbanyak
-              </option>
-              <option value="comments" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Komentar Terbanyak
-              </option>
-              <option value="newest" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Postingan Terbaru
-              </option>
-              <option value="oldest" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Postingan Terlama
-              </option>
-            </select>
+              <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 shrink-0">
+                Sort by:
+              </span>
+              <span className="font-bold text-gray-900 dark:text-white">
+                {currentSortLabel}
+              </span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${
+                  isSortDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
+
+            {isSortDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40 bg-transparent"
+                  onClick={() => setIsSortDropdownOpen(false)}
+                />
+                <div className="absolute left-0 top-full mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-2xl py-1.5 z-50 min-w-[190px] animate-in fade-in zoom-in-95 duration-150">
+                  {sortOptions.map((opt) => {
+                    const isSelected = sortOption === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          setSortOption(opt.value);
+                          setIsSortDropdownOpen(false);
+                        }}
+                        className={`w-full px-3.5 py-2 text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                          isSelected
+                            ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {isSelected && (
+                          <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         </div>
 

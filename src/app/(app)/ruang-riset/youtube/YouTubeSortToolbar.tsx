@@ -8,13 +8,12 @@ import {
   YouTubeChannelProfile,
 } from "./types";
 import {
-  Flame,
   ArrowUpDown,
   Download,
-  Search,
   Share2,
   Copy,
   ChevronDown,
+  Check,
 } from "lucide-react";
 import {
   exportYouTubeToCSV,
@@ -29,8 +28,6 @@ interface Props {
   onFormatFilterChange: (format: YouTubeFormatFilter) => void;
   sortOption: YouTubeSortOption;
   onSortOptionChange: (sort: YouTubeSortOption) => void;
-  searchQuery: string;
-  onSearchQueryChange: (query: string) => void;
   videos: YouTubeVideoItem[];
   profile: YouTubeChannelProfile;
   totalFilteredCount: number;
@@ -41,13 +38,12 @@ export function YouTubeSortToolbar({
   onFormatFilterChange,
   sortOption,
   onSortOptionChange,
-  searchQuery,
-  onSearchQueryChange,
   videos,
   profile,
   totalFilteredCount,
 }: Props) {
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
 
   const getSortTitle = () => {
     switch (sortOption) {
@@ -65,6 +61,17 @@ export function YouTubeSortToolbar({
         return "Top Outlier Videos";
     }
   };
+
+  const sortOptions: { value: YouTubeSortOption; label: string }[] = [
+    { value: "outlier", label: "Outlier Score" },
+    { value: "views", label: "Views Terbanyak" },
+    { value: "likes", label: "Likes Terbanyak" },
+    { value: "newest", label: "Video Terbaru" },
+    { value: "oldest", label: "Video Terlama" },
+  ];
+
+  const currentSortLabel =
+    sortOptions.find((o) => o.value === sortOption)?.label || "Outlier Score";
 
   const exportFormats: { id: "sheets" | "excel" | "csv" | "json"; label: string }[] = [
     { id: "sheets", label: "Google Sheets" },
@@ -185,7 +192,7 @@ export function YouTubeSortToolbar({
       </div>
 
       {/* ========================================================================= */}
-      {/* BARIS 2: Tab Format Pills + Sort by (Compact) + Search Title */}
+      {/* BARIS 2: Tab Format Pills + Custom Sort by Dropdown (Style Ruang Automation) */}
       {/* ========================================================================= */}
       <div className="pt-2.5 text-xs flex flex-wrap items-center justify-between gap-2.5">
         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
@@ -227,49 +234,61 @@ export function YouTubeSortToolbar({
             </button>
           </div>
 
-          {/* Selector Sort by Ringkas (Compact, tidak melebar) */}
-          <div className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-gray-50 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shrink-0">
-            <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
-            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 shrink-0 hidden sm:inline">
-              Sort by:
-            </span>
-            <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 shrink-0 sm:hidden">
-              Sort:
-            </span>
-            <select
-              value={sortOption}
-              onChange={(e) => onSortOptionChange(e.target.value as YouTubeSortOption)}
-              className="bg-transparent font-bold text-gray-900 dark:text-white border-0 focus:outline-none focus:ring-0 cursor-pointer text-xs w-auto"
+          {/* Custom Selector Sort by (Style Ruang Automation / Custom Select) */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setIsSortDropdownOpen((prev) => !prev)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-50 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-[#384260] text-xs font-semibold text-gray-800 dark:text-gray-200 transition-all cursor-pointer"
             >
-              <option value="outlier" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Outlier Score
-              </option>
-              <option value="views" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Views Terbanyak
-              </option>
-              <option value="likes" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Likes Terbanyak
-              </option>
-              <option value="newest" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Video Terbaru
-              </option>
-              <option value="oldest" className="bg-white dark:bg-[#141B31] text-gray-900 dark:text-white">
-                Video Terlama
-              </option>
-            </select>
-          </div>
-        </div>
+              <ArrowUpDown className="w-3.5 h-3.5 text-gray-400 shrink-0" />
+              <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 shrink-0">
+                Sort by:
+              </span>
+              <span className="font-bold text-gray-900 dark:text-white">
+                {currentSortLabel}
+              </span>
+              <ChevronDown
+                className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${
+                  isSortDropdownOpen ? "rotate-180" : ""
+                }`}
+              />
+            </button>
 
-        {/* Search Judul Video Compact */}
-        <div className="relative w-full sm:w-48 lg:w-56">
-          <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Cari judul video..."
-            value={searchQuery}
-            onChange={(e) => onSearchQueryChange(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 bg-gray-50 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-lg text-xs text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-hidden focus:ring-1 focus:ring-rn-accent"
-          />
+            {isSortDropdownOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-40 bg-transparent"
+                  onClick={() => setIsSortDropdownOpen(false)}
+                />
+                <div className="absolute left-0 top-full mt-1.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-2xl py-1.5 z-50 min-w-[190px] animate-in fade-in zoom-in-95 duration-150">
+                  {sortOptions.map((opt) => {
+                    const isSelected = sortOption === opt.value;
+                    return (
+                      <button
+                        key={opt.value}
+                        type="button"
+                        onClick={() => {
+                          onSortOptionChange(opt.value);
+                          setIsSortDropdownOpen(false);
+                        }}
+                        className={`w-full px-3.5 py-2 text-left text-xs font-medium flex items-center justify-between transition-colors cursor-pointer ${
+                          isSelected
+                            ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                            : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-white/5"
+                        }`}
+                      >
+                        <span>{opt.label}</span>
+                        {isSelected && (
+                          <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

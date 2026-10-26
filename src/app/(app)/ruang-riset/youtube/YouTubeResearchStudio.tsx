@@ -22,7 +22,6 @@ import {
   Search,
   AlertCircle,
   SlidersHorizontal,
-  RefreshCw,
 } from "lucide-react";
 
 interface Props {
@@ -86,7 +85,6 @@ export function YouTubeResearchStudio({
   const [videoLimit, setVideoLimit] = useState<YouTubeVideoLimit>("all");
   const [dateFilter, setDateFilter] = useState<YouTubeDateFilter>("all");
   const [sortOption, setSortOption] = useState<YouTubeSortOption>("outlier");
-  const [searchQuery, setSearchQuery] = useState("");
 
   const isFilterCustomized =
     sortOption !== "outlier" ||
@@ -192,13 +190,7 @@ export function YouTubeResearchStudio({
       result = result.filter((v) => isWithinDateFilter(v.timestamp, dateFilter));
     }
 
-    // 3. Filter Title Query
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      result = result.filter((v) => v.title.toLowerCase().includes(q));
-    }
-
-    // 4. Sort
+    // 3. Sort
     result.sort((a, b) => {
       if (sortOption === "outlier") {
         return b.outlierScore - a.outlierScore;
@@ -225,28 +217,13 @@ export function YouTubeResearchStudio({
     }
 
     return result;
-  }, [videos, formatFilter, dateFilter, searchQuery, sortOption, videoLimit]);
+  }, [videos, formatFilter, dateFilter, sortOption, videoLimit]);
 
   return (
     <div className="w-full space-y-8 animate-in fade-in duration-300 pb-16">
       {/* Top Navigation: Tombol Kembali Minimalis */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-start">
         <BackButton onClick={onBackToHub} />
-
-        {profile && (
-          <button
-            onClick={() => handleSearch(profile.customUrl, true)}
-            disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-gray-200 dark:border-[#2C3246] text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#141B31] transition-colors cursor-pointer disabled:opacity-50"
-          >
-            <RefreshCw
-              className={`w-3.5 h-3.5 ${
-                isLoading ? "animate-spin text-rn-accent" : ""
-              }`}
-            />
-            <span>Segarkan Data</span>
-          </button>
-        )}
       </div>
 
       {/* Header Terpusat & Elegan (Identik dengan Riset Instagram) */}
@@ -392,8 +369,6 @@ export function YouTubeResearchStudio({
               onFormatFilterChange={setFormatFilter}
               sortOption={sortOption}
               onSortOptionChange={setSortOption}
-              searchQuery={searchQuery}
-              onSearchQueryChange={setSearchQuery}
               videos={videos}
               profile={profile}
               totalFilteredCount={filteredAndSortedVideos.length}
