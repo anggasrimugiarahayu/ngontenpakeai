@@ -32,13 +32,11 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Required scopes for Instagram API with Instagram Business Login
+  // Required scopes for Instagram API with Instagram Business Login (Optimized for App Review)
   const scopes = [
     "instagram_business_basic",
     "instagram_business_manage_messages",
     "instagram_business_manage_comments",
-    "instagram_business_content_publish",
-    "instagram_business_manage_insights",
   ].join(",");
 
   // Official Instagram Business Login OAuth dialog (with native Instagram branding)

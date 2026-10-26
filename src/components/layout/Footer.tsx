@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 
@@ -14,7 +15,7 @@ export function Footer() {
   const isDark = mounted ? theme === "dark" : true;
 
   return (
-    <footer className="w-full pt-1 pb-3 xl:pb-3 flex flex-col items-center justify-center mt-auto">
+    <footer className="w-full pt-1 pb-3 xl:pb-3 flex flex-col items-center justify-center mt-auto gap-1">
       <div className="text-gray-500 text-xs flex items-center gap-2">
         Product by
         <a
@@ -41,6 +42,21 @@ export function Footer() {
           </svg>{" "}
           ruangcreativemuslim
         </a>
+      </div>
+      <div className="text-gray-400 dark:text-gray-500 text-[11px] flex items-center gap-2">
+        <Link
+          href="/kebijakan-privasi"
+          className="hover:underline hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+        >
+          Kebijakan Privasi
+        </Link>
+        <span>•</span>
+        <Link
+          href="/syarat-ketentuan"
+          className="hover:underline hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+        >
+          Syarat &amp; Ketentuan
+        </Link>
       </div>
     </footer>
   );
