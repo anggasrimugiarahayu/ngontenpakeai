@@ -120,6 +120,36 @@ export function InstagramSortToolbar({
 
   const displayCount = isSelectMode && selectedCount > 0 ? selectedCount : totalFiltered;
 
+  const getDateLabel = (df: DateFilter) => {
+    switch (df) {
+      case "1w":
+        return "1 Week Back";
+      case "1m":
+        return "1 Month Back";
+      case "3m":
+        return "3 Months Back";
+      case "6m":
+        return "6 Months Back";
+      case "1y":
+        return "1 Year Back";
+      default:
+        return "All Time";
+    }
+  };
+
+  const getSubtitle = () => {
+    if (filterMode === "date" && dateFilter !== "all") {
+      return `Showing ${totalFiltered} Posts from ${getDateLabel(dateFilter)}`;
+    }
+    if (filterMode === "posts" && postLimit !== "all" && totalFiltered !== totalCount) {
+      return `Showing ${totalFiltered} Posts of ${totalCount} total`;
+    }
+    if (totalFiltered !== totalCount) {
+      return `Showing ${totalFiltered} Posts of ${totalCount} total`;
+    }
+    return `Showing ${totalFiltered} Posts total`;
+  };
+
   return (
     <div className="w-full relative bg-white dark:bg-[#141B31] border-b border-gray-200/80 dark:border-[#2C3246]">
       {/* ========================================================================= */}
@@ -132,8 +162,7 @@ export function InstagramSortToolbar({
             {getSortTitle()}
           </h3>
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-            Showing {totalFiltered} Posts
-            {totalFiltered !== totalCount && ` (dari total ${totalCount})`}
+            {getSubtitle()}
           </p>
         </div>
 
@@ -318,7 +347,7 @@ export function InstagramSortToolbar({
                   onClick={onSelectAll}
                   className="text-[11px] font-semibold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer"
                 >
-                  {selectedCount === totalFiltered ? "Batal Semua" : "Pilih Semua"}
+                  {selectedCount === totalFiltered ? "Deselect All" : "Select All"}
                 </button>
               )}
               <button
@@ -327,7 +356,7 @@ export function InstagramSortToolbar({
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
               >
                 <Check className="w-3.5 h-3.5" />
-                <span>Selesai ({selectedCount})</span>
+                <span>Done ({selectedCount})</span>
               </button>
             </div>
           ) : (

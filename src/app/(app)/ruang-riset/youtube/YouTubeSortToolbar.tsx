@@ -6,6 +6,9 @@ import {
   YouTubeSortOption,
   YouTubeVideoItem,
   YouTubeChannelProfile,
+  YouTubeFilterMode,
+  YouTubeVideoLimit,
+  YouTubeDateFilter,
 } from "./types";
 import {
   ArrowUpDown,
@@ -49,6 +52,9 @@ interface Props {
   onOpenFilterModal?: () => void;
   // Target videos for export (if selection mode is active)
   targetVideosForExport?: YouTubeVideoItem[];
+  filterMode?: YouTubeFilterMode;
+  videoLimit?: YouTubeVideoLimit;
+  dateFilter?: YouTubeDateFilter;
 }
 
 export function YouTubeSortToolbar({
@@ -68,9 +74,42 @@ export function YouTubeSortToolbar({
   onSelectAll,
   onOpenFilterModal,
   targetVideosForExport,
+  filterMode,
+  videoLimit,
+  dateFilter,
 }: Props) {
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+
+  const getDateLabel = (df: YouTubeDateFilter) => {
+    switch (df) {
+      case "1w":
+        return "1 Week Back";
+      case "1m":
+        return "1 Month Back";
+      case "3m":
+        return "3 Months Back";
+      case "6m":
+        return "6 Months Back";
+      case "1y":
+        return "1 Year Back";
+      default:
+        return "All Time";
+    }
+  };
+
+  const getSubtitle = () => {
+    if (filterMode === "date" && dateFilter && dateFilter !== "all") {
+      return `Showing ${totalFilteredCount} Posts from ${getDateLabel(dateFilter)}`;
+    }
+    if (filterMode === "videos" && videoLimit && videoLimit !== "all" && totalFilteredCount !== videos.length) {
+      return `Showing ${totalFilteredCount} Posts of ${videos.length} total`;
+    }
+    if (totalFilteredCount !== videos.length) {
+      return `Showing ${totalFilteredCount} Posts of ${videos.length} total`;
+    }
+    return `Showing ${totalFilteredCount} Posts total`;
+  };
 
   const getSortTitle = () => {
     switch (sortOption) {
@@ -155,8 +194,7 @@ export function YouTubeSortToolbar({
             {getSortTitle()}
           </h3>
           <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mt-0.5">
-            Showing {totalFilteredCount} Posts
-            {totalFilteredCount !== videos.length && ` (dari total ${videos.length})`}
+            {getSubtitle()}
           </p>
         </div>
 
@@ -379,7 +417,7 @@ export function YouTubeSortToolbar({
                   onClick={onSelectAll}
                   className="text-[11px] font-semibold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer"
                 >
-                  {selectedCount === totalFilteredCount ? "Batal Semua" : "Pilih Semua"}
+                  {selectedCount === totalFilteredCount ? "Deselect All" : "Select All"}
                 </button>
               )}
               <button
@@ -388,7 +426,7 @@ export function YouTubeSortToolbar({
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
               >
                 <Check className="w-3.5 h-3.5" />
-                <span>Selesai ({selectedCount})</span>
+                <span>Done ({selectedCount})</span>
               </button>
             </div>
           ) : (

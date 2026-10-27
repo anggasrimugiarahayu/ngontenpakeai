@@ -466,6 +466,9 @@ export function YouTubeResearchStudio({
               onSelectAll={handleSelectAll}
               onOpenFilterModal={() => setIsFilterModalOpen(true)}
               targetVideosForExport={targetVideosForExport}
+              filterMode={filterMode}
+              videoLimit={videoLimit}
+              dateFilter={dateFilter}
             />
 
             <YouTubeFeedGrid

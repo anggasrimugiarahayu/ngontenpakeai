@@ -62,12 +62,12 @@ export function YouTubeSortFeedFilterDropdown({
   ];
 
   const dateFilterOptions: { label: string; value: YouTubeDateFilter }[] = [
-    { label: "1 Minggu Terakhir", value: "1w" },
-    { label: "1 Bulan Terakhir", value: "1m" },
-    { label: "3 Bulan Terakhir", value: "3m" },
-    { label: "6 Bulan Terakhir", value: "6m" },
-    { label: "1 Tahun Terakhir", value: "1y" },
-    { label: "Semua Tanggal", value: "all" },
+    { label: "1 Week Back", value: "1w" },
+    { label: "1 Month Back", value: "1m" },
+    { label: "3 Months Back", value: "3m" },
+    { label: "6 Months Back", value: "6m" },
+    { label: "1 Year Back", value: "1y" },
+    { label: "All Time", value: "all" },
   ];
 
   const currentSelectLabel =
@@ -75,7 +75,7 @@ export function YouTubeSortFeedFilterDropdown({
       ? videoLimitOptions.find((o) => o.value === videoLimit)?.label ||
         "Latest 25 Videos"
       : dateFilterOptions.find((o) => o.value === dateFilter)?.label ||
-        "Semua Tanggal";
+        "All Time";
 
   const handleApply = (e: React.MouseEvent) => {
     e.stopPropagation();
