@@ -336,18 +336,18 @@ export function YouTubeCardFilterModal({
       {/* Modal Card */}
       <div
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md bg-[#161D2F] text-white border border-[#27324B] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200"
+        className="relative w-full max-w-lg bg-white dark:bg-[#161D2F] text-gray-900 dark:text-white border border-gray-200 dark:border-[#27324B] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#252E44]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 dark:border-[#252E44]">
           <div className="w-6" />
-          <h3 className="font-bold text-sm sm:text-base tracking-wide text-white">
+          <h3 className="font-bold text-sm sm:text-base tracking-wide text-gray-900 dark:text-white">
             Filters
           </h3>
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+            className="p-1 rounded-lg text-gray-400 hover:text-gray-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -357,18 +357,18 @@ export function YouTubeCardFilterModal({
         <div className="p-5 space-y-5 text-xs max-h-[75vh] overflow-y-auto">
           {/* SECTION 1: Type (Shorts | Long Video) */}
           <div className="space-y-2.5">
-            <p className="font-semibold text-gray-400 text-xs">Type</p>
+            <p className="font-semibold text-gray-500 dark:text-gray-400 text-xs">Type</p>
             <div className="flex items-center gap-2">
               <button
                 type="button"
                 onClick={() => handleToggleType("shorts")}
                 className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   types.includes("shorts")
-                    ? "bg-[#25324E] text-white border border-blue-500 shadow-sm font-bold"
-                    : "bg-[#1E263B] text-gray-300 border border-transparent hover:text-white hover:bg-[#25304B]"
+                    ? "bg-blue-50 dark:bg-[#25324E] text-blue-700 dark:text-white border-2 border-blue-500 shadow-xs font-bold"
+                    : "bg-gray-100 dark:bg-[#1E263B] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/70 dark:hover:bg-[#25304B]"
                 }`}
               >
-                <Zap className="w-3.5 h-3.5 text-rose-400" />
+                <Zap className="w-3.5 h-3.5 text-rose-500" />
                 <span>Shorts</span>
               </button>
 
@@ -377,75 +377,75 @@ export function YouTubeCardFilterModal({
                 onClick={() => handleToggleType("long")}
                 className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   types.includes("long")
-                    ? "bg-[#25324E] text-white border border-blue-500 shadow-sm font-bold"
-                    : "bg-[#1E263B] text-gray-300 border border-transparent hover:text-white hover:bg-[#25304B]"
+                    ? "bg-blue-50 dark:bg-[#25324E] text-blue-700 dark:text-white border-2 border-blue-500 shadow-xs font-bold"
+                    : "bg-gray-100 dark:bg-[#1E263B] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/70 dark:hover:bg-[#25304B]"
                 }`}
               >
-                <Film className="w-3.5 h-3.5 text-blue-400" />
+                <Film className="w-3.5 h-3.5 text-blue-500" />
                 <span>Long Video</span>
               </button>
             </div>
           </div>
 
-          <div className="border-t border-[#252E44]" />
+          <div className="border-t border-gray-100 dark:border-[#252E44]" />
 
           {/* SECTION 2: Performance range */}
           <div className="space-y-3">
-            <p className="font-semibold text-gray-400 text-xs">
+            <p className="font-semibold text-gray-500 dark:text-gray-400 text-xs">
               Performance range
             </p>
 
-            {/* Performance Metric Pills: Views, Likes, Comments, Outlier score */}
-            <div className="flex items-center gap-2 flex-wrap">
+            {/* Performance Metric Pills: 1 Baris Penuh (grid-cols-4) */}
+            <div className="grid grid-cols-4 gap-2">
               <button
                 type="button"
                 onClick={() => setMetric("views")}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   metric === "views"
-                    ? "bg-[#25324E] text-white border-2 border-orange-500 shadow-xs font-bold"
-                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white hover:bg-[#25304B]"
+                    ? "bg-orange-50 dark:bg-[#25324E] text-orange-700 dark:text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-gray-100 dark:bg-[#1E263B] text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/70 dark:hover:bg-[#25304B]"
                 }`}
               >
-                <Play className="w-3.5 h-3.5 text-blue-400" />
+                <Play className="w-3.5 h-3.5 text-blue-500" />
                 <span>Views</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setMetric("likes")}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   metric === "likes"
-                    ? "bg-[#25324E] text-white border-2 border-orange-500 shadow-xs font-bold"
-                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white hover:bg-[#25304B]"
+                    ? "bg-orange-50 dark:bg-[#25324E] text-orange-700 dark:text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-gray-100 dark:bg-[#1E263B] text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/70 dark:hover:bg-[#25304B]"
                 }`}
               >
-                <Heart className="w-3.5 h-3.5 text-rose-400" />
+                <Heart className="w-3.5 h-3.5 text-rose-500" />
                 <span>Likes</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setMetric("comments")}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   metric === "comments"
-                    ? "bg-[#25324E] text-white border-2 border-orange-500 shadow-xs font-bold"
-                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white hover:bg-[#25304B]"
+                    ? "bg-orange-50 dark:bg-[#25324E] text-orange-700 dark:text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-gray-100 dark:bg-[#1E263B] text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/70 dark:hover:bg-[#25304B]"
                 }`}
               >
-                <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
+                <MessageSquare className="w-3.5 h-3.5 text-sky-500" />
                 <span>Comments</span>
               </button>
 
               <button
                 type="button"
                 onClick={() => setMetric("outlier")}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                className={`inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   metric === "outlier"
-                    ? "bg-[#25324E] text-white border-2 border-orange-500 shadow-xs font-bold"
-                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white hover:bg-[#25304B]"
+                    ? "bg-orange-50 dark:bg-[#25324E] text-orange-700 dark:text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-gray-100 dark:bg-[#1E263B] text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/70 dark:hover:bg-[#25304B]"
                 }`}
               >
-                <Zap className="w-3.5 h-3.5 text-amber-400" />
+                <Zap className="w-3.5 h-3.5 text-amber-500" />
                 <span>Outlier score</span>
               </button>
             </div>
@@ -458,7 +458,7 @@ export function YouTubeCardFilterModal({
                     key={i}
                     style={{ height: `${bin.heightPercent}%` }}
                     className={`flex-1 rounded-t-xs transition-colors duration-100 ${
-                      bin.isActive ? "bg-[#4F75FF]" : "bg-[#242E44]"
+                      bin.isActive ? "bg-[#4F75FF]" : "bg-gray-200 dark:bg-[#242E44]"
                     }`}
                   />
                 ))}
@@ -470,7 +470,7 @@ export function YouTubeCardFilterModal({
                 className="relative w-full h-6 flex items-center select-none cursor-pointer"
               >
                 {/* Background Track */}
-                <div className="w-full h-1 bg-[#25304B] rounded-full relative">
+                <div className="w-full h-1 bg-gray-200 dark:bg-[#25304B] rounded-full relative">
                   {/* Highlighted Active Range */}
                   <div
                     style={{
@@ -499,7 +499,7 @@ export function YouTubeCardFilterModal({
               {/* Min & Max Inputs (Linked) */}
               <div className="pt-2 flex items-center justify-between gap-3">
                 <div className="flex-1 space-y-1">
-                  <span className="text-[10px] text-gray-400 font-medium">Min</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Min</span>
                   <input
                     type="number"
                     step={isDecimalMetric ? "0.1" : "1"}
@@ -508,12 +508,12 @@ export function YouTubeCardFilterModal({
                       const v = Number(e.target.value);
                       setMinVal(isNaN(v) ? activeBound.min : Math.min(v, maxVal));
                     }}
-                    className="w-full px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-bold text-xs focus:outline-hidden focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1E263B] border border-gray-200 dark:border-[#2B354F] text-gray-900 dark:text-white font-bold text-xs focus:outline-hidden focus:border-blue-500"
                   />
                 </div>
                 <span className="text-gray-400 pt-5 font-bold">—</span>
                 <div className="flex-1 space-y-1">
-                  <span className="text-[10px] text-gray-400 font-medium">Max</span>
+                  <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">Max</span>
                   <input
                     type="number"
                     step={isDecimalMetric ? "0.1" : "1"}
@@ -522,18 +522,18 @@ export function YouTubeCardFilterModal({
                       const v = Number(e.target.value);
                       setMaxVal(isNaN(v) ? activeBound.max : Math.max(v, minVal));
                     }}
-                    className="w-full px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-bold text-xs focus:outline-hidden focus:border-blue-500"
+                    className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1E263B] border border-gray-200 dark:border-[#2B354F] text-gray-900 dark:text-white font-bold text-xs focus:outline-hidden focus:border-blue-500"
                   />
                 </div>
               </div>
             </div>
           </div>
 
-          <div className="border-t border-[#252E44]" />
+          <div className="border-t border-gray-100 dark:border-[#252E44]" />
 
           {/* SECTION 3: Posted (Date Filter) */}
           <div className="space-y-3">
-            <p className="font-semibold text-gray-400 text-xs">Posted</p>
+            <p className="font-semibold text-gray-500 dark:text-gray-400 text-xs">Posted</p>
 
             {/* In the last / Between Pills */}
             <div className="flex items-center gap-2">
@@ -542,11 +542,11 @@ export function YouTubeCardFilterModal({
                 onClick={() => setPostedType("in_last")}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   postedType === "in_last"
-                    ? "bg-[#25324E] text-white border-2 border-orange-500 shadow-xs font-bold"
-                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white hover:bg-[#25304B]"
+                    ? "bg-orange-50 dark:bg-[#25324E] text-orange-700 dark:text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-gray-100 dark:bg-[#1E263B] text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/70 dark:hover:bg-[#25304B]"
                 }`}
               >
-                <Clock className="w-3.5 h-3.5 text-gray-400" />
+                <Clock className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                 <span>In the last</span>
               </button>
 
@@ -555,11 +555,11 @@ export function YouTubeCardFilterModal({
                 onClick={() => setPostedType("between")}
                 className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
                   postedType === "between"
-                    ? "bg-[#25324E] text-white border-2 border-orange-500 shadow-xs font-bold"
-                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white hover:bg-[#25304B]"
+                    ? "bg-orange-50 dark:bg-[#25324E] text-orange-700 dark:text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-gray-100 dark:bg-[#1E263B] text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/70 dark:hover:bg-[#25304B]"
                 }`}
               >
-                <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                <Calendar className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
                 <span>Between</span>
               </button>
             </div>
@@ -573,17 +573,17 @@ export function YouTubeCardFilterModal({
                   value={inLastValue}
                   onChange={(e) => setInLastValue(e.target.value)}
                   placeholder="0"
-                  className="w-full px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-bold text-xs focus:outline-hidden focus:border-blue-500"
+                  className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1E263B] border border-gray-200 dark:border-[#2B354F] text-gray-900 dark:text-white font-bold text-xs focus:outline-hidden focus:border-blue-500"
                 />
 
                 <div className="relative">
                   <button
                     type="button"
                     onClick={() => setIsUnitDropdownOpen((prev) => !prev)}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-bold text-xs cursor-pointer hover:border-gray-500 transition-colors"
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1E263B] border border-gray-200 dark:border-[#2B354F] text-gray-900 dark:text-white font-bold text-xs cursor-pointer hover:border-gray-400 dark:hover:border-gray-500 transition-colors"
                   >
                     <span className="capitalize">{inLastUnit}</span>
-                    <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isUnitDropdownOpen ? "rotate-180" : ""}`} />
+                    <ChevronDown className={`w-3.5 h-3.5 text-gray-500 dark:text-gray-400 transition-transform duration-200 ${isUnitDropdownOpen ? "rotate-180" : ""}`} />
                   </button>
 
                   {isUnitDropdownOpen && (
@@ -594,7 +594,7 @@ export function YouTubeCardFilterModal({
                         onClick={() => setIsUnitDropdownOpen(false)}
                       />
                       {/* Drop-up Menu (Membuka ke atas agar tidak perlu scroll) */}
-                      <div className="absolute left-0 right-0 bottom-full mb-1.5 bg-[#1E263B] border border-[#2B354F] rounded-xl shadow-2xl overflow-hidden z-30 divide-y divide-white/5">
+                      <div className="absolute left-0 right-0 bottom-full mb-1.5 bg-white dark:bg-[#1E263B] border border-gray-200 dark:border-[#2B354F] rounded-xl shadow-2xl overflow-hidden z-30 divide-y divide-gray-100 dark:divide-white/5">
                         {(["days", "weeks", "months", "years"] as const).map((u) => (
                           <button
                             key={u}
@@ -603,8 +603,8 @@ export function YouTubeCardFilterModal({
                               setInLastUnit(u);
                               setIsUnitDropdownOpen(false);
                             }}
-                            className={`w-full px-3 py-2 text-left text-xs font-semibold hover:bg-white/10 capitalize transition-colors cursor-pointer ${
-                              inLastUnit === u ? "text-blue-400 bg-white/5 font-bold" : "text-white"
+                            className={`w-full px-3 py-2 text-left text-xs font-semibold hover:bg-gray-100 dark:hover:bg-white/10 capitalize transition-colors cursor-pointer ${
+                              inLastUnit === u ? "text-blue-600 dark:text-blue-400 bg-blue-50/50 dark:bg-white/5 font-bold" : "text-gray-700 dark:text-white"
                             }`}
                           >
                             {u}
@@ -621,13 +621,13 @@ export function YouTubeCardFilterModal({
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-semibold text-xs focus:outline-hidden focus:border-blue-500"
+                  className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1E263B] border border-gray-200 dark:border-[#2B354F] text-gray-900 dark:text-white font-semibold text-xs focus:outline-hidden focus:border-blue-500"
                 />
                 <input
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-semibold text-xs focus:outline-hidden focus:border-blue-500"
+                  className="w-full px-3 py-2 rounded-xl bg-gray-50 dark:bg-[#1E263B] border border-gray-200 dark:border-[#2B354F] text-gray-900 dark:text-white font-semibold text-xs focus:outline-hidden focus:border-blue-500"
                 />
               </div>
             )}
@@ -635,11 +635,11 @@ export function YouTubeCardFilterModal({
         </div>
 
         {/* Footer */}
-        <div className="p-4 sm:p-5 flex items-center justify-between gap-3 border-t border-[#252E44] bg-[#161D2F]">
+        <div className="p-4 sm:p-5 flex items-center justify-between gap-3 border-t border-gray-100 dark:border-[#252E44] bg-gray-50/60 dark:bg-[#161D2F]">
           <button
             type="button"
             onClick={handleReset}
-            className="text-xs font-semibold text-gray-400 hover:text-rose-400 transition-colors cursor-pointer"
+            className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-rose-500 dark:hover:text-rose-400 transition-colors cursor-pointer"
           >
             Reset
           </button>
@@ -647,7 +647,7 @@ export function YouTubeCardFilterModal({
           <button
             type="button"
             onClick={handleApply}
-            className="px-5 py-2.5 rounded-xl bg-white hover:bg-gray-100 text-gray-950 font-bold text-xs shadow-lg transition-all cursor-pointer transform active:scale-95"
+            className="px-5 py-2.5 rounded-xl bg-gray-900 hover:bg-black text-white dark:bg-white dark:hover:bg-gray-100 dark:text-gray-950 font-bold text-xs shadow-lg transition-all cursor-pointer transform active:scale-95"
           >
             Show {previewCount} Posts
           </button>
