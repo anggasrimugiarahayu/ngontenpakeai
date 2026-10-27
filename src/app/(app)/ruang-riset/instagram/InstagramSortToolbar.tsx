@@ -93,6 +93,42 @@ export function InstagramSortToolbar({
     [posts]
   );
 
+  const renderSelectButton = () => {
+    if (isSelectMode) {
+      return (
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          {onSelectAll && (
+            <button
+              type="button"
+              onClick={onSelectAll}
+              className="text-[11px] font-semibold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer whitespace-nowrap"
+            >
+              {selectedCount === totalFiltered ? "Deselect" : "Select All"}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={onToggleSelectMode}
+            className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-all shadow-xs cursor-pointer whitespace-nowrap"
+          >
+            <Check className="w-3.5 h-3.5" />
+            <span>Done ({selectedCount})</span>
+          </button>
+        </div>
+      );
+    }
+    return (
+      <button
+        type="button"
+        onClick={onToggleSelectMode}
+        className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer whitespace-nowrap"
+      >
+        <Check className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+        <span>Select</span>
+      </button>
+    );
+  };
+
   // Dynamic clean title
   const getSortTitle = () => {
     switch (sortOption) {
@@ -268,153 +304,134 @@ export function InstagramSortToolbar({
       <div className="w-full border-t border-gray-200/90 dark:border-[#2C3246]" />
 
       {/* ========================================================================= */}
-      {/* BARIS 2: Tab Format, Filters, Sort By (Statis), Clear all (Kiri) + Select (Kanan) */}
+      {/* BARIS 2: Tab Format, Filters, Sort By (Statis), Clear all + Select */}
       {/* ========================================================================= */}
-      <div className="px-4 py-3 sm:px-5 text-xs flex flex-wrap items-center justify-between gap-3 relative">
-        {/* Kiri: Tab Format Pills + Filters + Sort by + Clear all */}
-        <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
-          {/* Format Tabs Pills (Hanya Reels & Carousel, tanpa Semua) */}
-          {formatFilter && onFormatFilterChange && (
-            <div className="inline-flex items-center gap-1 p-0.5 bg-gray-100 dark:bg-[#0F172A] rounded-lg border border-gray-200/60 dark:border-[#2C3246] shrink-0">
-              <button
-                type="button"
-                onClick={() => onFormatFilterChange("reels")}
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-                  formatFilter === "reels"
-                    ? "bg-white dark:bg-[#141B31] text-blue-600 dark:text-blue-400 shadow-2xs"
-                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                }`}
-              >
-                <Film className="w-3.5 h-3.5 text-blue-500" />
-                <span>Reels ({reelsCount})</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => onFormatFilterChange("carousels")}
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-                  formatFilter === "carousels"
-                    ? "bg-white dark:bg-[#141B31] text-purple-600 dark:text-purple-400 shadow-2xs"
-                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-                }`}
-              >
-                <Layers className="w-3.5 h-3.5 text-purple-500" />
-                <span>Carousel ({carouselCount})</span>
-              </button>
-            </div>
-          )}
-
-          {/* Tombol ≡ Filters */}
-          <button
-            type="button"
-            onClick={onOpenFilterModal}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
-          >
-            <SlidersHorizontal className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-            <span>Filters</span>
-          </button>
-
-          {/* Tombol ⇅ Sort by (Teks selalu ringkas "Sort by" sesuai arahan user) */}
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setIsSortDropdownOpen((prev) => !prev)}
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
-            >
-              <ArrowUpDown className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-              <span>Sort by</span>
-            </button>
-
-            {/* Popup Menu Sort By Persis Seperti Image 3 */}
-            {isSortDropdownOpen && (
-              <>
-                <div
-                  className="fixed inset-0 z-40 bg-transparent"
-                  onClick={() => setIsSortDropdownOpen(false)}
-                />
-                <div className="absolute left-0 top-full mt-2 bg-white dark:bg-[#161B2E] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl z-50 min-w-[210px] overflow-hidden animate-in fade-in zoom-in-95 duration-150 divide-y divide-gray-100 dark:divide-white/5">
-                  {sortOptions.map((opt) => {
-                    const isSelected = sortOption === opt.value;
-                    const IconComponent = opt.icon;
-                    return (
-                      <button
-                        key={opt.value}
-                        type="button"
-                        onClick={() => {
-                          setSortOption(opt.value);
-                          setIsSortDropdownOpen(false);
-                        }}
-                        className={`w-full px-4 py-3 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
-                          isSelected
-                            ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
-                            : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5"
-                        }`}
-                      >
-                        <div className="flex items-center gap-2.5">
-                          <IconComponent className="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
-                          <span>{opt.label}</span>
-                        </div>
-
-                        <div className="flex items-center gap-1.5">
-                          {opt.hasInfo && (
-                            <Info className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
-                          )}
-                          {isSelected && (
-                            <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
-                          )}
-                        </div>
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Tombol Clear all */}
-          {isCustomized && (
-            <button
-              type="button"
-              onClick={onResetFilters}
-              className="text-xs font-medium text-gray-400 hover:text-rose-500 transition-colors cursor-pointer"
-              title="Reset ke pengaturan default"
-            >
-              Clear all
-            </button>
-          )}
-        </div>
-
-        {/* Kanan: Tombol ✓ Select (Multi-Select Mode) */}
-        <div className="flex items-center gap-2">
-          {isSelectMode ? (
-            <div className="flex items-center gap-2">
-              {onSelectAll && (
+      <div className="px-4 py-2.5 sm:py-3 sm:px-5 text-xs flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5 sm:gap-4 relative">
+        {/* Kiri (Mobile: 2 Sub-baris terstruktur; Desktop: 1 baris menyatu) */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2.5 sm:gap-4 w-full sm:w-auto">
+          {/* Sub-Baris 1 (Mobile): Format Tabs di Kiri + Select di Kanan */}
+          <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+            {formatFilter && onFormatFilterChange && (
+              <div className="inline-flex items-center gap-1 p-0.5 bg-gray-100 dark:bg-[#0F172A] rounded-lg border border-gray-200/60 dark:border-[#2C3246] shrink-0">
                 <button
                   type="button"
-                  onClick={onSelectAll}
-                  className="text-[11px] font-semibold text-orange-600 dark:text-orange-400 hover:underline cursor-pointer"
+                  onClick={() => onFormatFilterChange("reels")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                    formatFilter === "reels"
+                      ? "bg-white dark:bg-[#141B31] text-blue-600 dark:text-blue-400 shadow-2xs"
+                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                  }`}
                 >
-                  {selectedCount === totalFiltered ? "Deselect All" : "Select All"}
+                  <Film className="w-3.5 h-3.5 text-blue-500" />
+                  <span>Reels ({reelsCount})</span>
                 </button>
-              )}
-              <button
-                type="button"
-                onClick={onToggleSelectMode}
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
-              >
-                <Check className="w-3.5 h-3.5" />
-                <span>Done ({selectedCount})</span>
-              </button>
+                <button
+                  type="button"
+                  onClick={() => onFormatFilterChange("carousels")}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                    formatFilter === "carousels"
+                      ? "bg-white dark:bg-[#141B31] text-purple-600 dark:text-purple-400 shadow-2xs"
+                      : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                  }`}
+                >
+                  <Layers className="w-3.5 h-3.5 text-purple-500" />
+                  <span>Carousel ({carouselCount})</span>
+                </button>
+              </div>
+            )}
+
+            {/* Tombol Select (Khusus Mobile: Berada di pojok kanan Sub-Baris 1) */}
+            <div className="sm:hidden shrink-0">
+              {renderSelectButton()}
             </div>
-          ) : (
+          </div>
+
+          {/* Sub-Baris 2 (Mobile) / Sejajar di Desktop: Filters + Sort by + Clear all */}
+          <div className="flex items-center gap-2.5 sm:gap-3.5 w-full sm:w-auto pt-2 sm:pt-0 border-t border-gray-100 dark:border-[#2C3246]/50 sm:border-t-0">
+            {/* Tombol ≡ Filters */}
             <button
               type="button"
-              onClick={onToggleSelectMode}
+              onClick={onOpenFilterModal}
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
             >
-              <Check className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-              <span>Select</span>
+              <SlidersHorizontal className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+              <span>Filters</span>
             </button>
-          )}
+
+            {/* Tombol ⇅ Sort by */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setIsSortDropdownOpen((prev) => !prev)}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
+              >
+                <ArrowUpDown className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                <span>Sort by</span>
+              </button>
+
+              {/* Popup Menu Sort By Persis Seperti Image 3 */}
+              {isSortDropdownOpen && (
+                <>
+                  <div
+                    className="fixed inset-0 z-40 bg-transparent"
+                    onClick={() => setIsSortDropdownOpen(false)}
+                  />
+                  <div className="absolute left-0 top-full mt-2 bg-white dark:bg-[#161B2E] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl z-50 min-w-[210px] overflow-hidden animate-in fade-in zoom-in-95 duration-150 divide-y divide-gray-100 dark:divide-white/5">
+                    {sortOptions.map((opt) => {
+                      const isSelected = sortOption === opt.value;
+                      const IconComponent = opt.icon;
+                      return (
+                        <button
+                          key={opt.value}
+                          type="button"
+                          onClick={() => {
+                            setSortOption(opt.value);
+                            setIsSortDropdownOpen(false);
+                          }}
+                          className={`w-full px-4 py-3 text-left text-xs font-semibold flex items-center justify-between transition-colors cursor-pointer ${
+                            isSelected
+                              ? "bg-orange-500/10 text-orange-600 dark:text-orange-400 font-bold"
+                              : "text-gray-800 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <IconComponent className="w-4 h-4 text-gray-500 dark:text-gray-400 shrink-0" />
+                            <span>{opt.label}</span>
+                          </div>
+
+                          <div className="flex items-center gap-1.5">
+                            {opt.hasInfo && (
+                              <Info className="w-3.5 h-3.5 text-gray-400 hover:text-gray-600" />
+                            )}
+                            {isSelected && (
+                              <Check className="w-3.5 h-3.5 text-orange-600 dark:text-orange-400 stroke-[2.5]" />
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Tombol Clear all */}
+            {isCustomized && (
+              <button
+                type="button"
+                onClick={onResetFilters}
+                className="text-xs font-medium text-gray-400 hover:text-rose-500 transition-colors cursor-pointer"
+                title="Reset ke pengaturan default"
+              >
+                Clear all
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Kanan (Khusus Desktop: Tetap di pojok kanan Baris 2) */}
+        <div className="hidden sm:flex items-center gap-2 shrink-0">
+          {renderSelectButton()}
         </div>
       </div>
     </div>
