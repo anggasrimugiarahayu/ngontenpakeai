@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 
 export interface InstagramRisetConfig {
   instagramSessionId?: string;
+  tiktokSessionId?: string;
   rapidApiKey?: string;
   rapidApiHost?: string;
   metaPageAccessToken?: string;
@@ -27,6 +28,10 @@ export async function getResolvedRisetConfig(): Promise<Required<InstagramRisetC
     instagramSessionId:
       dbConfig.instagramSessionId?.trim() ||
       process.env.INSTAGRAM_SESSION_ID?.trim() ||
+      "",
+    tiktokSessionId:
+      dbConfig.tiktokSessionId?.trim() ||
+      process.env.TIKTOK_SESSION_ID?.trim() ||
       "",
     rapidApiKey:
       dbConfig.rapidApiKey?.trim() ||
