@@ -45,6 +45,7 @@ export function TikTokProfileHeader({ profile }: Props) {
                 "https://p16-sign-va.tiktokcdn.com/tos-maliva-avt-0068/default.jpeg"
               }
               alt={profile.nickname}
+              referrerPolicy="no-referrer"
               className="w-full h-full rounded-full object-cover border-2 border-white dark:border-[#141B31]"
             />
           </div>
@@ -184,6 +185,7 @@ export function TikTokProfileHeader({ profile }: Props) {
                 "https://p16-sign-va.tiktokcdn.com/tos-maliva-avt-0068/default.jpeg"
               }
               alt={profile.nickname}
+              referrerPolicy="no-referrer"
               className="w-full h-full rounded-full object-cover border-2 border-white dark:border-[#141B31]"
             />
           </div>
