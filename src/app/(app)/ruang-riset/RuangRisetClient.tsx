@@ -11,12 +11,13 @@ import {
 } from "./components/RisetIcons";
 import { InstagramResearchStudio } from "./instagram/InstagramResearchStudio";
 import { YouTubeResearchStudio } from "./youtube/YouTubeResearchStudio";
+import { TikTokResearchStudio } from "./tiktok/TikTokResearchStudio";
 
 interface RuangRisetClientProps {
   isLoggedIn: boolean;
   isPro?: boolean;
   isAdmin?: boolean;
-  initialPlatform?: "instagram" | "youtube" | null;
+  initialPlatform?: "instagram" | "youtube" | "tiktok" | null;
 }
 
 const RISET_PLATFORMS: RisetPlatform[] = [
@@ -40,7 +41,7 @@ const RISET_PLATFORMS: RisetPlatform[] = [
     description:
       "Bongkar Outlier Score video & Shorts kompetitor, pisahkan format konten, dan ekspor data ide.",
     icon: YouTubeIcon,
-    badge: "Baru",
+    badge: "Populer",
     isActive: true,
     points: [
       "Bongkar Outlier Score & Video Paling Meledak",
@@ -52,14 +53,14 @@ const RISET_PLATFORMS: RisetPlatform[] = [
     id: "tiktok",
     name: "Riset TikTok",
     description:
-      "Eksplorasi sound tren, pola durasi FYP, dan struktur hook video kompetitor.",
+      "Bongkar Outlier Score video & Photo Slide kompetitor, sortir views tertinggi, dan ekspor data ide.",
     icon: TikTokIcon,
-    badge: "Segera Hadir",
-    isActive: false,
+    badge: "Baru",
+    isActive: true,
     points: [
-      "Deteksi Audio & Sound FYP yang Sedang Naik",
-      "Analisis Struktur 3 Detik Pertama Video Populer",
-      "Petakan Pola Durasi & Tipe Konten Pemenang",
+      "Bongkar Outlier Score & Konten Paling FYP",
+      "Pilah Format Video vs Photo Slide",
+      "Ekspor Naskah, Hook, & Data ke CSV / Excel",
     ],
   },
   {
@@ -85,7 +86,7 @@ export default function RuangRisetClient({
   initialPlatform = null,
 }: RuangRisetClientProps) {
   const router = useRouter();
-  const [selectedPlatform, setSelectedPlatform] = useState<"instagram" | "youtube" | null>(
+  const [selectedPlatform, setSelectedPlatform] = useState<"instagram" | "youtube" | "tiktok" | null>(
     initialPlatform
   );
 
@@ -97,7 +98,7 @@ export default function RuangRisetClient({
       const params = new URLSearchParams(window.location.search);
       const platformParam = params.get("platform");
       if (
-        (platformParam === "instagram" || platformParam === "youtube") &&
+        (platformParam === "instagram" || platformParam === "youtube" || platformParam === "tiktok") &&
         isLoggedIn &&
         (isPro || isAdmin)
       ) {
@@ -111,7 +112,7 @@ export default function RuangRisetClient({
 
     const handlePlatformChange = (e: any) => {
       if (
-        (e.detail === "instagram" || e.detail === "youtube") &&
+        (e.detail === "instagram" || e.detail === "youtube" || e.detail === "tiktok") &&
         isLoggedIn &&
         (isPro || isAdmin)
       ) {
@@ -130,7 +131,7 @@ export default function RuangRisetClient({
     };
   }, [isLoggedIn, isPro, isAdmin]);
 
-  const handleSelectPlatform = (platformId: "instagram" | "youtube") => {
+  const handleSelectPlatform = (platformId: "instagram" | "youtube" | "tiktok") => {
     if (!isLoggedIn || (!isPro && !isAdmin)) {
       window.dispatchEvent(new Event("app-loading-start"));
       router.push("/?pricing=true&cat=riset");
@@ -163,6 +164,8 @@ export default function RuangRisetClient({
         />
       ) : selectedPlatform === "youtube" ? (
         <YouTubeResearchStudio onBackToHub={handleBackToHub} />
+      ) : selectedPlatform === "tiktok" ? (
+        <TikTokResearchStudio onBackToHub={handleBackToHub} />
       ) : (
         <>
           {/* Header */}
@@ -184,8 +187,8 @@ export default function RuangRisetClient({
                 key={platform.id}
                 platform={platform}
                 onSelect={
-                  platform.id === "instagram" || platform.id === "youtube"
-                    ? () => handleSelectPlatform(platform.id as "instagram" | "youtube")
+                  platform.id === "instagram" || platform.id === "youtube" || platform.id === "tiktok"
+                    ? () => handleSelectPlatform(platform.id as "instagram" | "youtube" | "tiktok")
                     : undefined
                 }
               />

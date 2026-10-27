@@ -1,0 +1,190 @@
+"use client";
+
+import React from "react";
+import { TikTokPostItem } from "./types";
+import { Play, Flame, Eye, Check, Heart, MessageSquare, Layers } from "lucide-react";
+import { useFlipGridAnimation } from "@/hooks/useFlipGridAnimation";
+
+interface Props {
+  videos: TikTokPostItem[];
+  onSelectVideo: (video: TikTokPostItem) => void;
+  isSelectMode?: boolean;
+  selectedVideoIds?: Set<string>;
+  onToggleSelectVideo?: (videoId: string) => void;
+}
+
+function formatViews(num: number): string {
+  if (num >= 1_000_000) {
+    return (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + " Jt";
+  }
+  if (num >= 1_000) {
+    return (num / 1_000).toFixed(1).replace(/\.0$/, "") + " Rb";
+  }
+  return num.toLocaleString("id-ID");
+}
+
+export function TikTokFeedGrid({
+  videos,
+  onSelectVideo,
+  isSelectMode = false,
+  selectedVideoIds = new Set(),
+  onToggleSelectVideo,
+}: Props) {
+  const { registerCard } = useFlipGridAnimation(videos);
+
+  if (videos.length === 0) {
+    return (
+      <div className="w-full text-center py-16 px-4">
+        <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gray-100 dark:bg-[#1E293B] text-gray-400 flex items-center justify-center">
+          <Play className="w-6 h-6" />
+        </div>
+        <h3 className="font-bold text-gray-900 dark:text-white text-base mb-1">
+          Tidak ada konten yang cocok
+        </h3>
+        <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
+          Coba ganti kata kunci pencarian atau ubah filter format konten.
+        </p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 p-4 sm:p-5">
+      {videos.map((video) => {
+        const isViralOutlier = video.outlierScore >= 2.0;
+        const isSuperViral = video.outlierScore >= 5.0;
+        const isSelected = selectedVideoIds.has(video.id);
+
+        return (
+          <div
+            key={video.id}
+            ref={registerCard(video.id)}
+            onClick={() => {
+              if (isSelectMode) {
+                onToggleSelectVideo?.(video.id);
+              } else {
+                onSelectVideo(video);
+              }
+            }}
+            className={`group relative flex flex-col bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl overflow-hidden hover:border-orange-500/50 hover:shadow-lg transition-colors duration-150 cursor-pointer ${
+              isSelected ? "ring-3 ring-orange-500" : ""
+            }`}
+          >
+            {/* Select Checkbox (Saat Mode Select Aktif) */}
+            {isSelectMode && (
+              <div className="absolute top-2.5 right-2.5 z-30">
+                <div
+                  className={`w-6 h-6 rounded-lg flex items-center justify-center transition-all shadow-md ${
+                    isSelected
+                      ? "bg-orange-500 text-white ring-2 ring-white"
+                      : "bg-black/60 text-transparent border border-white/40 backdrop-blur-xs hover:border-white"
+                  }`}
+                >
+                  <Check
+                    className={`w-3.5 h-3.5 ${
+                      isSelected ? "opacity-100 text-white" : "opacity-0"
+                    }`}
+                    strokeWidth={3}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Thumbnail Area (Aspek 9:14 Vertikal TikTok) */}
+            <div className="relative w-full aspect-[9/14] overflow-hidden bg-gray-950">
+              <img
+                src={video.thumbnailUrl}
+                alt={video.title}
+                loading="lazy"
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              />
+
+              {/* Gradient Overlay saat Hover (hanya saat tidak dalam select mode) */}
+              {!isSelectMode && (
+                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <div className="w-11 h-11 rounded-full bg-[#ff004f] text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
+                    {video.isPhoto ? (
+                      <Layers className="w-5 h-5 text-white" />
+                    ) : (
+                      <Play className="w-5 h-5 fill-current ml-0.5" />
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Badges Top: Outlier Score & Photo Slide / Video */}
+              <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
+                {isViralOutlier ? (
+                  <span
+                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold text-white shadow-md ${
+                      isSuperViral
+                        ? "bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 animate-pulse"
+                        : "bg-gradient-to-r from-amber-500 to-rose-600"
+                    }`}
+                  >
+                    <Flame className="w-3 h-3 fill-current" />
+                    <span>{video.outlierScore.toFixed(1)}x Outlier</span>
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-black/60 backdrop-blur-xs text-gray-300">
+                    <span>{video.outlierScore.toFixed(1)}x</span>
+                  </span>
+                )}
+
+                {video.isPhoto && !isSelectMode && (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-[#00f2fe]/90 text-black shadow-sm">
+                    <Layers className="w-3 h-3" />
+                    <span>Slide {video.photoUrls && video.photoUrls.length > 0 ? `(${video.photoUrls.length})` : ""}</span>
+                  </span>
+                )}
+              </div>
+
+              {/* Duration Bottom Right */}
+              {video.duration && !video.isPhoto && (
+                <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-black/80 backdrop-blur-xs text-[10px] font-bold text-white tracking-wide">
+                  {video.duration}
+                </div>
+              )}
+            </div>
+
+            {/* Video Meta Info */}
+            <div className="p-3.5 sm:p-4 flex flex-col flex-1 justify-between gap-2.5">
+              <h4 className="font-bold text-xs sm:text-sm text-gray-900 dark:text-white line-clamp-2 leading-snug group-hover:text-rose-500 transition-colors">
+                {video.title || "TikTok Post"}
+              </h4>
+
+              <div className="pt-2 border-t border-gray-100 dark:border-[#2C3246]/60 flex flex-col gap-1.5">
+                {/* 3 Metrics: Views, Likes, Comments */}
+                <div className="flex items-center justify-between text-[11px] font-semibold text-gray-700 dark:text-gray-300">
+                  <span className="flex items-center gap-1" title="Views">
+                    <Eye className="w-3.5 h-3.5 text-blue-500" />
+                    <span>{formatViews(video.viewsCount)}</span>
+                  </span>
+
+                  <span className="flex items-center gap-1" title="Likes">
+                    <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
+                    <span>{formatViews(video.likesCount)}</span>
+                  </span>
+
+                  <span className="flex items-center gap-1" title="Comments">
+                    <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
+                    <span>{formatViews(video.commentsCount)}</span>
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-gray-400">
+                  <span>{video.publishedText}</span>
+                  {video.isPhoto ? (
+                    <span className="text-[10px] text-rose-500 dark:text-rose-400 font-medium">Photo Slide</span>
+                  ) : video.duration ? (
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">{video.duration}</span>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
