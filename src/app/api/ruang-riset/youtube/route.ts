@@ -126,28 +126,74 @@ function parseDurationSeconds(str?: string | null): number {
 function parseRelativeDateToISO(text?: string | null): string {
   if (!text) return new Date().toISOString();
   const now = Date.now();
-  const lower = text.toLowerCase();
+  const trimmed = text.trim();
+
+  // If text is already an ISO or standard date string
+  if (trimmed.includes("-") || trimmed.includes("T")) {
+    const parsed = Date.parse(trimmed);
+    if (!isNaN(parsed)) {
+      return new Date(parsed).toISOString();
+    }
+  }
+
+  const lower = trimmed.toLowerCase();
+
+  if (/kemarin|yesterday/i.test(lower)) {
+    return new Date(now - 24 * 3600 * 1000).toISOString();
+  }
+
   const numMatch = lower.match(/\d+/);
   const num = numMatch ? parseInt(numMatch[0], 10) : 1;
 
   let msAgo = 0;
-  if (/detik|second/i.test(lower)) {
-    msAgo = num * 1000;
-  } else if (/menit|minute/i.test(lower)) {
-    msAgo = num * 60 * 1000;
-  } else if (/jam|hour/i.test(lower)) {
-    msAgo = num * 3600 * 1000;
-  } else if (/hari|day/i.test(lower)) {
-    msAgo = num * 24 * 3600 * 1000;
-  } else if (/minggu|week/i.test(lower)) {
-    msAgo = num * 7 * 24 * 3600 * 1000;
-  } else if (/bulan|month/i.test(lower)) {
-    msAgo = num * 30 * 24 * 3600 * 1000;
-  } else if (/tahun|year/i.test(lower)) {
+  if (/tahun|thn|\bth\b|years?|\byrs?\b|\d+\s*y\b/i.test(lower)) {
     msAgo = num * 365 * 24 * 3600 * 1000;
+  } else if (/bulan|bln|months?|\bmos?\b|\d+\s*mo\b/i.test(lower)) {
+    msAgo = num * 30 * 24 * 3600 * 1000;
+  } else if (/minggu|mgg|weeks?|\bwks?\b|\d+\s*w\b/i.test(lower)) {
+    msAgo = num * 7 * 24 * 3600 * 1000;
+  } else if (/hari|days?|\d+\s*d\b|\d+\s*h\s*lalu/i.test(lower)) {
+    msAgo = num * 24 * 3600 * 1000;
+  } else if (/jam|hours?|\bhrs?\b|\bj\b|\d+\s*h\b/i.test(lower)) {
+    msAgo = num * 3600 * 1000;
+  } else if (/menit|mnt|minutes?|\bmins?\b|\d+\s*m\b/i.test(lower)) {
+    msAgo = num * 60 * 1000;
+  } else if (/detik|dtk|seconds?|\bsecs?\b|\d+\s*s\b/i.test(lower)) {
+    msAgo = num * 1000;
   }
 
   return new Date(now - msAgo).toISOString();
+}
+
+function formatRelativeDateFromISO(isoString: string): string {
+  const time = new Date(isoString).getTime();
+  if (isNaN(time)) return "Baru saja";
+  const diffMs = Math.max(0, Date.now() - time);
+  const diffDays = Math.floor(diffMs / (24 * 3600 * 1000));
+  if (diffDays >= 365) {
+    const y = Math.floor(diffDays / 365);
+    return `${y} thn lalu`;
+  }
+  if (diffDays >= 30) {
+    const m = Math.floor(diffDays / 30);
+    return `${m} bln lalu`;
+  }
+  if (diffDays >= 7) {
+    const w = Math.floor(diffDays / 7);
+    return `${w} mgg lalu`;
+  }
+  if (diffDays >= 1) {
+    return `${diffDays} hari lalu`;
+  }
+  const diffHours = Math.floor(diffMs / (3600 * 1000));
+  if (diffHours >= 1) {
+    return `${diffHours} jam lalu`;
+  }
+  const diffMins = Math.floor(diffMs / (60 * 1000));
+  if (diffMins >= 1) {
+    return `${diffMins} menit lalu`;
+  }
+  return "Baru saja";
 }
 
 export async function POST(request: NextRequest) {
@@ -347,8 +393,23 @@ export async function POST(request: NextRequest) {
         const parts =
           meta?.metadata?.contentMetadataViewModel?.metadataRows?.[0]
             ?.metadataParts || [];
-        const viewsStr = parts[0]?.text?.content || parts[0]?.accessibilityLabel || "";
-        const pubStr = parts[1]?.text?.content || parts[1]?.accessibilityLabel || "";
+        let viewsStr = "";
+        let pubStr = "";
+        for (const p of parts) {
+          const content = p?.text?.content || p?.accessibilityLabel || "";
+          if (!content) continue;
+          if (/ditonton|views|tayangan|penayangan/i.test(content) && !viewsStr) {
+            viewsStr = content;
+          } else if (/lalu|ago|kemarin|yesterday|detik|menit|jam|hari|minggu|mgg|bulan|bln|tahun|thn|sec|min|hour|day|week|month|year/i.test(content) && !pubStr) {
+            pubStr = content;
+          }
+        }
+        if (!viewsStr && parts[0]) {
+          viewsStr = parts[0]?.text?.content || parts[0]?.accessibilityLabel || "";
+        }
+        if (!pubStr && parts[1]) {
+          pubStr = parts[1]?.text?.content || parts[1]?.accessibilityLabel || "";
+        }
         const overlays = lvm.contentImage?.thumbnailViewModel?.overlays || [];
         const badgeOverlay = overlays.find(
           (o: any) => o.thumbnailBottomOverlayViewModel?.badges?.[0]?.thumbnailBadgeViewModel
@@ -461,6 +522,16 @@ export async function POST(request: NextRequest) {
                   slvm.onTap?.innertubeCommand?.reelWatchEndpoint?.thumbnail?.thumbnails?.slice(-1)[0]?.url ||
                   `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
+                // Extract published text if available in accessibility or metadata
+                let shortsPubStr = "Shorts";
+                const aText = slvm.accessibilityText || "";
+                const dateMatch = aText.match(
+                  /\b\d+\s*(?:detik|dtk|menit|mnt|jam|j|hari|h|minggu|mgg|bulan|bln|tahun|thn|second|minute|hour|day|week|month|year|sec|min|hr|d|w|mo|yr)\s*(?:lalu|ago|yang lalu)?\b/i
+                );
+                if (dateMatch) {
+                  shortsPubStr = dateMatch[0].trim();
+                }
+
                 parsedVideos.push({
                   id: videoId,
                   title,
@@ -470,8 +541,8 @@ export async function POST(request: NextRequest) {
                   likesCount: 0,
                   commentsCount: 0,
                   viewsText: viewsStr,
-                  publishedText: "Shorts",
-                  timestamp: parseRelativeDateToISO(viewsStr),
+                  publishedText: shortsPubStr,
+                  timestamp: parseRelativeDateToISO(shortsPubStr !== "Shorts" ? shortsPubStr : ""),
                   duration: "Shorts",
                   durationSeconds: 60,
                   isShorts: true,
@@ -496,7 +567,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Optional: Enrich with YouTube Data API v3 statistics if YOUTUBE_API_KEY is available
+    // 3. Optional: Enrich with YouTube Data API v3 statistics & snippet if YOUTUBE_API_KEY is available
     const ytApiKey = process.env.YOUTUBE_API_KEY?.trim();
     if (ytApiKey) {
       const videoIds = parsedVideos.map((v) => v.id);
@@ -504,17 +575,26 @@ export async function POST(request: NextRequest) {
         const batchIds = videoIds.slice(i, i + 50).join(",");
         try {
           const ytRes = await fetch(
-            `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${batchIds}&key=${ytApiKey}`,
+            `https://www.googleapis.com/youtube/v3/videos?part=snippet,statistics&id=${batchIds}&key=${ytApiKey}`,
             { cache: "no-store" }
           );
           if (ytRes.ok) {
             const ytData = await ytRes.json();
-            const statsMap = new Map<string, { likes: number; comments: number; views: number }>();
+            const statsMap = new Map<
+              string,
+              {
+                likes: number;
+                comments: number;
+                views: number;
+                publishedAt?: string;
+              }
+            >();
             for (const item of ytData.items || []) {
               statsMap.set(item.id, {
                 likes: Number(item.statistics?.likeCount) || 0,
                 comments: Number(item.statistics?.commentCount) || 0,
                 views: Number(item.statistics?.viewCount) || 0,
+                publishedAt: item.snippet?.publishedAt,
               });
             }
             for (const v of parsedVideos) {
@@ -523,6 +603,12 @@ export async function POST(request: NextRequest) {
                 v.likesCount = st.likes;
                 v.commentsCount = st.comments;
                 if (st.views > 0 && v.viewsCount === 0) v.viewsCount = st.views;
+                if (st.publishedAt) {
+                  v.timestamp = st.publishedAt;
+                  if (v.publishedText === "Shorts" || v.publishedText === "Baru saja") {
+                    v.publishedText = formatRelativeDateFromISO(st.publishedAt);
+                  }
+                }
               }
             }
           }
