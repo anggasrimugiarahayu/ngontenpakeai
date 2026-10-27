@@ -602,6 +602,7 @@ export async function POST(request: NextRequest) {
               if (st) {
                 v.likesCount = st.likes;
                 v.commentsCount = st.comments;
+                (v as any).hasRealStats = true;
                 if (st.views > 0 && v.viewsCount === 0) v.viewsCount = st.views;
                 if (st.publishedAt) {
                   v.timestamp = st.publishedAt;
@@ -611,6 +612,9 @@ export async function POST(request: NextRequest) {
                 }
               }
             }
+          } else {
+            const errBody = await ytRes.text().catch(() => "");
+            console.warn(`YouTube Data API responded with HTTP ${ytRes.status}:`, errBody);
           }
         } catch (err) {
           console.warn("YouTube Data API fetch failed:", err);
@@ -639,15 +643,15 @@ export async function POST(request: NextRequest) {
       else if (outlierScore >= 5.0) outlierTier = "viral";
       else if (outlierScore >= 2.0) outlierTier = "high";
 
-      // Calculate benchmark likes & comments if not provided by YouTube Data API v3
+      // Calculate benchmark likes & comments ONLY if not provided by YouTube Data API v3
       let likes = v.likesCount;
-      if (!likes || likes <= 0) {
+      if (!(v as any).hasRealStats && (!likes || likes <= 0)) {
         const likeRatio = Math.min(0.085, 0.045 * Math.pow(Math.max(0.6, outlierScore), 0.2));
         likes = Math.max(1, Math.round(views * likeRatio));
       }
 
       let comments = v.commentsCount;
-      if (!comments || comments <= 0) {
+      if (!(v as any).hasRealStats && (!comments || comments <= 0)) {
         const commentRatio = Math.min(0.0075, 0.0022 * Math.pow(Math.max(0.6, outlierScore), 0.25));
         comments = Math.max(0, Math.round(views * commentRatio));
       }
