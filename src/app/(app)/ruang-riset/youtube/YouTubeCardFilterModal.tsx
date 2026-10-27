@@ -1,86 +1,317 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  YouTubeSortOption,
-  YouTubeFilterMode,
-  YouTubeVideoLimit,
-  YouTubeDateFilter,
-} from "./types";
+import React, { useState, useMemo, useRef, useEffect, useCallback } from "react";
+import { YouTubeVideoItem } from "./types";
 import {
   X,
-  Heart,
+  Play,
   Zap,
-  MessageSquare,
+  Film,
   Clock,
   Calendar,
   ChevronDown,
 } from "lucide-react";
 
+export interface YouTubeAdvancedFilterState {
+  types: ("shorts" | "long")[];
+  metric: "views" | "outlier";
+  minVal: number | null;
+  maxVal: number | null;
+  postedType: "in_last" | "between";
+  inLastValue: number;
+  inLastUnit: "days" | "weeks" | "months" | "years";
+  startDate?: string;
+  endDate?: string;
+}
+
+export const DEFAULT_YOUTUBE_ADVANCED_FILTER: YouTubeAdvancedFilterState = {
+  types: [],
+  metric: "views",
+  minVal: null,
+  maxVal: null,
+  postedType: "in_last",
+  inLastValue: 0,
+  inLastUnit: "years",
+  startDate: "",
+  endDate: "",
+};
+
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onApply?: () => void;
-  filterMode: YouTubeFilterMode;
-  setFilterMode: (val: YouTubeFilterMode) => void;
-  videoLimit: YouTubeVideoLimit;
-  setVideoLimit: (val: YouTubeVideoLimit) => void;
-  dateFilter: YouTubeDateFilter;
-  setDateFilter: (val: YouTubeDateFilter) => void;
-  sortOption: YouTubeSortOption;
-  setSortOption: (val: YouTubeSortOption) => void;
-  onReset: () => void;
-  totalFilteredCount?: number;
+  videos: YouTubeVideoItem[];
+  advancedFilters: YouTubeAdvancedFilterState;
+  onApplyAdvancedFilters: (filters: YouTubeAdvancedFilterState) => void;
+  onResetAdvancedFilters: () => void;
 }
 
 export function YouTubeCardFilterModal({
   isOpen,
   onClose,
-  onApply,
-  filterMode,
-  setFilterMode,
-  videoLimit,
-  setVideoLimit,
-  dateFilter,
-  setDateFilter,
-  sortOption,
-  setSortOption,
-  onReset,
-  totalFilteredCount = 25,
+  videos,
+  advancedFilters,
+  onApplyAdvancedFilters,
+  onResetAdvancedFilters,
 }: Props) {
-  const [metricTab, setMetricTab] = useState<"likes" | "outlier" | "comments">("outlier");
-  const [postedTab, setPostedTab] = useState<"in_last" | "between">("in_last");
-  const [inLastValue, setInLastValue] = useState("3");
-  const [inLastUnit, setInLastUnit] = useState<"months" | "weeks" | "days">("months");
+  // Local state for edits inside the modal
+  const [types, setTypes] = useState<("shorts" | "long")[]>(advancedFilters.types);
+  const [metric, setMetric] = useState<"views" | "outlier">(advancedFilters.metric);
+  const [postedType, setPostedType] = useState<"in_last" | "between">(advancedFilters.postedType);
+  const [inLastValue, setInLastValue] = useState<string>(String(advancedFilters.inLastValue || 0));
+  const [inLastUnit, setInLastUnit] = useState<"days" | "weeks" | "months" | "years">(advancedFilters.inLastUnit);
+  const [startDate, setStartDate] = useState<string>(advancedFilters.startDate || "");
+  const [endDate, setEndDate] = useState<string>(advancedFilters.endDate || "");
   const [isUnitDropdownOpen, setIsUnitDropdownOpen] = useState(false);
 
-  // Range values
-  const [minValue, setMinValue] = useState("0");
-  const [maxValue, setMaxValue] = useState("50000");
+  // Sync state whenever modal is opened
+  useEffect(() => {
+    if (isOpen) {
+      setTypes(advancedFilters.types);
+      setMetric(advancedFilters.metric);
+      setPostedType(advancedFilters.postedType);
+      setInLastValue(String(advancedFilters.inLastValue || 0));
+      setInLastUnit(advancedFilters.inLastUnit);
+      setStartDate(advancedFilters.startDate || "");
+      setEndDate(advancedFilters.endDate || "");
+    }
+  }, [isOpen, advancedFilters]);
+
+  // Compute absolute min & max for each metric from loaded videos
+  const metricBounds = useMemo(() => {
+    if (!videos || videos.length === 0) {
+      return {
+        views: { min: 0, max: 1000 },
+        outlier: { min: 0.1, max: 5.0 },
+      };
+    }
+
+    const viewsList = videos.map((v) => v.viewsCount || 0);
+    const outlierList = videos.map((v) => v.outlierScore || 0);
+
+    const minViews = Math.min(...viewsList);
+    const maxViews = Math.max(...viewsList);
+    const minOutlier = Number(Math.min(...outlierList).toFixed(1));
+    const maxOutlier = Number(Math.max(...outlierList).toFixed(1));
+
+    return {
+      views: { min: minViews, max: maxViews === minViews ? minViews + 100 : maxViews },
+      outlier: { min: minOutlier, max: maxOutlier === minOutlier ? minOutlier + 1.0 : maxOutlier },
+    };
+  }, [videos]);
+
+  const activeBound = metricBounds[metric];
+  const isDecimalMetric = metric === "outlier";
+
+  // Min and Max values currently selected by user
+  const [minVal, setMinVal] = useState<number>(activeBound.min);
+  const [maxVal, setMaxVal] = useState<number>(activeBound.max);
+
+  // When metric tab changes or modal opens, re-initialize min/max to bounds if previously default
+  useEffect(() => {
+    if (advancedFilters.metric === metric && advancedFilters.minVal !== null && advancedFilters.maxVal !== null) {
+      setMinVal(advancedFilters.minVal);
+      setMaxVal(advancedFilters.maxVal);
+    } else {
+      setMinVal(activeBound.min);
+      setMaxVal(activeBound.max);
+    }
+  }, [metric, activeBound, advancedFilters]);
+
+  // Slider Track Ref
+  const trackRef = useRef<HTMLDivElement>(null);
+
+  // Compute percentages for dual slider knobs
+  const leftPercent = useMemo(() => {
+    const range = activeBound.max - activeBound.min;
+    if (range <= 0) return 0;
+    const clamped = Math.max(activeBound.min, Math.min(activeBound.max, minVal));
+    return Math.max(0, Math.min(100, ((clamped - activeBound.min) / range) * 100));
+  }, [minVal, activeBound]);
+
+  const rightPercent = useMemo(() => {
+    const range = activeBound.max - activeBound.min;
+    if (range <= 0) return 100;
+    const clamped = Math.max(activeBound.min, Math.min(activeBound.max, maxVal));
+    return Math.max(0, Math.min(100, ((clamped - activeBound.min) / range) * 100));
+  }, [maxVal, activeBound]);
+
+  // Histogram calculation: 35 bins
+  const histogramBins = useMemo(() => {
+    const BIN_COUNT = 35;
+    if (!videos || videos.length === 0) {
+      return Array.from({ length: BIN_COUNT }, () => ({ count: 0, heightPercent: 10, isActive: false }));
+    }
+
+    const range = activeBound.max - activeBound.min;
+    const step = range / BIN_COUNT;
+
+    const values = videos.map((v) => {
+      if (metric === "views") return v.viewsCount || 0;
+      return v.outlierScore || 0;
+    });
+
+    const bins = Array.from({ length: BIN_COUNT }, (_, i) => {
+      const binStart = activeBound.min + i * step;
+      const binEnd = i === BIN_COUNT - 1 ? activeBound.max : binStart + step;
+      return { binStart, binEnd, count: 0 };
+    });
+
+    values.forEach((v) => {
+      for (let i = 0; i < BIN_COUNT; i++) {
+        const bin = bins[i];
+        if (i === BIN_COUNT - 1) {
+          if (v >= bin.binStart && v <= bin.binEnd) {
+            bin.count++;
+            break;
+          }
+        } else if (v >= bin.binStart && v < bin.binEnd) {
+          bin.count++;
+          break;
+        }
+      }
+    });
+
+    const maxCount = Math.max(...bins.map((b) => b.count), 1);
+
+    return bins.map((bin) => {
+      const heightPercent = bin.count > 0 ? Math.max(14, (bin.count / maxCount) * 100) : 10;
+      const binMid = (bin.binStart + bin.binEnd) / 2;
+      const isActive = binMid >= minVal - (step / 2) && binMid <= maxVal + (step / 2);
+      return { count: bin.count, heightPercent, isActive };
+    });
+  }, [videos, metric, activeBound, minVal, maxVal]);
+
+  // Dual Slider Pointer Drag Handlers
+  const handlePointerDown = useCallback(
+    (thumb: "min" | "max", e: React.PointerEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+
+      const track = trackRef.current;
+      if (!track) return;
+
+      const updateValue = (clientX: number) => {
+        const rect = track.getBoundingClientRect();
+        const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+        const raw = activeBound.min + ratio * (activeBound.max - activeBound.min);
+        const nextVal = isDecimalMetric ? Number(raw.toFixed(1)) : Math.round(raw);
+
+        if (thumb === "min") {
+          setMinVal(Math.min(nextVal, maxVal));
+        } else {
+          setMaxVal(Math.max(nextVal, minVal));
+        }
+      };
+
+      updateValue(e.clientX);
+
+      const onPointerMove = (moveEvt: PointerEvent) => {
+        updateValue(moveEvt.clientX);
+      };
+
+      const onPointerUp = () => {
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointerup", onPointerUp);
+      };
+
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", onPointerUp);
+    },
+    [activeBound, isDecimalMetric, minVal, maxVal]
+  );
+
+  // Toggle Type
+  const handleToggleType = (targetType: "shorts" | "long") => {
+    setTypes((prev) => {
+      if (prev.includes(targetType)) {
+        return prev.filter((t) => t !== targetType);
+      } else {
+        return [...prev, targetType];
+      }
+    });
+  };
+
+  // Real-time preview count of videos matching current modal settings
+  const previewCount = useMemo(() => {
+    if (!videos) return 0;
+    return videos.filter((v) => {
+      // Type (Shorts vs Long Video)
+      if (types.length === 1) {
+        if (types.includes("shorts") && !v.isShorts) return false;
+        if (types.includes("long") && v.isShorts) return false;
+      }
+
+      // Performance
+      let val = 0;
+      if (metric === "views") val = v.viewsCount || 0;
+      else if (metric === "outlier") val = v.outlierScore || 0;
+
+      if (val < minVal || val > maxVal) return false;
+
+      // Date
+      const numVal = Number(inLastValue) || 0;
+      if (postedType === "in_last" && numVal > 0) {
+        const mult =
+          inLastUnit === "days"
+            ? 86400000
+            : inLastUnit === "weeks"
+            ? 7 * 86400000
+            : inLastUnit === "months"
+            ? 30 * 86400000
+            : 365 * 86400000;
+        const threshold = Date.now() - numVal * mult;
+        if (new Date(v.timestamp).getTime() < threshold) return false;
+      } else if (postedType === "between") {
+        if (startDate && new Date(v.timestamp).getTime() < new Date(startDate).getTime()) return false;
+        if (endDate && new Date(v.timestamp).getTime() > new Date(endDate).getTime() + 86400000) return false;
+      }
+
+      return true;
+    }).length;
+  }, [videos, types, metric, minVal, maxVal, postedType, inLastValue, inLastUnit, startDate, endDate]);
 
   if (!isOpen) return null;
 
-  const handleApply = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onApply) onApply();
+  const handleApply = () => {
+    const isMinBound = minVal <= activeBound.min;
+    const isMaxBound = maxVal >= activeBound.max;
+
+    onApplyAdvancedFilters({
+      types,
+      metric,
+      minVal: isMinBound && isMaxBound ? null : minVal,
+      maxVal: isMinBound && isMaxBound ? null : maxVal,
+      postedType,
+      inLastValue: Number(inLastValue) || 0,
+      inLastUnit,
+      startDate,
+      endDate,
+    });
     onClose();
   };
 
-  // Mock bar chart heights for visualization
-  const barHeights = [
-    30, 45, 60, 75, 85, 95, 100, 80, 65, 55, 45, 35, 25, 20, 15,
-    30, 50, 70, 65, 55, 40, 30, 25, 20, 15, 18, 22, 25, 30, 20, 15, 10,
-  ];
+  const handleReset = () => {
+    setTypes([]);
+    setMetric("views");
+    setMinVal(metricBounds.views.min);
+    setMaxVal(metricBounds.views.max);
+    setPostedType("in_last");
+    setInLastValue("0");
+    setInLastUnit("years");
+    setStartDate("");
+    setEndDate("");
+    onResetAdvancedFilters();
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+        className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity"
         onClick={onClose}
       />
 
-      {/* Modal Card (Sesuai Screenshot Image 2) */}
+      {/* Modal Card */}
       <div
         onClick={(e) => e.stopPropagation()}
         className="relative w-full max-w-md bg-[#161D2F] text-white border border-[#27324B] rounded-2xl shadow-2xl overflow-hidden animate-in zoom-in-95 fade-in duration-200"
@@ -101,8 +332,42 @@ export function YouTubeCardFilterModal({
         </div>
 
         {/* Body */}
-        <div className="p-5 space-y-6 text-xs">
-          {/* Section 1: Performance range */}
+        <div className="p-5 space-y-5 text-xs max-h-[75vh] overflow-y-auto">
+          {/* SECTION 1: Type (Shorts | Long Video) */}
+          <div className="space-y-2.5">
+            <p className="font-semibold text-gray-400 text-xs">Type</p>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => handleToggleType("shorts")}
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  types.includes("shorts")
+                    ? "bg-[#25324E] text-white border border-blue-500 shadow-sm font-bold"
+                    : "bg-[#1E263B] text-gray-300 border border-transparent hover:text-white hover:bg-[#25304B]"
+                }`}
+              >
+                <Zap className="w-3.5 h-3.5 text-rose-400" />
+                <span>Shorts</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => handleToggleType("long")}
+                className={`inline-flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                  types.includes("long")
+                    ? "bg-[#25324E] text-white border border-blue-500 shadow-sm font-bold"
+                    : "bg-[#1E263B] text-gray-300 border border-transparent hover:text-white hover:bg-[#25304B]"
+                }`}
+              >
+                <Film className="w-3.5 h-3.5 text-blue-400" />
+                <span>Long Video</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="border-t border-[#252E44]" />
+
+          {/* SECTION 2: Performance range */}
           <div className="space-y-3">
             <p className="font-semibold text-gray-400 text-xs">
               Performance range
@@ -112,71 +377,89 @@ export function YouTubeCardFilterModal({
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setMetricTab("likes")}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                  metricTab === "likes"
-                    ? "bg-[#25324E] text-white border border-blue-500/50"
-                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white"
+                onClick={() => setMetric("views")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  metric === "views"
+                    ? "bg-[#25324E] text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white hover:bg-[#25304B]"
                 }`}
               >
-                <Heart className="w-3.5 h-3.5" />
-                <span>Likes</span>
+                <Play className="w-3.5 h-3.5 text-blue-400" />
+                <span>Views</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setMetricTab("outlier")}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                  metricTab === "outlier"
-                    ? "bg-[#25324E] text-white border border-blue-500/50"
-                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white"
+                onClick={() => setMetric("outlier")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  metric === "outlier"
+                    ? "bg-[#25324E] text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white hover:bg-[#25304B]"
                 }`}
               >
                 <Zap className="w-3.5 h-3.5 text-amber-400" />
                 <span>Outlier score</span>
               </button>
-
-              <button
-                type="button"
-                onClick={() => setMetricTab("comments")}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                  metricTab === "comments"
-                    ? "bg-[#25324E] text-white border border-blue-500/50"
-                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white"
-                }`}
-              >
-                <MessageSquare className="w-3.5 h-3.5" />
-                <span>Comments</span>
-              </button>
             </div>
 
-            {/* Distribution Histogram & Dual Slider */}
+            {/* Real Histogram Distribution Bars */}
             <div className="pt-2 space-y-2">
-              {/* Bars */}
-              <div className="h-12 flex items-end gap-0.5 px-1">
-                {barHeights.map((h, i) => (
+              <div className="h-14 flex items-end gap-[2px] px-1">
+                {histogramBins.map((bin, i) => (
                   <div
                     key={i}
-                    style={{ height: `${h}%` }}
-                    className="flex-1 bg-blue-500/60 rounded-xs hover:bg-blue-400 transition-colors"
+                    style={{ height: `${bin.heightPercent}%` }}
+                    className={`flex-1 rounded-t-xs transition-colors duration-100 ${
+                      bin.isActive ? "bg-[#4F75FF]" : "bg-[#242E44]"
+                    }`}
                   />
                 ))}
               </div>
 
-              {/* Slider Track with Knobs */}
-              <div className="relative w-full h-1 bg-blue-500/80 rounded-full flex items-center justify-between">
-                <div className="w-4 h-4 rounded-full bg-white shadow-md border-2 border-blue-500 cursor-pointer -ml-1" />
-                <div className="w-4 h-4 rounded-full bg-white shadow-md border-2 border-blue-500 cursor-pointer -mr-1" />
+              {/* Dual Slider Interactive Bar */}
+              <div
+                ref={trackRef}
+                className="relative w-full h-6 flex items-center select-none cursor-pointer"
+              >
+                {/* Background Track */}
+                <div className="w-full h-1 bg-[#25304B] rounded-full relative">
+                  {/* Highlighted Active Range */}
+                  <div
+                    style={{
+                      left: `${leftPercent}%`,
+                      width: `${Math.max(0, rightPercent - leftPercent)}%`,
+                    }}
+                    className="absolute top-0 bottom-0 bg-[#4F75FF] rounded-full"
+                  />
+                </div>
+
+                {/* Left Knob (Min) */}
+                <div
+                  style={{ left: `${leftPercent}%` }}
+                  onPointerDown={(e) => handlePointerDown("min", e)}
+                  className="absolute w-5 h-5 rounded-full bg-white shadow-lg border-2 border-[#4F75FF] top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform z-10"
+                />
+
+                {/* Right Knob (Max) */}
+                <div
+                  style={{ left: `${rightPercent}%` }}
+                  onPointerDown={(e) => handlePointerDown("max", e)}
+                  className="absolute w-5 h-5 rounded-full bg-white shadow-lg border-2 border-[#4F75FF] top-1/2 -translate-y-1/2 -translate-x-1/2 cursor-grab active:cursor-grabbing hover:scale-110 transition-transform z-10"
+                />
               </div>
 
-              {/* Min - Max Inputs */}
+              {/* Min & Max Inputs (Linked) */}
               <div className="pt-2 flex items-center justify-between gap-3">
                 <div className="flex-1 space-y-1">
                   <span className="text-[10px] text-gray-400 font-medium">Min</span>
                   <input
-                    type="text"
-                    value={minValue}
-                    onChange={(e) => setMinValue(e.target.value)}
+                    type="number"
+                    step={isDecimalMetric ? "0.1" : "1"}
+                    value={minVal}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setMinVal(isNaN(v) ? activeBound.min : Math.min(v, maxVal));
+                    }}
                     className="w-full px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-bold text-xs focus:outline-hidden focus:border-blue-500"
                   />
                 </div>
@@ -184,9 +467,13 @@ export function YouTubeCardFilterModal({
                 <div className="flex-1 space-y-1">
                   <span className="text-[10px] text-gray-400 font-medium">Max</span>
                   <input
-                    type="text"
-                    value={maxValue}
-                    onChange={(e) => setMaxValue(e.target.value)}
+                    type="number"
+                    step={isDecimalMetric ? "0.1" : "1"}
+                    value={maxVal}
+                    onChange={(e) => {
+                      const v = Number(e.target.value);
+                      setMaxVal(isNaN(v) ? activeBound.max : Math.max(v, minVal));
+                    }}
                     className="w-full px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-bold text-xs focus:outline-hidden focus:border-blue-500"
                   />
                 </div>
@@ -196,57 +483,55 @@ export function YouTubeCardFilterModal({
 
           <div className="border-t border-[#252E44]" />
 
-          {/* Section 2: Posted */}
+          {/* SECTION 3: Posted (Date Filter) */}
           <div className="space-y-3">
-            <p className="font-semibold text-gray-400 text-xs">
-              Posted
-            </p>
+            <p className="font-semibold text-gray-400 text-xs">Posted</p>
 
             {/* In the last / Between Pills */}
             <div className="flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => setPostedTab("in_last")}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                  postedTab === "in_last"
-                    ? "bg-[#1E263B] text-white ring-2 ring-orange-500/80 border border-orange-500/40"
-                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white"
+                onClick={() => setPostedType("in_last")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  postedType === "in_last"
+                    ? "bg-[#25324E] text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white hover:bg-[#25304B]"
                 }`}
               >
-                <Clock className="w-3.5 h-3.5" />
+                <Clock className="w-3.5 h-3.5 text-gray-400" />
                 <span>In the last</span>
               </button>
 
               <button
                 type="button"
-                onClick={() => setPostedTab("between")}
-                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg font-semibold transition-all cursor-pointer ${
-                  postedTab === "between"
-                    ? "bg-[#1E263B] text-white ring-2 ring-orange-500/80 border border-orange-500/40"
-                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white"
+                onClick={() => setPostedType("between")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  postedType === "between"
+                    ? "bg-[#25324E] text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white hover:bg-[#25304B]"
                 }`}
               >
-                <Calendar className="w-3.5 h-3.5" />
+                <Calendar className="w-3.5 h-3.5 text-gray-400" />
                 <span>Between</span>
               </button>
             </div>
 
             {/* Inputs based on tab */}
-            {postedTab === "in_last" ? (
+            {postedType === "in_last" ? (
               <div className="grid grid-cols-2 gap-3 pt-1">
                 <input
                   type="number"
                   min="0"
                   value={inLastValue}
                   onChange={(e) => setInLastValue(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-bold text-xs focus:outline-hidden focus:border-blue-500"
                   placeholder="0"
+                  className="w-full px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-bold text-xs focus:outline-hidden focus:border-blue-500"
                 />
 
                 <div className="relative">
                   <button
                     type="button"
-                    onClick={() => setIsUnitDropdownOpen((p) => !p)}
+                    onClick={() => setIsUnitDropdownOpen((prev) => !prev)}
                     className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-bold text-xs cursor-pointer"
                   >
                     <span className="capitalize">{inLastUnit}</span>
@@ -255,18 +540,15 @@ export function YouTubeCardFilterModal({
 
                   {isUnitDropdownOpen && (
                     <div className="absolute left-0 right-0 top-full mt-1 bg-[#1E263B] border border-[#2B354F] rounded-xl shadow-xl overflow-hidden z-20">
-                      {(["days", "weeks", "months"] as const).map((u) => (
+                      {(["days", "weeks", "months", "years"] as const).map((u) => (
                         <button
                           key={u}
                           type="button"
                           onClick={() => {
                             setInLastUnit(u);
                             setIsUnitDropdownOpen(false);
-                            if (u === "months") setDateFilter("3m");
-                            else if (u === "weeks") setDateFilter("1w");
-                            else setDateFilter("all");
                           }}
-                          className="w-full px-3 py-2 text-left text-xs font-semibold hover:bg-white/10 capitalize"
+                          className="w-full px-3 py-2 text-left text-xs font-semibold hover:bg-white/10 capitalize text-white"
                         >
                           {u}
                         </button>
@@ -279,10 +561,14 @@ export function YouTubeCardFilterModal({
               <div className="grid grid-cols-2 gap-3 pt-1">
                 <input
                   type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-semibold text-xs focus:outline-hidden focus:border-blue-500"
                 />
                 <input
                   type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
                   className="w-full px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-semibold text-xs focus:outline-hidden focus:border-blue-500"
                 />
               </div>
@@ -291,15 +577,10 @@ export function YouTubeCardFilterModal({
         </div>
 
         {/* Footer */}
-        <div className="p-5 pt-2 flex items-center justify-between gap-3 border-t border-[#252E44]">
+        <div className="p-4 sm:p-5 flex items-center justify-between gap-3 border-t border-[#252E44] bg-[#161D2F]">
           <button
             type="button"
-            onClick={() => {
-              onReset();
-              setMinValue("0");
-              setMaxValue("50000");
-              setInLastValue("0");
-            }}
+            onClick={handleReset}
             className="text-xs font-semibold text-gray-400 hover:text-rose-400 transition-colors cursor-pointer"
           >
             Reset
@@ -308,9 +589,9 @@ export function YouTubeCardFilterModal({
           <button
             type="button"
             onClick={handleApply}
-            className="px-5 py-2.5 rounded-xl bg-white hover:bg-gray-100 text-gray-900 font-bold text-xs shadow-lg transition-all cursor-pointer"
+            className="px-5 py-2.5 rounded-xl bg-white hover:bg-gray-100 text-gray-950 font-bold text-xs shadow-lg transition-all cursor-pointer transform active:scale-95"
           >
-            Show {totalFilteredCount} Posts
+            Show {previewCount} Posts
           </button>
         </div>
       </div>

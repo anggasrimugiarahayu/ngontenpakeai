@@ -15,7 +15,11 @@ import { YouTubeSortToolbar } from "./YouTubeSortToolbar";
 import { YouTubeFeedGrid } from "./YouTubeFeedGrid";
 import { YouTubeVideoModal } from "./YouTubeVideoModal";
 import { YouTubeSortFeedFilterDropdown } from "./YouTubeSortFeedFilterDropdown";
-import { YouTubeCardFilterModal } from "./YouTubeCardFilterModal";
+import {
+  YouTubeCardFilterModal,
+  YouTubeAdvancedFilterState,
+  DEFAULT_YOUTUBE_ADVANCED_FILTER,
+} from "./YouTubeCardFilterModal";
 import { downloadYouTubeMediaBatch } from "./exportUtils";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
@@ -87,6 +91,9 @@ export function YouTubeResearchStudio({
   const [videoLimit, setVideoLimit] = useState<YouTubeVideoLimit>("all");
   const [dateFilter, setDateFilter] = useState<YouTubeDateFilter>("all");
   const [sortOption, setSortOption] = useState<YouTubeSortOption>("outlier");
+  const [advancedFilters, setAdvancedFilters] = useState<YouTubeAdvancedFilterState>(
+    DEFAULT_YOUTUBE_ADVANCED_FILTER
+  );
 
   // Multi-select state
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -130,13 +137,19 @@ export function YouTubeResearchStudio({
     setVideoLimit("all");
     setDateFilter("all");
     setSortOption("outlier");
+    setAdvancedFilters(DEFAULT_YOUTUBE_ADVANCED_FILTER);
   };
 
   const isFilterCustomized =
     sortOption !== "outlier" ||
     (filterMode === "videos" && videoLimit !== "all") ||
     filterMode === "date" ||
-    formatFilter !== "all";
+    formatFilter !== "all" ||
+    advancedFilters.types.length > 0 ||
+    advancedFilters.minVal !== null ||
+    advancedFilters.maxVal !== null ||
+    (advancedFilters.postedType === "in_last" && advancedFilters.inLastValue > 0) ||
+    (advancedFilters.postedType === "between" && (Boolean(advancedFilters.startDate) || Boolean(advancedFilters.endDate)));
 
   const handleSearch = async (targetHandle?: string, forceRefresh = false) => {
     const handleToQuery = (targetHandle || channelInput).trim();
@@ -152,7 +165,7 @@ export function YouTubeResearchStudio({
 
     const timer1 = setTimeout(() => {
       setLoadingPercent(45);
-      setLoadingStepText("Memproses feed video reguler & YouTube Shorts...");
+      setLoadingStepText("Memproses feed Long Video & YouTube Shorts...");
     }, 400);
 
     const timer2 = setTimeout(() => {
@@ -216,19 +229,64 @@ export function YouTubeResearchStudio({
   const filteredAndSortedVideos = useMemo(() => {
     let result = [...videos];
 
-    // 1. Filter Format (Shorts vs Video Reguler dari toolbar)
+    // 1. Filter Format Toolbar (Shorts vs Long Video)
     if (formatFilter === "shorts") {
       result = result.filter((v) => v.isShorts);
     } else if (formatFilter === "videos") {
       result = result.filter((v) => !v.isShorts);
     }
 
-    // 2. Filter Tanggal
+    // 2. Filter Tanggal Search Box
     if (dateFilter !== "all") {
       result = result.filter((v) => isWithinDateFilter(v.timestamp, dateFilter));
     }
 
-    // 3. Sort
+    // 3. Advanced Card Filters (Type, Performance Range, Posted Date)
+    if (advancedFilters.types.length === 1) {
+      if (advancedFilters.types.includes("shorts")) {
+        result = result.filter((v) => v.isShorts);
+      } else if (advancedFilters.types.includes("long")) {
+        result = result.filter((v) => !v.isShorts);
+      }
+    }
+
+    // Performance range
+    if (advancedFilters.minVal !== null || advancedFilters.maxVal !== null) {
+      result = result.filter((v) => {
+        let val = 0;
+        if (advancedFilters.metric === "views") val = v.viewsCount || 0;
+        else if (advancedFilters.metric === "outlier") val = v.outlierScore || 0;
+
+        if (advancedFilters.minVal !== null && val < advancedFilters.minVal) return false;
+        if (advancedFilters.maxVal !== null && val > advancedFilters.maxVal) return false;
+        return true;
+      });
+    }
+
+    // Posted date
+    if (advancedFilters.postedType === "in_last" && advancedFilters.inLastValue > 0) {
+      const mult =
+        advancedFilters.inLastUnit === "days"
+          ? 86400000
+          : advancedFilters.inLastUnit === "weeks"
+          ? 7 * 86400000
+          : advancedFilters.inLastUnit === "months"
+          ? 30 * 86400000
+          : 365 * 86400000;
+      const threshold = Date.now() - advancedFilters.inLastValue * mult;
+      result = result.filter((v) => new Date(v.timestamp).getTime() >= threshold);
+    } else if (advancedFilters.postedType === "between") {
+      if (advancedFilters.startDate) {
+        const start = new Date(advancedFilters.startDate).getTime();
+        result = result.filter((v) => new Date(v.timestamp).getTime() >= start);
+      }
+      if (advancedFilters.endDate) {
+        const end = new Date(advancedFilters.endDate).getTime() + 86400000;
+        result = result.filter((v) => new Date(v.timestamp).getTime() <= end);
+      }
+    }
+
+    // 4. Sort
     result.sort((a, b) => {
       if (sortOption === "outlier") {
         return b.outlierScore - a.outlierScore;
@@ -258,7 +316,7 @@ export function YouTubeResearchStudio({
     }
 
     return result;
-  }, [videos, formatFilter, dateFilter, sortOption, videoLimit]);
+  }, [videos, formatFilter, dateFilter, sortOption, videoLimit, advancedFilters]);
 
   const targetVideosForExport = useMemo(() => {
     if (isSelectMode && selectedVideoIds.size > 0) {
@@ -484,17 +542,10 @@ export function YouTubeResearchStudio({
           <YouTubeCardFilterModal
             isOpen={isFilterModalOpen}
             onClose={() => setIsFilterModalOpen(false)}
-            onApply={() => setIsFilterModalOpen(false)}
-            filterMode={filterMode}
-            setFilterMode={setFilterMode}
-            videoLimit={videoLimit}
-            setVideoLimit={setVideoLimit}
-            dateFilter={dateFilter}
-            setDateFilter={setDateFilter}
-            sortOption={sortOption}
-            setSortOption={setSortOption}
-            onReset={handleResetFilters}
-            totalFilteredCount={filteredAndSortedVideos.length}
+            videos={videos}
+            advancedFilters={advancedFilters}
+            onApplyAdvancedFilters={(next) => setAdvancedFilters(next)}
+            onResetAdvancedFilters={() => setAdvancedFilters(DEFAULT_YOUTUBE_ADVANCED_FILTER)}
           />
         </div>
       )}

@@ -63,7 +63,7 @@ export function YouTubeVideoModal({ video, profile, onClose }: Props) {
           <div className="flex items-center gap-2.5 min-w-0">
             <span className="w-2.5 h-2.5 rounded-full bg-red-600 animate-pulse" />
             <h3 className="font-bold text-sm text-gray-900 dark:text-white truncate">
-              Detail Riset: {video.isShorts ? "YouTube Shorts" : "Video Reguler"}
+              Detail Riset: {video.isShorts ? "YouTube Shorts" : "Long Video"}
             </h3>
           </div>
           <button
@@ -133,7 +133,7 @@ export function YouTubeVideoModal({ video, profile, onClose }: Props) {
               <div>
                 <span className="text-[11px] text-gray-400 block mb-0.5">Tipe Format</span>
                 <span className="font-bold text-sm text-red-600 dark:text-red-400">
-                  {video.isShorts ? "Shorts (Vertikal)" : "Reguler (16:9)"}
+                  {video.isShorts ? "Shorts (Vertikal)" : "Long Video (16:9)"}
                 </span>
               </div>
             </div>

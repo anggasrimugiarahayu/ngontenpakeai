@@ -46,6 +46,7 @@ interface Props {
   onSelectAll?: () => void;
   // Filter modal
   onOpenFilterModal?: () => void;
+  isCustomized?: boolean;
 }
 
 export function InstagramSortToolbar({
@@ -68,6 +69,7 @@ export function InstagramSortToolbar({
   selectedCount = 0,
   onSelectAll,
   onOpenFilterModal,
+  isCustomized = false,
 }: Props) {
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
@@ -105,11 +107,6 @@ export function InstagramSortToolbar({
     { value: "comments", label: "Comments", icon: MessageSquare },
     { value: "oldest", label: "Oldest", icon: Clock },
   ];
-
-  const isCustomized =
-    sortOption !== "outlier" ||
-    (filterMode === "posts" && postLimit !== 25) ||
-    filterMode === "date";
 
   const exportFormats: { id: "sheets" | "excel" | "csv" | "json"; label: string }[] = [
     { id: "sheets", label: "Google Sheets" },

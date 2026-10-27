@@ -14,7 +14,11 @@ import { InstagramSortToolbar } from "./InstagramSortToolbar";
 import { InstagramFeedGrid } from "./InstagramFeedGrid";
 import { InstagramPostModal } from "./InstagramPostModal";
 import { SortFeedFilterDropdown } from "./SortFeedFilterDropdown";
-import { InstagramCardFilterModal } from "./InstagramCardFilterModal";
+import {
+  InstagramCardFilterModal,
+  InstagramAdvancedFilterState,
+  DEFAULT_INSTAGRAM_ADVANCED_FILTER,
+} from "./InstagramCardFilterModal";
 import {
   exportToCSV,
   exportToExcel,
@@ -87,6 +91,9 @@ export function InstagramResearchStudio({
   const [postLimit, setPostLimit] = useState<PostLimit>(25);
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [sortOption, setSortOption] = useState<SortOption>("outlier");
+  const [advancedFilters, setAdvancedFilters] = useState<InstagramAdvancedFilterState>(
+    DEFAULT_INSTAGRAM_ADVANCED_FILTER
+  );
 
   // Multi-select state
   const [isSelectMode, setIsSelectMode] = useState(false);
@@ -124,10 +131,6 @@ export function InstagramResearchStudio({
     }
   };
 
-  const isFilterCustomized =
-    sortOption !== "outlier" ||
-    (filterMode === "posts" && postLimit !== 25) ||
-    filterMode === "date";
 
   // Function to execute research in 1 click
   const handleSearch = async (
@@ -213,14 +216,76 @@ export function InstagramResearchStudio({
     setPostLimit(25);
     setDateFilter("all");
     setSortOption("outlier");
+    setAdvancedFilters(DEFAULT_INSTAGRAM_ADVANCED_FILTER);
   };
+
+  const isFilterCustomized = useMemo(() => {
+    return (
+      advancedFilters.types.length > 0 ||
+      advancedFilters.minVal !== null ||
+      advancedFilters.maxVal !== null ||
+      (advancedFilters.postedType === "in_last" && advancedFilters.inLastValue > 0) ||
+      (advancedFilters.postedType === "between" && (Boolean(advancedFilters.startDate) || Boolean(advancedFilters.endDate))) ||
+      sortOption !== "outlier" ||
+      filterMode !== "posts" ||
+      postLimit !== 25 ||
+      dateFilter !== "all"
+    );
+  }, [advancedFilters, sortOption, filterMode, postLimit, dateFilter]);
 
   // Filtered & Sorted Posts
   const filteredAndSortedPosts = useMemo(() => {
     let result = [...posts];
 
+    // 1. Search Box Filters (date filter)
     if (filterMode === "date") {
       result = result.filter((p) => isWithinDateFilter(p.timestamp, dateFilter));
+    }
+
+    // 2. Advanced Card Filters (Type, Performance Range, Posted Date)
+    if (advancedFilters.types.length === 1) {
+      if (advancedFilters.types.includes("reels")) {
+        result = result.filter((p) => p.mediaType === "VIDEO");
+      } else if (advancedFilters.types.includes("carousels")) {
+        result = result.filter((p) => p.mediaType === "CAROUSEL_ALBUM");
+      }
+    }
+
+    // Performance range
+    if (advancedFilters.minVal !== null || advancedFilters.maxVal !== null) {
+      result = result.filter((p) => {
+        let val = 0;
+        if (advancedFilters.metric === "likes") val = p.likesCount || 0;
+        else if (advancedFilters.metric === "outlier") val = p.outlierScore || 0;
+        else if (advancedFilters.metric === "comments") val = p.commentsCount || 0;
+
+        if (advancedFilters.minVal !== null && val < advancedFilters.minVal) return false;
+        if (advancedFilters.maxVal !== null && val > advancedFilters.maxVal) return false;
+        return true;
+      });
+    }
+
+    // Posted date
+    if (advancedFilters.postedType === "in_last" && advancedFilters.inLastValue > 0) {
+      const mult =
+        advancedFilters.inLastUnit === "days"
+          ? 86400000
+          : advancedFilters.inLastUnit === "weeks"
+          ? 7 * 86400000
+          : advancedFilters.inLastUnit === "months"
+          ? 30 * 86400000
+          : 365 * 86400000;
+      const threshold = Date.now() - advancedFilters.inLastValue * mult;
+      result = result.filter((p) => new Date(p.timestamp).getTime() >= threshold);
+    } else if (advancedFilters.postedType === "between") {
+      if (advancedFilters.startDate) {
+        const start = new Date(advancedFilters.startDate).getTime();
+        result = result.filter((p) => new Date(p.timestamp).getTime() >= start);
+      }
+      if (advancedFilters.endDate) {
+        const end = new Date(advancedFilters.endDate).getTime() + 86400000;
+        result = result.filter((p) => new Date(p.timestamp).getTime() <= end);
+      }
     }
 
     result.sort((a, b) => {
@@ -247,7 +312,7 @@ export function InstagramResearchStudio({
     }
 
     return result;
-  }, [posts, sortOption, filterMode, postLimit, dateFilter]);
+  }, [posts, sortOption, filterMode, postLimit, dateFilter, advancedFilters]);
 
   const handleExportAction = async (
     format: "sheets" | "excel" | "csv" | "json",
@@ -485,6 +550,7 @@ export function InstagramResearchStudio({
               selectedCount={selectedPostIds.size}
               onSelectAll={handleSelectAll}
               onOpenFilterModal={() => setIsFilterModalOpen(true)}
+              isCustomized={isFilterCustomized}
             />
 
             <InstagramFeedGrid
@@ -502,17 +568,10 @@ export function InstagramResearchStudio({
           <InstagramCardFilterModal
             isOpen={isFilterModalOpen}
             onClose={() => setIsFilterModalOpen(false)}
-            onApply={handleApplyFilters}
-            filterMode={filterMode}
-            setFilterMode={setFilterMode}
-            postLimit={postLimit}
-            setPostLimit={setPostLimit}
-            dateFilter={dateFilter}
-            setDateFilter={setDateFilter}
-            sortOption={sortOption}
-            setSortOption={setSortOption}
-            onReset={handleResetFilters}
-            totalFilteredCount={filteredAndSortedPosts.length}
+            posts={posts}
+            advancedFilters={advancedFilters}
+            onApplyAdvancedFilters={(nextFilters) => setAdvancedFilters(nextFilters)}
+            onResetAdvancedFilters={() => setAdvancedFilters(DEFAULT_INSTAGRAM_ADVANCED_FILTER)}
           />
 
           {/* 3. Post Inspect Modal */}

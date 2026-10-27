@@ -41,7 +41,7 @@ export function getYouTubeExportRows(videos: YouTubeVideoItem[], profile: YouTub
       no: idx + 1,
       channel: profile.title,
       title: video.title,
-      type: video.isShorts ? "YouTube Shorts" : "Video Reguler",
+      type: video.isShorts ? "YouTube Shorts" : "Long Video",
       views: video.viewsCount,
       outlierScore: video.outlierScore.toFixed(1) + "x",
       tierLabel,
@@ -216,7 +216,7 @@ export async function downloadYouTubeMediaBatch(
       `Link Video: ${video.permalink}`,
       `Views: ${video.viewsText} (${video.viewsCount})`,
       `Outlier Score: ${video.outlierScore.toFixed(1)}x (${video.outlierTier})`,
-      `Tipe: ${video.isShorts ? "Shorts" : "Video Reguler"}`,
+      `Tipe: ${video.isShorts ? "Shorts" : "Long Video"}`,
       `Durasi: ${video.duration}`,
       `Tanggal: ${video.publishedText}`,
     ].join("\n");
