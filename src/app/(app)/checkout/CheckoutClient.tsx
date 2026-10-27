@@ -16,7 +16,7 @@ import type { CheckoutAddonItem } from "./CheckoutModals";
 const CheckoutModals = dynamic(() => import("./CheckoutModals"), { ssr: false });
 
 interface CheckoutClientProps {
-  type: "EBOOK" | "PRO_BOOK" | "PRO_TOOLS" | "PRO_AUTOMATION" | "PRO_PLUS";
+  type: string;
   productId?: string;
   itemName: string;
   itemDescription: string;

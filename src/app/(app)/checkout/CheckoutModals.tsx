@@ -14,7 +14,7 @@ export interface CheckoutAddonItem {
 }
 
 interface CheckoutModalsProps {
-  type: "EBOOK" | "PRO_BOOK" | "PRO_TOOLS" | "PRO_AUTOMATION" | "PRO_PLUS";
+  type: string;
   showAddonModal: boolean;
   setShowAddonModal: (v: boolean) => void;
   availableAddons: CheckoutAddonItem[];
@@ -224,15 +224,20 @@ export default function CheckoutModals({
             <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">Pembayaran Berhasil!</h2>
             <p className="text-gray-600 dark:text-gray-400 mb-8">Terima kasih, pembayaran Anda telah kami terima.</p>
             {(() => {
+              const upperType = (type || "").toUpperCase();
               let targetUrl = "/ruang-belajar";
               let targetName = "Ruang Belajar";
               let loadingMessage = "Menyiapkan Akses E-Book...";
 
-              if (type === "PRO_AUTOMATION") {
+              if (upperType.includes("RISET")) {
+                targetUrl = "/ruang-riset";
+                targetName = "Ruang Riset";
+                loadingMessage = "Menyiapkan Akses Ruang Riset...";
+              } else if (upperType.includes("AUTO")) {
                 targetUrl = "/ruang-automation";
                 targetName = "Ruang Automation";
                 loadingMessage = "Menyiapkan Akses Ruang Automation...";
-              } else if (type === "PRO_TOOLS" || type === "PRO_PLUS") {
+              } else if (upperType.includes("TOOLS") || upperType.includes("PLUS")) {
                 targetUrl = "/ruang-ngonten";
                 targetName = "Ruang Ngonten";
                 loadingMessage = "Menyiapkan Akses Ruang Ngonten...";
