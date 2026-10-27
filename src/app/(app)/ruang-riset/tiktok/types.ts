@@ -29,6 +29,7 @@ export interface TikTokPostItem {
   likesCount: number;
   commentsCount: number;
   sharesCount: number;
+  savesCount: number;
   viewsText: string;
   publishedText: string;
   timestamp: string;
@@ -47,6 +48,8 @@ export type TikTokSortOption =
   | "outlier"
   | "views"
   | "likes"
+  | "shares"
   | "comments"
+  | "saves"
   | "oldest"
   | "newest";

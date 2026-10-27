@@ -13,11 +13,21 @@ import {
   ChevronDown,
   Heart,
   MessageSquare,
+  Forward,
+  Bookmark,
 } from "lucide-react";
+
+export type TikTokPerformanceMetric =
+  | "views"
+  | "likes"
+  | "comments"
+  | "shares"
+  | "saves"
+  | "outlier";
 
 export interface TikTokAdvancedFilterState {
   types: ("videos" | "photos")[];
-  metric: "views" | "likes" | "comments" | "outlier";
+  metric: TikTokPerformanceMetric;
   minVal: number | null;
   maxVal: number | null;
   postedType: "in_last" | "between";
@@ -58,7 +68,7 @@ export function TikTokCardFilterModal({
 }: Props) {
   // Local state for edits inside the modal
   const [types, setTypes] = useState<("videos" | "photos")[]>(advancedFilters.types);
-  const [metric, setMetric] = useState<"views" | "likes" | "comments" | "outlier">(advancedFilters.metric);
+  const [metric, setMetric] = useState<TikTokPerformanceMetric>(advancedFilters.metric);
   const [postedType, setPostedType] = useState<"in_last" | "between">(advancedFilters.postedType);
   const [inLastValue, setInLastValue] = useState<string>(String(advancedFilters.inLastValue || 0));
   const [inLastUnit, setInLastUnit] = useState<"days" | "weeks" | "months" | "years">(advancedFilters.inLastUnit);
@@ -86,6 +96,8 @@ export function TikTokCardFilterModal({
         views: { min: 0, max: 1000 },
         likes: { min: 0, max: 100 },
         comments: { min: 0, max: 50 },
+        shares: { min: 0, max: 50 },
+        saves: { min: 0, max: 50 },
         outlier: { min: 0.1, max: 5.0 },
       };
     }
@@ -93,6 +105,8 @@ export function TikTokCardFilterModal({
     const viewsList = videos.map((v) => v.viewsCount || 0);
     const likesList = videos.map((v) => v.likesCount || 0);
     const commentsList = videos.map((v) => v.commentsCount || 0);
+    const sharesList = videos.map((v) => v.sharesCount || 0);
+    const savesList = videos.map((v) => v.savesCount || 0);
     const outlierList = videos.map((v) => v.outlierScore || 0);
 
     const minViews = Math.min(...viewsList);
@@ -101,6 +115,10 @@ export function TikTokCardFilterModal({
     const maxLikes = Math.max(...likesList);
     const minComments = Math.min(...commentsList);
     const maxComments = Math.max(...commentsList);
+    const minShares = Math.min(...sharesList);
+    const maxShares = Math.max(...sharesList);
+    const minSaves = Math.min(...savesList);
+    const maxSaves = Math.max(...savesList);
     const minOutlier = Number(Math.min(...outlierList).toFixed(1));
     const maxOutlier = Number(Math.max(...outlierList).toFixed(1));
 
@@ -108,6 +126,8 @@ export function TikTokCardFilterModal({
       views: { min: minViews, max: maxViews === minViews ? minViews + 100 : maxViews },
       likes: { min: minLikes, max: maxLikes === minLikes ? minLikes + 10 : maxLikes },
       comments: { min: minComments, max: maxComments === minComments ? minComments + 5 : maxComments },
+      shares: { min: minShares, max: maxShares === minShares ? minShares + 5 : maxShares },
+      saves: { min: minSaves, max: maxSaves === minSaves ? minSaves + 5 : maxSaves },
       outlier: { min: minOutlier, max: maxOutlier === minOutlier ? minOutlier + 1.0 : maxOutlier },
     };
   }, [videos]);
@@ -168,6 +188,8 @@ export function TikTokCardFilterModal({
       if (metric === "views") return v.viewsCount || 0;
       if (metric === "likes") return v.likesCount || 0;
       if (metric === "comments") return v.commentsCount || 0;
+      if (metric === "shares") return v.sharesCount || 0;
+      if (metric === "saves") return v.savesCount || 0;
       return v.outlierScore || 0;
     });
 
@@ -267,6 +289,8 @@ export function TikTokCardFilterModal({
       if (metric === "views") val = v.viewsCount || 0;
       else if (metric === "likes") val = v.likesCount || 0;
       else if (metric === "comments") val = v.commentsCount || 0;
+      else if (metric === "shares") val = v.sharesCount || 0;
+      else if (metric === "saves") val = v.savesCount || 0;
       else if (metric === "outlier") val = v.outlierScore || 0;
 
       if (val < minVal || val > maxVal) return false;
@@ -396,8 +420,8 @@ export function TikTokCardFilterModal({
               Performance range
             </p>
 
-            {/* Performance Metric Pills: 1 Baris Penuh (grid-cols-4) */}
-            <div className="grid grid-cols-4 gap-2">
+            {/* Performance Metric Pills: 2 Baris Rapi (grid-cols-3) */}
+            <div className="grid grid-cols-3 gap-2">
               <button
                 type="button"
                 onClick={() => setMetric("views")}
@@ -435,6 +459,32 @@ export function TikTokCardFilterModal({
               >
                 <MessageSquare className="w-3.5 h-3.5 text-sky-500" />
                 <span>Comments</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMetric("shares")}
+                className={`inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  metric === "shares"
+                    ? "bg-orange-50 dark:bg-[#25324E] text-orange-700 dark:text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-gray-100 dark:bg-[#1E263B] text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/70 dark:hover:bg-[#25304B]"
+                }`}
+              >
+                <Forward className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Shares</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMetric("saves")}
+                className={`inline-flex items-center justify-center gap-1.5 px-2 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer whitespace-nowrap ${
+                  metric === "saves"
+                    ? "bg-orange-50 dark:bg-[#25324E] text-orange-700 dark:text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-gray-100 dark:bg-[#1E263B] text-gray-700 dark:text-gray-400 border border-gray-200 dark:border-transparent hover:text-gray-900 dark:hover:text-white hover:bg-gray-200/70 dark:hover:bg-[#25304B]"
+                }`}
+              >
+                <Bookmark className="w-3.5 h-3.5 text-purple-500" />
+                <span>Saves</span>
               </button>
 
               <button

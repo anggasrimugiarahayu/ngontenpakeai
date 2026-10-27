@@ -2,7 +2,7 @@
 
 import React from "react";
 import { TikTokPostItem } from "./types";
-import { Play, Flame, Eye, Check, Heart, MessageSquare, Layers } from "lucide-react";
+import { Play, Flame, Eye, Check, Heart, MessageSquare, Forward, Bookmark, Layers } from "lucide-react";
 import { useFlipGridAnimation } from "@/hooks/useFlipGridAnimation";
 
 interface Props {
@@ -155,8 +155,8 @@ export function TikTokFeedGrid({
               </h4>
 
               <div className="pt-2 border-t border-gray-100 dark:border-[#2C3246]/60 flex flex-col gap-1.5">
-                {/* 3 Metrics: Views, Likes, Comments */}
-                <div className="flex items-center justify-between text-[11px] font-semibold text-gray-700 dark:text-gray-300">
+                {/* Metrics Row: Views, Likes, Comments, Shares, Saves */}
+                <div className="flex items-center justify-between text-[11px] font-semibold text-gray-700 dark:text-gray-300 flex-wrap gap-y-1">
                   <span className="flex items-center gap-1" title="Views">
                     <Eye className="w-3.5 h-3.5 text-blue-500" />
                     <span>{formatViews(video.viewsCount)}</span>
@@ -170,6 +170,16 @@ export function TikTokFeedGrid({
                   <span className="flex items-center gap-1" title="Comments">
                     <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
                     <span>{formatViews(video.commentsCount)}</span>
+                  </span>
+
+                  <span className="flex items-center gap-1" title="Shares">
+                    <Forward className="w-3.5 h-3.5 text-emerald-500" />
+                    <span>{formatViews(video.sharesCount || 0)}</span>
+                  </span>
+
+                  <span className="flex items-center gap-1" title="Saves">
+                    <Bookmark className="w-3.5 h-3.5 text-purple-500" />
+                    <span>{formatViews(video.savesCount || 0)}</span>
                   </span>
                 </div>
 

@@ -167,6 +167,7 @@ interface VideoEmbedDetail {
   diggCount?: number;
   commentCount?: number;
   shareCount?: number;
+  collectCount?: number;
   playCount?: number;
   createTime?: number;
   duration?: number;
@@ -215,6 +216,8 @@ async function fetchVideoEmbedDetail(
               diggCount: Number(info.diggCount) || undefined,
               commentCount: Number(info.commentCount) || undefined,
               shareCount: Number(info.shareCount) || undefined,
+              collectCount:
+                Number(info.collectCount || info.savesCount) || undefined,
               playCount: Number(info.playCount) || undefined,
               createTime: Number(info.createTime) || undefined,
               duration: Number(info?.video?.videoMeta?.duration) || undefined,
@@ -350,7 +353,8 @@ export async function POST(request: NextRequest) {
       if (
         cached &&
         cached.expiresAt > Date.now() &&
-        cached.videos.length > 0
+        cached.videos.length > 0 &&
+        cached.videos[0].savesCount !== undefined
       ) {
         return NextResponse.json({
           source: "cache",
@@ -415,6 +419,9 @@ export async function POST(request: NextRequest) {
         Math.round(viewsCount * 0.0025);
       const sharesCount =
         detail?.shareCount ?? Math.round(viewsCount * 0.008);
+      const savesCount =
+        detail?.collectCount ??
+        Math.max(1, Math.round(sharesCount * 0.65 + likesCount * 0.035));
 
       const createTimeSec =
         detail?.createTime || extractSnowflakeTimestampSec(v.id);
@@ -451,6 +458,7 @@ export async function POST(request: NextRequest) {
         likesCount,
         commentsCount,
         sharesCount,
+        savesCount,
         viewsText: formatViewsShort(viewsCount),
         publishedText: formatRelativePublishedText(timestampMs),
         timestamp: new Date(timestampMs).toISOString(),

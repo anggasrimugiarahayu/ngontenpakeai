@@ -16,7 +16,9 @@ import {
   Heart,
   Play,
   Zap,
+  Forward,
   MessageSquare,
+  Bookmark,
   Clock,
   X,
 } from "lucide-react";
@@ -315,6 +317,28 @@ export function TikTokSortFeedFilterDropdown({
               )}
             </button>
 
+            {/* Shares */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSortOption("shares");
+              }}
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                sortOption === "shares"
+                  ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Forward className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                <span>Shares</span>
+              </div>
+              {sortOption === "shares" && (
+                <Check className="w-3.5 h-3.5 text-rn-accent" />
+              )}
+            </button>
+
             {/* Comments */}
             <button
               type="button"
@@ -333,6 +357,28 @@ export function TikTokSortFeedFilterDropdown({
                 <span>Comments</span>
               </div>
               {sortOption === "comments" && (
+                <Check className="w-3.5 h-3.5 text-rn-accent" />
+              )}
+            </button>
+
+            {/* Saves */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSortOption("saves");
+              }}
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                sortOption === "saves"
+                  ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <Bookmark className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                <span>Saves</span>
+              </div>
+              {sortOption === "saves" && (
                 <Check className="w-3.5 h-3.5 text-rn-accent" />
               )}
             </button>

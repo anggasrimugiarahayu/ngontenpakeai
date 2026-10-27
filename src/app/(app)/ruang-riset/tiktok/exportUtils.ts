@@ -10,6 +10,7 @@ export const TIKTOK_EXPORT_HEADERS = [
   "Likes / Suka",
   "Comments / Komentar",
   "Shares / Dibagikan",
+  "Saves / Disimpan",
   "Outlier Score",
   "Tingkat Viralitas",
   "Durasi",
@@ -49,6 +50,7 @@ export function getTikTokExportRows(videos: TikTokPostItem[], profile: TikTokUse
       likes: video.likesCount,
       comments: video.commentsCount,
       shares: video.sharesCount || 0,
+      saves: video.savesCount || 0,
       outlierScore: video.outlierScore.toFixed(1) + "x",
       tierLabel,
       duration: video.duration || "-",
@@ -83,6 +85,7 @@ export function exportTikTokToCSV(videos: TikTokPostItem[], profile: TikTokUserP
       r.likes,
       r.comments,
       r.shares,
+      r.saves,
       escapeCSV(r.outlierScore),
       escapeCSV(r.tierLabel),
       escapeCSV(r.duration),
@@ -111,6 +114,7 @@ export function exportTikTokToExcel(videos: TikTokPostItem[], profile: TikTokUse
       <td>${r.likes}</td>
       <td>${r.comments}</td>
       <td>${r.shares}</td>
+      <td>${r.saves}</td>
       <td>${r.outlierScore}</td>
       <td>${r.tierLabel}</td>
       <td>${r.duration}</td>
@@ -181,6 +185,7 @@ export async function copyTikTokToGoogleSheets(
       r.likes,
       r.comments,
       r.shares,
+      r.saves,
       cleanTextForTSV(r.outlierScore),
       cleanTextForTSV(r.tierLabel),
       cleanTextForTSV(r.duration),
@@ -245,6 +250,7 @@ export async function downloadTikTokMediaBatch(
       r.likes,
       r.comments,
       r.shares,
+      r.saves,
       escapeCSV(r.outlierScore),
       escapeCSV(r.tierLabel),
       escapeCSV(r.duration),

@@ -20,7 +20,9 @@ import {
   Heart,
   Play,
   Zap,
+  Forward,
   MessageSquare,
+  Bookmark,
   Clock,
   Info,
   Film,
@@ -121,8 +123,12 @@ export function TikTokSortToolbar({
         return "Most Viewed Posts";
       case "likes":
         return "Most Liked Posts";
+      case "shares":
+        return "Most Shared Posts";
       case "comments":
         return "Most Commented Posts";
+      case "saves":
+        return "Most Saved Posts";
       case "oldest":
         return "Oldest Posts";
       default:
@@ -139,7 +145,9 @@ export function TikTokSortToolbar({
     { value: "likes", label: "Likes", icon: Heart },
     { value: "views", label: "Views", icon: Play },
     { value: "outlier", label: "Outlier score", icon: Zap, hasInfo: true },
+    { value: "shares", label: "Shares", icon: Forward },
     { value: "comments", label: "Comments", icon: MessageSquare },
+    { value: "saves", label: "Saves", icon: Bookmark },
     { value: "oldest", label: "Oldest", icon: Clock },
   ];
 

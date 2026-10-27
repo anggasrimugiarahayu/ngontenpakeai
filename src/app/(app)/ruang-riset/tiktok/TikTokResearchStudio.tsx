@@ -248,7 +248,7 @@ export function TikTokResearchStudio({
       result = result.slice(0, Number(videoLimit));
     }
 
-    // 3. Sort Sesuai Pilihan User (Outlier, Views, Likes, Comments, Oldest, Newest)
+    // 3. Sort Sesuai Pilihan User (Outlier, Views, Likes, Shares, Comments, Saves, Oldest, Newest)
     result.sort((a, b) => {
       if (sortOption === "outlier") {
         return b.outlierScore - a.outlierScore;
@@ -259,8 +259,14 @@ export function TikTokResearchStudio({
       if (sortOption === "likes") {
         return b.likesCount - a.likesCount;
       }
+      if (sortOption === "shares") {
+        return (b.sharesCount || 0) - (a.sharesCount || 0);
+      }
       if (sortOption === "comments") {
         return b.commentsCount - a.commentsCount;
+      }
+      if (sortOption === "saves") {
+        return (b.savesCount || 0) - (a.savesCount || 0);
       }
       if (sortOption === "oldest") {
         return (
@@ -298,6 +304,8 @@ export function TikTokResearchStudio({
         if (advancedFilters.metric === "views") val = v.viewsCount || 0;
         else if (advancedFilters.metric === "likes") val = v.likesCount || 0;
         else if (advancedFilters.metric === "comments") val = v.commentsCount || 0;
+        else if (advancedFilters.metric === "shares") val = v.sharesCount || 0;
+        else if (advancedFilters.metric === "saves") val = v.savesCount || 0;
         else if (advancedFilters.metric === "outlier") val = v.outlierScore || 0;
 
         if (advancedFilters.minVal !== null && val < advancedFilters.minVal) return false;

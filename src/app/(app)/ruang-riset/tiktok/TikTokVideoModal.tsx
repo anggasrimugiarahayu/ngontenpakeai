@@ -14,6 +14,7 @@ import {
   Share2,
   Heart,
   MessageSquare,
+  Bookmark,
   Music,
   Layers,
   ChevronLeft,
@@ -229,15 +230,16 @@ export function TikTokVideoModal({ video, profile, onClose }: Props) {
                 </span>
               </div>
               <div>
-                <span className="text-[11px] text-gray-400 block mb-0.5">Waktu Rilis</span>
-                <span className="font-bold text-sm text-gray-900 dark:text-white">
-                  {video.publishedText}
+                <span className="text-[11px] text-gray-400 block mb-0.5">Saves</span>
+                <span className="font-bold text-sm text-purple-500 flex items-center justify-center gap-1">
+                  <Bookmark className="w-3.5 h-3.5 text-purple-500" />
+                  {formatViews(video.savesCount || 0)}
                 </span>
               </div>
               <div>
-                <span className="text-[11px] text-gray-400 block mb-0.5">Tipe Format</span>
-                <span className="font-bold text-sm text-rose-600 dark:text-rose-400">
-                  {video.isPhoto ? "Photo Slide" : "Video"}
+                <span className="text-[11px] text-gray-400 block mb-0.5">Waktu Rilis</span>
+                <span className="font-bold text-sm text-gray-900 dark:text-white">
+                  {video.publishedText}
                 </span>
               </div>
             </div>
