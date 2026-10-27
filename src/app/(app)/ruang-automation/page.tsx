@@ -4,7 +4,7 @@ import { getCachedAppUser } from "@/lib/cache";
 import RuangAutomationClient from "./RuangAutomationClient";
 
 export const metadata = {
-  title: "Ruang Automation - Otomasi Instagram, TikTok & WhatsApp",
+  title: "Ruang Automation | ruangcreativemuslim",
   description: "Pusat automasi balasan komentar, direct message, dan interaksi media sosial otomatis.",
 };
 

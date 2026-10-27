@@ -4,7 +4,7 @@ import DashboardClient from "./DashboardClient";
 import { getDashboardDataAction } from "@/app/actions/dashboard";
 
 export const metadata = {
-  title: "Admin Dashboard - Ngonten Pakai AI",
+  title: "Admin Dashboard | ruangcreativemuslim",
 };
 
 export default async function DashboardPage() {

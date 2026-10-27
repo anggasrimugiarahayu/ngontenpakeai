@@ -4,7 +4,7 @@ import prisma from "@/lib/prisma";
 import OnboardingClient from "./OnboardingClient";
 
 export const metadata = {
-  title: "Personalisasi Akun - Ngonten Pakai AI",
+  title: "Personalisasi Akun | ruangcreativemuslim",
 };
 
 export default async function OnboardingPage() {

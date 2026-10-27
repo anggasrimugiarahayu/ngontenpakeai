@@ -3,7 +3,7 @@ import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
 import RuangBelajarClient from "./RuangBelajarClient";
 
 export const metadata = {
-  title: "Ruang Belajar - Ruang Ngonten",
+  title: "Ruang Belajar | ruangcreativemuslim",
   description: "Belajar bikin konten",
 };
 

@@ -1,5 +1,5 @@
 /**
- * Centralized Design Tokens for RuangCreativeMuslim (Ngonten Pakai AI)
+ * Centralized Design Tokens for RuangCreativeMuslim
  * Single Source of Truth for Colors, Cards, Inputs, Buttons, Badges, Modals, etc.
  */
 

@@ -66,7 +66,7 @@ export default function ApiKeyForm({ apiKey }: ApiKeyFormProps) {
   };
 
   const handleDelete = async () => {
-    if (!await confirmSwal("Apakah kamu yakin ingin menghapus API Key ini? Fitur AI akan kembali menggunakan limit dari sistem Ngonten Pakai AI.")) {
+    if (!await confirmSwal("Apakah kamu yakin ingin menghapus API Key ini? Fitur AI akan kembali menggunakan limit dari sistem ruangcreativemuslim.")) {
       return;
     }
 

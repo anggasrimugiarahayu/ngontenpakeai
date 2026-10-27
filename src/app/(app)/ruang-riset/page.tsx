@@ -4,7 +4,7 @@ import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
 import RuangRisetClient from "./RuangRisetClient";
 
 export const metadata = {
-  title: "Ruang Riset - Riset Tren Konten, Audiens & Kompetitor AI",
+  title: "Ruang Riset | ruangcreativemuslim",
   description: "Riset ide konten viral, analisis pola audiens, dan bedah strategi kompetitor dengan kekuatan AI.",
 };
 

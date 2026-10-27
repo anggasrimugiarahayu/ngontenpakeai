@@ -51,7 +51,7 @@ export default function OnboardingClient() {
     },
     {
       title: "Jujur-jujuran aja, apa hambatan terbesar kamu saat mau ngonten?",
-      subtitle: "Tenang, Ngonten Pakai AI punya solusi buat semua masalah ini.",
+      subtitle: "Tenang, ruangcreativemuslim punya solusi buat semua masalah ini.",
       field: "struggle" as const,
       options: [
         { label: "Sering stuck / kehabisan ide", icon: <Zap className="w-4 h-4" /> },

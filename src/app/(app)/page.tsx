@@ -4,7 +4,7 @@ import { getHomepageCardsAction } from "@/app/actions/adminSettings";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Ngonten Pakai AI - Belajar Faceless Creator",
+  title: "ruangcreativemuslim - Strategi Faceless Creator & Automasi AI",
   description: "Platform belajar ngonten faceless dan sistem tools AI terlengkap.",
 };
 

@@ -134,7 +134,7 @@ export const INITIAL_PACKAGES: Record<string, PricingPackageItem> = {
     periodLabel: "/bulan",
     durationDays: 30,
     features: [
-      "Akses 8 Sistem AI Ngonten Pakai AI",
+      "Akses 8 Sistem AI ruangcreativemuslim",
       "Script Builder, Carousel, Hook, Idea Rooms",
       "Bonus 4 Resource Ekstra (Footage & Tools)",
       "Masa Aktif 30 Hari",
@@ -155,7 +155,7 @@ export const INITIAL_PACKAGES: Record<string, PricingPackageItem> = {
     subBillingText: "Hemat Rp 68.000 dibanding bulanan",
     durationDays: 90,
     features: [
-      "Akses 8 Sistem AI Ngonten Pakai AI",
+      "Akses 8 Sistem AI ruangcreativemuslim",
       "Script Builder, Carousel, Hook, Idea Rooms",
       "Bonus 4 Resource Ekstra (Footage & Tools)",
       "Masa Aktif 90 Hari (3 Bulan)",

@@ -3,7 +3,7 @@ import CheckoutWrapperClient from "./CheckoutWrapperClient";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 
 export const metadata = {
-  title: "Checkout - Ruang Ngonten",
+  title: "Checkout | ruangcreativemuslim",
 };
 
 export default function CheckoutPage() {

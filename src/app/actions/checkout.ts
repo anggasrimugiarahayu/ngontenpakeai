@@ -98,7 +98,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     if (targetPkg) {
       baseAmount = targetPkg.price;
       itemName = targetPkg.name;
-      itemDescription = targetPkg.desc || "Akses paket langganan Ngonten Pakai AI.";
+      itemDescription = targetPkg.desc || "Akses paket langganan ruangcreativemuslim.";
       bundledIds = targetPkg.bundledProductIds || [];
       const cat = targetPkg.category;
       if (type.includes("BOOK") || cat === "ebook") productImage = "/img_paket/paket_ebook.png";

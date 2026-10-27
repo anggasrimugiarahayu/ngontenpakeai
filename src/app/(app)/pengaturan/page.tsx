@@ -6,7 +6,7 @@ import { SettingsTabs } from "./SettingsTabs";
 import { getPengaturanDataAction } from "@/app/actions/pengaturan";
 
 export const metadata = {
-  title: "Pengaturan - Ngonten Pakai AI",
+  title: "Pengaturan | ruangcreativemuslim",
 };
 
 export default async function SettingsPage() {
