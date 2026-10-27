@@ -236,12 +236,19 @@ export function YouTubeResearchStudio({
       result = result.filter((v) => !v.isShorts);
     }
 
-    // 2. Filter Tanggal Search Box
-    if (dateFilter !== "all") {
-      result = result.filter((v) => isWithinDateFilter(v.timestamp, dateFilter));
+    // 2. Filter Berdasarkan Mode Aktif (Videos Limit vs Date Range)
+    if (filterMode === "date") {
+      if (dateFilter !== "all") {
+        result = result.filter((v) => isWithinDateFilter(v.timestamp, dateFilter));
+      }
+    } else if (filterMode === "videos" && videoLimit !== "all") {
+      result.sort(
+        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+      );
+      result = result.slice(0, Number(videoLimit));
     }
 
-    // 3. Sort Awal
+    // 3. Sort Sesuai Pilihan User (Outlier, Views, Likes, Comments, Oldest, Newest)
     result.sort((a, b) => {
       if (sortOption === "outlier") {
         return b.outlierScore - a.outlierScore;
@@ -268,13 +275,8 @@ export function YouTubeResearchStudio({
       return 0;
     });
 
-    // 4. Limit Konten Awal
-    if (videoLimit !== "all") {
-      result = result.slice(0, Number(videoLimit));
-    }
-
     return result;
-  }, [videos, formatFilter, dateFilter, sortOption, videoLimit]);
+  }, [videos, formatFilter, filterMode, dateFilter, sortOption, videoLimit]);
 
   // 2. Filtered & Sorted Videos (Menerapkan Filter Lanjutan dari Card Modal)
   const filteredAndSortedVideos = useMemo(() => {
