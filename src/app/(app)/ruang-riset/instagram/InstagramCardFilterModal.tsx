@@ -115,7 +115,13 @@ export function InstagramCardFilterModal({
 
   // When metric tab changes or modal opens, re-initialize min/max to bounds if previously default
   useEffect(() => {
-    if (advancedFilters.metric === metric && advancedFilters.minVal !== null && advancedFilters.maxVal !== null) {
+    if (
+      advancedFilters.metric === metric &&
+      advancedFilters.minVal !== null &&
+      advancedFilters.maxVal !== null &&
+      advancedFilters.minVal >= activeBound.min &&
+      advancedFilters.maxVal <= activeBound.max
+    ) {
       setMinVal(advancedFilters.minVal);
       setMaxVal(advancedFilters.maxVal);
     } else {
@@ -554,28 +560,38 @@ export function InstagramCardFilterModal({
                   <button
                     type="button"
                     onClick={() => setIsUnitDropdownOpen((prev) => !prev)}
-                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-bold text-xs cursor-pointer"
+                    className="w-full flex items-center justify-between px-3 py-2 rounded-xl bg-[#1E263B] border border-[#2B354F] text-white font-bold text-xs cursor-pointer hover:border-gray-500 transition-colors"
                   >
                     <span className="capitalize">{inLastUnit}</span>
-                    <ChevronDown className="w-3.5 h-3.5 text-gray-400" />
+                    <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform duration-200 ${isUnitDropdownOpen ? "rotate-180" : ""}`} />
                   </button>
 
                   {isUnitDropdownOpen && (
-                    <div className="absolute left-0 right-0 top-full mt-1 bg-[#1E263B] border border-[#2B354F] rounded-xl shadow-xl overflow-hidden z-20">
-                      {(["days", "weeks", "months", "years"] as const).map((u) => (
-                        <button
-                          key={u}
-                          type="button"
-                          onClick={() => {
-                            setInLastUnit(u);
-                            setIsUnitDropdownOpen(false);
-                          }}
-                          className="w-full px-3 py-2 text-left text-xs font-semibold hover:bg-white/10 capitalize text-white"
-                        >
-                          {u}
-                        </button>
-                      ))}
-                    </div>
+                    <>
+                      {/* Invisible backdrop to dismiss when clicking outside */}
+                      <div
+                        className="fixed inset-0 z-20 cursor-default"
+                        onClick={() => setIsUnitDropdownOpen(false)}
+                      />
+                      {/* Drop-up Menu (Membuka ke atas agar tidak perlu scroll) */}
+                      <div className="absolute left-0 right-0 bottom-full mb-1.5 bg-[#1E263B] border border-[#2B354F] rounded-xl shadow-2xl overflow-hidden z-30 divide-y divide-white/5">
+                        {(["days", "weeks", "months", "years"] as const).map((u) => (
+                          <button
+                            key={u}
+                            type="button"
+                            onClick={() => {
+                              setInLastUnit(u);
+                              setIsUnitDropdownOpen(false);
+                            }}
+                            className={`w-full px-3 py-2 text-left text-xs font-semibold hover:bg-white/10 capitalize transition-colors cursor-pointer ${
+                              inLastUnit === u ? "text-blue-400 bg-white/5 font-bold" : "text-white"
+                            }`}
+                          >
+                            {u}
+                          </button>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
               </div>

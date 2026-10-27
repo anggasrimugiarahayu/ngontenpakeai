@@ -233,16 +233,48 @@ export function InstagramResearchStudio({
     );
   }, [advancedFilters, sortOption, filterMode, postLimit, dateFilter]);
 
-  // Filtered & Sorted Posts
-  const filteredAndSortedPosts = useMemo(() => {
+  // 1. Base Search Posts (Filter & Sort dari Box Search Awal)
+  const baseSearchPosts = useMemo(() => {
     let result = [...posts];
 
-    // 1. Search Box Filters (date filter)
+    // Filter Box Search Tanggal
     if (filterMode === "date") {
       result = result.filter((p) => isWithinDateFilter(p.timestamp, dateFilter));
     }
 
-    // 2. Advanced Card Filters (Type, Performance Range, Posted Date)
+    // Sort awal
+    result.sort((a, b) => {
+      switch (sortOption) {
+        case "likes":
+          return b.likesCount - a.likesCount;
+        case "views":
+          return b.viewsCount - a.viewsCount;
+        case "outlier":
+          return b.outlierScore - a.outlierScore;
+        case "comments":
+          return b.commentsCount - a.commentsCount;
+        case "newest":
+          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+        case "oldest":
+          return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+        default:
+          return b.outlierScore - a.outlierScore;
+      }
+    });
+
+    // Limit postingan awal
+    if (filterMode === "posts" && postLimit !== "all") {
+      result = result.slice(0, postLimit);
+    }
+
+    return result;
+  }, [posts, filterMode, dateFilter, sortOption, postLimit]);
+
+  // 2. Filtered & Sorted Posts (Menerapkan Filter Lanjutan dari Card Modal)
+  const filteredAndSortedPosts = useMemo(() => {
+    let result = [...baseSearchPosts];
+
+    // Advanced Card Filters (Type, Performance Range, Posted Date)
     if (advancedFilters.types.length === 1) {
       if (advancedFilters.types.includes("reels")) {
         result = result.filter((p) => p.mediaType === "VIDEO");
@@ -288,31 +320,8 @@ export function InstagramResearchStudio({
       }
     }
 
-    result.sort((a, b) => {
-      switch (sortOption) {
-        case "likes":
-          return b.likesCount - a.likesCount;
-        case "views":
-          return b.viewsCount - a.viewsCount;
-        case "outlier":
-          return b.outlierScore - a.outlierScore;
-        case "comments":
-          return b.commentsCount - a.commentsCount;
-        case "newest":
-          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
-        case "oldest":
-          return new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
-        default:
-          return b.outlierScore - a.outlierScore;
-      }
-    });
-
-    if (filterMode === "posts" && postLimit !== "all") {
-      result = result.slice(0, postLimit);
-    }
-
     return result;
-  }, [posts, sortOption, filterMode, postLimit, dateFilter, advancedFilters]);
+  }, [baseSearchPosts, advancedFilters]);
 
   const handleExportAction = async (
     format: "sheets" | "excel" | "csv" | "json",
@@ -568,7 +577,7 @@ export function InstagramResearchStudio({
           <InstagramCardFilterModal
             isOpen={isFilterModalOpen}
             onClose={() => setIsFilterModalOpen(false)}
-            posts={posts}
+            posts={baseSearchPosts}
             advancedFilters={advancedFilters}
             onApplyAdvancedFilters={(nextFilters) => setAdvancedFilters(nextFilters)}
             onResetAdvancedFilters={() => setAdvancedFilters(DEFAULT_INSTAGRAM_ADVANCED_FILTER)}

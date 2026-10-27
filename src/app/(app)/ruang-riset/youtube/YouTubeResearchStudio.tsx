@@ -225,8 +225,8 @@ export function YouTubeResearchStudio({
     toast.success("Filter berhasil diterapkan");
   };
 
-  // Client-side filtering & sorting via useMemo (Instant 0ms UX)
-  const filteredAndSortedVideos = useMemo(() => {
+  // 1. Base Search Videos (Filter Toolbar Format, Tanggal Search Box, Sort Awal, dan Limit)
+  const baseSearchVideos = useMemo(() => {
     let result = [...videos];
 
     // 1. Filter Format Toolbar (Shorts vs Long Video)
@@ -241,7 +241,43 @@ export function YouTubeResearchStudio({
       result = result.filter((v) => isWithinDateFilter(v.timestamp, dateFilter));
     }
 
-    // 3. Advanced Card Filters (Type, Performance Range, Posted Date)
+    // 3. Sort Awal
+    result.sort((a, b) => {
+      if (sortOption === "outlier") {
+        return b.outlierScore - a.outlierScore;
+      }
+      if (sortOption === "views" || sortOption === "likes") {
+        return b.viewsCount - a.viewsCount;
+      }
+      if (sortOption === "comments") {
+        return b.outlierScore - a.outlierScore;
+      }
+      if (sortOption === "oldest") {
+        return (
+          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+        );
+      }
+      if (sortOption === "newest") {
+        return (
+          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+        );
+      }
+      return 0;
+    });
+
+    // 4. Limit Konten Awal
+    if (videoLimit !== "all") {
+      result = result.slice(0, Number(videoLimit));
+    }
+
+    return result;
+  }, [videos, formatFilter, dateFilter, sortOption, videoLimit]);
+
+  // 2. Filtered & Sorted Videos (Menerapkan Filter Lanjutan dari Card Modal)
+  const filteredAndSortedVideos = useMemo(() => {
+    let result = [...baseSearchVideos];
+
+    // Advanced Card Filters (Type, Performance Range, Posted Date)
     if (advancedFilters.types.length === 1) {
       if (advancedFilters.types.includes("shorts")) {
         result = result.filter((v) => v.isShorts);
@@ -286,37 +322,8 @@ export function YouTubeResearchStudio({
       }
     }
 
-    // 4. Sort
-    result.sort((a, b) => {
-      if (sortOption === "outlier") {
-        return b.outlierScore - a.outlierScore;
-      }
-      if (sortOption === "views" || sortOption === "likes") {
-        return b.viewsCount - a.viewsCount;
-      }
-      if (sortOption === "comments") {
-        return b.outlierScore - a.outlierScore;
-      }
-      if (sortOption === "oldest") {
-        return (
-          new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
-        );
-      }
-      if (sortOption === "newest") {
-        return (
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-      }
-      return 0;
-    });
-
-    // 5. Limit Konten
-    if (videoLimit !== "all") {
-      result = result.slice(0, Number(videoLimit));
-    }
-
     return result;
-  }, [videos, formatFilter, dateFilter, sortOption, videoLimit, advancedFilters]);
+  }, [baseSearchVideos, advancedFilters]);
 
   const targetVideosForExport = useMemo(() => {
     if (isSelectMode && selectedVideoIds.size > 0) {
@@ -542,7 +549,7 @@ export function YouTubeResearchStudio({
           <YouTubeCardFilterModal
             isOpen={isFilterModalOpen}
             onClose={() => setIsFilterModalOpen(false)}
-            videos={videos}
+            videos={baseSearchVideos}
             advancedFilters={advancedFilters}
             onApplyAdvancedFilters={(next) => setAdvancedFilters(next)}
             onResetAdvancedFilters={() => setAdvancedFilters(DEFAULT_YOUTUBE_ADVANCED_FILTER)}
