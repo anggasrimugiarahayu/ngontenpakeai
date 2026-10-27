@@ -8,6 +8,7 @@ import {
   FilterMode,
   PostLimit,
   DateFilter,
+  InstagramFormatFilter,
 } from "./types";
 import { InstagramProfileHeader } from "./InstagramProfileHeader";
 import { InstagramSortToolbar } from "./InstagramSortToolbar";
@@ -88,6 +89,7 @@ export function InstagramResearchStudio({
 
   // Sorting & Filtering State
   const [filterMode, setFilterMode] = useState<FilterMode>("posts");
+  const [formatFilter, setFormatFilter] = useState<InstagramFormatFilter>("reels");
   const [postLimit, setPostLimit] = useState<PostLimit>(25);
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
   const [sortOption, setSortOption] = useState<SortOption>("outlier");
@@ -213,6 +215,7 @@ export function InstagramResearchStudio({
   // Reset all filters to default
   const handleResetFilters = () => {
     setFilterMode("posts");
+    setFormatFilter("reels");
     setPostLimit(25);
     setDateFilter("all");
     setSortOption("outlier");
@@ -228,14 +231,22 @@ export function InstagramResearchStudio({
       (advancedFilters.postedType === "between" && (Boolean(advancedFilters.startDate) || Boolean(advancedFilters.endDate))) ||
       sortOption !== "outlier" ||
       filterMode !== "posts" ||
+      formatFilter !== "reels" ||
       postLimit !== 25 ||
       dateFilter !== "all"
     );
-  }, [advancedFilters, sortOption, filterMode, postLimit, dateFilter]);
+  }, [advancedFilters, sortOption, filterMode, formatFilter, postLimit, dateFilter]);
 
-  // 1. Base Search Posts (Filter & Sort dari Box Search Awal)
+  // 1. Base Search Posts (Filter Toolbar Format, Box Search Tanggal, Sort & Limit Awal)
   const baseSearchPosts = useMemo(() => {
     let result = [...posts];
+
+    // Filter Format Toolbar (Reels vs Carousel)
+    if (formatFilter === "reels") {
+      result = result.filter((p) => p.mediaType === "VIDEO");
+    } else if (formatFilter === "carousels") {
+      result = result.filter((p) => p.mediaType === "CAROUSEL_ALBUM");
+    }
 
     // Filter Box Search Tanggal
     if (filterMode === "date") {
@@ -268,7 +279,7 @@ export function InstagramResearchStudio({
     }
 
     return result;
-  }, [posts, filterMode, dateFilter, sortOption, postLimit]);
+  }, [posts, formatFilter, filterMode, dateFilter, sortOption, postLimit]);
 
   // 2. Filtered & Sorted Posts (Menerapkan Filter Lanjutan dari Card Modal)
   const filteredAndSortedPosts = useMemo(() => {
@@ -541,6 +552,9 @@ export function InstagramResearchStudio({
           {/* 2. Unified Galeri Feed & Toolbar Card (Menyambung Mulus Sesuai Referensi) */}
           <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200/90 dark:border-[#2C3246] rounded-2xl shadow-xs overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
             <InstagramSortToolbar
+              formatFilter={formatFilter}
+              onFormatFilterChange={setFormatFilter}
+              posts={posts}
               sortOption={sortOption}
               setSortOption={setSortOption}
               filterMode={filterMode}

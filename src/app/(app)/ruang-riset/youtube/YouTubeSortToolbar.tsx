@@ -289,23 +289,12 @@ export function YouTubeSortToolbar({
       <div className="px-4 py-3 sm:px-5 text-xs flex flex-wrap items-center justify-between gap-3 relative">
         {/* Kiri: Tab Format Pills + Filters + Sort by + Clear all */}
         <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
-          {/* Format Tabs Pills */}
+          {/* Format Tabs Pills (Hanya Shorts & Long Video, tanpa Semua) */}
           <div className="inline-flex items-center gap-1 p-0.5 bg-gray-100 dark:bg-[#0F172A] rounded-lg border border-gray-200/60 dark:border-[#2C3246] shrink-0">
             <button
               type="button"
-              onClick={() => onFormatFilterChange("all")}
-              className={`px-3 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
-                formatFilter === "all"
-                  ? "bg-white dark:bg-[#141B31] text-gray-900 dark:text-white shadow-2xs"
-                  : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
-              }`}
-            >
-              Semua ({videos.length})
-            </button>
-            <button
-              type="button"
               onClick={() => onFormatFilterChange("shorts")}
-              className={`inline-flex items-center gap-1 px-3 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
                 formatFilter === "shorts"
                   ? "bg-white dark:bg-[#141B31] text-red-600 dark:text-red-400 shadow-2xs"
                   : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"

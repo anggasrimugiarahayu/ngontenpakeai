@@ -46,7 +46,8 @@ export type SortOption =
   | "oldest"
   | "newest";
 
-export type FormatFilter = "all" | "reels" | "posts";
+export type InstagramFormatFilter = "reels" | "carousels";
+export type FormatFilter = InstagramFormatFilter;
 
 export type FilterMode = "posts" | "date";
 

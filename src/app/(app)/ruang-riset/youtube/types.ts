@@ -15,7 +15,7 @@ export interface YouTubeChannelProfile {
   averageEngagementRate?: number;
 }
 
-export type YouTubeFormatFilter = "all" | "shorts" | "videos";
+export type YouTubeFormatFilter = "shorts" | "videos";
 export type YouTubeFilterMode = "videos" | "date";
 export type YouTubeVideoLimit = 25 | 50 | 100 | "all";
 export type YouTubeDateFilter = "all" | "1w" | "1m" | "3m" | "6m" | "1y";

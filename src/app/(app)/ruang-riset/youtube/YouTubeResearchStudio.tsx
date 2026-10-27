@@ -87,7 +87,7 @@ export function YouTubeResearchStudio({
 
   // Filters & Sorting state (Identik dengan Riset Instagram)
   const [filterMode, setFilterMode] = useState<YouTubeFilterMode>("videos");
-  const [formatFilter, setFormatFilter] = useState<YouTubeFormatFilter>("all");
+  const [formatFilter, setFormatFilter] = useState<YouTubeFormatFilter>("shorts");
   const [videoLimit, setVideoLimit] = useState<YouTubeVideoLimit>("all");
   const [dateFilter, setDateFilter] = useState<YouTubeDateFilter>("all");
   const [sortOption, setSortOption] = useState<YouTubeSortOption>("outlier");
@@ -133,7 +133,7 @@ export function YouTubeResearchStudio({
 
   const handleResetFilters = () => {
     setFilterMode("videos");
-    setFormatFilter("all");
+    setFormatFilter("shorts");
     setVideoLimit("all");
     setDateFilter("all");
     setSortOption("outlier");
@@ -144,7 +144,7 @@ export function YouTubeResearchStudio({
     sortOption !== "outlier" ||
     (filterMode === "videos" && videoLimit !== "all") ||
     filterMode === "date" ||
-    formatFilter !== "all" ||
+    formatFilter !== "shorts" ||
     advancedFilters.types.length > 0 ||
     advancedFilters.minVal !== null ||
     advancedFilters.maxVal !== null ||

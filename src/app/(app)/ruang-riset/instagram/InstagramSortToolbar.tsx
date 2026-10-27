@@ -1,11 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
   SortOption,
   FilterMode,
   PostLimit,
   DateFilter,
+  InstagramFormatFilter,
+  InstagramPostItem,
 } from "./types";
 import {
   Download,
@@ -21,10 +23,15 @@ import {
   MessageSquare,
   Clock,
   Info,
+  Film,
+  Layers,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Props {
+  formatFilter?: InstagramFormatFilter;
+  onFormatFilterChange?: (format: InstagramFormatFilter) => void;
+  posts?: InstagramPostItem[];
   sortOption: SortOption;
   setSortOption: (val: SortOption) => void;
   filterMode: FilterMode;
@@ -50,6 +57,9 @@ interface Props {
 }
 
 export function InstagramSortToolbar({
+  formatFilter,
+  onFormatFilterChange,
+  posts = [],
   sortOption,
   setSortOption,
   filterMode,
@@ -73,6 +83,15 @@ export function InstagramSortToolbar({
 }: Props) {
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
+
+  const reelsCount = useMemo(
+    () => (posts || []).filter((p) => p.mediaType === "VIDEO").length,
+    [posts]
+  );
+  const carouselCount = useMemo(
+    () => (posts || []).filter((p) => p.mediaType === "CAROUSEL_ALBUM").length,
+    [posts]
+  );
 
   // Dynamic clean title
   const getSortTitle = () => {
@@ -249,11 +268,41 @@ export function InstagramSortToolbar({
       <div className="w-full border-t border-gray-200/90 dark:border-[#2C3246]" />
 
       {/* ========================================================================= */}
-      {/* BARIS 2: Filters, Sort By (Statis), Clear all (Kiri) + Select (Kanan) */}
+      {/* BARIS 2: Tab Format, Filters, Sort By (Statis), Clear all (Kiri) + Select (Kanan) */}
       {/* ========================================================================= */}
-      <div className="px-4 py-3 sm:px-5 text-xs flex items-center justify-between gap-3 relative">
-        {/* Kiri: Filters, Sort by, Clear all */}
+      <div className="px-4 py-3 sm:px-5 text-xs flex flex-wrap items-center justify-between gap-3 relative">
+        {/* Kiri: Tab Format Pills + Filters + Sort by + Clear all */}
         <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+          {/* Format Tabs Pills (Hanya Reels & Carousel, tanpa Semua) */}
+          {formatFilter && onFormatFilterChange && (
+            <div className="inline-flex items-center gap-1 p-0.5 bg-gray-100 dark:bg-[#0F172A] rounded-lg border border-gray-200/60 dark:border-[#2C3246] shrink-0">
+              <button
+                type="button"
+                onClick={() => onFormatFilterChange("reels")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                  formatFilter === "reels"
+                    ? "bg-white dark:bg-[#141B31] text-blue-600 dark:text-blue-400 shadow-2xs"
+                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                }`}
+              >
+                <Film className="w-3.5 h-3.5 text-blue-500" />
+                <span>Reels ({reelsCount})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => onFormatFilterChange("carousels")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-md text-[11px] font-bold transition-all cursor-pointer ${
+                  formatFilter === "carousels"
+                    ? "bg-white dark:bg-[#141B31] text-purple-600 dark:text-purple-400 shadow-2xs"
+                    : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                }`}
+              >
+                <Layers className="w-3.5 h-3.5 text-purple-500" />
+                <span>Carousel ({carouselCount})</span>
+              </button>
+            </div>
+          )}
+
           {/* Tombol ≡ Filters */}
           <button
             type="button"
