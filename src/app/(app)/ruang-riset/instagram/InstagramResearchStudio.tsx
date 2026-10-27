@@ -287,9 +287,10 @@ export function InstagramResearchStudio({
     if (advancedFilters.minVal !== null || advancedFilters.maxVal !== null) {
       result = result.filter((p) => {
         let val = 0;
-        if (advancedFilters.metric === "likes") val = p.likesCount || 0;
-        else if (advancedFilters.metric === "outlier") val = p.outlierScore || 0;
+        if (advancedFilters.metric === "views") val = p.viewsCount || 0;
+        else if (advancedFilters.metric === "likes") val = p.likesCount || 0;
         else if (advancedFilters.metric === "comments") val = p.commentsCount || 0;
+        else if (advancedFilters.metric === "outlier") val = p.outlierScore || 0;
 
         if (advancedFilters.minVal !== null && val < advancedFilters.minVal) return false;
         if (advancedFilters.maxVal !== null && val > advancedFilters.maxVal) return false;

@@ -12,6 +12,8 @@ import {
   Check,
   Sparkles,
   Share2,
+  Heart,
+  MessageSquare,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -109,12 +111,26 @@ export function YouTubeVideoModal({ video, profile, onClose }: Props) {
             </div>
 
             {/* Metrics Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 p-3.5 bg-gray-50 dark:bg-[#0B0F19] border border-gray-200 dark:border-[#232D42] rounded-2xl text-center text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 p-3.5 bg-gray-50 dark:bg-[#0B0F19] border border-gray-200 dark:border-[#232D42] rounded-2xl text-center text-xs">
               <div>
                 <span className="text-[11px] text-gray-400 block mb-0.5">Views Total</span>
                 <span className="font-bold text-sm text-gray-900 dark:text-white flex items-center justify-center gap-1">
                   <Eye className="w-3.5 h-3.5 text-blue-500" />
                   {formatViews(video.viewsCount)}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] text-gray-400 block mb-0.5">Likes</span>
+                <span className="font-bold text-sm text-rose-500 flex items-center justify-center gap-1">
+                  <Heart className="w-3.5 h-3.5 fill-rose-500/20 text-rose-500" />
+                  {formatViews(video.likesCount)}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] text-gray-400 block mb-0.5">Comments</span>
+                <span className="font-bold text-sm text-sky-400 flex items-center justify-center gap-1">
+                  <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
+                  {formatViews(video.commentsCount)}
                 </span>
               </div>
               <div>
@@ -133,7 +149,7 @@ export function YouTubeVideoModal({ video, profile, onClose }: Props) {
               <div>
                 <span className="text-[11px] text-gray-400 block mb-0.5">Tipe Format</span>
                 <span className="font-bold text-sm text-red-600 dark:text-red-400">
-                  {video.isShorts ? "Shorts (Vertikal)" : "Long Video (16:9)"}
+                  {video.isShorts ? "Shorts" : "Long Video"}
                 </span>
               </div>
             </div>

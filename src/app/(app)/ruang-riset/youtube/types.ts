@@ -27,6 +27,8 @@ export interface YouTubeVideoItem {
   thumbnailUrl: string;
   permalink: string; // https://youtube.com/watch?v=... or https://youtube.com/shorts/...
   viewsCount: number;
+  likesCount: number;
+  commentsCount: number;
   viewsText: string;
   publishedText: string;
   timestamp: string; // ISO date or published time

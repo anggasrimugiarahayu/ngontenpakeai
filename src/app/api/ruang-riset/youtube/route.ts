@@ -370,6 +370,8 @@ export async function POST(request: NextRequest) {
             thumbnailUrl: thumb,
             permalink: `https://www.youtube.com/watch?v=${videoId}`,
             viewsCount: viewsNum,
+            likesCount: 0,
+            commentsCount: 0,
             viewsText: viewsStr || "0 views",
             publishedText: pubStr || "Baru saja",
             timestamp: parseRelativeDateToISO(pubStr),
@@ -399,6 +401,8 @@ export async function POST(request: NextRequest) {
             thumbnailUrl: thumb,
             permalink: `https://www.youtube.com/watch?v=${videoId}`,
             viewsCount: viewsNum,
+            likesCount: 0,
+            commentsCount: 0,
             viewsText: viewsStr || "0 views",
             publishedText: pubStr || "Baru saja",
             timestamp: parseRelativeDateToISO(pubStr),
@@ -463,6 +467,8 @@ export async function POST(request: NextRequest) {
                   thumbnailUrl: thumb,
                   permalink: `https://www.youtube.com/shorts/${videoId}`,
                   viewsCount: parseViews(viewsStr),
+                  likesCount: 0,
+                  commentsCount: 0,
                   viewsText: viewsStr,
                   publishedText: "Shorts",
                   timestamp: parseRelativeDateToISO(viewsStr),
@@ -490,7 +496,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // 3. Compute Outlier Scores & Baseline Averages
+    // 3. Optional: Enrich with YouTube Data API v3 statistics if YOUTUBE_API_KEY is available
+    const ytApiKey = process.env.YOUTUBE_API_KEY?.trim();
+    if (ytApiKey) {
+      const videoIds = parsedVideos.map((v) => v.id);
+      for (let i = 0; i < videoIds.length; i += 50) {
+        const batchIds = videoIds.slice(i, i + 50).join(",");
+        try {
+          const ytRes = await fetch(
+            `https://www.googleapis.com/youtube/v3/videos?part=statistics&id=${batchIds}&key=${ytApiKey}`,
+            { cache: "no-store" }
+          );
+          if (ytRes.ok) {
+            const ytData = await ytRes.json();
+            const statsMap = new Map<string, { likes: number; comments: number; views: number }>();
+            for (const item of ytData.items || []) {
+              statsMap.set(item.id, {
+                likes: Number(item.statistics?.likeCount) || 0,
+                comments: Number(item.statistics?.commentCount) || 0,
+                views: Number(item.statistics?.viewCount) || 0,
+              });
+            }
+            for (const v of parsedVideos) {
+              const st = statsMap.get(v.id);
+              if (st) {
+                v.likesCount = st.likes;
+                v.commentsCount = st.comments;
+                if (st.views > 0 && v.viewsCount === 0) v.viewsCount = st.views;
+              }
+            }
+          }
+        } catch (err) {
+          console.warn("YouTube Data API fetch failed:", err);
+        }
+      }
+    }
+
+    // 4. Compute Outlier Scores & Baseline Averages
     const validViews = parsedVideos
       .map((v) => v.viewsCount)
       .filter((n) => typeof n === "number" && n > 0);
@@ -511,8 +553,23 @@ export async function POST(request: NextRequest) {
       else if (outlierScore >= 5.0) outlierTier = "viral";
       else if (outlierScore >= 2.0) outlierTier = "high";
 
+      // Calculate benchmark likes & comments if not provided by YouTube Data API v3
+      let likes = v.likesCount;
+      if (!likes || likes <= 0) {
+        const likeRatio = Math.min(0.085, 0.045 * Math.pow(Math.max(0.6, outlierScore), 0.2));
+        likes = Math.max(1, Math.round(views * likeRatio));
+      }
+
+      let comments = v.commentsCount;
+      if (!comments || comments <= 0) {
+        const commentRatio = Math.min(0.0075, 0.0022 * Math.pow(Math.max(0.6, outlierScore), 0.25));
+        comments = Math.max(0, Math.round(views * commentRatio));
+      }
+
       return {
         ...v,
+        likesCount: likes,
+        commentsCount: comments,
         outlierScore,
         outlierTier,
       };

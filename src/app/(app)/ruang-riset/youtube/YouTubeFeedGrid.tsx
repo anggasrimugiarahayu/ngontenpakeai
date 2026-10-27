@@ -2,7 +2,7 @@
 
 import React from "react";
 import { YouTubeVideoItem } from "./types";
-import { Play, Flame, Clock, Eye, Sparkles, Check } from "lucide-react";
+import { Play, Flame, Clock, Eye, Sparkles, Check, Heart, MessageSquare } from "lucide-react";
 import { useFlipGridAnimation } from "@/hooks/useFlipGridAnimation";
 
 interface Props {
@@ -143,15 +143,31 @@ export function YouTubeFeedGrid({
                 {video.title}
               </h4>
 
-              <div className="flex items-center justify-between text-[11px] text-gray-500 dark:text-gray-400 pt-1 border-t border-gray-100 dark:border-[#2C3246]/60">
-                <span className="flex items-center gap-1 font-semibold text-gray-700 dark:text-gray-300">
-                  <Eye className="w-3.5 h-3.5 text-blue-500" />
-                  <span>{formatViews(video.viewsCount)} views</span>
-                </span>
+              <div className="pt-2 border-t border-gray-100 dark:border-[#2C3246]/60 flex flex-col gap-1.5">
+                {/* 3 Metrics: Views, Likes, Comments */}
+                <div className="flex items-center justify-between text-[11px] font-semibold text-gray-700 dark:text-gray-300">
+                  <span className="flex items-center gap-1" title="Views">
+                    <Eye className="w-3.5 h-3.5 text-blue-500" />
+                    <span>{formatViews(video.viewsCount)}</span>
+                  </span>
 
-                <span className="text-[11px] text-gray-400">
-                  {video.publishedText}
-                </span>
+                  <span className="flex items-center gap-1" title="Likes">
+                    <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
+                    <span>{formatViews(video.likesCount)}</span>
+                  </span>
+
+                  <span className="flex items-center gap-1" title="Comments">
+                    <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
+                    <span>{formatViews(video.commentsCount)}</span>
+                  </span>
+                </div>
+
+                <div className="flex items-center justify-between text-[11px] text-gray-400">
+                  <span>{video.publishedText}</span>
+                  {video.duration && !video.isShorts && (
+                    <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">{video.duration}</span>
+                  )}
+                </div>
               </div>
             </div>
           </div>

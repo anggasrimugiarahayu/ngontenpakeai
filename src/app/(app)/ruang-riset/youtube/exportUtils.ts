@@ -7,6 +7,8 @@ export const YOUTUBE_EXPORT_HEADERS = [
   "Judul Video",
   "Tipe Konten",
   "Views / Tayangan",
+  "Likes / Suka",
+  "Comments / Komentar",
   "Outlier Score",
   "Tingkat Viralitas",
   "Durasi",
@@ -43,6 +45,8 @@ export function getYouTubeExportRows(videos: YouTubeVideoItem[], profile: YouTub
       title: video.title,
       type: video.isShorts ? "YouTube Shorts" : "Long Video",
       views: video.viewsCount,
+      likes: video.likesCount,
+      comments: video.commentsCount,
       outlierScore: video.outlierScore.toFixed(1) + "x",
       tierLabel,
       duration: video.duration || "-",
@@ -74,6 +78,8 @@ export function exportYouTubeToCSV(videos: YouTubeVideoItem[], profile: YouTubeC
       escapeCSV(r.title),
       escapeCSV(r.type),
       r.views,
+      r.likes,
+      r.comments,
       escapeCSV(r.outlierScore),
       escapeCSV(r.tierLabel),
       escapeCSV(r.duration),
@@ -99,6 +105,8 @@ export function exportYouTubeToExcel(videos: YouTubeVideoItem[], profile: YouTub
       <td>${escapeHTML(r.title)}</td>
       <td>${escapeHTML(r.type)}</td>
       <td>${r.views}</td>
+      <td>${r.likes}</td>
+      <td>${r.comments}</td>
       <td>${escapeHTML(r.outlierScore)}</td>
       <td>${escapeHTML(r.tierLabel)}</td>
       <td>${escapeHTML(r.duration)}</td>
@@ -147,6 +155,8 @@ export async function copyYouTubeToGoogleSheets(videos: YouTubeVideoItem[], prof
       cleanTextForTSV(r.title),
       cleanTextForTSV(r.type),
       r.views,
+      r.likes,
+      r.comments,
       cleanTextForTSV(r.outlierScore),
       cleanTextForTSV(r.tierLabel),
       cleanTextForTSV(r.duration),

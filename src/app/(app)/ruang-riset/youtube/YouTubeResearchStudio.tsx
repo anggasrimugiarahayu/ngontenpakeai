@@ -246,11 +246,14 @@ export function YouTubeResearchStudio({
       if (sortOption === "outlier") {
         return b.outlierScore - a.outlierScore;
       }
-      if (sortOption === "views" || sortOption === "likes") {
+      if (sortOption === "views") {
         return b.viewsCount - a.viewsCount;
       }
+      if (sortOption === "likes") {
+        return b.likesCount - a.likesCount;
+      }
       if (sortOption === "comments") {
-        return b.outlierScore - a.outlierScore;
+        return b.commentsCount - a.commentsCount;
       }
       if (sortOption === "oldest") {
         return (
@@ -291,6 +294,8 @@ export function YouTubeResearchStudio({
       result = result.filter((v) => {
         let val = 0;
         if (advancedFilters.metric === "views") val = v.viewsCount || 0;
+        else if (advancedFilters.metric === "likes") val = v.likesCount || 0;
+        else if (advancedFilters.metric === "comments") val = v.commentsCount || 0;
         else if (advancedFilters.metric === "outlier") val = v.outlierScore || 0;
 
         if (advancedFilters.minVal !== null && val < advancedFilters.minVal) return false;

@@ -10,11 +10,13 @@ import {
   Clock,
   Calendar,
   ChevronDown,
+  Heart,
+  MessageSquare,
 } from "lucide-react";
 
 export interface YouTubeAdvancedFilterState {
   types: ("shorts" | "long")[];
-  metric: "views" | "outlier";
+  metric: "views" | "likes" | "comments" | "outlier";
   minVal: number | null;
   maxVal: number | null;
   postedType: "in_last" | "between";
@@ -55,7 +57,7 @@ export function YouTubeCardFilterModal({
 }: Props) {
   // Local state for edits inside the modal
   const [types, setTypes] = useState<("shorts" | "long")[]>(advancedFilters.types);
-  const [metric, setMetric] = useState<"views" | "outlier">(advancedFilters.metric);
+  const [metric, setMetric] = useState<"views" | "likes" | "comments" | "outlier">(advancedFilters.metric);
   const [postedType, setPostedType] = useState<"in_last" | "between">(advancedFilters.postedType);
   const [inLastValue, setInLastValue] = useState<string>(String(advancedFilters.inLastValue || 0));
   const [inLastUnit, setInLastUnit] = useState<"days" | "weeks" | "months" | "years">(advancedFilters.inLastUnit);
@@ -81,20 +83,30 @@ export function YouTubeCardFilterModal({
     if (!videos || videos.length === 0) {
       return {
         views: { min: 0, max: 1000 },
+        likes: { min: 0, max: 100 },
+        comments: { min: 0, max: 50 },
         outlier: { min: 0.1, max: 5.0 },
       };
     }
 
     const viewsList = videos.map((v) => v.viewsCount || 0);
+    const likesList = videos.map((v) => v.likesCount || 0);
+    const commentsList = videos.map((v) => v.commentsCount || 0);
     const outlierList = videos.map((v) => v.outlierScore || 0);
 
     const minViews = Math.min(...viewsList);
     const maxViews = Math.max(...viewsList);
+    const minLikes = Math.min(...likesList);
+    const maxLikes = Math.max(...likesList);
+    const minComments = Math.min(...commentsList);
+    const maxComments = Math.max(...commentsList);
     const minOutlier = Number(Math.min(...outlierList).toFixed(1));
     const maxOutlier = Number(Math.max(...outlierList).toFixed(1));
 
     return {
       views: { min: minViews, max: maxViews === minViews ? minViews + 100 : maxViews },
+      likes: { min: minLikes, max: maxLikes === minLikes ? minLikes + 10 : maxLikes },
+      comments: { min: minComments, max: maxComments === minComments ? minComments + 5 : maxComments },
       outlier: { min: minOutlier, max: maxOutlier === minOutlier ? minOutlier + 1.0 : maxOutlier },
     };
   }, [videos]);
@@ -153,6 +165,8 @@ export function YouTubeCardFilterModal({
 
     const values = videos.map((v) => {
       if (metric === "views") return v.viewsCount || 0;
+      if (metric === "likes") return v.likesCount || 0;
+      if (metric === "comments") return v.commentsCount || 0;
       return v.outlierScore || 0;
     });
 
@@ -250,6 +264,8 @@ export function YouTubeCardFilterModal({
       // Performance
       let val = 0;
       if (metric === "views") val = v.viewsCount || 0;
+      else if (metric === "likes") val = v.likesCount || 0;
+      else if (metric === "comments") val = v.commentsCount || 0;
       else if (metric === "outlier") val = v.outlierScore || 0;
 
       if (val < minVal || val > maxVal) return false;
@@ -379,8 +395,8 @@ export function YouTubeCardFilterModal({
               Performance range
             </p>
 
-            {/* Performance Metric Pills */}
-            <div className="flex items-center gap-2">
+            {/* Performance Metric Pills: Views, Likes, Comments, Outlier score */}
+            <div className="flex items-center gap-2 flex-wrap">
               <button
                 type="button"
                 onClick={() => setMetric("views")}
@@ -392,6 +408,32 @@ export function YouTubeCardFilterModal({
               >
                 <Play className="w-3.5 h-3.5 text-blue-400" />
                 <span>Views</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMetric("likes")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  metric === "likes"
+                    ? "bg-[#25324E] text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white hover:bg-[#25304B]"
+                }`}
+              >
+                <Heart className="w-3.5 h-3.5 text-rose-400" />
+                <span>Likes</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setMetric("comments")}
+                className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                  metric === "comments"
+                    ? "bg-[#25324E] text-white border-2 border-orange-500 shadow-xs font-bold"
+                    : "bg-[#1E263B] text-gray-400 border border-transparent hover:text-white hover:bg-[#25304B]"
+                }`}
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
+                <span>Comments</span>
               </button>
 
               <button
