@@ -552,6 +552,8 @@ export function TikTokResearchStudio({
 
             <TikTokFeedGrid
               videos={filteredAndSortedVideos}
+              profile={profile}
+              sortOption={sortOption}
               onSelectVideo={setActiveModalVideo}
               isSelectMode={isSelectMode}
               selectedVideoIds={selectedVideoIds}

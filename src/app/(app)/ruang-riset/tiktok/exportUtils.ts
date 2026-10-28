@@ -72,6 +72,23 @@ function triggerDownload(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
+export async function downloadMediaAsset(url: string, filename: string): Promise<boolean> {
+  try {
+    let fetchUrl = url;
+    if (url.includes("tiktokcdn.com") || url.includes("tiktok.com")) {
+      fetchUrl = `/api/ruang-riset/image-proxy?url=${encodeURIComponent(url)}`;
+    }
+    const res = await fetch(fetchUrl);
+    if (!res.ok) throw new Error("Gagal mengambil media");
+    const blob = await res.blob();
+    triggerDownload(blob, filename);
+    return true;
+  } catch (err) {
+    console.error("downloadMediaAsset error:", err);
+    return false;
+  }
+}
+
 export function exportTikTokToCSV(videos: TikTokPostItem[], profile: TikTokUserProfile) {
   const rows = getTikTokExportRows(videos, profile);
   const headerLine = TIKTOK_EXPORT_HEADERS.map(escapeCSV).join(",");
