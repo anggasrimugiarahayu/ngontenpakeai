@@ -41,6 +41,8 @@ export interface FacebookPostItem {
   outlierScore: number;
   outlierTier: "super_viral" | "viral" | "high" | "normal";
   hookText: string;
+  caption?: string;
+  articleUrl?: string;
 }
 
 export type FacebookSortOption =

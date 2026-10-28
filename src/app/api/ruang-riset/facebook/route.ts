@@ -145,6 +145,47 @@ function extractHookText(caption: string): string {
   return firstLine.slice(0, 92).trim() + "...";
 }
 
+function cleanFacebookTitleAndCaption(rawCaption: string) {
+  if (!rawCaption) {
+    return {
+      title: "Konten Facebook",
+      hookText: "Konten Facebook",
+      caption: "",
+      articleUrl: undefined,
+    };
+  }
+
+  // Extract external link (e.g. >> https://news.detik.com/... or https://...)
+  const linkMatch = rawCaption.match(/(?:>>\s*)?(https?:\/\/[^\s]+)/i);
+  const articleUrl = linkMatch ? linkMatch[1] : undefined;
+
+  // Clean text without the trailing URL
+  const textWithoutUrl = rawCaption
+    .replace(/(?:>>\s*)?https?:\/\/[^\s]+/gi, "")
+    .replace(/[\s\r\n]+$/, "")
+    .trim();
+
+  // First sentence / line as headline
+  const lines = textWithoutUrl
+    .split(/\r?\n/)
+    .map((l) => l.trim())
+    .filter(Boolean);
+  let headline = lines[0] || textWithoutUrl || "Konten Facebook";
+  if (headline.length > 140) {
+    headline = headline.slice(0, 137).trim() + "...";
+  }
+
+  const hook =
+    headline.length <= 95 ? headline : headline.slice(0, 92).trim() + "...";
+
+  return {
+    title: headline,
+    hookText: hook,
+    caption: textWithoutUrl || rawCaption,
+    articleUrl,
+  };
+}
+
 async function fetchFacebookHtml(
   url: string,
   isIframe = false,
@@ -717,25 +758,30 @@ async function handleFacebookResearchRequest(
             );
 
       const rawThumb =
-        st.short_form_video_context?.video?.first_frame_thumbnail ||
-        media?.first_frame_thumbnail ||
+        st.short_form_video_context?.playback_video?.preferred_thumbnail?.image?.uri ||
+        st.short_form_video_context?.video?.preferred_thumbnail?.image?.uri ||
         media?.preferred_thumbnail?.image?.uri ||
-        media?.photo_image?.uri ||
-        media?.viewer_image?.uri ||
-        media?.image?.uri ||
-        media?.large_share_image?.uri ||
-        media?.flexible_height_share_image?.uri ||
-        media?.card_image?.uri ||
-        videoObj?.first_frame_thumbnail ||
+        st.short_form_video_context?.playback_video?.thumbnailImage?.uri ||
+        media?.thumbnailImage?.uri ||
         videoObj?.preferred_thumbnail?.image?.uri ||
         videoObj?.thumbnailImage?.uri ||
         videoObj?.image?.uri ||
+        st.short_form_video_context?.playback_video?.image?.uri ||
+        media?.large_share_image?.uri ||
+        media?.flexible_height_share_image?.uri ||
+        media?.photo_image?.uri ||
+        media?.image?.uri ||
+        media?.viewer_image?.uri ||
+        media?.card_image?.uri ||
         subPhotoUris[0] ||
+        st.short_form_video_context?.video?.first_frame_thumbnail ||
+        media?.first_frame_thumbnail ||
+        videoObj?.first_frame_thumbnail ||
         "";
 
       if (!rawThumb) continue;
 
-      const caption =
+      const rawCaptionText =
         st.message?.text ||
         st.translated_message_for_viewer?.text ||
         videoObj?.title?.text ||
@@ -743,6 +789,8 @@ async function handleFacebookResearchRequest(
         attachment?.title_with_entities?.text ||
         styledAttachment?.title_with_entities?.text ||
         "";
+
+      const cleanedMeta = cleanFacebookTitleAndCaption(rawCaptionText);
 
       const creationSec = Number(
         st.creation_time ||
@@ -790,7 +838,7 @@ async function handleFacebookResearchRequest(
 
       postMap.set(id, {
         id,
-        title: caption || `Konten @${resolvedUsername}`,
+        title: cleanedMeta.title || `Konten @${resolvedUsername}`,
         thumbnailUrl: toProxiedImageUrl(rawThumb),
         videoUrl: directMp4 ? toProxiedImageUrl(directMp4) : undefined,
         permalink: permalink.replace("web.facebook.com", "www.facebook.com"),
@@ -807,7 +855,9 @@ async function handleFacebookResearchRequest(
         photoUrls: !isVideoOrReel ? allPhotoUrls : undefined,
         outlierScore: 1.0,
         outlierTier: "normal",
-        hookText: extractHookText(caption),
+        hookText: cleanedMeta.hookText,
+        caption: cleanedMeta.caption,
+        articleUrl: cleanedMeta.articleUrl,
       });
     }
 
@@ -815,10 +865,11 @@ async function handleFacebookResearchRequest(
     for (const [vidId, v] of videosById.entries()) {
       if (processedVideoIds.has(vidId) || postMap.has(vidId)) continue;
       const rawThumb =
-        v.first_frame_thumbnail ||
+        v.creation_story?.attachments?.[0]?.target?.preferred_thumbnail?.image?.uri ||
         v.preferred_thumbnail?.image?.uri ||
         v.thumbnailImage?.uri ||
         v.image?.uri ||
+        v.first_frame_thumbnail ||
         "";
       if (!rawThumb) continue;
 
@@ -881,15 +932,17 @@ async function handleFacebookResearchRequest(
             ?.playable_duration_in_ms ?? 0)
       );
       const durationSeconds = Math.round(durationMs / 1000);
-      const caption =
+      const rawCaptionText =
         v.title?.text ||
         v.savable_description?.text ||
         cs.message?.text ||
         `Video @${resolvedUsername}`;
 
+      const cleanedMeta = cleanFacebookTitleAndCaption(rawCaptionText);
+
       postMap.set(vidId, {
         id: vidId,
-        title: caption,
+        title: cleanedMeta.title,
         thumbnailUrl: toProxiedImageUrl(rawThumb),
         videoUrl: progressiveUrlByVideoId.get(vidId)
           ? toProxiedImageUrl(progressiveUrlByVideoId.get(vidId))
@@ -907,7 +960,9 @@ async function handleFacebookResearchRequest(
         isPhoto: false,
         outlierScore: 1.0,
         outlierTier: "normal",
-        hookText: extractHookText(caption),
+        hookText: cleanedMeta.hookText,
+        caption: cleanedMeta.caption,
+        articleUrl: cleanedMeta.articleUrl,
       });
     }
 
@@ -958,9 +1013,11 @@ async function handleFacebookResearchRequest(
             ? enriched.photoUrls.map((u) => toProxiedImageUrl(u))
             : [toProxiedImageUrl(rawThumb)];
 
+        const cleanedPhotoMeta = cleanFacebookTitleAndCaption(caption);
+
         postMap.set(fbid, {
           id: fbid,
-          title: caption,
+          title: cleanedPhotoMeta.title,
           thumbnailUrl: toProxiedImageUrl(rawThumb),
           permalink:
             enriched?.permalink ||
@@ -979,7 +1036,9 @@ async function handleFacebookResearchRequest(
           photoUrls: proxiedPhotos,
           outlierScore: 1.0,
           outlierTier: "normal",
-          hookText: extractHookText(caption),
+          hookText: cleanedPhotoMeta.hookText,
+          caption: cleanedPhotoMeta.caption,
+          articleUrl: cleanedPhotoMeta.articleUrl,
         });
       }
     }
