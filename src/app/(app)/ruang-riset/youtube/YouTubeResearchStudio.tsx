@@ -545,6 +545,8 @@ export function YouTubeResearchStudio({
 
             <YouTubeFeedGrid
               videos={filteredAndSortedVideos}
+              profile={profile}
+              sortOption={sortOption}
               onSelectVideo={setActiveModalVideo}
               isSelectMode={isSelectMode}
               selectedVideoIds={selectedVideoIds}

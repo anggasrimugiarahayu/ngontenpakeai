@@ -1,30 +1,60 @@
 "use client";
 
-import React from "react";
-import { YouTubeVideoItem } from "./types";
-import { Play, Flame, Clock, Eye, Sparkles, Check, Heart, MessageSquare } from "lucide-react";
+import React, { useState } from "react";
+import { YouTubeVideoItem, YouTubeChannelProfile, YouTubeSortOption } from "./types";
+import {
+  Play,
+  Heart,
+  MessageSquare,
+  Zap,
+  Bookmark,
+  Download,
+  ArrowUpRight,
+  Eye,
+  Check,
+  Film,
+} from "lucide-react";
+import { EmptyState } from "@/components/ui/EmptyState";
+import { downloadMediaAsset } from "./exportUtils";
 import { useFlipGridAnimation } from "@/hooks/useFlipGridAnimation";
+import toast from "react-hot-toast";
+
+function YouTubeIcon({ className = "" }: { className?: string }) {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="13"
+      height="13"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={className}
+    >
+      <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+    </svg>
+  );
+}
 
 interface Props {
   videos: YouTubeVideoItem[];
+  profile?: YouTubeChannelProfile | null;
+  sortOption?: YouTubeSortOption;
   onSelectVideo: (video: YouTubeVideoItem) => void;
   isSelectMode?: boolean;
   selectedVideoIds?: Set<string>;
   onToggleSelectVideo?: (videoId: string) => void;
 }
 
-function formatViews(num: number): string {
-  if (num >= 1_000_000) {
-    return (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + " Jt";
-  }
-  if (num >= 1_000) {
-    return (num / 1_000).toFixed(1).replace(/\.0$/, "") + " Rb";
-  }
-  return num.toLocaleString("id-ID");
+function formatCompact(num: number): string {
+  if (!num) return "0";
+  if (num >= 1_000_000) return (num / 1_000_000).toFixed(1).replace(/\.0$/, "") + "M";
+  if (num >= 1_000) return (num / 1_000).toFixed(1).replace(/\.0$/, "") + "K";
+  return num.toString();
 }
 
 export function YouTubeFeedGrid({
   videos,
+  profile,
+  sortOption = "outlier",
   onSelectVideo,
   isSelectMode = false,
   selectedVideoIds = new Set(),
@@ -32,28 +62,74 @@ export function YouTubeFeedGrid({
 }: Props) {
   const { registerCard } = useFlipGridAnimation(videos);
 
-  if (videos.length === 0) {
+  const [bookmarkedIds, setBookmarkedIds] = useState<Set<string>>(() => {
+    if (typeof window === "undefined") return new Set();
+    try {
+      const saved = localStorage.getItem("ruang_riset_youtube_bookmarks");
+      return saved ? new Set(JSON.parse(saved)) : new Set();
+    } catch {
+      return new Set();
+    }
+  });
+
+  const handleBookmark = (video: YouTubeVideoItem) => {
+    setBookmarkedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(video.id)) {
+        next.delete(video.id);
+        toast.success("Dihapus dari bookmark");
+      } else {
+        next.add(video.id);
+        toast.success("Disimpan ke bookmark!");
+      }
+      try {
+        localStorage.setItem("ruang_riset_youtube_bookmarks", JSON.stringify(Array.from(next)));
+      } catch {
+        // ignore
+      }
+      return next;
+    });
+  };
+
+  const handleDownloadMedia = async (video: YouTubeVideoItem) => {
+    const channelName = (profile?.customUrl || profile?.title || "youtube_creator").replace(/[@\s]/g, "");
+    const filename = `${channelName}-${video.id}.jpg`;
+
+    toast.loading("Mengunduh thumbnail video...", {
+      id: `dl-${video.id}`,
+      duration: 1200,
+    });
+
+    const ok = await downloadMediaAsset(video.thumbnailUrl, filename);
+    if (ok) {
+      toast.success("Thumbnail berhasil diunduh!", { id: `dl-${video.id}` });
+    } else {
+      toast.error("Gagal mengunduh thumbnail", { id: `dl-${video.id}` });
+    }
+  };
+
+  if (!videos || videos.length === 0) {
     return (
-      <div className="w-full text-center py-16 px-4">
-        <div className="w-12 h-12 mx-auto mb-3 rounded-2xl bg-gray-100 dark:bg-[#1E293B] text-gray-400 flex items-center justify-center">
-          <Play className="w-6 h-6" />
-        </div>
-        <h3 className="font-bold text-gray-900 dark:text-white text-base mb-1">
-          Tidak ada video yang cocok
-        </h3>
-        <p className="text-xs text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
-          Coba ganti kata kunci pencarian atau ubah filter format video.
-        </p>
+      <div className="p-8 sm:p-12">
+        <EmptyState
+          icon={<Film className="w-6 h-6" />}
+          title="Tidak ada konten yang cocok"
+          description="Coba ganti kata kunci pencarian atau ubah pengaturan filter."
+        />
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5 p-4 sm:p-5">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 bg-white dark:bg-[#141B31]">
       {videos.map((video) => {
-        const isViralOutlier = video.outlierScore >= 2.0;
-        const isSuperViral = video.outlierScore >= 5.0;
+        const isBookmarked = bookmarkedIds.has(video.id);
         const isSelected = selectedVideoIds.has(video.id);
+        const permalink =
+          video.permalink ||
+          (video.isShorts
+            ? `https://www.youtube.com/shorts/${video.id}`
+            : `https://www.youtube.com/watch?v=${video.id}`);
 
         return (
           <div
@@ -66,9 +142,9 @@ export function YouTubeFeedGrid({
                 onSelectVideo(video);
               }
             }}
-            className={`group relative flex flex-col bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl overflow-hidden hover:border-orange-500/50 hover:shadow-lg transition-colors duration-150 cursor-pointer ${
-              isSelected ? "ring-3 ring-orange-500" : ""
-            }`}
+            className={`group relative overflow-hidden bg-gray-100 dark:bg-[#121727] border-r border-b border-gray-200/80 dark:border-[#2C3246] cursor-pointer transition-colors duration-150 rounded-none ${
+              video.isShorts ? "aspect-[3/4]" : "aspect-[16/9]"
+            } ${isSelected ? "ring-3 ring-orange-500 ring-inset" : ""}`}
           >
             {/* Select Checkbox (Saat Mode Select Aktif) */}
             {isSelectMode && (
@@ -80,93 +156,193 @@ export function YouTubeFeedGrid({
                       : "bg-black/60 text-transparent border border-white/40 backdrop-blur-xs hover:border-white"
                   }`}
                 >
-                  <Check className={`w-3.5 h-3.5 ${isSelected ? "opacity-100 text-white" : "opacity-0"}`} strokeWidth={3} />
+                  <Check
+                    className={`w-3.5 h-3.5 ${isSelected ? "opacity-100 text-white" : "opacity-0"}`}
+                    strokeWidth={3}
+                  />
                 </div>
               </div>
             )}
 
-            {/* Thumbnail Area */}
-            <div className={`relative w-full overflow-hidden bg-gray-950 ${video.isShorts ? "aspect-[9/14]" : "aspect-[16/9]"}`}>
-              <img
-                src={video.thumbnailUrl}
-                alt={video.title}
-                loading="lazy"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-              />
+            {/* Thumbnail Image Penuh */}
+            <img
+              src={video.thumbnailUrl}
+              alt={video.title || "YouTube video"}
+              loading="eager"
+              decoding="async"
+              fetchPriority="high"
+              referrerPolicy="no-referrer"
+              className="w-full h-full object-cover select-none pointer-events-none"
+            />
 
-              {/* Gradient Overlay saat Hover (hanya saat tidak dalam select mode) */}
-              {!isSelectMode && (
-                <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <div className="w-11 h-11 rounded-full bg-red-600 text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform">
-                    <Play className="w-5 h-5 fill-current ml-0.5" />
-                  </div>
-                </div>
-              )}
+            {/* Gradient Overlay Normal (Non-Hover) untuk teks terbaca jelas */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none transition-opacity duration-150 group-hover:opacity-0" />
 
-              {/* Badges Top: Outlier Score & Shorts */}
-              <div className="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between pointer-events-none">
-                {isViralOutlier ? (
-                  <span
-                    className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold text-white shadow-md ${
-                      isSuperViral
-                        ? "bg-gradient-to-r from-amber-500 via-rose-500 to-purple-600 animate-pulse"
-                        : "bg-gradient-to-r from-amber-500 to-rose-600"
-                    }`}
-                  >
-                    <Flame className="w-3 h-3 fill-current" />
-                    <span>{video.outlierScore.toFixed(1)}x Outlier</span>
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-semibold bg-black/60 backdrop-blur-xs text-gray-300">
-                    <span>{video.outlierScore.toFixed(1)}x</span>
-                  </span>
-                )}
+            {/* ========================================================================= */}
+            {/* TAMPILAN NORMAL (NON-HOVER) */}
+            {/* ========================================================================= */}
 
-                {video.isShorts && !isSelectMode && (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-bold bg-red-600 text-white shadow-sm">
-                    SHORTS
-                  </span>
-                )}
+            {/* Kiri Atas: Badge Outlier Score (⚡ 1.3×) */}
+            <div className="absolute top-2.5 left-2.5 z-10 transition-opacity duration-150 group-hover:opacity-0 pointer-events-none">
+              <div
+                className={`flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/75 border border-white/10 text-[11px] font-bold shadow-sm ${
+                  video.outlierScore >= 4 ? "text-amber-300" : "text-white"
+                }`}
+              >
+                <Zap
+                  className={`w-3 h-3 ${
+                    video.outlierScore >= 4
+                      ? "fill-amber-300 text-amber-300"
+                      : "fill-white text-white"
+                  }`}
+                />
+                <span>{video.outlierScore.toFixed(1)}×</span>
               </div>
+            </div>
 
-              {/* Duration Bottom Right */}
-              {video.duration && !video.isShorts && (
-                <div className="absolute bottom-2 right-2 px-1.5 py-0.5 rounded-md bg-black/80 backdrop-blur-xs text-[10px] font-bold text-white tracking-wide">
-                  {video.duration}
+            {/* Kanan Atas: Media Type / Badge SHORTS */}
+            <div className="absolute top-2.5 right-2.5 z-10 transition-opacity duration-150 group-hover:opacity-0 pointer-events-none">
+              {video.isShorts ? (
+                <div className="px-1.5 py-0.5 rounded bg-red-600 text-white font-bold text-[9px] tracking-wider shadow-sm">
+                  SHORTS
+                </div>
+              ) : (
+                <div className="w-6 h-6 rounded-md bg-black/60 flex items-center justify-center text-white border border-white/15 shadow-sm">
+                  <Play className="w-3 h-3 fill-white text-white ml-0.5" />
                 </div>
               )}
             </div>
 
-            {/* Video Meta Info */}
-            <div className="p-3.5 sm:p-4 flex flex-col flex-1 justify-between gap-2.5">
-              <h4 className="font-bold text-xs sm:text-sm text-gray-900 dark:text-white line-clamp-2 leading-snug group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
-                {video.title}
-              </h4>
+            {/* Bawah Normal: Like Counter & Durasi / Tanggal */}
+            <div className="absolute bottom-2.5 inset-x-2.5 z-10 flex items-center justify-between text-white text-[11px] font-semibold transition-opacity duration-150 group-hover:opacity-0 pointer-events-none drop-shadow-md">
+              <div className="flex items-center gap-1">
+                <Heart className="w-3 h-3 fill-white text-white" />
+                <span>{formatCompact(video.likesCount)}</span>
+              </div>
+              {video.duration ? (
+                <div className="text-[10px] text-white/80 font-medium px-1.5 py-0.5 rounded bg-black/60 border border-white/10">
+                  {video.duration}
+                </div>
+              ) : null}
+            </div>
 
-              <div className="pt-2 border-t border-gray-100 dark:border-[#2C3246]/60 flex flex-col gap-1.5">
-                {/* 3 Metrics: Views, Likes, Comments */}
-                <div className="flex items-center justify-between text-[11px] font-semibold text-gray-700 dark:text-gray-300">
-                  <span className="flex items-center gap-1" title="Views">
-                    <Eye className="w-3.5 h-3.5 text-blue-500" />
-                    <span>{formatViews(video.viewsCount)}</span>
-                  </span>
+            {/* ========================================================================= */}
+            {/* TAMPILAN HOVER (SAAT KURSOR DIDEKATKAN KE KARTU) */}
+            {/* ========================================================================= */}
+            <div className="absolute inset-0 bg-black/75 p-3 sm:p-3.5 flex flex-col justify-between z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none group-hover:pointer-events-auto">
+              {/* Baris Atas Hover: Badge Petir di Kiri & Tombol Pop-out (↗) di Kanan */}
+              <div className="flex items-center justify-between">
+                <div
+                  className={`flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/70 border border-white/10 text-[11px] font-bold shadow-sm ${
+                    video.outlierScore >= 4 ? "text-amber-300" : "text-white"
+                  }`}
+                >
+                  <Zap
+                    className={`w-3 h-3 ${
+                      video.outlierScore >= 4
+                        ? "fill-amber-300 text-amber-300"
+                        : "fill-white text-white"
+                    }`}
+                  />
+                  <span>{video.outlierScore.toFixed(1)}×</span>
+                </div>
 
-                  <span className="flex items-center gap-1" title="Likes">
-                    <Heart className="w-3.5 h-3.5 text-rose-500 fill-rose-500/20" />
-                    <span>{formatViews(video.likesCount)}</span>
-                  </span>
+                <a
+                  href={permalink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-7 h-7 rounded-lg bg-white/20 hover:bg-white/30 active:scale-95 flex items-center justify-center text-white transition-colors cursor-pointer"
+                  title="Buka Video di YouTube"
+                >
+                  <ArrowUpRight className="w-4 h-4" />
+                </a>
+              </div>
 
-                  <span className="flex items-center gap-1" title="Comments">
-                    <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
-                    <span>{formatViews(video.commentsCount)}</span>
+              {/* Bagian Tengah Hover: Metrik YouTube (Views, Likes, Comments, Outlier) */}
+              <div className="flex flex-col items-center justify-center gap-2 text-white my-auto select-none pointer-events-none">
+                {/* 1. Views */}
+                <div
+                  className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold ${
+                    sortOption === "views" ? "text-emerald-400 font-extrabold" : "text-white"
+                  }`}
+                >
+                  <Eye className="w-4 h-4 text-white" />
+                  <span>{formatCompact(video.viewsCount)}</span>
+                </div>
+
+                {/* 2. Likes */}
+                <div
+                  className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold ${
+                    sortOption === "likes" ? "text-emerald-400 font-extrabold" : "text-white"
+                  }`}
+                >
+                  <Heart className="w-4 h-4 fill-white text-white" />
+                  <span>{formatCompact(video.likesCount)}</span>
+                </div>
+
+                {/* 3. Comments */}
+                <div
+                  className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold ${
+                    sortOption === "comments" ? "text-emerald-400 font-extrabold" : "text-white"
+                  }`}
+                >
+                  <MessageSquare className="w-4 h-4 fill-white text-white" />
+                  <span>{formatCompact(video.commentsCount)}</span>
+                </div>
+
+                {/* 4. Outlier Score */}
+                <div
+                  className={`flex items-center gap-1 text-xs sm:text-sm font-black ${
+                    sortOption === "outlier" ? "text-amber-400" : "text-amber-300"
+                  }`}
+                >
+                  <Zap className="w-4 h-4 fill-amber-300 text-amber-300" />
+                  <span>{video.outlierScore.toFixed(1)}×</span>
+                </div>
+              </div>
+
+              {/* Baris Bawah Hover: Info Akun di Kiri, Aksi Bookmark & Download di Kanan */}
+              <div className="flex items-end justify-between gap-2 pt-1 border-t border-white/15">
+                {/* Kiri: Icon YouTube + @channelTitle */}
+                <div className="flex items-center gap-1.5 text-[10px] text-white/80 font-medium truncate max-w-[130px]">
+                  <YouTubeIcon className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                  <span className="truncate">
+                    {profile?.customUrl ? profile.customUrl : profile?.title || "channel"}
                   </span>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-gray-400">
-                  <span>{video.publishedText}</span>
-                  {video.duration && !video.isShorts && (
-                    <span className="text-[10px] text-gray-500 dark:text-gray-400 font-medium">{video.duration}</span>
-                  )}
+                {/* Kanan: Tombol Bookmark & Download Media */}
+                <div className="flex flex-col gap-1.5 shrink-0">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleBookmark(video);
+                    }}
+                    className={`w-7 h-7 rounded-md flex items-center justify-center text-white transition-colors active:scale-95 cursor-pointer ${
+                      isBookmarked
+                        ? "bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
+                        : "bg-white/20 hover:bg-white/30 text-white"
+                    }`}
+                    title={isBookmarked ? "Hapus dari Bookmark" : "Simpan ke Bookmark"}
+                  >
+                    <Bookmark
+                      className={`w-3.5 h-3.5 ${isBookmarked ? "fill-white" : ""}`}
+                    />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDownloadMedia(video);
+                    }}
+                    className="w-7 h-7 rounded-md bg-white/20 hover:bg-white/30 active:scale-95 flex items-center justify-center text-white transition-colors cursor-pointer"
+                    title="Download Thumbnail / Media"
+                  >
+                    <Download className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
             </div>
