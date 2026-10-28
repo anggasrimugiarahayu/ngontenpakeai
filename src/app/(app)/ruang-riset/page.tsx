@@ -32,7 +32,16 @@ export default async function RuangRisetPage({
   }
 
   const resolvedParams = searchParams ? await searchParams : {};
-  const initialPlatform = (isLoggedIn && (isPro || isAdmin) && resolvedParams.platform === "instagram") ? "instagram" : null;
+  const plat = resolvedParams.platform;
+  const initialPlatform =
+    isLoggedIn &&
+    (isPro || isAdmin) &&
+    (plat === "instagram" ||
+      plat === "youtube" ||
+      plat === "tiktok" ||
+      plat === "facebook")
+      ? plat
+      : null;
 
   return (
     <RuangRisetClient

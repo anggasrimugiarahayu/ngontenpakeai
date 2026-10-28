@@ -4,9 +4,14 @@ const ALLOWED_HOST_SUFFIXES = [
   ".cdninstagram.com",
   ".fbcdn.net",
   "instagram.com",
+  ".facebook.com",
+  ".fbsbx.com",
   ".tiktokcdn.com",
   ".tiktokcdn-us.com",
   ".tiktokcdn-eu.com",
+  ".ytimg.com",
+  ".ggpht.com",
+  ".googleusercontent.com",
 ];
 
 function isAllowedMediaHost(rawUrl: string): boolean {

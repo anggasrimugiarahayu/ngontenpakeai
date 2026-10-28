@@ -12,12 +12,13 @@ import {
 import { InstagramResearchStudio } from "./instagram/InstagramResearchStudio";
 import { YouTubeResearchStudio } from "./youtube/YouTubeResearchStudio";
 import { TikTokResearchStudio } from "./tiktok/TikTokResearchStudio";
+import { FacebookResearchStudio } from "./facebook/FacebookResearchStudio";
 
 interface RuangRisetClientProps {
   isLoggedIn: boolean;
   isPro?: boolean;
   isAdmin?: boolean;
-  initialPlatform?: "instagram" | "youtube" | "tiktok" | null;
+  initialPlatform?: "instagram" | "youtube" | "tiktok" | "facebook" | null;
 }
 
 const RISET_PLATFORMS: RisetPlatform[] = [
@@ -67,14 +68,14 @@ const RISET_PLATFORMS: RisetPlatform[] = [
     id: "facebook",
     name: "Riset Facebook",
     description:
-      "Pantau topik diskusi grup ramai, performa postingan organik, dan iklan kompetitor.",
+      "Bongkar Outlier Score Reels, Video & Foto halaman kompetitor, sortir interaksi tertinggi, dan ekspor data ide.",
     icon: FacebookIcon,
-    badge: "Segera Hadir",
-    isActive: false,
+    badge: "Baru",
+    isActive: true,
     points: [
-      "Riset Diskusi Grup & Komunitas Ramai",
-      "Bedah Konten Organik & Iklan Pemenang",
-      "Petakan Pain Points & Masalah Audiens",
+      "Bongkar Outlier Score & Konten Paling Viral",
+      "Pilah Format Reels & Video vs Postingan Foto",
+      "Ekspor Caption, Hook, & Data ke CSV / Excel",
     ],
   },
 ];
@@ -86,9 +87,9 @@ export default function RuangRisetClient({
   initialPlatform = null,
 }: RuangRisetClientProps) {
   const router = useRouter();
-  const [selectedPlatform, setSelectedPlatform] = useState<"instagram" | "youtube" | "tiktok" | null>(
-    initialPlatform
-  );
+  const [selectedPlatform, setSelectedPlatform] = useState<
+    "instagram" | "youtube" | "tiktok" | "facebook" | null
+  >(initialPlatform);
 
   // Sync state with URL search params on mount & popstate
   useEffect(() => {
@@ -98,7 +99,10 @@ export default function RuangRisetClient({
       const params = new URLSearchParams(window.location.search);
       const platformParam = params.get("platform");
       if (
-        (platformParam === "instagram" || platformParam === "youtube" || platformParam === "tiktok") &&
+        (platformParam === "instagram" ||
+          platformParam === "youtube" ||
+          platformParam === "tiktok" ||
+          platformParam === "facebook") &&
         isLoggedIn &&
         (isPro || isAdmin)
       ) {
@@ -112,7 +116,10 @@ export default function RuangRisetClient({
 
     const handlePlatformChange = (e: any) => {
       if (
-        (e.detail === "instagram" || e.detail === "youtube" || e.detail === "tiktok") &&
+        (e.detail === "instagram" ||
+          e.detail === "youtube" ||
+          e.detail === "tiktok" ||
+          e.detail === "facebook") &&
         isLoggedIn &&
         (isPro || isAdmin)
       ) {
@@ -131,7 +138,9 @@ export default function RuangRisetClient({
     };
   }, [isLoggedIn, isPro, isAdmin]);
 
-  const handleSelectPlatform = (platformId: "instagram" | "youtube" | "tiktok") => {
+  const handleSelectPlatform = (
+    platformId: "instagram" | "youtube" | "tiktok" | "facebook"
+  ) => {
     if (!isLoggedIn || (!isPro && !isAdmin)) {
       window.dispatchEvent(new Event("app-loading-start"));
       router.push("/?pricing=true&cat=riset");
@@ -166,6 +175,8 @@ export default function RuangRisetClient({
         <YouTubeResearchStudio onBackToHub={handleBackToHub} />
       ) : selectedPlatform === "tiktok" ? (
         <TikTokResearchStudio onBackToHub={handleBackToHub} />
+      ) : selectedPlatform === "facebook" ? (
+        <FacebookResearchStudio onBackToHub={handleBackToHub} />
       ) : (
         <>
           {/* Header */}
@@ -187,8 +198,18 @@ export default function RuangRisetClient({
                 key={platform.id}
                 platform={platform}
                 onSelect={
-                  platform.id === "instagram" || platform.id === "youtube" || platform.id === "tiktok"
-                    ? () => handleSelectPlatform(platform.id as "instagram" | "youtube" | "tiktok")
+                  platform.id === "instagram" ||
+                  platform.id === "youtube" ||
+                  platform.id === "tiktok" ||
+                  platform.id === "facebook"
+                    ? () =>
+                        handleSelectPlatform(
+                          platform.id as
+                            | "instagram"
+                            | "youtube"
+                            | "tiktok"
+                            | "facebook"
+                        )
                     : undefined
                 }
               />

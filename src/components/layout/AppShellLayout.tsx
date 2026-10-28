@@ -178,7 +178,7 @@ const RISET_TOOLS = [
   { href: "/ruang-riset?platform=instagram", label: "Instagram Riset", icon: InstagramIcon, platformKey: "instagram" },
   { href: "/ruang-riset?platform=youtube", label: "YouTube Riset", icon: YouTubeIcon, platformKey: "youtube" },
   { href: "/ruang-riset?platform=tiktok", label: "TikTok Riset", icon: TikTokIcon, platformKey: "tiktok" },
-  { href: "/ruang-riset?platform=facebook", label: "Facebook Riset", icon: FacebookIcon, platformKey: "facebook", disabled: true },
+  { href: "/ruang-riset?platform=facebook", label: "Facebook Riset", icon: FacebookIcon, platformKey: "facebook" },
 ];
 
 export default function AppShellLayout({
