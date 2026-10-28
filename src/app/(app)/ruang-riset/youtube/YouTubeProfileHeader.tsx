@@ -28,11 +28,14 @@ function formatNumber(num: number): string {
 
 export function YouTubeProfileHeader({ profile }: Props) {
   const channelUrl = `https://www.youtube.com/${profile.customUrl}`;
+  const averageLikes =
+    profile.averageLikes || Math.round(profile.averageViews * 0.048);
+  const averageER = profile.averageEngagementRate || 4.8;
 
   return (
     <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl p-5 sm:p-6 shadow-xs">
       {/* ========================================================================= */}
-      {/* DESKTOP LAYOUT (md:flex) */}
+      {/* DESKTOP LAYOUT (md:flex) - Clean, Sleek & Hemat Tempat Seperti TikTok */}
       {/* ========================================================================= */}
       <div className="hidden md:flex items-start gap-6 lg:gap-8">
         {/* Avatar Profil */}
@@ -49,11 +52,11 @@ export function YouTubeProfileHeader({ profile }: Props) {
           </div>
         </div>
 
-        {/* Info & Deskripsi */}
+        {/* Info & Deskripsi (Tengah) */}
         <div className="flex-1 min-w-0 space-y-2.5">
           <div className="flex items-center gap-3 flex-wrap">
             <h2 className="text-xl lg:text-2xl font-bold font-heading text-gray-900 dark:text-white flex items-center gap-1.5">
-              {profile.title}
+              <span>{profile.title}</span>
             </h2>
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400">
               {profile.customUrl}
@@ -71,7 +74,7 @@ export function YouTubeProfileHeader({ profile }: Props) {
           </div>
 
           {/* Metrik Standar YouTube */}
-          <div className="flex items-center gap-6 text-sm text-gray-700 dark:text-gray-300">
+          <div className="flex items-center gap-6 text-sm text-gray-700 dark:text-gray-300 flex-wrap">
             <div className="flex items-center gap-1.5">
               <Users className="w-4 h-4 text-red-500" />
               <span className="font-bold text-gray-900 dark:text-white text-base mr-1">
@@ -100,12 +103,59 @@ export function YouTubeProfileHeader({ profile }: Props) {
             </p>
           )}
         </div>
+
+        {/* 4 Kartu Analitik Utama (Kanan Desktop - Format Grid 2x2 Hemat Tempat Seperti TikTok) */}
+        <div className="grid grid-cols-2 gap-2.5 shrink-0 min-w-[280px]">
+          {/* 1. Rata-rata Views */}
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <Eye className="w-3.5 h-3.5 text-blue-500" />
+              <span>Rata-rata Views</span>
+            </div>
+            <div className="text-base font-bold text-gray-900 dark:text-white">
+              {formatNumber(profile.averageViews)}
+            </div>
+          </div>
+
+          {/* 2. Puncak Viral / Top Outlier */}
+          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/10 to-rose-500/10 dark:from-amber-500/20 dark:to-rose-500/20 border border-amber-500/20">
+            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-semibold mb-1">
+              <Flame className="w-3.5 h-3.5 fill-current" />
+              <span>Puncak Viral</span>
+            </div>
+            <div className="text-base font-bold text-amber-600 dark:text-amber-400">
+              {profile.topOutlierMultiplier.toFixed(1)}x
+            </div>
+          </div>
+
+          {/* 3. Rata-rata Likes */}
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <Heart className="w-3.5 h-3.5 text-rose-500" />
+              <span>Rata-rata Likes</span>
+            </div>
+            <div className="text-base font-bold text-gray-900 dark:text-white">
+              {formatNumber(averageLikes)}
+            </div>
+          </div>
+
+          {/* 4. Engagement Rate */}
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Engagement Rate</span>
+            </div>
+            <div className="text-base font-bold text-emerald-600 dark:text-emerald-400">
+              {averageER}%
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* MOBILE LAYOUT (md:hidden) */}
+      {/* MOBILE LAYOUT (md:hidden) - Hemat Tempat */}
       {/* ========================================================================= */}
-      <div className="block md:hidden space-y-3.5">
+      <div className="md:hidden space-y-4">
         <div className="flex items-center gap-3.5">
           <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-red-600 to-amber-500 shrink-0">
             <img
@@ -134,76 +184,45 @@ export function YouTubeProfileHeader({ profile }: Props) {
             {profile.description}
           </p>
         )}
-      </div>
 
-      {/* ========================================================================= */}
-      {/* 4 KARTU METRIK ANALITIK (Persis seperti Instagram: Clean & Sleek) */}
-      {/* ========================================================================= */}
-      <div className="mt-5 pt-4 border-t border-gray-100 dark:border-[#2C3246] grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-        {/* Card 1: Rata-rata Views Baseline */}
-        <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-[#0F172A]/60 border border-gray-200/80 dark:border-[#2C3246]/80">
-          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-            <span>Rata-rata Views</span>
-            <div className="w-5 h-5 rounded-md bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
-              <Eye className="w-3 h-3" />
+        {/* 4 Kotak Analitik Mobile (Grid 2x2 Hemat Tempat) */}
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+            <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">
+              Rata-rata Views
+            </div>
+            <div className="text-sm font-bold text-gray-900 dark:text-white">
+              {formatNumber(profile.averageViews)}
             </div>
           </div>
-          <p className="text-base sm:text-lg font-bold font-heading text-gray-900 dark:text-white">
-            {formatNumber(profile.averageViews)}
-          </p>
-          <p className="text-[10px] text-gray-400 mt-0.5">
-            Patokan baseline channel
-          </p>
-        </div>
 
-        {/* Card 2: Puncak Viralitas (Outlier Terbesar) */}
-        <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-[#0F172A]/60 border border-gray-200/80 dark:border-[#2C3246]/80">
-          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-            <span>Puncak Viral</span>
-            <div className="w-5 h-5 rounded-md bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
-              <Flame className="w-3 h-3 fill-rose-500/20" />
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/10 to-rose-500/10 dark:from-amber-500/20 dark:to-rose-500/20 border border-amber-500/20">
+            <div className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mb-0.5 flex items-center gap-1">
+              <Flame className="w-3 h-3 fill-current" />
+              <span>Puncak Viral</span>
+            </div>
+            <div className="text-sm font-bold text-amber-600 dark:text-amber-400">
+              {profile.topOutlierMultiplier.toFixed(1)}x
             </div>
           </div>
-          <p className="text-base sm:text-lg font-bold font-heading text-rose-600 dark:text-rose-400">
-            {profile.topOutlierMultiplier.toFixed(1)}× Outlier
-          </p>
-          <p className="text-[10px] text-gray-400 mt-0.5">
-            Di atas performa normal
-          </p>
-        </div>
 
-        {/* Card 3: Rata-rata Likes */}
-        <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-[#0F172A]/60 border border-gray-200/80 dark:border-[#2C3246]/80">
-          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-            <span>Rata-rata Likes</span>
-            <div className="w-5 h-5 rounded-md bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
-              <Heart className="w-3 h-3 fill-purple-500/20" />
+          <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+            <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">
+              Rata-rata Likes
+            </div>
+            <div className="text-sm font-bold text-gray-900 dark:text-white">
+              {formatNumber(averageLikes)}
             </div>
           </div>
-          <p className="text-base sm:text-lg font-bold font-heading text-gray-900 dark:text-white">
-            {formatNumber(
-              profile.averageLikes || Math.round(profile.averageViews * 0.048)
-            )}
-          </p>
-          <p className="text-[10px] text-gray-400 mt-0.5">
-            Apresiasi tiap video
-          </p>
-        </div>
 
-        {/* Card 4: Engagement Rate */}
-        <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-[#0F172A]/60 border border-gray-200/80 dark:border-[#2C3246]/80">
-          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-            <span>Engagement Rate</span>
-            <div className="w-5 h-5 rounded-md bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
-              <TrendingUp className="w-3 h-3" />
+          <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+            <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">
+              Engagement Rate
+            </div>
+            <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+              {averageER}%
             </div>
           </div>
-          <p className="text-base sm:text-lg font-bold font-heading text-emerald-600 dark:text-emerald-400">
-            {profile.averageEngagementRate || 4.8}%
-          </p>
-          <p className="text-[10px] text-gray-400 mt-0.5">
-            Rasio keterlibatan audiens
-          </p>
         </div>
       </div>
     </div>

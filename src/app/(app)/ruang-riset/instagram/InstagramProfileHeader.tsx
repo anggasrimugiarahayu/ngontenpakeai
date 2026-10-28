@@ -29,7 +29,7 @@ export function InstagramProfileHeader({ profile }: Props) {
   return (
     <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl p-5 sm:p-6 shadow-xs">
       {/* ========================================================================= */}
-      {/* DESKTOP LAYOUT (md:flex) - Clean & Compact */}
+      {/* DESKTOP LAYOUT (md:flex) - Clean, Sleek & Hemat Tempat Seperti TikTok */}
       {/* ========================================================================= */}
       <div className="hidden md:flex items-start gap-6 lg:gap-8">
         {/* Avatar Profil */}
@@ -43,12 +43,12 @@ export function InstagramProfileHeader({ profile }: Props) {
           </div>
         </div>
 
-        {/* Info & Bio */}
+        {/* Info & Bio (Tengah) */}
         <div className="flex-1 min-w-0 space-y-2.5">
           {/* Baris 1: Username & Link Website */}
           <div className="flex items-center gap-3 flex-wrap">
             <h2 className="text-xl lg:text-2xl font-bold font-heading text-gray-900 dark:text-white flex items-center gap-1.5">
-              @{profile.username}
+              <span>@{profile.username}</span>
               {profile.isVerified && (
                 <CheckCircle2 className="w-5 h-5 text-sky-500 fill-sky-500 shrink-0 inline-block" />
               )}
@@ -68,7 +68,7 @@ export function InstagramProfileHeader({ profile }: Props) {
           </div>
 
           {/* Baris 2: Metrik Standar IG (Postingan, Pengikut, Mengikuti) */}
-          <div className="flex items-center gap-6 text-sm text-gray-700 dark:text-gray-300">
+          <div className="flex items-center gap-6 text-sm text-gray-700 dark:text-gray-300 flex-wrap">
             <div>
               <span className="font-bold text-gray-900 dark:text-white text-base mr-1">
                 {formatNumber(profile.mediaCount)}
@@ -95,19 +95,66 @@ export function InstagramProfileHeader({ profile }: Props) {
               {profile.fullName}
             </p>
             {profile.biography && (
-              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed max-w-2xl">
+              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed max-w-2xl line-clamp-2">
                 {profile.biography}
               </p>
             )}
           </div>
         </div>
+
+        {/* 4 Kartu Analitik Utama (Kanan Desktop - Format Grid 2x2 Hemat Tempat Seperti TikTok) */}
+        <div className="grid grid-cols-2 gap-2.5 shrink-0 min-w-[280px]">
+          {/* 1. Rata-rata Views */}
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <Eye className="w-3.5 h-3.5 text-blue-500" />
+              <span>Rata-rata Views</span>
+            </div>
+            <div className="text-base font-bold text-gray-900 dark:text-white">
+              {formatNumber(profile.averageViews)}
+            </div>
+          </div>
+
+          {/* 2. Puncak Viral / Top Outlier */}
+          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/10 to-rose-500/10 dark:from-amber-500/20 dark:to-rose-500/20 border border-amber-500/20">
+            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-semibold mb-1">
+              <Flame className="w-3.5 h-3.5 fill-current" />
+              <span>Puncak Viral</span>
+            </div>
+            <div className="text-base font-bold text-amber-600 dark:text-amber-400">
+              {profile.topOutlierMultiplier.toFixed(1)}x
+            </div>
+          </div>
+
+          {/* 3. Rata-rata Likes */}
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <Heart className="w-3.5 h-3.5 text-rose-500" />
+              <span>Rata-rata Likes</span>
+            </div>
+            <div className="text-base font-bold text-gray-900 dark:text-white">
+              {formatNumber(profile.averageLikes)}
+            </div>
+          </div>
+
+          {/* 4. Engagement Rate */}
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
+              <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Engagement Rate</span>
+            </div>
+            <div className="text-base font-bold text-emerald-600 dark:text-emerald-400">
+              {profile.averageEngagementRate}%
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* ========================================================================= */}
-      {/* MOBILE LAYOUT (md:hidden) - Clean & Compact */}
+      {/* MOBILE LAYOUT (md:hidden) - Hemat Tempat */}
       {/* ========================================================================= */}
-      <div className="block md:hidden space-y-3.5">
-        {/* Top: Avatar & 3-Column Stats */}
+      <div className="md:hidden space-y-4">
+        {/* Top: Avatar & Stats */}
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-full p-0.5 bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 shrink-0">
             <img
@@ -117,127 +164,95 @@ export function InstagramProfileHeader({ profile }: Props) {
             />
           </div>
 
-          <div className="flex-1 flex items-center justify-around text-center">
-            <div>
-              <p className="font-bold text-gray-900 dark:text-white text-base">
-                {formatNumber(profile.mediaCount)}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Post</p>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-1.5">
+              <span className="font-bold text-base text-gray-900 dark:text-white truncate">
+                @{profile.username}
+              </span>
+              {profile.isVerified && (
+                <CheckCircle2 className="w-4 h-4 text-sky-500 fill-sky-500 shrink-0 inline-block" />
+              )}
             </div>
-            <div>
-              <p className="font-bold text-gray-900 dark:text-white text-base">
-                {formatNumber(profile.followersCount)}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Pengikut</p>
-            </div>
-            <div>
-              <p className="font-bold text-gray-900 dark:text-white text-base">
-                {formatNumber(profile.followingCount)}
-              </p>
-              <p className="text-xs text-gray-500 dark:text-gray-400">Mengikuti</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 truncate">
+              {profile.fullName}
+            </p>
+            <div className="flex items-center gap-3 text-xs text-gray-600 dark:text-gray-300 mt-1">
+              <span>
+                <strong className="text-gray-900 dark:text-white">
+                  {formatNumber(profile.followersCount)}
+                </strong>{" "}
+                pengikut
+              </span>
+              <span>
+                <strong className="text-gray-900 dark:text-white">
+                  {formatNumber(profile.mediaCount)}
+                </strong>{" "}
+                post
+              </span>
             </div>
           </div>
         </div>
 
         {/* Bio & Link */}
-        <div className="space-y-1">
-          <div className="flex items-center gap-1.5">
-            <span className="font-bold text-sm text-gray-900 dark:text-white">
-              @{profile.username}
-            </span>
-            {profile.isVerified && (
-              <CheckCircle2 className="w-4 h-4 text-sky-500 fill-sky-500 inline-block" />
-            )}
-          </div>
-
-          <p className="text-xs font-semibold text-gray-800 dark:text-gray-200">
-            {profile.fullName}
+        {profile.biography && (
+          <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line line-clamp-3">
+            {profile.biography}
           </p>
-          {profile.biography && (
-            <p className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed whitespace-pre-line">
-              {profile.biography}
-            </p>
-          )}
-          {profile.externalUrl && (
+        )}
+        {profile.externalUrl && (
+          <div>
             <a
               href={profile.externalUrl}
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 text-xs text-sky-600 dark:text-sky-400 font-semibold hover:underline pt-0.5"
+              className="inline-flex items-center gap-1 text-xs text-sky-600 dark:text-sky-400 font-semibold hover:underline"
             >
               <ExternalLink className="w-3 h-3" />
-              <span>{profile.externalUrl.replace(/^https?:\/\//, "")}</span>
+              <span className="truncate max-w-xs">
+                {profile.externalUrl.replace(/^https?:\/\//, "")}
+              </span>
             </a>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
 
-      {/* ========================================================================= */}
-      {/* 4 KARTU METRIK ANALITIK (Clean, Sleek & Compact) */}
-      {/* ========================================================================= */}
-      <div className="mt-5 pt-4 border-t border-gray-100 dark:border-[#2C3246] grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-3">
-        {/* Card 1: Rata-rata Views Baseline */}
-        <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-[#0F172A]/60 border border-gray-200/80 dark:border-[#2C3246]/80">
-          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-            <span>Rata-rata Views</span>
-            <div className="w-5 h-5 rounded-md bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
-              <Eye className="w-3 h-3" />
+        {/* 4 Kotak Analitik Mobile (Grid 2x2 Hemat Tempat) */}
+        <div className="grid grid-cols-2 gap-2 pt-1">
+          <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+            <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">
+              Rata-rata Views
+            </div>
+            <div className="text-sm font-bold text-gray-900 dark:text-white">
+              {formatNumber(profile.averageViews)}
             </div>
           </div>
-          <p className="text-base sm:text-lg font-bold font-heading text-gray-900 dark:text-white">
-            {formatNumber(profile.averageViews)}
-          </p>
-          <p className="text-[10px] text-gray-400 mt-0.5">
-            Patokan baseline akun
-          </p>
-        </div>
 
-        {/* Card 2: Puncak Viralitas (Outlier Terbesar) */}
-        <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-[#0F172A]/60 border border-gray-200/80 dark:border-[#2C3246]/80">
-          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-            <span>Puncak Viral</span>
-            <div className="w-5 h-5 rounded-md bg-rose-500/10 text-rose-500 flex items-center justify-center shrink-0">
-              <Flame className="w-3 h-3 fill-rose-500/20" />
+          <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/10 to-rose-500/10 dark:from-amber-500/20 dark:to-rose-500/20 border border-amber-500/20">
+            <div className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mb-0.5 flex items-center gap-1">
+              <Flame className="w-3 h-3 fill-current" />
+              <span>Puncak Viral</span>
+            </div>
+            <div className="text-sm font-bold text-amber-600 dark:text-amber-400">
+              {profile.topOutlierMultiplier.toFixed(1)}x
             </div>
           </div>
-          <p className="text-base sm:text-lg font-bold font-heading text-rose-600 dark:text-rose-400">
-            {profile.topOutlierMultiplier.toFixed(1)}× Outlier
-          </p>
-          <p className="text-[10px] text-gray-400 mt-0.5">
-            Di atas performa normal
-          </p>
-        </div>
 
-        {/* Card 3: Rata-rata Likes */}
-        <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-[#0F172A]/60 border border-gray-200/80 dark:border-[#2C3246]/80">
-          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-            <span>Rata-rata Likes</span>
-            <div className="w-5 h-5 rounded-md bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
-              <Heart className="w-3 h-3 fill-purple-500/20" />
+          <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+            <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">
+              Rata-rata Likes
+            </div>
+            <div className="text-sm font-bold text-gray-900 dark:text-white">
+              {formatNumber(profile.averageLikes)}
             </div>
           </div>
-          <p className="text-base sm:text-lg font-bold font-heading text-gray-900 dark:text-white">
-            {formatNumber(profile.averageLikes)}
-          </p>
-          <p className="text-[10px] text-gray-400 mt-0.5">
-            Apresiasi tiap postingan
-          </p>
-        </div>
 
-        {/* Card 4: Engagement Rate */}
-        <div className="p-3.5 rounded-xl bg-gray-50/70 dark:bg-[#0F172A]/60 border border-gray-200/80 dark:border-[#2C3246]/80">
-          <div className="flex items-center justify-between text-xs font-semibold text-gray-500 dark:text-gray-400 mb-1">
-            <span>Engagement Rate</span>
-            <div className="w-5 h-5 rounded-md bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
-              <TrendingUp className="w-3 h-3" />
+          <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+            <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">
+              Engagement Rate
+            </div>
+            <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+              {profile.averageEngagementRate}%
             </div>
           </div>
-          <p className="text-base sm:text-lg font-bold font-heading text-emerald-600 dark:text-emerald-400">
-            {profile.averageEngagementRate}%
-          </p>
-          <p className="text-[10px] text-gray-400 mt-0.5">
-            Rasio keterlibatan audiens
-          </p>
         </div>
       </div>
     </div>

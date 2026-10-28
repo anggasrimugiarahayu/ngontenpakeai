@@ -13,6 +13,7 @@ import {
   ArrowUpRight,
   Film,
   Check,
+  Eye,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { downloadMediaAsset } from "./exportUtils";
@@ -269,9 +270,19 @@ export function InstagramFeedGrid({
                 </a>
               </div>
 
-              {/* Bagian Tengah Hover: 3 Metrik Utama Bertumpuk Vertikal */}
+              {/* Bagian Tengah Hover: 4 Metrik Utama Bertumpuk Vertikal */}
               <div className="flex flex-col items-center justify-center gap-2 text-white my-auto select-none pointer-events-none">
-                {/* 1. Likes */}
+                {/* 1. Views */}
+                <div
+                  className={`flex items-center gap-1.5 text-sm sm:text-base font-bold ${
+                    sortOption === "views" ? "text-emerald-400 font-extrabold" : "text-white"
+                  }`}
+                >
+                  <Eye className="w-4 h-4 text-white" />
+                  <span>{formatCompact(post.viewsCount)}</span>
+                </div>
+
+                {/* 2. Likes */}
                 <div
                   className={`flex items-center gap-1.5 text-sm sm:text-base font-bold ${
                     sortOption === "likes" ? "text-emerald-400 font-extrabold" : "text-white"
@@ -281,7 +292,7 @@ export function InstagramFeedGrid({
                   <span>{formatCompact(post.likesCount)}</span>
                 </div>
 
-                {/* 2. Comments */}
+                {/* 3. Comments */}
                 <div
                   className={`flex items-center gap-1.5 text-sm sm:text-base font-bold ${
                     sortOption === "comments" ? "text-emerald-400 font-extrabold" : "text-white"
@@ -291,7 +302,7 @@ export function InstagramFeedGrid({
                   <span>{formatCompact(post.commentsCount)}</span>
                 </div>
 
-                {/* 3. Outlier Score */}
+                {/* 4. Outlier Score */}
                 <div
                   className={`flex items-center gap-1 text-sm sm:text-base font-black ${
                     sortOption === "outlier" ? "text-amber-400" : "text-amber-300"
