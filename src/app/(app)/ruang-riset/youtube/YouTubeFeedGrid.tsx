@@ -229,7 +229,11 @@ export function YouTubeFeedGrid({
             {/* ========================================================================= */}
             {/* TAMPILAN HOVER (SAAT KURSOR DIDEKATKAN KE KARTU) */}
             {/* ========================================================================= */}
-            <div className="absolute inset-0 bg-black/75 p-3 sm:p-3.5 flex flex-col justify-between z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none group-hover:pointer-events-auto">
+            <div
+              className={`absolute inset-0 bg-black/75 flex flex-col justify-between z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-150 pointer-events-none group-hover:pointer-events-auto ${
+                video.isShorts ? "p-3 sm:p-3.5" : "p-2.5 sm:p-3"
+              }`}
+            >
               {/* Baris Atas Hover: Badge Petir di Kiri & Tombol Pop-out (↗) di Kanan */}
               <div className="flex items-center justify-between">
                 <div
@@ -260,60 +264,105 @@ export function YouTubeFeedGrid({
               </div>
 
               {/* Bagian Tengah Hover: Metrik YouTube (Views, Likes, Comments, Outlier) */}
-              <div className="flex flex-col items-center justify-center gap-2 text-white my-auto select-none pointer-events-none">
-                {/* 1. Views */}
-                <div
-                  className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold ${
-                    sortOption === "views" ? "text-emerald-400 font-extrabold" : "text-white"
-                  }`}
-                >
-                  <Eye className="w-4 h-4 text-white" />
-                  <span>{formatCompact(video.viewsCount)}</span>
-                </div>
+              {/* JIKA SHORTS: 1 Kolom Vertikal | JIKA LONG VIDEO 16:9: 2 Kolom (Grid 2x2) Agar Pas Tanpa Terpotong */}
+              {video.isShorts ? (
+                <div className="flex flex-col items-center justify-center gap-2 text-white my-auto select-none pointer-events-none">
+                  {/* 1. Views */}
+                  <div
+                    className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold ${
+                      sortOption === "views" ? "text-emerald-400 font-extrabold" : "text-white"
+                    }`}
+                  >
+                    <Eye className="w-4 h-4 text-white" />
+                    <span>{formatCompact(video.viewsCount)}</span>
+                  </div>
 
-                {/* 2. Likes */}
-                <div
-                  className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold ${
-                    sortOption === "likes" ? "text-emerald-400 font-extrabold" : "text-white"
-                  }`}
-                >
-                  <Heart className="w-4 h-4 fill-white text-white" />
-                  <span>{formatCompact(video.likesCount)}</span>
-                </div>
+                  {/* 2. Likes */}
+                  <div
+                    className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold ${
+                      sortOption === "likes" ? "text-emerald-400 font-extrabold" : "text-white"
+                    }`}
+                  >
+                    <Heart className="w-4 h-4 fill-white text-white" />
+                    <span>{formatCompact(video.likesCount)}</span>
+                  </div>
 
-                {/* 3. Comments */}
-                <div
-                  className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold ${
-                    sortOption === "comments" ? "text-emerald-400 font-extrabold" : "text-white"
-                  }`}
-                >
-                  <MessageSquare className="w-4 h-4 fill-white text-white" />
-                  <span>{formatCompact(video.commentsCount)}</span>
-                </div>
+                  {/* 3. Comments */}
+                  <div
+                    className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold ${
+                      sortOption === "comments" ? "text-emerald-400 font-extrabold" : "text-white"
+                    }`}
+                  >
+                    <MessageSquare className="w-4 h-4 fill-white text-white" />
+                    <span>{formatCompact(video.commentsCount)}</span>
+                  </div>
 
-                {/* 4. Outlier Score */}
-                <div
-                  className={`flex items-center gap-1 text-xs sm:text-sm font-black ${
-                    sortOption === "outlier" ? "text-amber-400" : "text-amber-300"
-                  }`}
-                >
-                  <Zap className="w-4 h-4 fill-amber-300 text-amber-300" />
-                  <span>{video.outlierScore.toFixed(1)}×</span>
+                  {/* 4. Outlier Score */}
+                  <div
+                    className={`flex items-center gap-1 text-xs sm:text-sm font-black ${
+                      sortOption === "outlier" ? "text-amber-400" : "text-amber-300"
+                    }`}
+                  >
+                    <Zap className="w-4 h-4 fill-amber-300 text-amber-300" />
+                    <span>{video.outlierScore.toFixed(1)}×</span>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 max-w-[210px] mx-auto text-white my-auto select-none pointer-events-none py-0.5">
+                  {/* 1. Views */}
+                  <div
+                    className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold justify-start ${
+                      sortOption === "views" ? "text-emerald-400 font-extrabold" : "text-white"
+                    }`}
+                  >
+                    <Eye className="w-3.5 h-3.5 text-white shrink-0" />
+                    <span>{formatCompact(video.viewsCount)}</span>
+                  </div>
+
+                  {/* 2. Likes */}
+                  <div
+                    className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold justify-start ${
+                      sortOption === "likes" ? "text-emerald-400 font-extrabold" : "text-white"
+                    }`}
+                  >
+                    <Heart className="w-3.5 h-3.5 fill-white text-white shrink-0" />
+                    <span>{formatCompact(video.likesCount)}</span>
+                  </div>
+
+                  {/* 3. Comments */}
+                  <div
+                    className={`flex items-center gap-1.5 text-xs sm:text-sm font-bold justify-start ${
+                      sortOption === "comments" ? "text-emerald-400 font-extrabold" : "text-white"
+                    }`}
+                  >
+                    <MessageSquare className="w-3.5 h-3.5 fill-white text-white shrink-0" />
+                    <span>{formatCompact(video.commentsCount)}</span>
+                  </div>
+
+                  {/* 4. Outlier Score */}
+                  <div
+                    className={`flex items-center gap-1 text-xs sm:text-sm font-black justify-start ${
+                      sortOption === "outlier" ? "text-amber-400" : "text-amber-300"
+                    }`}
+                  >
+                    <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300 shrink-0" />
+                    <span>{video.outlierScore.toFixed(1)}×</span>
+                  </div>
+                </div>
+              )}
 
               {/* Baris Bawah Hover: Info Akun di Kiri, Aksi Bookmark & Download di Kanan */}
-              <div className="flex items-end justify-between gap-2 pt-1 border-t border-white/15">
+              <div className="flex items-center justify-between gap-2 pt-1 border-t border-white/15">
                 {/* Kiri: Icon YouTube + @channelTitle */}
-                <div className="flex items-center gap-1.5 text-[10px] text-white/80 font-medium truncate max-w-[130px]">
+                <div className="flex items-center gap-1.5 text-[10px] text-white/80 font-medium truncate max-w-[130px] sm:max-w-[160px]">
                   <YouTubeIcon className="w-3.5 h-3.5 text-red-500 shrink-0" />
                   <span className="truncate">
                     {profile?.customUrl ? profile.customUrl : profile?.title || "channel"}
                   </span>
                 </div>
 
-                {/* Kanan: Tombol Bookmark & Download Media */}
-                <div className="flex flex-col gap-1.5 shrink-0">
+                {/* Kanan: Tombol Bookmark & Download Media (Berjajar Horizontal) */}
+                <div className="flex items-center gap-1.5 shrink-0">
                   <button
                     type="button"
                     onClick={(e) => {
