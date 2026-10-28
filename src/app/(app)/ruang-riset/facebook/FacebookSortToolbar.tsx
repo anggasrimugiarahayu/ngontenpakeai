@@ -26,6 +26,8 @@ import {
   Info,
   Film,
   Layers,
+  BarChart3,
+  TrendingUp,
 } from "lucide-react";
 import {
   exportFacebookToCSV,
@@ -54,6 +56,7 @@ interface Props {
   filterMode?: FacebookFilterMode;
   videoLimit?: FacebookVideoLimit;
   dateFilter?: FacebookDateFilter;
+  onOpenInsights?: () => void;
 }
 
 export function FacebookSortToolbar({
@@ -76,6 +79,7 @@ export function FacebookSortToolbar({
   filterMode,
   videoLimit,
   dateFilter,
+  onOpenInsights,
 }: Props) {
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
@@ -127,6 +131,8 @@ export function FacebookSortToolbar({
         return "Most Shared Posts";
       case "comments":
         return "Most Commented Posts";
+      case "er":
+        return "Top Engagement Rate";
       case "oldest":
         return "Oldest Posts";
       default:
@@ -143,6 +149,7 @@ export function FacebookSortToolbar({
     { value: "likes", label: "Likes", icon: Heart },
     { value: "views", label: "Views", icon: Play },
     { value: "outlier", label: "Outlier score", icon: Zap, hasInfo: true },
+    { value: "er", label: "Engagement Rate", icon: TrendingUp },
     { value: "shares", label: "Shares", icon: Forward },
     { value: "comments", label: "Comments", icon: MessageSquare },
     { value: "oldest", label: "Oldest", icon: Clock },
@@ -232,6 +239,19 @@ export function FacebookSortToolbar({
         </div>
 
         <div className="w-full sm:w-auto flex items-center gap-2 sm:gap-3 justify-end relative">
+          {/* Tombol Insight Halaman */}
+          {onOpenInsights && (
+            <button
+              type="button"
+              onClick={onOpenInsights}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 transition-all shadow-xs cursor-pointer active:scale-95"
+              title="Lihat Insight & Analisis Performa Halaman"
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>Insight</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onDownloadMedia}

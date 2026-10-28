@@ -14,6 +14,7 @@ import { TikTokProfileHeader } from "./TikTokProfileHeader";
 import { TikTokSortToolbar } from "./TikTokSortToolbar";
 import { TikTokFeedGrid } from "./TikTokFeedGrid";
 import { TikTokVideoModal } from "./TikTokVideoModal";
+import { TikTokDeepInsightModal } from "./TikTokDeepInsightModal";
 import { TikTokSortFeedFilterDropdown } from "./TikTokSortFeedFilterDropdown";
 import {
   TikTokCardFilterModal,
@@ -101,6 +102,7 @@ export function TikTokResearchStudio({
 
   // Filter modal state
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isInsightModalOpen, setIsInsightModalOpen] = useState(false);
 
   const handleToggleSelectMode = () => {
     setIsSelectMode((prev) => {
@@ -267,6 +269,9 @@ export function TikTokResearchStudio({
       }
       if (sortOption === "saves") {
         return (b.savesCount || 0) - (a.savesCount || 0);
+      }
+      if (sortOption === "er") {
+        return (b.engagementRate || 0) - (a.engagementRate || 0);
       }
       if (sortOption === "oldest") {
         return (
@@ -524,7 +529,10 @@ export function TikTokResearchStudio({
       {/* Profil Header & Feed Grid */}
       {profile && !isLoading && (
         <div className="space-y-6">
-          <TikTokProfileHeader profile={profile} />
+          <TikTokProfileHeader
+            profile={profile}
+            onOpenInsights={() => setIsInsightModalOpen(true)}
+          />
 
           {/* Unified Galeri Feed & Toolbar Card (Menyambung Mulus Sesuai Referensi IG & YT) */}
           <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200/90 dark:border-[#2C3246] rounded-2xl shadow-xs overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
@@ -548,6 +556,7 @@ export function TikTokResearchStudio({
               filterMode={filterMode}
               videoLimit={videoLimit}
               dateFilter={dateFilter}
+              onOpenInsights={() => setIsInsightModalOpen(true)}
             />
 
             <TikTokFeedGrid
@@ -560,6 +569,16 @@ export function TikTokResearchStudio({
               onToggleSelectVideo={handleToggleSelectVideo}
             />
           </div>
+
+          {/* Modal Insight Mendalam */}
+          <TikTokDeepInsightModal
+            isOpen={isInsightModalOpen}
+            onClose={() => setIsInsightModalOpen(false)}
+            profile={profile}
+            videos={videos}
+            onSelectVideo={setActiveModalVideo}
+            onApplySortEr={() => setSortOption("er")}
+          />
 
           {/* Modal Filters Sesuai Image 2 (Hanya Untuk Card Toolbar) */}
           <TikTokCardFilterModal

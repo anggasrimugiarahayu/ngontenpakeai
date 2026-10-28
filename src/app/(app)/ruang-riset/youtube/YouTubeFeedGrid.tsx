@@ -13,6 +13,7 @@ import {
   Eye,
   Check,
   Film,
+  TrendingUp,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { downloadMediaAsset } from "./exportUtils";
@@ -306,6 +307,20 @@ export function YouTubeFeedGrid({
                     <Zap className="w-4 h-4 fill-amber-300 text-amber-300" />
                     <span>{video.outlierScore.toFixed(1)}×</span>
                   </div>
+
+                  {/* 5. Engagement Rate */}
+                  <div
+                    className={`flex items-center gap-1 text-xs sm:text-sm font-black ${
+                      sortOption === "er" ? "text-emerald-400 font-extrabold" : "text-emerald-300"
+                    }`}
+                  >
+                    <TrendingUp className="w-4 h-4 text-emerald-400" />
+                    <span>
+                      {video.engagementRate !== undefined
+                        ? Number(video.engagementRate).toFixed(2)
+                        : "0.00"}%
+                    </span>
+                  </div>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 max-w-[210px] mx-auto text-white my-auto select-none pointer-events-none py-0.5">
@@ -347,6 +362,16 @@ export function YouTubeFeedGrid({
                   >
                     <Zap className="w-3.5 h-3.5 fill-amber-300 text-amber-300 shrink-0" />
                     <span>{video.outlierScore.toFixed(1)}×</span>
+                  </div>
+
+                  {/* 5. Engagement Rate */}
+                  <div
+                    className={`col-span-2 flex items-center justify-center gap-1 text-[11px] sm:text-xs font-bold pt-0.5 ${
+                      sortOption === "er" ? "text-emerald-400 font-extrabold" : "text-emerald-300"
+                    }`}
+                  >
+                    <TrendingUp className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <span>ER: {video.engagementRate !== undefined ? Number(video.engagementRate).toFixed(2) : "0.00"}%</span>
                   </div>
                 </div>
               )}

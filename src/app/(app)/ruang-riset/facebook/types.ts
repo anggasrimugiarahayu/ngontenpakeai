@@ -43,6 +43,7 @@ export interface FacebookPostItem {
   hookText: string;
   caption?: string;
   articleUrl?: string;
+  engagementRate?: number;
 }
 
 export type FacebookSortOption =
@@ -51,5 +52,6 @@ export type FacebookSortOption =
   | "likes"
   | "comments"
   | "shares"
+  | "er"
   | "oldest"
   | "newest";

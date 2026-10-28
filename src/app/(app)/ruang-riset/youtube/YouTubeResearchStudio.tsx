@@ -14,6 +14,7 @@ import { YouTubeProfileHeader } from "./YouTubeProfileHeader";
 import { YouTubeSortToolbar } from "./YouTubeSortToolbar";
 import { YouTubeFeedGrid } from "./YouTubeFeedGrid";
 import { YouTubeVideoModal } from "./YouTubeVideoModal";
+import { YouTubeDeepInsightModal } from "./YouTubeDeepInsightModal";
 import { YouTubeSortFeedFilterDropdown } from "./YouTubeSortFeedFilterDropdown";
 import {
   YouTubeCardFilterModal,
@@ -101,6 +102,9 @@ export function YouTubeResearchStudio({
 
   // Filter modal state
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  // Deep Insight modal state
+  const [isInsightModalOpen, setIsInsightModalOpen] = useState(false);
 
   const handleToggleSelectMode = () => {
     setIsSelectMode((prev) => {
@@ -252,6 +256,9 @@ export function YouTubeResearchStudio({
     result.sort((a, b) => {
       if (sortOption === "outlier") {
         return b.outlierScore - a.outlierScore;
+      }
+      if (sortOption === "er") {
+        return (b.engagementRate || 0) - (a.engagementRate || 0);
       }
       if (sortOption === "views") {
         return b.viewsCount - a.viewsCount;
@@ -517,11 +524,15 @@ export function YouTubeResearchStudio({
       {/* Profil Header & Feed Grid */}
       {profile && !isLoading && (
         <div className="space-y-6">
-          <YouTubeProfileHeader profile={profile} />
+          <YouTubeProfileHeader
+            profile={profile}
+            onOpenInsights={() => setIsInsightModalOpen(true)}
+          />
 
           {/* Unified Galeri Feed & Toolbar Card (Menyambung Mulus Sesuai Referensi IG) */}
           <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200/90 dark:border-[#2C3246] rounded-2xl shadow-xs overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
             <YouTubeSortToolbar
+              onOpenInsights={() => setIsInsightModalOpen(true)}
               formatFilter={formatFilter}
               onFormatFilterChange={setFormatFilter}
               sortOption={sortOption}
@@ -562,6 +573,16 @@ export function YouTubeResearchStudio({
             advancedFilters={advancedFilters}
             onApplyAdvancedFilters={(next) => setAdvancedFilters(next)}
             onResetAdvancedFilters={() => setAdvancedFilters(DEFAULT_YOUTUBE_ADVANCED_FILTER)}
+          />
+
+          {/* Modal Insight Analisis Channel */}
+          <YouTubeDeepInsightModal
+            isOpen={isInsightModalOpen}
+            onClose={() => setIsInsightModalOpen(false)}
+            profile={profile}
+            videos={filteredAndSortedVideos.length > 0 ? filteredAndSortedVideos : videos}
+            onSelectVideo={setActiveModalVideo}
+            onApplySortEr={() => setSortOption("er")}
           />
         </div>
       )}

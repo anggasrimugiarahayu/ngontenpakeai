@@ -47,7 +47,7 @@ export function InstagramProfileHeader({ profile, onOpenInsights }: Props) {
 
         {/* Info & Bio (Tengah) */}
         <div className="flex-1 min-w-0 space-y-2.5">
-          {/* Baris 1: Username & Link Website */}
+          {/* Baris 1: Username */}
           <div className="flex items-center gap-3 flex-wrap">
             <h2 className="text-xl lg:text-2xl font-bold font-heading text-gray-900 dark:text-white flex items-center gap-1.5">
               <span>@{profile.username}</span>
@@ -55,30 +55,6 @@ export function InstagramProfileHeader({ profile, onOpenInsights }: Props) {
                 <CheckCircle2 className="w-5 h-5 text-sky-500 fill-sky-500 shrink-0 inline-block" />
               )}
             </h2>
-
-            {profile.externalUrl && (
-              <a
-                href={profile.externalUrl}
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
-              >
-                <ExternalLink className="w-3 h-3" />
-                <span>Kunjungi Website</span>
-              </a>
-            )}
-
-            {onOpenInsights && (
-              <button
-                type="button"
-                onClick={onOpenInsights}
-                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold transition-all shadow-xs hover:shadow cursor-pointer shrink-0"
-                title="Buka Popup Analisis & Insight Lengkap"
-              >
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Insight Mendalam</span>
-              </button>
-            )}
           </div>
 
           {/* Baris 2: Metrik Standar IG (Postingan, Pengikut, Mengikuti) */}
@@ -103,8 +79,8 @@ export function InstagramProfileHeader({ profile, onOpenInsights }: Props) {
             </div>
           </div>
 
-          {/* Baris 3: Nama Lengkap & Bio */}
-          <div className="space-y-1">
+          {/* Baris 3: Nama Lengkap, Bio, dan Website di Bawah Bio */}
+          <div className="space-y-1.5">
             <p className="font-bold text-sm text-gray-900 dark:text-white">
               {profile.fullName}
             </p>
@@ -113,31 +89,28 @@ export function InstagramProfileHeader({ profile, onOpenInsights }: Props) {
                 {profile.biography}
               </p>
             )}
+            {profile.externalUrl && (
+              <div className="pt-0.5">
+                <a
+                  href={profile.externalUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5 text-sky-500" />
+                  <span className="truncate max-w-xs">{profile.externalUrl.replace(/^https?:\/\//, "")}</span>
+                </a>
+              </div>
+            )}
           </div>
         </div>
 
         {/* 4 Kartu Analitik Utama (Kanan Desktop - Format Grid 2x2 Hemat Tempat Seperti TikTok) */}
-        <div className="shrink-0 min-w-[280px] space-y-1.5">
-          {onOpenInsights && (
-            <div className="flex items-center justify-between px-0.5">
-              <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400">
-                Ringkasan Akun
-              </span>
-              <button
-                type="button"
-                onClick={onOpenInsights}
-                className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors cursor-pointer"
-              >
-                <Sparkles className="w-3 h-3" />
-                <span>Buka Insight Lengkap ↗</span>
-              </button>
-            </div>
-          )}
-
+        <div className="shrink-0 min-w-[280px]">
           <div
             onClick={onOpenInsights}
             className={`grid grid-cols-2 gap-2.5 ${onOpenInsights ? "cursor-pointer group" : ""}`}
-            title={onOpenInsights ? "Klik untuk melihat analisis mendalam" : undefined}
+            title={onOpenInsights ? "Klik untuk melihat analisis insight akun" : undefined}
           >
             {/* 1. Rata-rata Views */}
             <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60 group-hover:border-blue-500/40 transition-colors">
@@ -249,18 +222,6 @@ export function InstagramProfileHeader({ profile, onOpenInsights }: Props) {
               </span>
             </a>
           </div>
-        )}
-
-        {/* Tombol Insight Mendalam (Mobile) */}
-        {onOpenInsights && (
-          <button
-            type="button"
-            onClick={onOpenInsights}
-            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-xs transition-all active:scale-[0.99] cursor-pointer"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Lihat Insight Mendalam & Analisa Performa ↗</span>
-          </button>
         )}
 
         {/* 4 Kotak Analitik Mobile (Grid 2x2 Hemat Tempat) */}

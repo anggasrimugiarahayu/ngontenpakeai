@@ -42,6 +42,7 @@ export interface TikTokPostItem {
   hookText: string;
   musicTitle?: string;
   musicAuthor?: string;
+  engagementRate?: number;
 }
 
 export type TikTokSortOption =
@@ -51,5 +52,6 @@ export type TikTokSortOption =
   | "shares"
   | "comments"
   | "saves"
+  | "er"
   | "oldest"
   | "newest";

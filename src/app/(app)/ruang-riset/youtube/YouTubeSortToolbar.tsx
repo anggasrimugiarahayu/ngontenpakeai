@@ -23,6 +23,8 @@ import {
   MessageSquare,
   Clock,
   Info,
+  TrendingUp,
+  BarChart3,
 } from "lucide-react";
 import {
   exportYouTubeToCSV,
@@ -33,6 +35,7 @@ import {
 import toast from "react-hot-toast";
 
 interface Props {
+  onOpenInsights?: () => void;
   formatFilter: YouTubeFormatFilter;
   onFormatFilterChange: (format: YouTubeFormatFilter) => void;
   sortOption: YouTubeSortOption;
@@ -58,6 +61,7 @@ interface Props {
 }
 
 export function YouTubeSortToolbar({
+  onOpenInsights,
   formatFilter,
   onFormatFilterChange,
   sortOption,
@@ -114,30 +118,35 @@ export function YouTubeSortToolbar({
   const getSortTitle = () => {
     switch (sortOption) {
       case "outlier":
-        return "Top Outlier Posts";
+        return "Top Outlier Videos";
+      case "er":
+        return "Highest Engagement Rate";
       case "views":
-        return "Most Viewed Posts";
+        return "Most Viewed Videos";
       case "likes":
-        return "Most Liked Posts";
+        return "Most Liked Videos";
       case "comments":
-        return "Most Commented Posts";
+        return "Most Commented Videos";
       case "oldest":
-        return "Oldest Posts";
+        return "Oldest Videos";
+      case "newest":
+        return "Latest Videos";
       default:
-        return "Top Outlier Posts";
+        return "Top Outlier Videos";
     }
   };
 
-  // Exact 5 sort options matching Image 3 with icons
+  // Sort options matching toolbar with icons
   const sortOptions: {
     value: YouTubeSortOption;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     hasInfo?: boolean;
   }[] = [
+    { value: "outlier", label: "Outlier score", icon: Zap, hasInfo: true },
+    { value: "er", label: "Engagement Rate", icon: TrendingUp },
     { value: "likes", label: "Likes", icon: Heart },
     { value: "views", label: "Views", icon: Play },
-    { value: "outlier", label: "Outlier score", icon: Zap, hasInfo: true },
     { value: "comments", label: "Comments", icon: MessageSquare },
     { value: "oldest", label: "Oldest", icon: Clock },
   ];
@@ -234,8 +243,21 @@ export function YouTubeSortToolbar({
           </p>
         </div>
 
-        {/* Kanan: 2 Tombol Aksi (Download & Export) */}
-        <div className="w-full sm:w-auto flex items-center gap-2 sm:gap-3 justify-end relative">
+        {/* Kanan: Tombol Aksi (Insight, Download & Export) */}
+        <div className="w-full sm:w-auto flex items-center gap-2 sm:gap-2.5 justify-end relative">
+          {/* Tombol Insight Channel */}
+          {onOpenInsights && (
+            <button
+              type="button"
+              onClick={onOpenInsights}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-xs hover:shadow transition-all cursor-pointer shrink-0"
+              title="Lihat Analisis & Insight Channel"
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>Insight</span>
+            </button>
+          )}
+
           {/* 1. Download Media (ZIP / Thumbnail + Link) */}
           <button
             type="button"

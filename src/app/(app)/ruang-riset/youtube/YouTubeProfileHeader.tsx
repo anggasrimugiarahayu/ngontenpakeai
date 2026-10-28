@@ -14,6 +14,7 @@ import {
 
 interface Props {
   profile: YouTubeChannelProfile;
+  onOpenInsights?: () => void;
 }
 
 function formatNumber(num: number): string {
@@ -26,8 +27,8 @@ function formatNumber(num: number): string {
   return num.toLocaleString("id-ID");
 }
 
-export function YouTubeProfileHeader({ profile }: Props) {
-  const channelUrl = `https://www.youtube.com/${profile.customUrl}`;
+export function YouTubeProfileHeader({ profile, onOpenInsights }: Props) {
+  const channelUrl = `https://www.youtube.com/${profile.customUrl.startsWith("@") ? profile.customUrl : "@" + profile.customUrl}`;
   const averageLikes =
     profile.averageLikes || Math.round(profile.averageViews * 0.048);
   const averageER = profile.averageEngagementRate || 4.8;
@@ -61,16 +62,6 @@ export function YouTubeProfileHeader({ profile }: Props) {
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-red-100 dark:bg-red-500/15 text-red-700 dark:text-red-400">
               {profile.customUrl}
             </span>
-
-            <a
-              href={channelUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
-            >
-              <ExternalLink className="w-3 h-3" />
-              <span>Buka di YouTube</span>
-            </a>
           </div>
 
           {/* Metrik Standar YouTube */}
@@ -102,10 +93,27 @@ export function YouTubeProfileHeader({ profile }: Props) {
               {profile.description}
             </p>
           )}
+
+          {/* Link Buka di YouTube di Bawah Deskripsi */}
+          <div className="pt-0.5">
+            <a
+              href={channelUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-red-500" />
+              <span>Buka di YouTube</span>
+            </a>
+          </div>
         </div>
 
         {/* 4 Kartu Analitik Utama (Kanan Desktop - Format Grid 2x2 Hemat Tempat Seperti TikTok) */}
-        <div className="grid grid-cols-2 gap-2.5 shrink-0 min-w-[280px]">
+        <div
+          onClick={onOpenInsights}
+          className={`grid grid-cols-2 gap-2.5 shrink-0 min-w-[280px] ${onOpenInsights ? "cursor-pointer group" : ""}`}
+          title={onOpenInsights ? "Klik untuk melihat analisis insight channel" : undefined}
+        >
           {/* 1. Rata-rata Views */}
           <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
             <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
@@ -185,8 +193,23 @@ export function YouTubeProfileHeader({ profile }: Props) {
           </p>
         )}
 
+        <div className="pt-0.5">
+          <a
+            href={channelUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-red-500" />
+            <span>Buka di YouTube</span>
+          </a>
+        </div>
+
         {/* 4 Kotak Analitik Mobile (Grid 2x2 Hemat Tempat) */}
-        <div className="grid grid-cols-2 gap-2 pt-1">
+        <div
+          onClick={onOpenInsights}
+          className={`grid grid-cols-2 gap-2 pt-1 ${onOpenInsights ? "cursor-pointer active:opacity-90" : ""}`}
+        >
           <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
             <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">
               Rata-rata Views

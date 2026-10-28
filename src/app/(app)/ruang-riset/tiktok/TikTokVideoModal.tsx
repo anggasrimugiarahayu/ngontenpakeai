@@ -19,6 +19,7 @@ import {
   Layers,
   ChevronLeft,
   ChevronRight,
+  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -200,7 +201,7 @@ export function TikTokVideoModal({ video, profile, onClose }: Props) {
             )}
 
             {/* Metrics Row */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2.5 p-3.5 bg-gray-50 dark:bg-[#0B0F19] border border-gray-200 dark:border-[#232D42] rounded-2xl text-center text-xs">
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2.5 p-3.5 bg-gray-50 dark:bg-[#0B0F19] border border-gray-200 dark:border-[#232D42] rounded-2xl text-center text-xs">
               <div>
                 <span className="text-[11px] text-gray-400 block mb-0.5">Views Total</span>
                 <span className="font-bold text-sm text-gray-900 dark:text-white flex items-center justify-center gap-1">
@@ -234,6 +235,13 @@ export function TikTokVideoModal({ video, profile, onClose }: Props) {
                 <span className="font-bold text-sm text-purple-500 flex items-center justify-center gap-1">
                   <Bookmark className="w-3.5 h-3.5 text-purple-500" />
                   {formatViews(video.savesCount || 0)}
+                </span>
+              </div>
+              <div>
+                <span className="text-[11px] text-gray-400 block mb-0.5">Engagement Rate</span>
+                <span className="font-bold text-sm text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                  {video.engagementRate !== undefined ? Number(video.engagementRate).toFixed(2) : "0.00"}%
                 </span>
               </div>
               <div>

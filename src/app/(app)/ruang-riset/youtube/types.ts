@@ -37,12 +37,14 @@ export interface YouTubeVideoItem {
   isShorts: boolean;
   outlierScore: number;
   outlierTier: "super_viral" | "viral" | "high" | "normal";
+  engagementRate?: number;
 }
 
 export type YouTubeSortOption =
   | "likes"
   | "views"
   | "outlier"
+  | "er"
   | "comments"
   | "oldest"
   | "newest";

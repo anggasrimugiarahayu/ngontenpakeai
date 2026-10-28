@@ -331,7 +331,7 @@ export function SortFeedFilterDropdown({
             >
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
-                <span>Engagement Rate (ER %)</span>
+                <span>Engagement Rate</span>
               </div>
               {sortOption === "er" && (
                 <Check className="w-3.5 h-3.5 text-rn-accent" />

@@ -656,18 +656,26 @@ export async function POST(request: NextRequest) {
         comments = Math.max(0, Math.round(views * commentRatio));
       }
 
+      const subDenominator = Math.max(1, channelProfile.subscriberCount || averageViews);
+      const engagementRate = Number((((likes + comments) / subDenominator) * 100).toFixed(2));
+
       return {
         ...v,
         likesCount: likes,
         commentsCount: comments,
         outlierScore,
         outlierTier,
+        engagementRate,
       };
     });
 
     const topOutlier = Math.max(...enrichedVideos.map((v) => v.outlierScore), 1);
-    const averageLikes = Math.round(averageViews * 0.048);
-    const avgER = Number(((averageLikes / (averageViews || 1)) * 100).toFixed(2));
+    const totalLikes = enrichedVideos.reduce((acc, v) => acc + (v.likesCount || 0), 0);
+    const averageLikes = enrichedVideos.length > 0 ? Math.round(totalLikes / enrichedVideos.length) : Math.round(averageViews * 0.048);
+    const totalComments = enrichedVideos.reduce((acc, v) => acc + (v.commentsCount || 0), 0);
+    const averageComments = enrichedVideos.length > 0 ? Math.round(totalComments / enrichedVideos.length) : 0;
+    const subDenominator = Math.max(1, channelProfile.subscriberCount || averageViews);
+    const avgER = Number((((averageLikes + averageComments) / subDenominator) * 100).toFixed(2));
 
     channelProfile.viewCount = totalViews;
     channelProfile.averageViews = averageViews;

@@ -15,6 +15,7 @@ import {
   Check,
   Layers,
   Film,
+  TrendingUp,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { downloadMediaAsset } from "./exportUtils";
@@ -326,6 +327,20 @@ export function TikTokFeedGrid({
                 >
                   <Zap className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-amber-300 text-amber-300" />
                   <span>{video.outlierScore.toFixed(1)}×</span>
+                </div>
+
+                {/* 7. Engagement Rate */}
+                <div
+                  className={`flex items-center gap-1 text-xs sm:text-sm font-black ${
+                    sortOption === "er" ? "text-emerald-400 font-extrabold" : "text-emerald-300"
+                  }`}
+                >
+                  <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
+                  <span>
+                    {video.engagementRate !== undefined
+                      ? Number(video.engagementRate).toFixed(2)
+                      : "0.00"}%
+                  </span>
                 </div>
               </div>
 

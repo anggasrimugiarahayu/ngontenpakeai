@@ -27,6 +27,8 @@ import {
   Info,
   Film,
   Layers,
+  BarChart3,
+  TrendingUp,
 } from "lucide-react";
 import {
   exportTikTokToCSV,
@@ -59,6 +61,7 @@ interface Props {
   filterMode?: TikTokFilterMode;
   videoLimit?: TikTokVideoLimit;
   dateFilter?: TikTokDateFilter;
+  onOpenInsights?: () => void;
 }
 
 export function TikTokSortToolbar({
@@ -81,6 +84,7 @@ export function TikTokSortToolbar({
   filterMode,
   videoLimit,
   dateFilter,
+  onOpenInsights,
 }: Props) {
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isSortDropdownOpen, setIsSortDropdownOpen] = useState(false);
@@ -129,6 +133,8 @@ export function TikTokSortToolbar({
         return "Most Commented Posts";
       case "saves":
         return "Most Saved Posts";
+      case "er":
+        return "Top Engagement Rate";
       case "oldest":
         return "Oldest Posts";
       default:
@@ -145,6 +151,7 @@ export function TikTokSortToolbar({
     { value: "likes", label: "Likes", icon: Heart },
     { value: "views", label: "Views", icon: Play },
     { value: "outlier", label: "Outlier score", icon: Zap, hasInfo: true },
+    { value: "er", label: "Engagement Rate", icon: TrendingUp },
     { value: "shares", label: "Shares", icon: Forward },
     { value: "comments", label: "Comments", icon: MessageSquare },
     { value: "saves", label: "Saves", icon: Bookmark },
@@ -244,9 +251,22 @@ export function TikTokSortToolbar({
           </p>
         </div>
 
-        {/* Kanan: 2 Tombol Aksi (Download & Export) */}
+        {/* Kanan: Tombol Aksi (Insight, Download & Export) */}
         <div className="w-full sm:w-auto flex items-center gap-2 sm:gap-3 justify-end relative">
-          {/* 1. Download Media (ZIP / Thumbnail + Link) */}
+          {/* 1. Tombol Insight Profil */}
+          {onOpenInsights && (
+            <button
+              type="button"
+              onClick={onOpenInsights}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-500/10 hover:bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30 transition-all shadow-xs cursor-pointer active:scale-95"
+              title="Lihat Insight & Analisis Performa Akun"
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>Insight</span>
+            </button>
+          )}
+
+          {/* 2. Download Media (ZIP / Thumbnail + Link) */}
           <button
             type="button"
             onClick={onDownloadMedia}
@@ -258,7 +278,7 @@ export function TikTokSortToolbar({
             <span>Download {isSelectMode && selectedCount > 0 ? `(${selectedCount})` : totalFilteredCount}</span>
           </button>
 
-          {/* 2. Export Button dengan Border Frame */}
+          {/* 3. Export Button dengan Border Frame */}
           <div className="relative">
             <button
               type="button"

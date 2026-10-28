@@ -17,6 +17,7 @@ import {
   ChevronRight,
   Forward,
   Newspaper,
+  TrendingUp,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -266,7 +267,7 @@ export function FacebookPostModal({ post, profile, onClose }: Props) {
             </div>
 
             {/* Grid Metrik Performa Postingan */}
-            <div className="grid grid-cols-4 gap-2 p-3 bg-gray-50 dark:bg-[#0B0F19] border border-gray-200/80 dark:border-[#232D42] rounded-2xl text-center text-xs">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-2 p-3 bg-gray-50 dark:bg-[#0B0F19] border border-gray-200/80 dark:border-[#232D42] rounded-2xl text-center text-xs">
               <div>
                 <span className="text-[10px] text-gray-400 block mb-0.5">Views</span>
                 <span className="font-bold text-xs sm:text-sm text-gray-900 dark:text-white flex items-center justify-center gap-1">
@@ -290,9 +291,16 @@ export function FacebookPostModal({ post, profile, onClose }: Props) {
               </div>
               <div>
                 <span className="text-[10px] text-gray-400 block mb-0.5">Shares</span>
-                <span className="font-bold text-xs sm:text-sm text-emerald-500 flex items-center justify-center gap-1">
-                  <Forward className="w-3 h-3 text-emerald-500" />
+                <span className="font-bold text-xs sm:text-sm text-indigo-500 flex items-center justify-center gap-1">
+                  <Forward className="w-3 h-3 text-indigo-500" />
                   {formatViews(post.sharesCount || 0)}
+                </span>
+              </div>
+              <div>
+                <span className="text-[10px] text-gray-400 block mb-0.5">ER</span>
+                <span className="font-bold text-xs sm:text-sm text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-1">
+                  <TrendingUp className="w-3 h-3 text-emerald-500" />
+                  {post.engagementRate !== undefined ? Number(post.engagementRate).toFixed(2) : "0.00"}%
                 </span>
               </div>
             </div>

@@ -561,6 +561,7 @@ export function InstagramResearchStudio({
           {/* 2. Unified Galeri Feed & Toolbar Card (Menyambung Mulus Sesuai Referensi) */}
           <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200/90 dark:border-[#2C3246] rounded-2xl shadow-xs overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
             <InstagramSortToolbar
+              onOpenInsights={() => setIsInsightModalOpen(true)}
               formatFilter={formatFilter}
               onFormatFilterChange={setFormatFilter}
               posts={posts}

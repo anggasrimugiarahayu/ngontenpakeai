@@ -12,10 +12,12 @@ import {
   TrendingUp,
   CheckCircle2,
   ThumbsUp,
+  Globe,
 } from "lucide-react";
 
 interface Props {
   profile: FacebookUserProfile;
+  onOpenInsights?: () => void;
 }
 
 function formatNumber(num: number): string {
@@ -28,7 +30,7 @@ function formatNumber(num: number): string {
   return num.toLocaleString("id-ID");
 }
 
-export function FacebookProfileHeader({ profile }: Props) {
+export function FacebookProfileHeader({ profile, onOpenInsights }: Props) {
   const profileUrl = `https://www.facebook.com/${profile.username}`;
 
   return (
@@ -64,16 +66,6 @@ export function FacebookProfileHeader({ profile }: Props) {
             <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-blue-50 dark:bg-blue-500/15 text-[#1877F2] dark:text-blue-400">
               @{profile.username}
             </span>
-
-            <a
-              href={profileUrl}
-              target="_blank"
-              rel="noreferrer"
-              className="inline-flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 hover:bg-gray-200 dark:bg-white/10 dark:hover:bg-white/15 text-gray-700 dark:text-gray-300 transition-colors"
-            >
-              <ExternalLink className="w-3 h-3" />
-              <span>Buka di Facebook</span>
-            </a>
           </div>
 
           {/* Metrik Standar Facebook (Followers, Likes, Konten) */}
@@ -113,8 +105,9 @@ export function FacebookProfileHeader({ profile }: Props) {
             </p>
           )}
 
-          {profile.externalUrl && (
-            <div className="pt-0.5">
+          {/* Action Link & Buka di Facebook (Di Bawah Bio) */}
+          <div className="pt-2 flex items-center gap-2 flex-wrap">
+            {profile.externalUrl && (
               <a
                 href={
                   profile.externalUrl.startsWith("http")
@@ -123,19 +116,36 @@ export function FacebookProfileHeader({ profile }: Props) {
                 }
                 target="_blank"
                 rel="noreferrer"
-                className="text-xs text-[#1877F2] dark:text-sky-400 hover:underline flex items-center gap-1"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-[#1877F2] dark:text-sky-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 border border-blue-200 dark:border-blue-500/30 transition-colors"
               >
-                <ExternalLink className="w-3 h-3" />
+                <Globe className="w-3.5 h-3.5" />
                 <span className="truncate max-w-xs">{profile.externalUrl}</span>
               </a>
-            </div>
-          )}
+            )}
+            <a
+              href={profileUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#1A2238] dark:hover:bg-[#252F48] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-[#2C3246] transition-colors"
+            >
+              <ExternalLink className="w-3.5 h-3.5" />
+              <span>Buka di Facebook</span>
+            </a>
+          </div>
         </div>
 
         {/* 4 Kartu Analitik Utama (Desktop Kanan - Grid 2x2 Hemat Tempat Seperti TikTok) */}
-        <div className="grid grid-cols-2 gap-2.5 shrink-0 min-w-[280px]">
+        <div
+          onClick={onOpenInsights}
+          className={`grid grid-cols-2 gap-2.5 shrink-0 min-w-[280px] ${
+            onOpenInsights
+              ? "cursor-pointer group/cards hover:opacity-95 transition-opacity"
+              : ""
+          }`}
+          title={onOpenInsights ? "Klik untuk melihat analisis lengkap" : undefined}
+        >
           {/* 1. Rata-rata Views */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60 group-hover/cards:border-blue-500/30 transition-colors">
             <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
               <Eye className="w-3.5 h-3.5 text-blue-500" />
               <span>Rata-rata Views</span>
@@ -146,7 +156,7 @@ export function FacebookProfileHeader({ profile }: Props) {
           </div>
 
           {/* 2. Puncak Viral / Top Outlier */}
-          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/10 to-rose-500/10 dark:from-amber-500/20 dark:to-rose-500/20 border border-amber-500/20">
+          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/10 to-rose-500/10 dark:from-amber-500/20 dark:to-rose-500/20 border border-amber-500/20 group-hover/cards:border-amber-500/40 transition-colors">
             <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-semibold mb-1">
               <Flame className="w-3.5 h-3.5 fill-current" />
               <span>Puncak Viral</span>
@@ -157,7 +167,7 @@ export function FacebookProfileHeader({ profile }: Props) {
           </div>
 
           {/* 3. Rata-rata Likes */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60 group-hover/cards:border-rose-500/30 transition-colors">
             <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
               <Heart className="w-3.5 h-3.5 text-rose-500" />
               <span>Rata-rata Likes</span>
@@ -168,7 +178,7 @@ export function FacebookProfileHeader({ profile }: Props) {
           </div>
 
           {/* 4. Engagement Rate */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
+          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60 group-hover/cards:border-emerald-500/30 transition-colors">
             <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
               <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
               <span>Engagement Rate</span>
@@ -232,8 +242,41 @@ export function FacebookProfileHeader({ profile }: Props) {
           </p>
         )}
 
+        {/* Action Link & Buka di Facebook (Mobile) */}
+        <div className="pt-1 flex items-center gap-2 flex-wrap">
+          {profile.externalUrl && (
+            <a
+              href={
+                profile.externalUrl.startsWith("http")
+                  ? profile.externalUrl
+                  : `https://${profile.externalUrl}`
+              }
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-blue-50 dark:bg-blue-500/10 text-[#1877F2] dark:text-sky-400 hover:bg-blue-100 dark:hover:bg-blue-500/20 border border-blue-200 dark:border-blue-500/30 transition-colors"
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span className="truncate max-w-xs">{profile.externalUrl}</span>
+            </a>
+          )}
+          <a
+            href={profileUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-xl bg-gray-100 hover:bg-gray-200 dark:bg-[#1A2238] dark:hover:bg-[#252F48] text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-[#2C3246] transition-colors"
+          >
+            <ExternalLink className="w-3.5 h-3.5" />
+            <span>Buka di Facebook</span>
+          </a>
+        </div>
+
         {/* 4 Kotak Analitik (Mobile Grid 2x2) */}
-        <div className="grid grid-cols-2 gap-2 pt-1">
+        <div
+          onClick={onOpenInsights}
+          className={`grid grid-cols-2 gap-2 pt-1 ${
+            onOpenInsights ? "cursor-pointer active:opacity-90" : ""
+          }`}
+        >
           <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
             <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">
               Rata-rata Views
@@ -245,7 +288,7 @@ export function FacebookProfileHeader({ profile }: Props) {
 
           <div className="p-2.5 rounded-xl bg-gradient-to-br from-amber-500/10 to-rose-500/10 dark:from-amber-500/20 dark:to-rose-500/20 border border-amber-500/20">
             <div className="text-[11px] text-amber-600 dark:text-amber-400 font-semibold mb-0.5 flex items-center gap-1">
-              <Flame className="w-3 h-3 fill-current" />
+              <Flame className="w-3.5 h-3.5 fill-current" />
               <span>Puncak Viral</span>
             </div>
             <div className="text-sm font-bold text-amber-600 dark:text-amber-400">

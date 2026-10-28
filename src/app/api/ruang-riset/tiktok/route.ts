@@ -444,6 +444,15 @@ export async function POST(request: NextRequest) {
 
       const authorHandle = v.authorUniqueId || uInfo?.uniqueId || cleanUsername;
 
+      // Formula Option 1: (Likes + Comments + Shares + Saves) / Followers * 100%
+      const totalInteractions = likesCount + commentsCount + sharesCount + savesCount;
+      const postER =
+        resolvedFollowerCount > 0
+          ? Number(((totalInteractions / resolvedFollowerCount) * 100).toFixed(2))
+          : viewsCount > 0
+          ? Number(((totalInteractions / viewsCount) * 100).toFixed(2))
+          : 0;
+
       return {
         id: v.id,
         title: caption,
@@ -468,6 +477,7 @@ export async function POST(request: NextRequest) {
         outlierScore,
         outlierTier,
         hookText: words ? `"${words}..."` : "",
+        engagementRate: postER,
       };
     });
 
@@ -487,10 +497,29 @@ export async function POST(request: NextRequest) {
           )
         : Math.round(avgViews * 0.003);
 
+    const avgShares =
+      formattedVideos.length > 0
+        ? Math.round(
+            formattedVideos.reduce((acc, v) => acc + v.sharesCount, 0) /
+              formattedVideos.length
+          )
+        : 0;
+
+    const avgSaves =
+      formattedVideos.length > 0
+        ? Math.round(
+            formattedVideos.reduce((acc, v) => acc + v.savesCount, 0) /
+              formattedVideos.length
+          )
+        : 0;
+
+    const avgInteractions = avgLikes + avgComments + avgShares + avgSaves;
     const avgER =
-      avgViews > 0
-        ? Number((((avgLikes + avgComments) / avgViews) * 100).toFixed(2))
-        : 6.2;
+      resolvedFollowerCount > 0
+        ? Number(((avgInteractions / resolvedFollowerCount) * 100).toFixed(2))
+        : avgViews > 0
+        ? Number(((avgInteractions / avgViews) * 100).toFixed(2))
+        : 3.5;
 
     const topOutlier =
       formattedVideos.length > 0

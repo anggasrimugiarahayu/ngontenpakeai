@@ -22,6 +22,7 @@ import {
   ExternalLink,
   Zap,
   ArrowUpRight,
+  BarChart3,
 } from "lucide-react";
 
 interface Props {
@@ -325,9 +326,9 @@ export function InstagramDeepInsightModal({
                 <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white truncate">
                   @{profile.username}
                 </h3>
-                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-orange-500/15 to-amber-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/20">
-                  <Sparkles className="w-3 h-3" />
-                  <span>Insight Mendalam</span>
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-orange-500/15 to-amber-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+                  <BarChart3 className="w-3.5 h-3.5" />
+                  <span>Insight</span>
                 </span>
               </div>
               <p className="text-xs text-gray-500 dark:text-gray-400 truncate">

@@ -1067,6 +1067,11 @@ async function handleFacebookResearchRequest(
     const averageViews = Math.max(1, Math.round(totalViews / totalPosts));
     const averageLikes = Math.max(1, Math.round(totalLikes / totalPosts));
 
+    const finalFollowers =
+      followersCount > 0
+        ? followersCount
+        : Math.max(averageViews * 12, 1000);
+
     let topOutlierMultiplier = 1.0;
     const finalizedPosts: FacebookPostItem[] = allPosts.map((post) => {
       const rawMultiplier = post.viewsCount / averageViews;
@@ -1083,16 +1088,35 @@ async function handleFacebookResearchRequest(
           ? "high"
           : "normal";
 
+      const interactions = post.likesCount + post.commentsCount + post.sharesCount;
+      const postEr =
+        finalFollowers > 0
+          ? Number(((interactions / finalFollowers) * 100).toFixed(2))
+          : post.viewsCount > 0
+          ? Number(((interactions / post.viewsCount) * 100).toFixed(2))
+          : 0;
+
       return {
         ...post,
         outlierScore,
         outlierTier,
+        engagementRate: postEr,
       };
     });
 
     const totalInteractions = totalLikes + totalComments + totalShares;
     const averageEngagementRate =
-      totalViews > 0
+      finalFollowers > 0
+        ? Number(
+            Math.min(
+              99.9,
+              Math.max(
+                0.01,
+                (totalInteractions / (totalPosts * finalFollowers)) * 100
+              )
+            ).toFixed(2)
+          )
+        : totalViews > 0
         ? Number(
             Math.min(
               99.9,
@@ -1100,11 +1124,6 @@ async function handleFacebookResearchRequest(
             ).toFixed(2)
           )
         : 3.5;
-
-    const finalFollowers =
-      followersCount > 0
-        ? followersCount
-        : Math.max(averageViews * 12, 1000);
 
     const profile: FacebookUserProfile = {
       username: resolvedUsername,

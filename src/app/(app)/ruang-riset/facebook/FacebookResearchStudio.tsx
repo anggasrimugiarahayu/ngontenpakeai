@@ -14,6 +14,7 @@ import { FacebookProfileHeader } from "./FacebookProfileHeader";
 import { FacebookSortToolbar } from "./FacebookSortToolbar";
 import { FacebookFeedGrid } from "./FacebookFeedGrid";
 import { FacebookPostModal } from "./FacebookPostModal";
+import { FacebookDeepInsightModal } from "./FacebookDeepInsightModal";
 import { FacebookSortFeedFilterDropdown } from "./FacebookSortFeedFilterDropdown";
 import {
   FacebookCardFilterModal,
@@ -101,6 +102,7 @@ export function FacebookResearchStudio({
 
   // Filter modal state
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+  const [isInsightModalOpen, setIsInsightModalOpen] = useState(false);
 
   const handleToggleSelectMode = () => {
     setIsSelectMode((prev) => {
@@ -284,6 +286,9 @@ export function FacebookResearchStudio({
       }
       if (sortOption === "comments") {
         return b.commentsCount - a.commentsCount;
+      }
+      if (sortOption === "er") {
+        return (b.engagementRate || 0) - (a.engagementRate || 0);
       }
       if (sortOption === "oldest") {
         return (
@@ -537,7 +542,10 @@ export function FacebookResearchStudio({
       {/* Profil Header & Feed Grid */}
       {profile && !isLoading && (
         <div className="space-y-6">
-          <FacebookProfileHeader profile={profile} />
+          <FacebookProfileHeader
+            profile={profile}
+            onOpenInsights={() => setIsInsightModalOpen(true)}
+          />
 
           {/* Unified Galeri Feed & Toolbar Card */}
           <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200/90 dark:border-[#2C3246] rounded-2xl shadow-xs overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
@@ -561,6 +569,7 @@ export function FacebookResearchStudio({
               filterMode={filterMode}
               videoLimit={videoLimit}
               dateFilter={dateFilter}
+              onOpenInsights={() => setIsInsightModalOpen(true)}
             />
 
             <FacebookFeedGrid
@@ -573,6 +582,16 @@ export function FacebookResearchStudio({
               onToggleSelectPost={handleToggleSelectPost}
             />
           </div>
+
+          {/* Modal Insight Mendalam */}
+          <FacebookDeepInsightModal
+            isOpen={isInsightModalOpen}
+            onClose={() => setIsInsightModalOpen(false)}
+            profile={profile}
+            posts={posts}
+            onSelectPost={setActiveModalPost}
+            onApplySortEr={() => setSortOption("er")}
+          />
 
           {/* Modal Filters (Hanya Untuk Card Toolbar) */}
           <FacebookCardFilterModal

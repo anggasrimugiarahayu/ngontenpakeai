@@ -26,10 +26,12 @@ import {
   Film,
   Layers,
   TrendingUp,
+  BarChart3,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Props {
+  onOpenInsights?: () => void;
   formatFilter?: InstagramFormatFilter;
   onFormatFilterChange?: (format: InstagramFormatFilter) => void;
   posts?: InstagramPostItem[];
@@ -58,6 +60,7 @@ interface Props {
 }
 
 export function InstagramSortToolbar({
+  onOpenInsights,
   formatFilter,
   onFormatFilterChange,
   posts = [],
@@ -222,8 +225,21 @@ export function InstagramSortToolbar({
           </p>
         </div>
 
-        {/* Kanan: 2 Tombol Aksi (Download & Export) */}
-        <div className="w-full sm:w-auto flex items-center gap-2 sm:gap-3 justify-end relative">
+        {/* Kanan: Tombol Aksi (Insight, Download & Export) */}
+        <div className="w-full sm:w-auto flex items-center gap-2 sm:gap-2.5 justify-end relative">
+          {/* Tombol Insight Akun */}
+          {onOpenInsights && (
+            <button
+              type="button"
+              onClick={onOpenInsights}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-xs hover:shadow transition-all cursor-pointer shrink-0"
+              title="Lihat Analisis & Insight Akun"
+            >
+              <BarChart3 className="w-3.5 h-3.5" />
+              <span>Insight</span>
+            </button>
+          )}
+
           {/* 1. Download Media */}
           <button
             type="button"
