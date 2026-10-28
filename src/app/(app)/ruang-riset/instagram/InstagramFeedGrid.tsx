@@ -14,6 +14,7 @@ import {
   Film,
   Check,
   Eye,
+  TrendingUp,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { downloadMediaAsset } from "./exportUtils";
@@ -305,11 +306,21 @@ export function InstagramFeedGrid({
                 {/* 4. Outlier Score */}
                 <div
                   className={`flex items-center gap-1 text-sm sm:text-base font-black ${
-                    sortOption === "outlier" ? "text-amber-400" : "text-amber-300"
+                    sortOption === "outlier" ? "text-amber-400 font-extrabold" : "text-amber-300"
                   }`}
                 >
                   <Zap className="w-4 h-4 fill-amber-300 text-amber-300" />
                   <span>{post.outlierScore}×</span>
+                </div>
+
+                {/* 5. Engagement Rate (ER %) */}
+                <div
+                  className={`flex items-center gap-1 text-sm sm:text-base font-black ${
+                    sortOption === "er" ? "text-emerald-400 font-extrabold" : "text-emerald-300"
+                  }`}
+                >
+                  <TrendingUp className="w-4 h-4 text-emerald-400" />
+                  <span>{post.engagementRate ? post.engagementRate.toFixed(1) : "0"}%</span>
                 </div>
               </div>
 

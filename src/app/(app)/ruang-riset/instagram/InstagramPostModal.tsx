@@ -12,6 +12,7 @@ import {
   Play,
   Heart,
   TrendingUp,
+  MessageSquare,
   Calendar,
   ChevronLeft,
   ChevronRight,
@@ -280,33 +281,43 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
           </div>
 
           {/* Grid Metrik Detail */}
-          <div className="grid grid-cols-3 gap-2 py-4 border-b border-gray-100 dark:border-[#2C3246] text-center">
-            <div className="p-2.5 rounded-xl bg-orange-50/60 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20">
+          <div className="grid grid-cols-4 gap-2 py-4 border-b border-gray-100 dark:border-[#2C3246] text-center">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-orange-50/60 dark:bg-orange-500/10 border border-orange-100 dark:border-orange-500/20">
               <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-orange-600 dark:text-orange-400">
                 <Play className="w-3 h-3 fill-orange-500" />
                 <span>Views</span>
               </div>
-              <p className="font-black text-sm sm:text-base text-gray-900 dark:text-white mt-0.5">
+              <p className="font-black text-xs sm:text-base text-gray-900 dark:text-white mt-0.5 truncate">
                 {formatNumber(post.viewsCount)}
               </p>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-rose-50/60 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-rose-50/60 dark:bg-rose-500/10 border border-rose-100 dark:border-rose-500/20">
               <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-rose-600 dark:text-rose-400">
                 <Heart className="w-3 h-3 fill-rose-500" />
                 <span>Likes</span>
               </div>
-              <p className="font-black text-sm sm:text-base text-gray-900 dark:text-white mt-0.5">
+              <p className="font-black text-xs sm:text-base text-gray-900 dark:text-white mt-0.5 truncate">
                 {formatNumber(post.likesCount)}
               </p>
             </div>
 
-            <div className="p-2.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
+            <div className="p-2 sm:p-2.5 rounded-xl bg-sky-50/60 dark:bg-sky-500/10 border border-sky-100 dark:border-sky-500/20">
+              <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-sky-600 dark:text-sky-400">
+                <MessageSquare className="w-3 h-3 fill-sky-500 text-sky-500" />
+                <span>Komen</span>
+              </div>
+              <p className="font-black text-xs sm:text-base text-gray-900 dark:text-white mt-0.5 truncate">
+                {formatNumber(post.commentsCount)}
+              </p>
+            </div>
+
+            <div className="p-2 sm:p-2.5 rounded-xl bg-emerald-50/60 dark:bg-emerald-500/10 border border-emerald-100 dark:border-emerald-500/20">
               <div className="flex items-center justify-center gap-1 text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
                 <TrendingUp className="w-3 h-3" />
                 <span>ER</span>
               </div>
-              <p className="font-black text-sm sm:text-base text-emerald-600 dark:text-emerald-400 mt-0.5">
+              <p className="font-black text-xs sm:text-base text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
                 {post.engagementRate}%
               </p>
             </div>

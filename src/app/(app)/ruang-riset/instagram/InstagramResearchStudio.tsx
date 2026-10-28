@@ -14,6 +14,7 @@ import { InstagramProfileHeader } from "./InstagramProfileHeader";
 import { InstagramSortToolbar } from "./InstagramSortToolbar";
 import { InstagramFeedGrid } from "./InstagramFeedGrid";
 import { InstagramPostModal } from "./InstagramPostModal";
+import { InstagramDeepInsightModal } from "./InstagramDeepInsightModal";
 import { SortFeedFilterDropdown } from "./SortFeedFilterDropdown";
 import {
   InstagramCardFilterModal,
@@ -103,6 +104,9 @@ export function InstagramResearchStudio({
 
   // Filter modal state
   const [isFilterModalOpen, setIsFilterModalOpen] = useState(false);
+
+  // Deep Insight modal state
+  const [isInsightModalOpen, setIsInsightModalOpen] = useState(false);
 
   const handleToggleSelectMode = () => {
     setIsSelectMode((prev) => {
@@ -262,6 +266,8 @@ export function InstagramResearchStudio({
           return b.viewsCount - a.viewsCount;
         case "outlier":
           return b.outlierScore - a.outlierScore;
+        case "er":
+          return (b.engagementRate || 0) - (a.engagementRate || 0);
         case "comments":
           return b.commentsCount - a.commentsCount;
         case "newest":
@@ -547,7 +553,10 @@ export function InstagramResearchStudio({
       {!isLoading && profile && (
         <div className="space-y-6 animate-in fade-in duration-300">
           {/* 1. Profile Header (Clean & Compact) */}
-          <InstagramProfileHeader profile={profile} />
+          <InstagramProfileHeader
+            profile={profile}
+            onOpenInsights={() => setIsInsightModalOpen(true)}
+          />
 
           {/* 2. Unified Galeri Feed & Toolbar Card (Menyambung Mulus Sesuai Referensi) */}
           <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200/90 dark:border-[#2C3246] rounded-2xl shadow-xs overflow-hidden animate-in fade-in slide-in-from-top-4 duration-300">
@@ -596,6 +605,16 @@ export function InstagramResearchStudio({
             advancedFilters={advancedFilters}
             onApplyAdvancedFilters={(nextFilters) => setAdvancedFilters(nextFilters)}
             onResetAdvancedFilters={() => setAdvancedFilters(DEFAULT_INSTAGRAM_ADVANCED_FILTER)}
+          />
+
+          {/* Modal Deep Insight & Analisis Performa */}
+          <InstagramDeepInsightModal
+            isOpen={isInsightModalOpen}
+            onClose={() => setIsInsightModalOpen(false)}
+            profile={profile}
+            posts={filteredAndSortedPosts.length > 0 ? filteredAndSortedPosts : posts}
+            onSelectPost={(post) => setSelectedPost(post)}
+            onApplySortEr={() => setSortOption("er")}
           />
 
           {/* 3. Post Inspect Modal */}

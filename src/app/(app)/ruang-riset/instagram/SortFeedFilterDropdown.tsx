@@ -18,6 +18,7 @@ import {
   Zap,
   MessageSquare,
   Clock,
+  TrendingUp,
   X,
 } from "lucide-react";
 
@@ -311,6 +312,28 @@ export function SortFeedFilterDropdown({
                 <span>Outlier score</span>
               </div>
               {sortOption === "outlier" && (
+                <Check className="w-3.5 h-3.5 text-rn-accent" />
+              )}
+            </button>
+
+            {/* Engagement Rate (ER %) */}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setSortOption("er");
+              }}
+              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer ${
+                sortOption === "er"
+                  ? "bg-orange-50 dark:bg-orange-500/10 text-rn-accent font-bold"
+                  : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]"
+              }`}
+            >
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-3.5 h-3.5 text-gray-500 dark:text-gray-400" />
+                <span>Engagement Rate (ER %)</span>
+              </div>
+              {sortOption === "er" && (
                 <Check className="w-3.5 h-3.5 text-rn-accent" />
               )}
             </button>

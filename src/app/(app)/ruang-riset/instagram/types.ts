@@ -43,6 +43,7 @@ export type SortOption =
   | "views"
   | "likes"
   | "comments"
+  | "er"
   | "oldest"
   | "newest";
 

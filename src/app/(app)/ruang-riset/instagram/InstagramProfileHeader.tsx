@@ -9,10 +9,12 @@ import {
   TrendingUp,
   Eye,
   Heart,
+  Sparkles,
 } from "lucide-react";
 
 interface Props {
   profile: InstagramTargetProfile;
+  onOpenInsights?: () => void;
 }
 
 function formatNumber(num: number): string {
@@ -25,7 +27,7 @@ function formatNumber(num: number): string {
   return num.toLocaleString("id-ID");
 }
 
-export function InstagramProfileHeader({ profile }: Props) {
+export function InstagramProfileHeader({ profile, onOpenInsights }: Props) {
   return (
     <div className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl p-5 sm:p-6 shadow-xs">
       {/* ========================================================================= */}
@@ -65,6 +67,18 @@ export function InstagramProfileHeader({ profile }: Props) {
                 <span>Kunjungi Website</span>
               </a>
             )}
+
+            {onOpenInsights && (
+              <button
+                type="button"
+                onClick={onOpenInsights}
+                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white text-xs font-bold transition-all shadow-xs hover:shadow cursor-pointer shrink-0"
+                title="Buka Popup Analisis & Insight Lengkap"
+              >
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Insight Mendalam</span>
+              </button>
+            )}
           </div>
 
           {/* Baris 2: Metrik Standar IG (Postingan, Pengikut, Mengikuti) */}
@@ -103,48 +117,70 @@ export function InstagramProfileHeader({ profile }: Props) {
         </div>
 
         {/* 4 Kartu Analitik Utama (Kanan Desktop - Format Grid 2x2 Hemat Tempat Seperti TikTok) */}
-        <div className="grid grid-cols-2 gap-2.5 shrink-0 min-w-[280px]">
-          {/* 1. Rata-rata Views */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
-            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
-              <Eye className="w-3.5 h-3.5 text-blue-500" />
-              <span>Rata-rata Views</span>
+        <div className="shrink-0 min-w-[280px] space-y-1.5">
+          {onOpenInsights && (
+            <div className="flex items-center justify-between px-0.5">
+              <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400">
+                Ringkasan Akun
+              </span>
+              <button
+                type="button"
+                onClick={onOpenInsights}
+                className="inline-flex items-center gap-1 text-[11px] font-bold text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 transition-colors cursor-pointer"
+              >
+                <Sparkles className="w-3 h-3" />
+                <span>Buka Insight Lengkap ↗</span>
+              </button>
             </div>
-            <div className="text-base font-bold text-gray-900 dark:text-white">
-              {formatNumber(profile.averageViews)}
-            </div>
-          </div>
+          )}
 
-          {/* 2. Puncak Viral / Top Outlier */}
-          <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/10 to-rose-500/10 dark:from-amber-500/20 dark:to-rose-500/20 border border-amber-500/20">
-            <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-semibold mb-1">
-              <Flame className="w-3.5 h-3.5 fill-current" />
-              <span>Puncak Viral</span>
+          <div
+            onClick={onOpenInsights}
+            className={`grid grid-cols-2 gap-2.5 ${onOpenInsights ? "cursor-pointer group" : ""}`}
+            title={onOpenInsights ? "Klik untuk melihat analisis mendalam" : undefined}
+          >
+            {/* 1. Rata-rata Views */}
+            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60 group-hover:border-blue-500/40 transition-colors">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
+                <Eye className="w-3.5 h-3.5 text-blue-500" />
+                <span>Rata-rata Views</span>
+              </div>
+              <div className="text-base font-bold text-gray-900 dark:text-white">
+                {formatNumber(profile.averageViews)}
+              </div>
             </div>
-            <div className="text-base font-bold text-amber-600 dark:text-amber-400">
-              {profile.topOutlierMultiplier.toFixed(1)}x
-            </div>
-          </div>
 
-          {/* 3. Rata-rata Likes */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
-            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
-              <Heart className="w-3.5 h-3.5 text-rose-500" />
-              <span>Rata-rata Likes</span>
+            {/* 2. Puncak Viral / Top Outlier */}
+            <div className="p-3 rounded-xl bg-gradient-to-br from-amber-500/10 to-rose-500/10 dark:from-amber-500/20 dark:to-rose-500/20 border border-amber-500/20 group-hover:border-amber-500/50 transition-colors">
+              <div className="flex items-center gap-1.5 text-xs text-amber-600 dark:text-amber-400 font-semibold mb-1">
+                <Flame className="w-3.5 h-3.5 fill-current" />
+                <span>Puncak Viral</span>
+              </div>
+              <div className="text-base font-bold text-amber-600 dark:text-amber-400">
+                {profile.topOutlierMultiplier.toFixed(1)}x
+              </div>
             </div>
-            <div className="text-base font-bold text-gray-900 dark:text-white">
-              {formatNumber(profile.averageLikes)}
-            </div>
-          </div>
 
-          {/* 4. Engagement Rate */}
-          <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
-            <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
-              <span>Engagement Rate</span>
+            {/* 3. Rata-rata Likes */}
+            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60 group-hover:border-rose-500/40 transition-colors">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
+                <Heart className="w-3.5 h-3.5 text-rose-500" />
+                <span>Rata-rata Likes</span>
+              </div>
+              <div className="text-base font-bold text-gray-900 dark:text-white">
+                {formatNumber(profile.averageLikes)}
+              </div>
             </div>
-            <div className="text-base font-bold text-emerald-600 dark:text-emerald-400">
-              {profile.averageEngagementRate}%
+
+            {/* 4. Engagement Rate */}
+            <div className="p-3 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60 group-hover:border-emerald-500/40 transition-colors">
+              <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mb-1">
+                <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Engagement Rate</span>
+              </div>
+              <div className="text-base font-bold text-emerald-600 dark:text-emerald-400">
+                {profile.averageEngagementRate}%
+              </div>
             </div>
           </div>
         </div>
@@ -215,8 +251,23 @@ export function InstagramProfileHeader({ profile }: Props) {
           </div>
         )}
 
+        {/* Tombol Insight Mendalam (Mobile) */}
+        {onOpenInsights && (
+          <button
+            type="button"
+            onClick={onOpenInsights}
+            className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl text-xs font-bold bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white shadow-xs transition-all active:scale-[0.99] cursor-pointer"
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>Lihat Insight Mendalam & Analisa Performa ↗</span>
+          </button>
+        )}
+
         {/* 4 Kotak Analitik Mobile (Grid 2x2 Hemat Tempat) */}
-        <div className="grid grid-cols-2 gap-2 pt-1">
+        <div
+          onClick={onOpenInsights}
+          className={`grid grid-cols-2 gap-2 pt-0.5 ${onOpenInsights ? "cursor-pointer active:opacity-90" : ""}`}
+        >
           <div className="p-2.5 rounded-xl bg-gray-50 dark:bg-[#1A2238] border border-gray-100 dark:border-[#2C3246]/60">
             <div className="text-[11px] text-gray-500 dark:text-gray-400 mb-0.5">
               Rata-rata Views

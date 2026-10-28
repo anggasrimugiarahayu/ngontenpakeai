@@ -25,6 +25,7 @@ import {
   Info,
   Film,
   Layers,
+  TrendingUp,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -134,6 +135,8 @@ export function InstagramSortToolbar({
     switch (sortOption) {
       case "outlier":
         return "Top Outlier Posts";
+      case "er":
+        return "Highest Engagement Rate";
       case "views":
         return "Most Viewed Posts";
       case "likes":
@@ -149,16 +152,17 @@ export function InstagramSortToolbar({
     }
   };
 
-  // Exact 5 sort options matching Image 3 with icons
+  // Exact sort options matching toolbar with icons
   const sortOptions: {
     value: SortOption;
     label: string;
     icon: React.ComponentType<{ className?: string }>;
     hasInfo?: boolean;
   }[] = [
+    { value: "outlier", label: "Outlier score", icon: Zap, hasInfo: true },
+    { value: "er", label: "Engagement Rate (ER %)", icon: TrendingUp },
     { value: "likes", label: "Likes", icon: Heart },
     { value: "views", label: "Views", icon: Play },
-    { value: "outlier", label: "Outlier score", icon: Zap, hasInfo: true },
     { value: "comments", label: "Comments", icon: MessageSquare },
     { value: "oldest", label: "Oldest", icon: Clock },
   ];
