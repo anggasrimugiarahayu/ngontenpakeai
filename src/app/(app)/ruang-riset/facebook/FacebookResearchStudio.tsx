@@ -188,7 +188,16 @@ export function FacebookResearchStudio({
         }),
       });
 
-      const data = await res.json();
+      const rawText = await res.text();
+      let data: any = {};
+      try {
+        data = rawText ? JSON.parse(rawText) : {};
+      } catch {
+        throw new Error(
+          `Gagal memproses respons server Facebook (HTTP ${res.status}). Silakan coba lagi.`
+        );
+      }
+
       if (!res.ok) {
         throw new Error(data.error || "Gagal memuat data akun Facebook.");
       }
