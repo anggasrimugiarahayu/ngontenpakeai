@@ -272,19 +272,31 @@ export function InstagramFeedGrid({
               {/* Bagian Tengah Hover: 3 Metrik Utama Bertumpuk Vertikal */}
               <div className="flex flex-col items-center justify-center gap-2 text-white my-auto select-none pointer-events-none">
                 {/* 1. Likes */}
-                <div className="flex items-center gap-1.5 text-sm sm:text-base font-bold">
+                <div
+                  className={`flex items-center gap-1.5 text-sm sm:text-base font-bold ${
+                    sortOption === "likes" ? "text-emerald-400 font-extrabold" : "text-white"
+                  }`}
+                >
                   <Heart className="w-4 h-4 fill-white text-white" />
                   <span>{formatCompact(post.likesCount)}</span>
                 </div>
 
                 {/* 2. Comments */}
-                <div className="flex items-center gap-1.5 text-sm sm:text-base font-bold">
+                <div
+                  className={`flex items-center gap-1.5 text-sm sm:text-base font-bold ${
+                    sortOption === "comments" ? "text-emerald-400 font-extrabold" : "text-white"
+                  }`}
+                >
                   <MessageSquare className="w-4 h-4 fill-white text-white" />
                   <span>{formatCompact(post.commentsCount)}</span>
                 </div>
 
                 {/* 3. Outlier Score */}
-                <div className="flex items-center gap-1 text-sm sm:text-base font-black text-amber-300">
+                <div
+                  className={`flex items-center gap-1 text-sm sm:text-base font-black ${
+                    sortOption === "outlier" ? "text-amber-400" : "text-amber-300"
+                  }`}
+                >
                   <Zap className="w-4 h-4 fill-amber-300 text-amber-300" />
                   <span>{post.outlierScore}×</span>
                 </div>
