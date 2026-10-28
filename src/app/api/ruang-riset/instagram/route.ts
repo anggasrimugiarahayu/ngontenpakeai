@@ -156,10 +156,11 @@ function enrichPostsAndProfile(
         ? ("high" as const)
         : ("normal" as const);
 
-    const denominator =
-      p.viewsCount > 0 ? p.viewsCount : Math.max(1, rawProfile.followersCount);
+    // Standar Baku Industri Global (ER by Followers - Phlanx, HypeAuditor & Sprout Social)
+    // Rumus: (Likes + Comments) / Total Followers * 100%
+    const followersDenominator = Math.max(1, rawProfile.followersCount);
     const engagementRate = Number(
-      (((p.likesCount + p.commentsCount) / denominator) * 100).toFixed(2)
+      (((p.likesCount + p.commentsCount) / followersDenominator) * 100).toFixed(2)
     );
     const captionText = decodeHtmlEntities(p.caption || "");
     const firstSentence =
@@ -201,7 +202,7 @@ function enrichPostsAndProfile(
 
   const topOutlier = Math.max(...posts.map((p) => p.outlierScore), 1);
   const avgER = Number(
-    (((averageLikes + averageComments) / averageViews) * 100).toFixed(2)
+    (((averageLikes + averageComments) / Math.max(1, rawProfile.followersCount)) * 100).toFixed(2)
   );
 
   const profile: InstagramTargetProfile = {

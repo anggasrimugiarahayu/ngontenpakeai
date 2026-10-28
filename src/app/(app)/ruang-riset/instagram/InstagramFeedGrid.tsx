@@ -320,7 +320,11 @@ export function InstagramFeedGrid({
                   }`}
                 >
                   <TrendingUp className="w-4 h-4 text-emerald-400" />
-                  <span>{post.engagementRate ? post.engagementRate.toFixed(1) : "0"}%</span>
+                  <span>
+                    {post.engagementRate !== undefined
+                      ? Number(post.engagementRate).toFixed(2)
+                      : "0.00"}%
+                  </span>
                 </div>
               </div>
 

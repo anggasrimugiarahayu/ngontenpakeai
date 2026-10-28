@@ -318,7 +318,7 @@ export function InstagramPostModal({ post, profile, onClose }: Props) {
                 <span>ER</span>
               </div>
               <p className="font-black text-xs sm:text-base text-emerald-600 dark:text-emerald-400 mt-0.5 truncate">
-                {post.engagementRate}%
+                {post.engagementRate !== undefined ? Number(post.engagementRate).toFixed(2) : "0"}%
               </p>
             </div>
           </div>

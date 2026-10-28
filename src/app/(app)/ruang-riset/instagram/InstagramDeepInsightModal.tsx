@@ -56,8 +56,20 @@ export function InstagramDeepInsightModal({
 
   // Analitik Data Komprehensif
   const analytics = useMemo(() => {
-    const list = posts || [];
-    const totalPosts = list.length;
+    const rawList = posts || [];
+    const totalPosts = rawList.length;
+    const followers = Math.max(1, profile.followersCount);
+
+    // Standar Baku Industri: ER dihitung terhadap Followers ((Likes + Comments) / Followers * 100%)
+    const list = rawList.map((p) => {
+      const erByFollowers = Number(
+        (((p.likesCount + p.commentsCount) / followers) * 100).toFixed(2)
+      );
+      return {
+        ...p,
+        engagementRate: erByFollowers,
+      };
+    });
 
     // 1. Agregasi Metrik Utama
     const totalViews = list.reduce((sum, p) => sum + (p.viewsCount || 0), 0);
@@ -69,8 +81,8 @@ export function InstagramDeepInsightModal({
     const avgComments = totalPosts > 0 ? Math.round(totalComments / totalPosts) : profile.averageComments;
     const avgEr =
       totalPosts > 0
-        ? Number((list.reduce((sum, p) => sum + (p.engagementRate || 0), 0) / totalPosts).toFixed(1))
-        : profile.averageEngagementRate;
+        ? Number((((avgLikes + avgComments) / followers) * 100).toFixed(2))
+        : Number((profile.averageEngagementRate || 0).toFixed(2));
 
     const maxOutlier =
       totalPosts > 0
@@ -83,7 +95,7 @@ export function InstagramDeepInsightModal({
         ? Math.round((avgViews / profile.followersCount) * 100)
         : 0;
 
-    // 2. Juara ER
+    // 2. Juara ER (Urutan murni interaksi tertinggi terhadap audiens followers)
     const sortedByEr = [...list].sort((a, b) => (b.engagementRate || 0) - (a.engagementRate || 0));
     const topErPost = sortedByEr[0] || null;
 
@@ -401,7 +413,7 @@ export function InstagramDeepInsightModal({
                   {analytics.avgEr}%
                 </div>
                 <p className="text-[11px] text-emerald-600/70 dark:text-emerald-400/70">
-                  Interaksi penonton
+                  Interaksi vs Followers
                 </p>
               </div>
             </div>
@@ -427,7 +439,7 @@ export function InstagramDeepInsightModal({
                   </div>
                   {analytics.topErPost && (
                     <span className="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                      🏆 {analytics.topErPost.engagementRate.toFixed(1)}% ER
+                      🏆 {analytics.topErPost.engagementRate.toFixed(2)}% ER
                     </span>
                   )}
                 </div>

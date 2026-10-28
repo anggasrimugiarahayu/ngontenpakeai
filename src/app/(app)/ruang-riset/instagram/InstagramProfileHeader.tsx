@@ -179,7 +179,7 @@ export function InstagramProfileHeader({ profile, onOpenInsights }: Props) {
                 <span>Engagement Rate</span>
               </div>
               <div className="text-base font-bold text-emerald-600 dark:text-emerald-400">
-                {profile.averageEngagementRate}%
+                {Number(profile.averageEngagementRate || 0).toFixed(2)}%
               </div>
             </div>
           </div>
@@ -301,7 +301,7 @@ export function InstagramProfileHeader({ profile, onOpenInsights }: Props) {
               Engagement Rate
             </div>
             <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
-              {profile.averageEngagementRate}%
+              {Number(profile.averageEngagementRate || 0).toFixed(2)}%
             </div>
           </div>
         </div>
