@@ -208,7 +208,7 @@ export function AdminRuangBelajarTab({
               Manajemen Ruang Belajar
             </h2>
             <p className="text-sm text-gray-500 dark:text-gray-400">
-              Kelola kategori dan e-book yang tersedia untuk member.
+              Kelola kategori dan produk digital yang tersedia untuk member.
             </p>
           </div>
           <div className="grid grid-cols-2 md:flex md:items-center gap-2 mt-3 md:mt-0 w-full md:w-auto">
@@ -228,7 +228,7 @@ export function AdminRuangBelajarTab({
               onClick={() => setShowAddProduct(true)}
               className="col-span-2 md:col-span-1 justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-1.5 whitespace-nowrap"
             >
-              <Plus className="w-4 h-4" /> Tambah E-Book
+              <Plus className="w-4 h-4" /> Tambah Produk
             </button>
           </div>
         </div>
@@ -558,7 +558,7 @@ export function AdminRuangBelajarTab({
             <div className="col-span-full">
               <EmptyState
                 icon={<BookOpen size={28} />}
-                title="Belum ada produk e-book yang ditambahkan."
+                title="Belum ada produk digital yang ditambahkan."
                 description="Mulai tambahkan produk digital pertama Anda ke katalog Ruang Belajar."
                 action={
                   <Button
@@ -567,7 +567,7 @@ export function AdminRuangBelajarTab({
                     size="sm"
                     icon={<Plus size={14} />}
                   >
-                    Tambah E-Book Sekarang
+                    Tambah Produk Sekarang
                   </Button>
                 }
               />
