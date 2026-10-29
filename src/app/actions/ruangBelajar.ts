@@ -28,6 +28,8 @@ const CATALOG_PRODUCT_SELECT = {
   slug: true,
   language: true,
   formatType: true,
+  productType: true,
+  totalDuration: true,
   author: true,
   isProOnly: true,
   accessLevel: true,
@@ -90,6 +92,8 @@ export const getCachedEbookBySlug = unstable_cache(
       select: {
         ...CATALOG_PRODUCT_SELECT,
         fileUrl: true,
+        videoList: true,
+        resourceData: true,
         reviews: {
           take: 20,
           include: { user: { select: { name: true, image: true } } },

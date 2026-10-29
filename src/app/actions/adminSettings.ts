@@ -236,6 +236,10 @@ export async function getProducts() {
         fileUrl: true,
         language: true,
         formatType: true,
+        productType: true,
+        totalDuration: true,
+        videoList: true,
+        resourceData: true,
         author: true,
         isProOnly: true,
         accessLevel: true,
@@ -305,11 +309,11 @@ export async function createProduct(data: any) {
     await assertAdmin();
 
     if (!data.title || typeof data.title !== "string" || !data.title.trim()) {
-      return { success: false, error: "Judul e-book wajib diisi." };
+      return { success: false, error: "Judul produk wajib diisi." };
     }
 
     if (!data.categoryId || typeof data.categoryId !== "string" || !data.categoryId.trim()) {
-      return { success: false, error: "Kategori e-book wajib dipilih." };
+      return { success: false, error: "Kategori produk wajib dipilih." };
     }
 
     // Verifikasi kategori valid di database
@@ -322,12 +326,12 @@ export async function createProduct(data: any) {
     }
 
     if (!data.slug || typeof data.slug !== "string" || !data.slug.trim()) {
-      data.slug = `ebook-${Math.random().toString(36).substring(2, 8)}`;
+      data.slug = `product-${Math.random().toString(36).substring(2, 8)}`;
     } else {
       data.slug = data.slug.trim().toLowerCase();
       const existing = await prisma.digitalProduct.findUnique({ where: { slug: data.slug } });
       if (existing) {
-        return { success: false, error: "Slug URL sudah digunakan oleh e-book lain." };
+        return { success: false, error: "Slug URL sudah digunakan oleh produk lain." };
       }
     }
 
@@ -338,6 +342,23 @@ export async function createProduct(data: any) {
     if (restData.coverUrl2 === "") restData.coverUrl2 = null;
     if (restData.coverUrl3 === "") restData.coverUrl3 = null;
     if (restData.fileUrl === "") restData.fileUrl = null;
+    if (restData.totalDuration === "") restData.totalDuration = null;
+    if (!restData.productType) restData.productType = "EBOOK";
+
+    if (typeof restData.videoList === "string") {
+      try {
+        restData.videoList = JSON.parse(restData.videoList);
+      } catch {
+        restData.videoList = null;
+      }
+    }
+    if (typeof restData.resourceData === "string") {
+      try {
+        restData.resourceData = JSON.parse(restData.resourceData);
+      } catch {
+        restData.resourceData = null;
+      }
+    }
 
     await prisma.digitalProduct.create({
       data: {
@@ -379,11 +400,11 @@ export async function updateProduct(id: string, data: any) {
     await assertAdmin();
 
     if (!data.title || typeof data.title !== "string" || !data.title.trim()) {
-      return { success: false, error: "Judul e-book wajib diisi." };
+      return { success: false, error: "Judul produk wajib diisi." };
     }
 
     if (!data.categoryId || typeof data.categoryId !== "string" || !data.categoryId.trim()) {
-      return { success: false, error: "Kategori e-book wajib dipilih." };
+      return { success: false, error: "Kategori produk wajib dipilih." };
     }
 
     // Jalankan pengecekan duplikasi slug dan pengambilan data produk lama secara paralel
@@ -401,7 +422,7 @@ export async function updateProduct(id: string, data: any) {
     ]);
 
     if (existing) {
-      return { success: false, error: "Slug URL sudah digunakan oleh e-book lain." };
+      return { success: false, error: "Slug URL sudah digunakan oleh produk lain." };
     }
 
     if (data.slug) {
@@ -415,6 +436,22 @@ export async function updateProduct(id: string, data: any) {
     if (restData.coverUrl2 === "") restData.coverUrl2 = null;
     if (restData.coverUrl3 === "") restData.coverUrl3 = null;
     if (restData.fileUrl === "") restData.fileUrl = null;
+    if (restData.totalDuration === "") restData.totalDuration = null;
+
+    if (typeof restData.videoList === "string") {
+      try {
+        restData.videoList = JSON.parse(restData.videoList);
+      } catch {
+        restData.videoList = null;
+      }
+    }
+    if (typeof restData.resourceData === "string") {
+      try {
+        restData.resourceData = JSON.parse(restData.resourceData);
+      } catch {
+        restData.resourceData = null;
+      }
+    }
 
     if (typeof restData.coverUrl === "string" && restData.coverUrl.startsWith("/api/ebook-cover/")) {
       delete restData.coverUrl;

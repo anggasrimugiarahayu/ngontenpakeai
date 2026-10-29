@@ -231,6 +231,10 @@ model DigitalProduct {
   fileUrl     String?
   language    String?         @default("Indonesia")
   formatType  String?         @default("PDF / Digital")
+  productType String          @default("EBOOK")
+  totalDuration String?
+  videoList   Json?
+  resourceData Json?
   author      String?         @default("Admin")
   isProOnly   Boolean         @default(false)
   accessLevel String          @default("FREE")

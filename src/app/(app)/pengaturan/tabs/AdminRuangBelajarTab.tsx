@@ -17,6 +17,8 @@ import {
   Eye,
   EyeOff,
   Heart,
+  Video,
+  Link2,
 } from "lucide-react";
 import {
   deleteProduct,
@@ -477,6 +479,19 @@ export function AdminRuangBelajarTab({
                       <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                         {prod.category?.name || "PRODUK DIGITAL"}
                       </div>
+                      {prod.productType === "VIDEO" ? (
+                        <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 uppercase tracking-wider flex items-center gap-1">
+                          <Video size={10} /> Video
+                        </div>
+                      ) : prod.productType === "LINK" ? (
+                        <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-1">
+                          <Link2 size={10} /> Link / Notion
+                        </div>
+                      ) : (
+                        <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1">
+                          <BookOpen size={10} /> E-Book
+                        </div>
+                      )}
                       {prod.isActive === false && (
                         <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 uppercase tracking-wider flex items-center gap-1">
                           <EyeOff size={10} /> Nonaktif
