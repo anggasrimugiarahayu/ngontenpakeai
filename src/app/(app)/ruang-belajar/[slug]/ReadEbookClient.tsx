@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import useSWR, { preload } from "swr";
 import { getEbookDetailAction, getRuangBelajarDataAction, claimFreeEbook } from "@/app/actions/ruangBelajar";
@@ -9,13 +9,16 @@ import { trackProductViewAction, trackProductClickAction } from "@/app/actions/a
 import { useRouter } from "next/navigation";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { Lock, Crown, Star, BookOpen, Tag } from "lucide-react";
+import { Lock, Crown, Star, BookOpen, Tag, Video, Play, X, ExternalLink, Sparkles } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import { createCheckoutToken } from "@/app/actions/payment";
 import EbookActions from "./EbookActions";
 import EbookGallery from "./EbookGallery";
 import ReviewSection from "./ReviewSection";
 import PdfViewer from "./PdfViewer";
+import CourseVideoPlayer from "./CourseVideoPlayer";
+import ResourceAccessHub from "./ResourceAccessHub";
+import { getYoutubeEmbedUrl } from "@/lib/youtube-utils";
 
 
 export default function ReadEbookClient({ slug, initialData }: { slug: string; initialData?: any }) {
@@ -27,6 +30,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
     dedupingInterval: 60000
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
 
   useEffect(() => {
     if (data && !data.notFound && data.ebook?.id) {
@@ -35,7 +39,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
   }, [data?.ebook?.id]);
 
   if (!data) {
-    return <LoadingSpinner message="Memuat E-Book..." />;
+    return <LoadingSpinner message="Memuat Konten..." />;
   }
 
   if (data.notFound) {
@@ -52,11 +56,21 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
   const isOwned = (ownedProductIds || []).includes(ebook.id) || isAdmin;
   let isLocked = !isOwned;
 
-
   const isFavorite = ebook.favorites?.length > 0;
   const favoriteCount = ebook.favoriteCount ?? (ebook._count?.favorites || 0);
 
-  
+  // Parse video list if product is VIDEO
+  const videoList = React.useMemo(() => {
+    if (!ebook.videoList) return [];
+    if (Array.isArray(ebook.videoList)) return ebook.videoList;
+    try {
+      const parsed = JSON.parse(ebook.videoList);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }, [ebook.videoList]);
+
   // Calculate average rating
   const totalReviews = ebook.reviews.length;
   const averageRating = totalReviews > 0 
@@ -71,47 +85,74 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
     embedUrl = embedUrl.replace("/view", "/preview");
   }
 
-  // If the user has access and we have an embedUrl, show the PDF Viewer
-  if (!isLocked && embedUrl) {
-    return (
-      <div className="flex flex-col h-[calc(100vh-148px)] md:h-[calc(100vh-164px)] overflow-hidden bg-transparent">
-        {/* Header Toolbar */}
-        <div className="flex-shrink-0 h-16 border-b border-gray-200 dark:border-[#2C3246] bg-gray-50/95 dark:bg-[#0A1128]/95 backdrop-blur-md px-4 md:px-8 flex items-center justify-between relative z-20">
-          <div className="flex items-center gap-3 md:gap-4">
-            <BackButton 
-              href="/ruang-belajar" 
-              onClick={() => {
-                window.location.href = "/ruang-belajar";
-              }}
-            />
-            <div className="min-w-0">
-              <h1 className="font-bold text-sm md:text-base text-gray-900 dark:text-white leading-none flex items-center gap-2 truncate">
-                {ebook.title}
-                {!isFree && !isOwned && (
-                   <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-gray-100 dark:bg-white/10 text-gray-500 shrink-0 hidden sm:inline-block">
-                     PRO
-                   </span>
-                )}
-              </h1>
-              <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">{ebook.category?.name || 'Produk Digital'}</p>
-            </div>
-          </div>
-          
-          <EbookActions 
-            productId={ebook.id} 
-            initialIsFavorite={isFavorite} 
-            initialFavoriteCount={favoriteCount}
-            canReview={true} 
-            userReview={userReview}
-            pdfUrl={ebook.fileUrl}
-            isDownloadable={ebook.isDownloadable} 
-          />
-        </div>
+  // Jika akun memiliki akses (!isLocked), tampilkan halaman belajar sesuai format
+  if (!isLocked) {
+    if (ebook.productType === "VIDEO") {
+      return (
+        <CourseVideoPlayer
+          ebook={ebook}
+          isFavorite={isFavorite}
+          favoriteCount={favoriteCount}
+          userReview={userReview}
+          userId={userId}
+        />
+      );
+    }
 
-        {/* PDF Viewer */}
-        <PdfViewer embedUrl={embedUrl} title={ebook.title} />
-      </div>
-    );
+    if (ebook.productType === "LINK") {
+      return (
+        <ResourceAccessHub
+          ebook={ebook}
+          isFavorite={isFavorite}
+          favoriteCount={favoriteCount}
+          userReview={userReview}
+          userId={userId}
+        />
+      );
+    }
+
+    // Default E-Book: Tampilkan PDF Viewer jika fileUrl tersedia
+    if (embedUrl) {
+      return (
+        <div className="flex flex-col h-[calc(100vh-148px)] md:h-[calc(100vh-164px)] overflow-hidden bg-transparent">
+          {/* Header Toolbar */}
+          <div className="flex-shrink-0 h-16 border-b border-gray-200 dark:border-[#2C3246] bg-gray-50/95 dark:bg-[#0A1128]/95 backdrop-blur-md px-4 md:px-8 flex items-center justify-between relative z-20">
+            <div className="flex items-center gap-3 md:gap-4">
+              <BackButton 
+                href="/ruang-belajar" 
+                onClick={() => {
+                  window.location.href = "/ruang-belajar";
+                }}
+              />
+              <div className="min-w-0">
+                <h1 className="font-bold text-sm md:text-base text-gray-900 dark:text-white leading-none flex items-center gap-2 truncate">
+                  {ebook.title}
+                  {!isFree && !isOwned && (
+                     <span className="px-1.5 py-0.5 rounded text-[10px] font-bold uppercase bg-gray-100 dark:bg-white/10 text-gray-500 shrink-0 hidden sm:inline-block">
+                       PRO
+                     </span>
+                  )}
+                </h1>
+                <p className="text-[10px] md:text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">{ebook.category?.name || 'Produk Digital'}</p>
+              </div>
+            </div>
+            
+            <EbookActions 
+              productId={ebook.id} 
+              initialIsFavorite={isFavorite} 
+              initialFavoriteCount={favoriteCount}
+              canReview={true} 
+              userReview={userReview}
+              pdfUrl={ebook.fileUrl}
+              isDownloadable={ebook.isDownloadable} 
+            />
+          </div>
+
+          {/* PDF Viewer */}
+          <PdfViewer embedUrl={embedUrl} title={ebook.title} />
+        </div>
+      );
+    }
   }
 
   // Otherwise, show the E-book Detail / Landing Page (for FREE users or if no URL)
@@ -257,23 +298,93 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                <div className="mb-10">
                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Deskripsi</h3>
                  <div className="prose prose-sm dark:prose-invert max-w-none text-gray-600 dark:text-gray-400 leading-relaxed whitespace-pre-wrap">
-                   {ebook.description || "Tidak ada deskripsi yang ditambahkan untuk e-book ini."}
+                   {ebook.description || "Tidak ada deskripsi yang ditambahkan untuk produk ini."}
                  </div>
                </div>
 
+               {/* Silabus Kurikulum Video jika Tipe Produk VIDEO */}
+               {ebook.productType === "VIDEO" && videoList.length > 0 && (
+                 <div className="mb-10">
+                   <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4 flex items-center justify-between">
+                     <span className="flex items-center gap-2">
+                       <Video className="w-5 h-5 text-red-500" /> Silabus Materi Kelas ({videoList.length} Video)
+                     </span>
+                     {ebook.totalDuration && (
+                       <span className="text-xs text-gray-400 font-medium">
+                         Total {ebook.totalDuration}
+                       </span>
+                     )}
+                   </h3>
+                   <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl divide-y divide-gray-100 dark:divide-[#2C3246] overflow-hidden bg-white dark:bg-[#141B31] shadow-sm">
+                     {videoList.map((vid: any, idx: number) => (
+                       <div key={vid.id || idx} className="p-3.5 flex items-center justify-between gap-3 hover:bg-gray-50/50 dark:hover:bg-white/5 transition-colors">
+                         <div className="flex items-center gap-3 min-w-0">
+                           <span className="w-7 h-7 rounded-lg bg-red-50 dark:bg-red-950/20 text-red-600 dark:text-red-400 font-bold text-xs flex items-center justify-center shrink-0">
+                             {idx + 1}
+                           </span>
+                           <div className="min-w-0">
+                             <h4 className="text-sm font-bold text-gray-800 dark:text-gray-200 truncate">
+                               {vid.title}
+                             </h4>
+                             {vid.duration && (
+                               <span className="text-[11px] text-gray-400">{vid.duration}</span>
+                             )}
+                           </div>
+                         </div>
+                         {vid.isFreePreview ? (
+                           <button
+                             type="button"
+                             onClick={() => setTrailerUrl(getYoutubeEmbedUrl(vid.youtubeUrl, true))}
+                             className="shrink-0 flex items-center gap-1.5 px-3 py-1 bg-green-500/10 text-green-600 dark:text-green-400 border border-green-500/20 rounded-lg text-xs font-bold hover:bg-green-500/20 transition-colors cursor-pointer"
+                           >
+                             <Play size={12} className="fill-current" />
+                             <span>Tonton Gratis</span>
+                           </button>
+                         ) : (
+                           <span className="shrink-0 flex items-center gap-1 text-gray-400 text-xs font-medium">
+                             <Lock size={12} /> Terkunci
+                           </span>
+                         )}
+                       </div>
+                     ))}
+                   </div>
+                 </div>
+               )}
+
                {/* Information Table */}
                <div>
-                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Informasi Buku</h3>
+                 <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
+                   {ebook.productType === "VIDEO"
+                     ? "Informasi Kelas"
+                     : ebook.productType === "LINK"
+                     ? "Informasi Resource"
+                     : "Informasi Buku"}
+                 </h3>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8 text-sm">
                    <div className="grid grid-cols-3 gap-2">
-                     <span className="text-gray-500 font-medium col-span-1">Penulis</span>
+                     <span className="text-gray-500 font-medium col-span-1">Penulis / Instruktur</span>
                      <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2"><span>:</span> {ebook.author || "Admin"}</span>
                    </div>
-                   <div className="grid grid-cols-3 gap-2">
-                     <span className="text-gray-500 font-medium col-span-1">Halaman</span>
-                     <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2"><span>:</span> {ebook.pageCount ? `${ebook.pageCount} Halaman` : '-'}</span>
-                   </div>
-                   
+                   {ebook.productType === "VIDEO" ? (
+                     <div className="grid grid-cols-3 gap-2">
+                       <span className="text-gray-500 font-medium col-span-1">Durasi</span>
+                       <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2">
+                         <span>:</span> {ebook.totalDuration || `${videoList.length} Video`}
+                       </span>
+                     </div>
+                   ) : ebook.productType === "LINK" ? (
+                     <div className="grid grid-cols-3 gap-2">
+                       <span className="text-gray-500 font-medium col-span-1">Tipe</span>
+                       <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2">
+                         <span>:</span> Template / Resource Link
+                       </span>
+                     </div>
+                   ) : (
+                     <div className="grid grid-cols-3 gap-2">
+                       <span className="text-gray-500 font-medium col-span-1">Halaman</span>
+                       <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2"><span>:</span> {ebook.pageCount ? `${ebook.pageCount} Halaman` : '-'}</span>
+                     </div>
+                   )}
                    
                    <div className="grid grid-cols-3 gap-2">
                      <span className="text-gray-500 font-medium col-span-1">Bahasa</span>
@@ -281,7 +392,9 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                    </div>
                    <div className="grid grid-cols-3 gap-2">
                      <span className="text-gray-500 font-medium col-span-1">Format</span>
-                     <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2"><span>:</span> {ebook.formatType || "PDF / Digital"}</span>
+                     <span className="text-gray-900 dark:text-white font-medium col-span-2 flex gap-2">
+                       <span>:</span> {ebook.formatType || (ebook.productType === "VIDEO" ? "Video Course (YouTube)" : ebook.productType === "LINK" ? "Notion Template / Link" : "PDF / Digital")}
+                     </span>
                    </div>
                    <div className="grid grid-cols-3 gap-2">
                      <span className="text-gray-500 font-medium col-span-1">Kategori</span>
@@ -305,6 +418,35 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
             </div>
          </div>
       </div>
+
+      {/* Modal Free Preview / Trailer Video */}
+      {trailerUrl && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-black border border-gray-800 rounded-2xl w-full max-w-3xl overflow-hidden shadow-2xl relative animate-in zoom-in-95">
+            <div className="p-3 bg-gray-900/90 flex items-center justify-between border-b border-gray-800">
+              <span className="text-xs font-bold text-white flex items-center gap-2">
+                <Play size={14} className="text-green-500 fill-current" /> Preview Trailer Gratis
+              </span>
+              <button
+                type="button"
+                onClick={() => setTrailerUrl(null)}
+                className="p-1 rounded-full text-gray-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="relative aspect-video w-full bg-black">
+              <iframe
+                src={trailerUrl}
+                title="Trailer Preview"
+                className="w-full h-full border-0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

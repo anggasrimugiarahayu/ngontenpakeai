@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import { BookOpen, Star, Loader2, Heart } from "lucide-react";
+import { BookOpen, Star, Loader2, Heart, Video, Link2 } from "lucide-react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import { EmptyState } from "@/components/ui/EmptyState";
 import useSWR, { preload } from "swr";
@@ -112,7 +112,13 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                           </>
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center z-10">
-                            <BookOpen className="w-12 h-12 text-gray-300 dark:text-gray-600 opacity-50" />
+                            {ebook.productType === "VIDEO" ? (
+                              <Video className="w-12 h-12 text-gray-300 dark:text-gray-600 opacity-50" />
+                            ) : ebook.productType === "LINK" ? (
+                              <Link2 className="w-12 h-12 text-gray-300 dark:text-gray-600 opacity-50" />
+                            ) : (
+                              <BookOpen className="w-12 h-12 text-gray-300 dark:text-gray-600 opacity-50" />
+                            )}
                           </div>
                         )}
                       </div>
@@ -160,6 +166,15 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                                Dimiliki
                              </div>
                           )}
+                          {ebook.productType === "VIDEO" ? (
+                            <div className="font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400 flex items-center gap-1">
+                              <Video size={10} /> Video
+                            </div>
+                          ) : ebook.productType === "LINK" ? (
+                            <div className="font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider bg-purple-100 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 flex items-center gap-1">
+                              <Link2 size={10} /> Notion / Link
+                            </div>
+                          ) : null}
                           {ebook.category && (
                             <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                               {ebook.category.name}
@@ -189,7 +204,7 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                           </div>
                         )}
                         <button className="whitespace-nowrap shrink-0 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-bold shadow-sm shadow-orange-500/20 transition-all">
-                          Buka E-Book
+                          {ebook.productType === "VIDEO" ? "Buka Kelas" : ebook.productType === "LINK" ? "Buka Akses" : "Buka E-Book"}
                         </button>
                       </div>
                     </div>
