@@ -73,6 +73,21 @@ export function AdminRuangBelajarModals({
 
   const [isSaving, setIsSaving] = React.useState(false);
   const [addCategoryId, setAddCategoryId] = React.useState("");
+  const [addSlug, setAddSlug] = React.useState("");
+
+  const isDuplicateSlug = Boolean(
+    addSlug.trim() &&
+    products?.some((p: any) => p.slug?.toLowerCase() === addSlug.trim().toLowerCase())
+  );
+
+  const isEditDuplicateSlug = Boolean(
+    editingProduct?.slug?.trim() &&
+    products?.some(
+      (p: any) =>
+        p.id !== editingProduct.id &&
+        p.slug?.toLowerCase() === editingProduct.slug?.trim().toLowerCase()
+    )
+  );
 
   // Otomatis pilih kategori pertama saat modal tambah e-book dibuka jika belum ada yang terpilih
   React.useEffect(() => {
@@ -392,6 +407,7 @@ export function AdminRuangBelajarModals({
                   setShowAddProduct(false);
                   setUploadedUrls({});
                   setAddCategoryId("");
+                  setAddSlug("");
                 }}
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 transition-colors"
               >
@@ -418,9 +434,16 @@ export function AdminRuangBelajarModals({
                   return;
                 }
 
+                // Validasi Slug Duplikat Langsung
+                if (isDuplicateSlug) {
+                  toast.error("Slug URL sudah digunakan. Silakan gunakan slug yang berbeda.");
+                  setIsSaving(false);
+                  return;
+                }
+
                 const newPayload = {
                   title: formData.get("title") as string,
-                  slug: formData.get("slug") as string,
+                  slug: (formData.get("slug") as string)?.trim().toLowerCase(),
                   categoryId: selectedCatId,
                   description: formData.get("description") as string,
                   coverUrl:
@@ -449,15 +472,20 @@ export function AdminRuangBelajarModals({
                     : 0,
                 };
                 try {
-                  await createProduct(newPayload);
+                  const res = await createProduct(newPayload);
+                  if (!res?.success) {
+                    toast.error("Gagal menambahkan e-book.");
+                    return;
+                  }
                   mutate("pengaturan");
                   setShowAddProduct(false);
                   setUploadedUrls({});
                   setAddCategoryId("");
+                  setAddSlug("");
                   toast.success("E-book berhasil ditambahkan!");
                 } catch (err: any) {
                   console.error("Gagal menambahkan e-book:", err);
-                  toast.error(err?.message || "Gagal menambahkan e-book.");
+                  toast.error("Gagal menambahkan e-book.");
                 } finally {
                   setIsSaving(false);
                 }
@@ -482,10 +510,21 @@ export function AdminRuangBelajarModals({
                   </label>
                   <input
                     name="slug"
+                    value={addSlug}
+                    onChange={(e) => setAddSlug(e.target.value.toLowerCase().replace(/\s+/g, "-"))}
                     placeholder="template-carousel"
                     required
-                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className={`w-full bg-gray-50 dark:bg-[#0A1128] border ${
+                      isDuplicateSlug
+                        ? "border-rose-500 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                        : "border-gray-200 dark:border-[#2C3246] focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
+                    } rounded-xl px-3 py-2 text-sm focus:outline-none transition-all`}
                   />
+                  {isDuplicateSlug && (
+                    <p className="text-[11px] text-rose-500 font-medium">
+                      ⚠️ Slug URL ini sudah digunakan oleh e-book lain. Gunakan slug yang berbeda.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -700,6 +739,7 @@ export function AdminRuangBelajarModals({
                     setShowAddProduct(false);
                     setUploadedUrls({});
                     setAddCategoryId("");
+                    setAddSlug("");
                   }}
                   className="px-5 py-2.5 rounded-xl text-sm font-bold bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors"
                 >
@@ -707,8 +747,12 @@ export function AdminRuangBelajarModals({
                 </button>
                 <button
                   type="submit"
-                  disabled={isSaving}
-                  className="flex items-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm shadow-orange-500/20 disabled:opacity-50 hover:scale-105 transition-all cursor-pointer"
+                  disabled={isSaving || isDuplicateSlug}
+                  className={`flex items-center gap-2 ${
+                    isDuplicateSlug
+                      ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-60"
+                      : "bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] cursor-pointer hover:scale-105 shadow-sm shadow-orange-500/20"
+                  } text-white px-6 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50 transition-all`}
                 >
                   {isSaving ? (
                     <>
@@ -913,15 +957,26 @@ export function AdminRuangBelajarModals({
                     : 0,
                 };
 
+                // Validasi Slug Duplikat
+                if (isEditDuplicateSlug) {
+                  toast.error("Slug URL sudah digunakan. Silakan gunakan slug yang berbeda.");
+                  setIsSaving(false);
+                  return;
+                }
+
                 try {
-                  await updateProduct(prodId, updatePayload);
+                  const res = await updateProduct(prodId, updatePayload);
+                  if (!res?.success) {
+                    toast.error("Gagal menyimpan perubahan e-book.");
+                    return;
+                  }
                   mutate("pengaturan");
                   setEditingProduct(null);
                   setUploadedUrls({});
                   toast.success("Perubahan e-book berhasil disimpan!");
                 } catch (err: any) {
                   console.error("Gagal update e-book:", err);
-                  toast.error(err?.message || "Gagal menyimpan perubahan e-book.");
+                  toast.error("Gagal menyimpan perubahan e-book.");
                 } finally {
                   setIsSaving(false);
                 }
@@ -946,10 +1001,25 @@ export function AdminRuangBelajarModals({
                   </label>
                   <input
                     name="slug"
-                    defaultValue={editingProduct.slug}
+                    value={editingProduct.slug || ""}
+                    onChange={(e) =>
+                      setEditingProduct({
+                        ...editingProduct,
+                        slug: e.target.value.toLowerCase().replace(/\s+/g, "-"),
+                      })
+                    }
                     required
-                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
+                    className={`w-full bg-gray-50 dark:bg-[#0A1128] border ${
+                      isEditDuplicateSlug
+                        ? "border-rose-500 focus:border-rose-500 focus:ring-1 focus:ring-rose-500"
+                        : "border-gray-200 dark:border-[#2C3246] focus:border-rn-accent focus:ring-1 focus:ring-rn-accent"
+                    } rounded-xl px-3 py-2 text-sm focus:outline-none transition-all`}
                   />
+                  {isEditDuplicateSlug && (
+                    <p className="text-[11px] text-rose-500 font-medium">
+                      ⚠️ Slug URL ini sudah digunakan oleh e-book lain. Gunakan slug yang berbeda.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -1195,8 +1265,12 @@ export function AdminRuangBelajarModals({
                 </button>
                 <button
                   type="submit"
-                  disabled={isSaving}
-                  className="flex items-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-sm shadow-orange-500/20 disabled:opacity-50 hover:scale-105 transition-all cursor-pointer"
+                  disabled={isSaving || isEditDuplicateSlug}
+                  className={`flex items-center gap-2 ${
+                    isEditDuplicateSlug
+                      ? "bg-gray-400 dark:bg-gray-600 cursor-not-allowed opacity-60"
+                      : "bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] cursor-pointer hover:scale-105 shadow-sm shadow-orange-500/20"
+                  } text-white px-6 py-2.5 rounded-xl text-sm font-bold disabled:opacity-50 transition-all`}
                 >
                   {isSaving ? (
                     <>

@@ -301,50 +301,56 @@ export async function reorderProducts(orderedIds: string[]) {
 }
 
 export async function createProduct(data: any) {
-  await assertAdmin();
+  try {
+    await assertAdmin();
 
-  if (!data.title || typeof data.title !== "string" || !data.title.trim()) {
-    throw new Error("Judul e-book wajib diisi.");
-  }
-
-  if (!data.categoryId || typeof data.categoryId !== "string" || !data.categoryId.trim()) {
-    throw new Error("Kategori e-book wajib dipilih. Silakan pilih atau buat kategori terlebih dahulu.");
-  }
-
-  // Verifikasi kategori valid di database
-  const categoryExists = await prisma.digitalCategory.findUnique({
-    where: { id: data.categoryId },
-    select: { id: true },
-  });
-  if (!categoryExists) {
-    throw new Error("Kategori yang dipilih tidak valid atau sudah dihapus.");
-  }
-
-  if (data.slug) {
-    const existing = await prisma.digitalProduct.findUnique({ where: { slug: data.slug } });
-    if (existing) {
-      data.slug = `${data.slug}-${Math.random().toString(36).substring(2, 6)}`;
+    if (!data.title || typeof data.title !== "string" || !data.title.trim()) {
+      return { success: false, error: "Judul e-book wajib diisi." };
     }
-  } else {
-    data.slug = `ebook-${Math.random().toString(36).substring(2, 8)}`;
+
+    if (!data.categoryId || typeof data.categoryId !== "string" || !data.categoryId.trim()) {
+      return { success: false, error: "Kategori e-book wajib dipilih." };
+    }
+
+    // Verifikasi kategori valid di database
+    const categoryExists = await prisma.digitalCategory.findUnique({
+      where: { id: data.categoryId },
+      select: { id: true },
+    });
+    if (!categoryExists) {
+      return { success: false, error: "Kategori yang dipilih tidak valid." };
+    }
+
+    if (!data.slug || typeof data.slug !== "string" || !data.slug.trim()) {
+      data.slug = `ebook-${Math.random().toString(36).substring(2, 8)}`;
+    } else {
+      data.slug = data.slug.trim().toLowerCase();
+      const existing = await prisma.digitalProduct.findUnique({ where: { slug: data.slug } });
+      if (existing) {
+        return { success: false, error: "Slug URL sudah digunakan oleh e-book lain." };
+      }
+    }
+
+    const { categoryId, ...restData } = data;
+
+    // Normalisasi string kosong menjadi null
+    if (restData.coverUrl === "") restData.coverUrl = null;
+    if (restData.coverUrl2 === "") restData.coverUrl2 = null;
+    if (restData.coverUrl3 === "") restData.coverUrl3 = null;
+    if (restData.fileUrl === "") restData.fileUrl = null;
+
+    await prisma.digitalProduct.create({
+      data: {
+        ...restData,
+        category: { connect: { id: categoryId } },
+      },
+    });
+    revalidateEbookCatalog(data.slug);
+    return { success: true };
+  } catch (err: any) {
+    console.error("Gagal menambahkan e-book:", err);
+    return { success: false, error: err?.message || "Gagal menambahkan e-book." };
   }
-
-  const { categoryId, ...restData } = data;
-
-  // Normalisasi string kosong menjadi null
-  if (restData.coverUrl === "") restData.coverUrl = null;
-  if (restData.coverUrl2 === "") restData.coverUrl2 = null;
-  if (restData.coverUrl3 === "") restData.coverUrl3 = null;
-  if (restData.fileUrl === "") restData.fileUrl = null;
-
-  const newProduct = await prisma.digitalProduct.create({
-    data: {
-      ...restData,
-      category: { connect: { id: categoryId } },
-    },
-  });
-  revalidateEbookCatalog(data.slug);
-  return newProduct;
 }
 
 export async function deleteCategory(id: string) {
@@ -369,67 +375,87 @@ export async function deleteProduct(id: string) {
 }
 
 export async function updateProduct(id: string, data: any) {
-  await assertAdmin();
-  // Jalankan pengecekan duplikasi slug dan pengambilan data produk lama secara paralel (menghemat 1 roundtrip network)
-  const [existing, oldProduct] = await Promise.all([
-    data.slug
-      ? prisma.digitalProduct.findFirst({
-          where: { slug: data.slug, id: { not: id } },
-          select: { id: true },
-        })
-      : Promise.resolve(null),
-    prisma.digitalProduct.findUnique({
+  try {
+    await assertAdmin();
+
+    if (!data.title || typeof data.title !== "string" || !data.title.trim()) {
+      return { success: false, error: "Judul e-book wajib diisi." };
+    }
+
+    if (!data.categoryId || typeof data.categoryId !== "string" || !data.categoryId.trim()) {
+      return { success: false, error: "Kategori e-book wajib dipilih." };
+    }
+
+    // Jalankan pengecekan duplikasi slug dan pengambilan data produk lama secara paralel
+    const [existing, oldProduct] = await Promise.all([
+      data.slug
+        ? prisma.digitalProduct.findFirst({
+            where: { slug: data.slug.trim().toLowerCase(), id: { not: id } },
+            select: { id: true },
+          })
+        : Promise.resolve(null),
+      prisma.digitalProduct.findUnique({
+        where: { id },
+        select: { coverUrl: true, coverUrl2: true, coverUrl3: true },
+      }),
+    ]);
+
+    if (existing) {
+      return { success: false, error: "Slug URL sudah digunakan oleh e-book lain." };
+    }
+
+    if (data.slug) {
+      data.slug = data.slug.trim().toLowerCase();
+    }
+
+    const { categoryId, ...restData } = data;
+
+    // Pastikan string kosong "" dinormalisasi menjadi null
+    if (restData.coverUrl === "") restData.coverUrl = null;
+    if (restData.coverUrl2 === "") restData.coverUrl2 = null;
+    if (restData.coverUrl3 === "") restData.coverUrl3 = null;
+    if (restData.fileUrl === "") restData.fileUrl = null;
+
+    if (typeof restData.coverUrl === "string" && restData.coverUrl.startsWith("/api/ebook-cover/")) {
+      delete restData.coverUrl;
+    }
+    if (typeof restData.coverUrl2 === "string" && restData.coverUrl2.startsWith("/api/ebook-cover/")) {
+      delete restData.coverUrl2;
+    }
+    if (typeof restData.coverUrl3 === "string" && restData.coverUrl3.startsWith("/api/ebook-cover/")) {
+      delete restData.coverUrl3;
+    }
+
+    // Bersihkan file fisik di disk jika cover lama diganti atau dihapus (non-blocking)
+    if (oldProduct) {
+      const cleanupPromises: Promise<any>[] = [];
+      if (restData.coverUrl !== undefined && oldProduct.coverUrl && oldProduct.coverUrl !== restData.coverUrl && oldProduct.coverUrl.startsWith("/uploads/")) {
+        cleanupPromises.push(deletePhysicalUploadFile(oldProduct.coverUrl));
+      }
+      if (restData.coverUrl2 !== undefined && oldProduct.coverUrl2 && oldProduct.coverUrl2 !== restData.coverUrl2 && oldProduct.coverUrl2.startsWith("/uploads/")) {
+        cleanupPromises.push(deletePhysicalUploadFile(oldProduct.coverUrl2));
+      }
+      if (restData.coverUrl3 !== undefined && oldProduct.coverUrl3 && oldProduct.coverUrl3 !== restData.coverUrl3 && oldProduct.coverUrl3.startsWith("/uploads/")) {
+        cleanupPromises.push(deletePhysicalUploadFile(oldProduct.coverUrl3));
+      }
+      if (cleanupPromises.length > 0) {
+        Promise.all(cleanupPromises).catch(console.error);
+      }
+    }
+
+    await prisma.digitalProduct.update({
       where: { id },
-      select: { coverUrl: true, coverUrl2: true, coverUrl3: true },
-    }),
-  ]);
-
-  if (existing && data.slug) {
-    data.slug = `${data.slug}-${Math.random().toString(36).substring(2, 6)}`;
+      data: {
+        ...restData,
+        category: categoryId ? { connect: { id: categoryId } } : undefined,
+      },
+    });
+    revalidateEbookCatalog(data.slug);
+    return { success: true };
+  } catch (err: any) {
+    console.error("Gagal update e-book:", err);
+    return { success: false, error: err?.message || "Gagal menyimpan perubahan e-book." };
   }
-  const { categoryId, ...restData } = data;
-
-  // Pastikan string kosong "" dinormalisasi menjadi null
-  if (restData.coverUrl === "") restData.coverUrl = null;
-  if (restData.coverUrl2 === "") restData.coverUrl2 = null;
-  if (restData.coverUrl3 === "") restData.coverUrl3 = null;
-
-  if (typeof restData.coverUrl === "string" && restData.coverUrl.startsWith("/api/ebook-cover/")) {
-    delete restData.coverUrl;
-  }
-  if (typeof restData.coverUrl2 === "string" && restData.coverUrl2.startsWith("/api/ebook-cover/")) {
-    delete restData.coverUrl2;
-  }
-  if (typeof restData.coverUrl3 === "string" && restData.coverUrl3.startsWith("/api/ebook-cover/")) {
-    delete restData.coverUrl3;
-  }
-
-  // Bersihkan file fisik di disk jika cover lama diganti atau dihapus (non-blocking)
-  if (oldProduct) {
-    const cleanupPromises: Promise<any>[] = [];
-    if (restData.coverUrl !== undefined && oldProduct.coverUrl && oldProduct.coverUrl !== restData.coverUrl && oldProduct.coverUrl.startsWith("/uploads/")) {
-      cleanupPromises.push(deletePhysicalUploadFile(oldProduct.coverUrl));
-    }
-    if (restData.coverUrl2 !== undefined && oldProduct.coverUrl2 && oldProduct.coverUrl2 !== restData.coverUrl2 && oldProduct.coverUrl2.startsWith("/uploads/")) {
-      cleanupPromises.push(deletePhysicalUploadFile(oldProduct.coverUrl2));
-    }
-    if (restData.coverUrl3 !== undefined && oldProduct.coverUrl3 && oldProduct.coverUrl3 !== restData.coverUrl3 && oldProduct.coverUrl3.startsWith("/uploads/")) {
-      cleanupPromises.push(deletePhysicalUploadFile(oldProduct.coverUrl3));
-    }
-    if (cleanupPromises.length > 0) {
-      Promise.all(cleanupPromises).catch(console.error);
-    }
-  }
-
-  const updated = await prisma.digitalProduct.update({
-    where: { id },
-    data: {
-      ...restData,
-      category: categoryId ? { connect: { id: categoryId } } : undefined,
-    },
-  });
-  revalidateEbookCatalog(data.slug);
-  return updated;
 }
 
 export async function createVoucher(data: { code: string; discountType: string; discountValue: number; digitalProductId: string }) {
