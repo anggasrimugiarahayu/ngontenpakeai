@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { writeFile, mkdir } from "fs/promises";
 import path from "path";
+import sharp from "sharp";
 import { auth } from "@/auth";
 import { deletePhysicalUploadFile } from "@/lib/server-uploads";
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
-const MAX_UPLOAD_SIZE_BYTES = 10 * 1024 * 1024; // 10MB
+const MAX_UPLOAD_SIZE_BYTES = 1 * 1024 * 1024; // 1MB
 
 export async function POST(req: NextRequest) {
   try {
@@ -30,17 +31,33 @@ export async function POST(req: NextRequest) {
 
     if (file.size > MAX_UPLOAD_SIZE_BYTES) {
       return NextResponse.json(
-        { error: "Ukuran file maksimal 10MB." },
+        { error: "Ukuran gambar cover maksimal 1MB." },
         { status: 400 }
       );
     }
 
     const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+    const rawBuffer = Buffer.from(bytes);
+
+    // Kompresi & Optimasi Otomatis dengan sharp:
+    // Resize max lebar 900px, konversi ke WebP kualitas 80
+    let optimizedBuffer: Buffer;
+    let mimeType = "image/webp";
+    try {
+      optimizedBuffer = await sharp(rawBuffer)
+        .rotate()
+        .resize({ width: 900, withoutEnlargement: true })
+        .webp({ quality: 80 })
+        .toBuffer();
+    } catch (sharpErr) {
+      console.warn("Sharp optimization fallback to raw buffer:", sharpErr);
+      optimizedBuffer = rawBuffer;
+      mimeType = file.type || "image/png";
+    }
 
     // Create safe unique filename
-    const ext = path.extname(file.name) || ".png";
-    const cleanBaseName = path.basename(file.name, ext).replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 50);
+    const ext = mimeType === "image/webp" ? ".webp" : (path.extname(file.name) || ".png");
+    const cleanBaseName = path.basename(file.name, path.extname(file.name)).replace(/[^a-zA-Z0-9_-]/g, "_").slice(0, 50);
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const filename = `${uniqueSuffix}-${cleanBaseName || "cover"}${ext}`;
     
@@ -50,7 +67,7 @@ export async function POST(req: NextRequest) {
     try {
       await mkdir(uploadDir, { recursive: true });
       const filepath = path.join(uploadDir, filename);
-      await writeFile(filepath, buffer);
+      await writeFile(filepath, optimizedBuffer);
 
       return NextResponse.json({ 
         success: true, 
@@ -58,10 +75,8 @@ export async function POST(req: NextRequest) {
       });
     } catch (fsErr: any) {
       // In serverless / read-only environment like Vercel (EROFS),
-      // gracefully fallback to Base64 Data URI so upload never fails.
-      console.warn("Disk write unavailable, fallback to base64 Data URI:", fsErr?.message);
-      const mimeType = file.type || "image/png";
-      const base64Data = buffer.toString("base64");
+      // gracefully fallback to lightweight optimized Base64 Data URI (~50KB-120KB)
+      const base64Data = optimizedBuffer.toString("base64");
       const dataUri = `data:${mimeType};base64,${base64Data}`;
 
       return NextResponse.json({ 
