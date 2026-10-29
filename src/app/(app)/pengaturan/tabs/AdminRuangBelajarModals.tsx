@@ -74,6 +74,13 @@ export function AdminRuangBelajarModals({
   const [isSaving, setIsSaving] = React.useState(false);
   const [addCategoryId, setAddCategoryId] = React.useState("");
 
+  // Otomatis pilih kategori pertama saat modal tambah e-book dibuka jika belum ada yang terpilih
+  React.useEffect(() => {
+    if (showAddProduct && categories && categories.length > 0 && !addCategoryId) {
+      setAddCategoryId(categories[0].id);
+    }
+  }, [showAddProduct, categories, addCategoryId]);
+
   return (
     <>
       {/* Modal Kategori Baru */}
@@ -384,6 +391,7 @@ export function AdminRuangBelajarModals({
                 onClick={() => {
                   setShowAddProduct(false);
                   setUploadedUrls({});
+                  setAddCategoryId("");
                 }}
                 className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 transition-colors"
               >
@@ -395,10 +403,25 @@ export function AdminRuangBelajarModals({
                 e.preventDefault();
                 setIsSaving(true);
                 const formData = new FormData(e.currentTarget);
+
+                // Validasi Kategori
+                if (!categories || categories.length === 0) {
+                  toast.error("Belum ada kategori e-book. Buat minimal satu kategori di menu Kategori terlebih dahulu!");
+                  setIsSaving(false);
+                  return;
+                }
+
+                const selectedCatId = (formData.get("categoryId") as string) || addCategoryId;
+                if (!selectedCatId || !selectedCatId.trim()) {
+                  toast.error("Silakan pilih Kategori E-Book terlebih dahulu!");
+                  setIsSaving(false);
+                  return;
+                }
+
                 const newPayload = {
                   title: formData.get("title") as string,
                   slug: formData.get("slug") as string,
-                  categoryId: formData.get("categoryId") as string,
+                  categoryId: selectedCatId,
                   description: formData.get("description") as string,
                   coverUrl:
                     uploadedUrls["coverUrlInput"] || (formData.get("coverUrl") as string) || null,
@@ -430,10 +453,11 @@ export function AdminRuangBelajarModals({
                   mutate("pengaturan");
                   setShowAddProduct(false);
                   setUploadedUrls({});
+                  setAddCategoryId("");
                   toast.success("E-book berhasil ditambahkan!");
-                } catch (err) {
+                } catch (err: any) {
                   console.error("Gagal menambahkan e-book:", err);
-                  toast.error("Gagal menambahkan e-book.");
+                  toast.error(err?.message || "Gagal menambahkan e-book.");
                 } finally {
                   setIsSaving(false);
                 }
@@ -482,12 +506,17 @@ export function AdminRuangBelajarModals({
                   <CustomSelect
                     label="KATEGORI"
                     name="categoryId"
-                    placeholder="Pilih Kategori..."
+                    placeholder={categories && categories.length > 0 ? "Pilih Kategori..." : "Belum ada kategori"}
                     value={addCategoryId}
                     onChange={(val) => setAddCategoryId(val)}
                     options={categories.map((c: any) => ({ value: c.id, label: c.name }))}
                     required
                   />
+                  {(!categories || categories.length === 0) && (
+                    <p className="text-[11px] text-amber-500 mt-1 font-medium">
+                      ⚠️ Belum ada kategori e-book. Buat di tombol &quot;Kategori&quot; terlebih dahulu.
+                    </p>
+                  )}
                 </div>
                 <div className="col-span-2 space-y-3">
                   <label className="text-xs font-bold text-gray-500 uppercase tracking-wider">
@@ -667,7 +696,11 @@ export function AdminRuangBelajarModals({
               <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-[#2C3246]">
                 <button
                   type="button"
-                  onClick={() => setShowAddProduct(false)}
+                  onClick={() => {
+                    setShowAddProduct(false);
+                    setUploadedUrls({});
+                    setAddCategoryId("");
+                  }}
                   className="px-5 py-2.5 rounded-xl text-sm font-bold bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors"
                 >
                   Batal
@@ -886,9 +919,9 @@ export function AdminRuangBelajarModals({
                   setEditingProduct(null);
                   setUploadedUrls({});
                   toast.success("Perubahan e-book berhasil disimpan!");
-                } catch (err) {
+                } catch (err: any) {
                   console.error("Gagal update e-book:", err);
-                  toast.error("Gagal menyimpan perubahan e-book.");
+                  toast.error(err?.message || "Gagal menyimpan perubahan e-book.");
                 } finally {
                   setIsSaving(false);
                 }
