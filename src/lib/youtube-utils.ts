@@ -34,8 +34,9 @@ export function getYoutubeThumbnail(url?: string | null): string | null {
   return `https://img.youtube.com/vi/${id}/hqdefault.jpg`;
 }
 
-export function getYoutubeEmbedUrl(url?: string | null, autoplay = false): string | null {
+export function getYoutubeEmbedUrl(url?: string | null, autoplay = false, origin?: string): string | null {
   const id = getYoutubeVideoId(url);
   if (!id) return null;
-  return `https://www.youtube-nocookie.com/embed/${id}?rel=0&modestbranding=1${autoplay ? "&autoplay=1" : ""}`;
+  const originParam = origin ? `&origin=${encodeURIComponent(origin)}` : "";
+  return `https://www.youtube.com/embed/${id}?enablejsapi=1&rel=0&modestbranding=1${autoplay ? "&autoplay=1" : ""}${originParam}`;
 }
