@@ -1,7 +1,8 @@
 "use client";
 
 import toast from "react-hot-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { Heart, Share2, Star, X, Download } from "lucide-react";
 import { toggleFavorite, addReview } from "@/app/actions/ruangBelajar";
 
@@ -45,6 +46,11 @@ export default function EbookActions({
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState(userReview?.comment || "");
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleFavorite = async () => {
     if (isSubmittingFav) return;
@@ -158,26 +164,33 @@ export default function EbookActions({
         </button>
       </div>
 
-      {/* Review Modal */}
-      {showModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-white dark:bg-[#141B31] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden relative border border-gray-100 dark:border-[#2C3246] animate-in zoom-in-95 duration-200">
+      {/* Review Modal with React Portal */}
+      {showModal && mounted && createPortal(
+        <div 
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setShowModal(false);
+          }}
+          className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200"
+        >
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl w-full max-w-md shadow-2xl overflow-hidden relative border border-gray-100 dark:border-[#2C3246] animate-in zoom-in-95 duration-200 max-h-[90vh] flex flex-col">
             {/* Modal Header */}
-            <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A]">
+            <div className="flex items-center justify-between p-5 border-b border-gray-100 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0F172A] shrink-0">
               <h3 className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Star className="w-5 h-5 text-yellow-500 fill-yellow-500" />
                 Ulasan Anda
               </h3>
               <button 
+                type="button"
                 onClick={() => setShowModal(false)}
-                className="w-8 h-8 rounded-full bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] border border-gray-200 dark:border-[#2C3246] flex items-center justify-center text-gray-600 dark:text-gray-300 transition-colors"
+                className="w-8 h-8 rounded-full bg-white hover:bg-gray-100 dark:bg-[#141B31] dark:hover:bg-[#1f2947] border border-gray-200 dark:border-[#2C3246] flex items-center justify-center text-gray-600 dark:text-gray-300 transition-colors cursor-pointer"
+                title="Tutup"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
             {/* Modal Body */}
-            <form onSubmit={handleSubmitReview} className="p-6">
+            <form onSubmit={handleSubmitReview} className="p-6 overflow-y-auto custom-scrollbar">
               <div className="flex justify-center items-center gap-2 mb-6">
                 {[1, 2, 3, 4, 5].map((s) => (
                   <button
@@ -186,7 +199,7 @@ export default function EbookActions({
                     onClick={() => setRating(s)}
                     onMouseEnter={() => setHoverRating(s)}
                     onMouseLeave={() => setHoverRating(0)}
-                    className="focus:outline-none transition-transform hover:scale-110"
+                    className="focus:outline-none transition-transform hover:scale-110 cursor-pointer p-1"
                   >
                     <Star 
                       className={`w-10 h-10 transition-colors ${
@@ -209,7 +222,7 @@ export default function EbookActions({
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
-                  placeholder="Ceritakan pengalaman Anda belajar dari e-book ini..."
+                  placeholder="Ceritakan pengalaman Anda belajar dari materi ini..."
                   className="w-full bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] rounded-xl p-4 text-sm text-gray-900 dark:text-white focus:ring-2 focus:ring-orange-500/50 focus:border-transparent outline-none min-h-[120px] resize-none"
                 />
               </div>
@@ -217,13 +230,14 @@ export default function EbookActions({
               <button 
                 type="submit"
                 disabled={isSubmittingReview || rating === 0}
-                className="w-full py-3.5 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold rounded-xl disabled:opacity-50 transition-all shadow-sm shadow-orange-500/20 flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold rounded-xl disabled:opacity-50 transition-all shadow-sm shadow-orange-500/20 flex items-center justify-center gap-2 cursor-pointer"
               >
                 {isSubmittingReview ? "Menyimpan..." : "Kirim Ulasan"}
               </button>
             </form>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   );
