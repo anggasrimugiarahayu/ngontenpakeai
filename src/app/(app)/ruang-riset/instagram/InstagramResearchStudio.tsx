@@ -28,6 +28,10 @@ import {
   exportToJSON,
   downloadPostsAsZip,
 } from "./exportUtils";
+import {
+  saveRisetSessionCache,
+  loadRisetSessionCache,
+} from "../risetCacheUtils";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import toast from "react-hot-toast";
@@ -74,15 +78,33 @@ export function InstagramResearchStudio({
   onBackToPlatformHub,
   defaultUsername = "creativemuslim.co",
 }: Props) {
-  const [usernameInput, setUsernameInput] = useState(defaultUsername);
+  const [usernameInput, setUsernameInput] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const cached = loadRisetSessionCache<InstagramTargetProfile, InstagramPostItem>("instagram");
+      if (cached?.username) return cached.username;
+    }
+    return defaultUsername;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStepText, setLoadingStepText] = useState("");
   const [loadingPercent, setLoadingPercent] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  // Clean initial state
-  const [profile, setProfile] = useState<InstagramTargetProfile | null>(null);
-  const [posts, setPosts] = useState<InstagramPostItem[]>([]);
+  // Initial state with SWR / Session Cache support
+  const [profile, setProfile] = useState<InstagramTargetProfile | null>(() => {
+    if (typeof window !== "undefined") {
+      const cached = loadRisetSessionCache<InstagramTargetProfile, InstagramPostItem>("instagram");
+      return cached?.profile || null;
+    }
+    return null;
+  });
+  const [posts, setPosts] = useState<InstagramPostItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const cached = loadRisetSessionCache<InstagramTargetProfile, InstagramPostItem>("instagram");
+      return cached?.items || [];
+    }
+    return [];
+  });
   const [selectedPost, setSelectedPost] = useState<InstagramPostItem | null>(null);
 
   // Filter dropdown state for search box
@@ -141,7 +163,8 @@ export function InstagramResearchStudio({
   // Function to execute research in 1 click
   const handleSearch = async (
     userToSearch: string,
-    limitOverride?: PostLimit
+    limitOverride?: PostLimit,
+    forceRefresh = false
   ) => {
     const clean = userToSearch.trim().replace(/^@/, "");
     if (!clean) return;
@@ -177,6 +200,7 @@ export function InstagramResearchStudio({
         body: JSON.stringify({
           username: clean,
           limit: numericLimit,
+          forceRefresh,
         }),
       });
 
@@ -192,6 +216,7 @@ export function InstagramResearchStudio({
       setTimeout(() => {
         setProfile(data.profile);
         setPosts(data.posts || []);
+        saveRisetSessionCache("instagram", clean, data.profile, data.posts || []);
         setIsLoading(false);
       }, 250);
     } catch (err: any) {

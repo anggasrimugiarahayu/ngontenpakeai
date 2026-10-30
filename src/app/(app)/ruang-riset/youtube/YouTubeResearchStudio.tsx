@@ -22,6 +22,10 @@ import {
   DEFAULT_YOUTUBE_ADVANCED_FILTER,
 } from "./YouTubeCardFilterModal";
 import { downloadYouTubeMediaBatch } from "./exportUtils";
+import {
+  saveRisetSessionCache,
+  loadRisetSessionCache,
+} from "../risetCacheUtils";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import toast from "react-hot-toast";
@@ -71,15 +75,33 @@ export function YouTubeResearchStudio({
   onBackToHub,
   defaultChannel = "corbuzier",
 }: Props) {
-  const [channelInput, setChannelInput] = useState(defaultChannel);
+  const [channelInput, setChannelInput] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const cached = loadRisetSessionCache<YouTubeChannelProfile, YouTubeVideoItem>("youtube");
+      if (cached?.username) return cached.username;
+    }
+    return defaultChannel;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStepText, setLoadingStepText] = useState("");
   const [loadingPercent, setLoadingPercent] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Profile and videos state
-  const [profile, setProfile] = useState<YouTubeChannelProfile | null>(null);
-  const [videos, setVideos] = useState<YouTubeVideoItem[]>([]);
+  // Profile and videos state with SWR / Session Cache support
+  const [profile, setProfile] = useState<YouTubeChannelProfile | null>(() => {
+    if (typeof window !== "undefined") {
+      const cached = loadRisetSessionCache<YouTubeChannelProfile, YouTubeVideoItem>("youtube");
+      return cached?.profile || null;
+    }
+    return null;
+  });
+  const [videos, setVideos] = useState<YouTubeVideoItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const cached = loadRisetSessionCache<YouTubeChannelProfile, YouTubeVideoItem>("youtube");
+      return cached?.items || [];
+    }
+    return [];
+  });
   const [activeModalVideo, setActiveModalVideo] =
     useState<YouTubeVideoItem | null>(null);
 
@@ -203,6 +225,7 @@ export function YouTubeResearchStudio({
       setTimeout(() => {
         setProfile(data.profile);
         setVideos(data.videos || []);
+        saveRisetSessionCache("youtube", data.profile?.customUrl || handleToQuery, data.profile, data.videos || []);
         setChannelInput(data.profile?.customUrl || handleToQuery);
         setIsLoading(false);
         toast.success(

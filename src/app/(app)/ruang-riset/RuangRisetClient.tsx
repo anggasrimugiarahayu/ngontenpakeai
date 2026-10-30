@@ -91,6 +91,22 @@ export default function RuangRisetClient({
     "instagram" | "youtube" | "tiktok" | "facebook" | null
   >(initialPlatform);
 
+  // Set platform yang sudah pernah dibuka (untuk Keep-Alive / DOM Preservation)
+  const [visitedPlatforms, setVisitedPlatforms] = useState<Set<string>>(
+    () => new Set(initialPlatform ? [initialPlatform] : [])
+  );
+
+  useEffect(() => {
+    if (selectedPlatform) {
+      setVisitedPlatforms((prev) => {
+        if (prev.has(selectedPlatform)) return prev;
+        const next = new Set(prev);
+        next.add(selectedPlatform);
+        return next;
+      });
+    }
+  }, [selectedPlatform]);
+
   // Sync state with URL search params on mount & popstate
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -165,19 +181,37 @@ export default function RuangRisetClient({
 
   return (
     <div className="flex-1 w-full max-w-7xl mx-auto p-4 md:p-8 animate-in fade-in duration-300">
-      {selectedPlatform === "instagram" ? (
-        <InstagramResearchStudio
-          onBackToPlatformHub={handleBackToHub}
-          defaultUsername="creativemuslim.co"
-          isAdmin={isAdmin}
-        />
-      ) : selectedPlatform === "youtube" ? (
-        <YouTubeResearchStudio onBackToHub={handleBackToHub} />
-      ) : selectedPlatform === "tiktok" ? (
-        <TikTokResearchStudio onBackToHub={handleBackToHub} />
-      ) : selectedPlatform === "facebook" ? (
-        <FacebookResearchStudio onBackToHub={handleBackToHub} />
-      ) : (
+      {/* Platform Studios dengan Keep-Alive (DOM & State Preservation) */}
+      {visitedPlatforms.has("instagram") && (
+        <div className={selectedPlatform === "instagram" ? "block" : "hidden"}>
+          <InstagramResearchStudio
+            onBackToPlatformHub={handleBackToHub}
+            defaultUsername="creativemuslim.co"
+            isAdmin={isAdmin}
+          />
+        </div>
+      )}
+
+      {visitedPlatforms.has("youtube") && (
+        <div className={selectedPlatform === "youtube" ? "block" : "hidden"}>
+          <YouTubeResearchStudio onBackToHub={handleBackToHub} />
+        </div>
+      )}
+
+      {visitedPlatforms.has("tiktok") && (
+        <div className={selectedPlatform === "tiktok" ? "block" : "hidden"}>
+          <TikTokResearchStudio onBackToHub={handleBackToHub} />
+        </div>
+      )}
+
+      {visitedPlatforms.has("facebook") && (
+        <div className={selectedPlatform === "facebook" ? "block" : "hidden"}>
+          <FacebookResearchStudio onBackToHub={handleBackToHub} />
+        </div>
+      )}
+
+      {/* Platform Selection Hub (Hanya tampil saat selectedPlatform === null) */}
+      {selectedPlatform === null && (
         <>
           {/* Header */}
           <div className="flex flex-col items-center justify-center text-center gap-2 mb-8 md:mb-10">

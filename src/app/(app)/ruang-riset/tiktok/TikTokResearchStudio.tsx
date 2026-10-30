@@ -22,6 +22,10 @@ import {
   DEFAULT_TIKTOK_ADVANCED_FILTER,
 } from "./TikTokCardFilterModal";
 import { downloadTikTokMediaBatch } from "./exportUtils";
+import {
+  saveRisetSessionCache,
+  loadRisetSessionCache,
+} from "../risetCacheUtils";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import toast from "react-hot-toast";
@@ -71,15 +75,33 @@ export function TikTokResearchStudio({
   onBackToHub,
   defaultUsername = "fadiljaidi",
 }: Props) {
-  const [usernameInput, setUsernameInput] = useState(defaultUsername);
+  const [usernameInput, setUsernameInput] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const cached = loadRisetSessionCache<TikTokUserProfile, TikTokPostItem>("tiktok");
+      if (cached?.username) return cached.username;
+    }
+    return defaultUsername;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStepText, setLoadingStepText] = useState("");
   const [loadingPercent, setLoadingPercent] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Profile and videos state
-  const [profile, setProfile] = useState<TikTokUserProfile | null>(null);
-  const [videos, setVideos] = useState<TikTokPostItem[]>([]);
+  // Profile and videos state with SWR / Session Cache support
+  const [profile, setProfile] = useState<TikTokUserProfile | null>(() => {
+    if (typeof window !== "undefined") {
+      const cached = loadRisetSessionCache<TikTokUserProfile, TikTokPostItem>("tiktok");
+      return cached?.profile || null;
+    }
+    return null;
+  });
+  const [videos, setVideos] = useState<TikTokPostItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const cached = loadRisetSessionCache<TikTokUserProfile, TikTokPostItem>("tiktok");
+      return cached?.items || [];
+    }
+    return [];
+  });
   const [activeModalVideo, setActiveModalVideo] =
     useState<TikTokPostItem | null>(null);
 
@@ -201,6 +223,7 @@ export function TikTokResearchStudio({
       setTimeout(() => {
         setProfile(data.profile);
         setVideos(data.videos || []);
+        saveRisetSessionCache("tiktok", data.profile?.username || handleToQuery, data.profile, data.videos || []);
         setUsernameInput(data.profile?.username || handleToQuery);
         setIsLoading(false);
         toast.success(

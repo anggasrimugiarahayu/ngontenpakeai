@@ -22,6 +22,10 @@ import {
   DEFAULT_FACEBOOK_ADVANCED_FILTER,
 } from "./FacebookCardFilterModal";
 import { downloadFacebookMediaBatch } from "./exportUtils";
+import {
+  saveRisetSessionCache,
+  loadRisetSessionCache,
+} from "../risetCacheUtils";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
 import toast from "react-hot-toast";
@@ -71,15 +75,33 @@ export function FacebookResearchStudio({
   onBackToHub,
   defaultUsername = "RaffiAhmadLagi",
 }: Props) {
-  const [usernameInput, setUsernameInput] = useState(defaultUsername);
+  const [usernameInput, setUsernameInput] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      const cached = loadRisetSessionCache<FacebookUserProfile, FacebookPostItem>("facebook");
+      if (cached?.username) return cached.username;
+    }
+    return defaultUsername;
+  });
   const [isLoading, setIsLoading] = useState(false);
   const [loadingStepText, setLoadingStepText] = useState("");
   const [loadingPercent, setLoadingPercent] = useState(0);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Profile and posts state
-  const [profile, setProfile] = useState<FacebookUserProfile | null>(null);
-  const [posts, setPosts] = useState<FacebookPostItem[]>([]);
+  // Profile and posts state with SWR / Session Cache support
+  const [profile, setProfile] = useState<FacebookUserProfile | null>(() => {
+    if (typeof window !== "undefined") {
+      const cached = loadRisetSessionCache<FacebookUserProfile, FacebookPostItem>("facebook");
+      return cached?.profile || null;
+    }
+    return null;
+  });
+  const [posts, setPosts] = useState<FacebookPostItem[]>(() => {
+    if (typeof window !== "undefined") {
+      const cached = loadRisetSessionCache<FacebookUserProfile, FacebookPostItem>("facebook");
+      return cached?.items || [];
+    }
+    return [];
+  });
   const [activeModalPost, setActiveModalPost] =
     useState<FacebookPostItem | null>(null);
 
@@ -221,6 +243,7 @@ export function FacebookResearchStudio({
 
         setProfile(data.profile);
         setPosts(fetchedPosts);
+        saveRisetSessionCache("facebook", data.profile?.username || handleToQuery, data.profile, fetchedPosts);
         setUsernameInput(data.profile?.username || handleToQuery);
         setIsLoading(false);
         toast.success(
