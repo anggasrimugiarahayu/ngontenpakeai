@@ -9,12 +9,14 @@ export default function ReviewSection({
   productId, 
   reviews, 
   canReview, 
-  userReview 
+  userReview,
+  noMargin = false
 }: { 
-  productId: string, 
-  reviews: any[], 
-  canReview: boolean,
-  userReview: any 
+  productId: string;
+  reviews: any[];
+  canReview: boolean;
+  userReview: any;
+  noMargin?: boolean;
 }) {
   const [rating, setRating] = useState(userReview?.rating || 0);
   const [hoverRating, setHoverRating] = useState(0);
@@ -39,13 +41,13 @@ export default function ReviewSection({
   };
 
   return (
-    <div className="mt-12 pt-10 border-t border-gray-200 dark:border-[#2C3246]">
+    <div className={noMargin ? "pt-2" : "mt-12 pt-10 border-t border-gray-200 dark:border-[#2C3246]"}>
       <div className="flex items-center justify-between mb-8">
         <h3 className="text-xl font-bold text-gray-900 dark:text-white">Ulasan Pembaca</h3>
         {canReview && !showForm && (
           <button 
             onClick={() => setShowForm(true)}
-            className="text-sm font-bold text-rn-accent hover:text-orange-600"
+            className="text-sm font-bold text-rn-accent hover:text-orange-600 cursor-pointer"
           >
             {userReview ? "Edit Ulasan Saya" : "Tulis Ulasan"}
           </button>
@@ -66,7 +68,7 @@ export default function ReviewSection({
                 onClick={() => setRating(star)}
                 onMouseEnter={() => setHoverRating(star)}
                 onMouseLeave={() => setHoverRating(0)}
-                className="focus:outline-none"
+                className="focus:outline-none cursor-pointer"
               >
                 <Star 
                   className={`w-8 h-8 transition-colors ${
@@ -85,7 +87,7 @@ export default function ReviewSection({
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            placeholder="Tulis ulasan, kritik, atau saran tentang e-book ini..."
+            placeholder="Tulis ulasan, kritik, atau saran tentang materi ini..."
             className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl p-4 text-sm text-gray-900 dark:text-white mb-4 focus:ring-2 focus:ring-rn-accent focus:border-transparent outline-none min-h-[100px]"
           />
 
@@ -94,7 +96,7 @@ export default function ReviewSection({
               <button 
                 type="button"
                 onClick={() => setShowForm(false)}
-                className="px-4 py-2 text-sm font-bold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+                className="px-4 py-2 text-sm font-bold text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white cursor-pointer"
               >
                 Batal
               </button>
@@ -123,7 +125,7 @@ export default function ReviewSection({
       <div className="space-y-6">
         {reviews.length === 0 ? (
           <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-8">
-            Belum ada ulasan untuk e-book ini. Jadilah yang pertama!
+            Belum ada ulasan untuk materi ini. Jadilah yang pertama!
           </p>
         ) : (
           reviews.map((rev) => (

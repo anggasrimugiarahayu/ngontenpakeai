@@ -98,7 +98,7 @@ export function ProductTypeSelector({ value, onChange }: ProductTypeSelectorProp
               : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
           }`}
         >
-          <Link2 size={15} className={value === "LINK" ? "text-purple-500 dark:text-white" : ""} />
+          <Link2 size={15} className={value === "LINK" ? "text-rn-accent dark:text-white" : ""} />
           <span>Akses Link / Notion</span>
         </button>
       </div>
@@ -480,10 +480,10 @@ export function ResourceDataEditor({ data, onChange }: ResourceDataEditorProps) 
 
   return (
     <div className="space-y-3.5 pt-2 border-t border-gray-100 dark:border-[#2C3246]">
-      <div className="bg-purple-50/60 dark:bg-purple-950/20 p-3 rounded-xl border border-purple-100 dark:border-purple-900/30 flex items-start gap-2.5">
-        <Sparkles size={16} className="text-purple-600 dark:text-purple-400 shrink-0 mt-0.5" />
+      <div className="bg-blue-50/60 dark:bg-blue-950/20 p-3 rounded-xl border border-blue-100 dark:border-blue-900/30 flex items-start gap-2.5">
+        <Link2 size={16} className="text-blue-600 dark:text-blue-400 shrink-0 mt-0.5" />
         <div className="text-[11px] text-gray-600 dark:text-gray-300 leading-relaxed">
-          <p className="font-bold text-purple-900 dark:text-purple-200">
+          <p className="font-bold text-blue-900 dark:text-blue-200">
             Akses Template / Resource Vault
           </p>
           <p>
@@ -496,9 +496,9 @@ export function ResourceDataEditor({ data, onChange }: ResourceDataEditorProps) 
       <div className="space-y-1.5">
         <label className="text-xs font-bold text-gray-700 dark:text-gray-300 flex items-center justify-between">
           <span className="flex items-center gap-1.5">
-            <Link2 size={13} className="text-purple-500" /> Link URL Template / Resource (Wajib)
+            <Link2 size={13} className="text-blue-500" /> Link URL Template / Resource (Wajib)
           </span>
-          <span className="text-[10px] text-purple-600 font-semibold">Tujuan Akses</span>
+          <span className="text-[10px] text-blue-600 dark:text-blue-400 font-semibold">Tujuan Akses</span>
         </label>
         <div className="relative">
           <input
@@ -507,7 +507,7 @@ export function ResourceDataEditor({ data, onChange }: ResourceDataEditorProps) 
             onChange={(e) => updateField("targetUrl", e.target.value)}
             placeholder="https://notion.so/... atau https://docs.google.com/..."
             required
-            className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+            className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
           />
         </div>
       </div>
@@ -522,7 +522,7 @@ export function ResourceDataEditor({ data, onChange }: ResourceDataEditorProps) 
           value={data.buttonText || ""}
           onChange={(e) => updateField("buttonText", e.target.value)}
           placeholder="Contoh: Buka Template Notion ↗"
-          className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all"
+          className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
         />
       </div>
 
@@ -536,7 +536,7 @@ export function ResourceDataEditor({ data, onChange }: ResourceDataEditorProps) 
           value={data.instructions || ""}
           onChange={(e) => updateField("instructions", e.target.value)}
           placeholder="Tuliskan instruksi langkah demi langkah untuk user..."
-          className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-all custom-scrollbar"
+          className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all custom-scrollbar"
         />
       </div>
 
@@ -551,7 +551,7 @@ export function ResourceDataEditor({ data, onChange }: ResourceDataEditorProps) 
             value={data.accessPassword || ""}
             onChange={(e) => updateField("accessPassword", e.target.value)}
             placeholder="Jika file diproteksi password"
-            className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 transition-all"
+            className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-rn-accent transition-all"
           />
         </div>
 
@@ -564,7 +564,7 @@ export function ResourceDataEditor({ data, onChange }: ResourceDataEditorProps) 
             value={data.supportUrl || ""}
             onChange={(e) => updateField("supportUrl", e.target.value)}
             placeholder="https://t.me/grup_support..."
-            className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-purple-500 transition-all"
+            className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-rn-accent transition-all"
           />
         </div>
       </div>
