@@ -316,3 +316,7 @@ export async function claimFreeEbook(productId: string) {
   revalidatePath(`/ruang-belajar`);
   revalidatePath(`/ruang-belajar/[slug]`);
 }
+
+// Aliases for multi-format digital products (E-Book, Video Course, Notion / Link)
+export const getProductDetailAction = getEbookDetailAction;
+export const claimFreeProduct = claimFreeEbook;

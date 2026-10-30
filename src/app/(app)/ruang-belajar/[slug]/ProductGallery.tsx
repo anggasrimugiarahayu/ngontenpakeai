@@ -4,12 +4,12 @@ import { useState } from "react";
 import Image from "next/image";
 import { BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 
-interface EbookGalleryProps {
+interface ProductGalleryProps {
   title: string;
   images: (string | null)[];
 }
 
-export default function EbookGallery({ title, images }: EbookGalleryProps) {
+export default function ProductGallery({ title, images }: ProductGalleryProps) {
   const validImages = images.filter((img): img is string => typeof img === 'string' && img.trim() !== '');
   const [activeIndex, setActiveIndex] = useState(0);
 

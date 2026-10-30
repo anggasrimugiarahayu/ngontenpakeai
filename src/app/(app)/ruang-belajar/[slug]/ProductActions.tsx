@@ -18,7 +18,7 @@ function getDirectDownloadUrl(url: string | null | undefined) {
   return url;
 }
 
-export default function EbookActions({ 
+export default function ProductActions({ 
   productId, 
   initialIsFavorite,
   initialFavoriteCount = 0,

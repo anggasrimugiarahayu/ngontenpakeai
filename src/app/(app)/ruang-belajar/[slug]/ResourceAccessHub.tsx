@@ -15,7 +15,7 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
-import EbookActions from "./EbookActions";
+import ProductActions from "./ProductActions";
 import ReviewSection from "./ReviewSection";
 import toast from "react-hot-toast";
 
@@ -114,7 +114,7 @@ export default function ResourceAccessHub({
           </div>
         </div>
 
-        <EbookActions
+        <ProductActions
           productId={ebook.id}
           initialIsFavorite={isFavorite}
           initialFavoriteCount={favoriteCount}

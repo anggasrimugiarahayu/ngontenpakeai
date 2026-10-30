@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useMemo } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import useSWR, { preload } from "swr";
-import { getEbookDetailAction, getRuangBelajarDataAction, claimFreeEbook } from "@/app/actions/ruangBelajar";
+import { getProductDetailAction, getRuangBelajarDataAction, claimFreeProduct } from "@/app/actions/ruangBelajar";
 import { getCheckoutDetailsAction } from "@/app/actions/checkout";
 import { trackProductViewAction, trackProductClickAction } from "@/app/actions/analytics";
 import { useRouter } from "next/navigation";
@@ -12,8 +12,8 @@ import Link from "next/link";
 import { Lock, Crown, Star, BookOpen, Tag, Video, Play, X, ExternalLink, Sparkles } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import { createCheckoutToken } from "@/app/actions/payment";
-import EbookActions from "./EbookActions";
-import EbookGallery from "./EbookGallery";
+import ProductActions from "./ProductActions";
+import ProductGallery from "./ProductGallery";
 import ReviewSection from "./ReviewSection";
 import PdfViewer from "./PdfViewer";
 import CourseVideoPlayer from "./CourseVideoPlayer";
@@ -21,10 +21,10 @@ import ResourceAccessHub from "./ResourceAccessHub";
 import { getYoutubeEmbedUrl } from "@/lib/youtube-utils";
 
 
-export default function ReadEbookClient({ slug, initialData }: { slug: string; initialData?: any }) {
+export default function ProductDetailClient({ slug, initialData }: { slug: string; initialData?: any }) {
 
   const router = useRouter();
-  const { data, isLoading, mutate } = useSWR(["ebookDetail", slug], () => getEbookDetailAction(slug), {
+  const { data, isLoading, mutate } = useSWR(["ebookDetail", slug], () => getProductDetailAction(slug), {
     fallbackData: initialData,
     revalidateOnFocus: false,
     dedupingInterval: 60000
@@ -137,7 +137,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
               </div>
             </div>
             
-            <EbookActions 
+            <ProductActions 
               productId={ebook.id} 
               initialIsFavorite={isFavorite} 
               initialFavoriteCount={favoriteCount}
@@ -167,7 +167,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
          <div className="flex flex-col md:flex-row gap-8 lg:gap-16">
             
             {/* Left Column - Cover & Gallery */}
-            <EbookGallery 
+            <ProductGallery 
                title={ebook.title} 
                images={[ebook.coverUrl, (ebook as any).coverUrl2, (ebook as any).coverUrl3]} 
             />
@@ -194,7 +194,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                       </div>
                     </div>
                     
-                    <EbookActions productId={ebook.id} initialIsFavorite={isFavorite} initialFavoriteCount={favoriteCount} pdfUrl={!isLocked ? ebook.fileUrl : null} isDownloadable={ebook.isDownloadable} />
+                    <ProductActions productId={ebook.id} initialIsFavorite={isFavorite} initialFavoriteCount={favoriteCount} pdfUrl={!isLocked ? ebook.fileUrl : null} isDownloadable={ebook.isDownloadable} />
                  </div>
                </div>
 
@@ -229,7 +229,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                        {isFree ? (
                          <form action={async () => {
                            setIsSubmitting(true);
-                           await claimFreeEbook(ebook.id);
+                           await claimFreeProduct(ebook.id);
                            mutate();
                            setIsSubmitting(false);
                          }} className="w-full">
@@ -244,7 +244,7 @@ export default function ReadEbookClient({ slug, initialData }: { slug: string; i
                            {isProEbook && isPro ? (
                              <form action={async () => {
                                setIsSubmitting(true);
-                               await claimFreeEbook(ebook.id);
+                               await claimFreeProduct(ebook.id);
                                mutate();
                                setIsSubmitting(false);
                              }} className="w-full flex flex-col gap-3">

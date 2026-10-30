@@ -13,7 +13,7 @@ import {
   Check,
 } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
-import EbookActions from "./EbookActions";
+import ProductActions from "./ProductActions";
 import ReviewSection from "./ReviewSection";
 import { getYoutubeEmbedUrl, getYoutubeVideoId } from "@/lib/youtube-utils";
 import toast from "react-hot-toast";
@@ -247,7 +247,7 @@ export default function CourseVideoPlayer({
 
         {/* Action Buttons */}
         <div className="flex items-center gap-3 sm:gap-5 shrink-0">
-          <EbookActions
+          <ProductActions
             productId={ebook.id}
             initialIsFavorite={isFavorite}
             initialFavoriteCount={favoriteCount}
