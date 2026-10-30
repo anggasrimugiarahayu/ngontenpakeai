@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   BookOpen,
   Video,
@@ -9,13 +9,18 @@ import {
   Trash2,
   ArrowUp,
   ArrowDown,
-  Eye,
-  ExternalLink,
   Clock,
   Sparkles,
-  HelpCircle,
+  Loader2,
+  Check,
 } from "lucide-react";
-import { getYoutubeThumbnail, getYoutubeVideoId } from "@/lib/youtube-utils";
+import {
+  getYoutubeThumbnail,
+  getYoutubeVideoId,
+  calculatePlaylistTotalDuration,
+} from "@/lib/youtube-utils";
+import { getYoutubeMetadataAction } from "@/app/actions/adminSettings";
+import toast from "react-hot-toast";
 
 export interface VideoItem {
   id: string;
@@ -117,10 +122,67 @@ export function VideoListEditor({
   totalDuration,
   onTotalDurationChange,
 }: VideoListEditorProps) {
+  const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
+  const [autoDetectedIndices, setAutoDetectedIndices] = useState<{ [key: number]: boolean }>({});
+
+  // Fungsi kalkulasi otomatis total durasi seluruh video di playlist
+  const handleAutoCalculateTotal = (vidsToCount = videos) => {
+    const calculated = calculatePlaylistTotalDuration(vidsToCount);
+    if (calculated) {
+      onTotalDurationChange(calculated);
+    }
+  };
+
+  // Fungsi deteksi otomatis durasi dan judul dari YouTube Data API
+  const handleFetchMetadata = async (idx: number, url: string) => {
+    const videoId = getYoutubeVideoId(url);
+    if (!videoId) return;
+
+    setLoadingIndex(idx);
+    try {
+      const res = await getYoutubeMetadataAction(url);
+      if (res.success && res.duration) {
+        const updated = [...videos];
+        const currentVid = { ...updated[idx] };
+
+        // 1. Otomatis isi durasi video
+        currentVid.duration = res.duration;
+
+        // 2. Otomatis isi judul jika masih kosong atau default "Materi X:"
+        const isGenericTitle =
+          !currentVid.title ||
+          currentVid.title.trim() === `Materi ${idx + 1}:` ||
+          currentVid.title.trim() === `Materi ${idx + 1}` ||
+          currentVid.title.trim() === "";
+
+        if (isGenericTitle && res.title) {
+          currentVid.title = `Materi ${idx + 1}: ${res.title}`;
+        }
+
+        updated[idx] = currentVid;
+        onChange(updated);
+        setAutoDetectedIndices((prev) => ({ ...prev, [idx]: true }));
+
+        // 3. Otomatis hitung dan update Total Estimasi Durasi Kursus
+        handleAutoCalculateTotal(updated);
+
+        toast.success(`Durasi materi #${idx + 1} otomatis terisi: ${res.duration}`, {
+          icon: "⏱️",
+        });
+      } else if (res.error) {
+        toast.error(res.error);
+      }
+    } catch (e: any) {
+      toast.error("Gagal mendeteksi durasi YouTube");
+    } finally {
+      setLoadingIndex(null);
+    }
+  };
+
   const addVideo = () => {
     const newId = `vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
     const newIndex = videos.length + 1;
-    onChange([
+    const updated = [
       ...videos,
       {
         id: newId,
@@ -130,13 +192,15 @@ export function VideoListEditor({
         isFreePreview: false,
         notes: "",
       },
-    ]);
+    ];
+    onChange(updated);
   };
 
   const removeVideo = (index: number) => {
     const updated = [...videos];
     updated.splice(index, 1);
     onChange(updated);
+    handleAutoCalculateTotal(updated);
   };
 
   const moveVideo = (index: number, direction: "up" | "down") => {
@@ -156,16 +220,34 @@ export function VideoListEditor({
     const updated = [...videos];
     updated[index] = { ...updated[index], [field]: value };
     onChange(updated);
+
+    // Jika durasi diedit manual, otomatis perbarui total durasi
+    if (field === "duration") {
+      handleAutoCalculateTotal(updated);
+    }
   };
 
   return (
     <div className="space-y-4 pt-2 border-t border-gray-100 dark:border-[#2C3246]">
-      {/* Total Durasi Kelas */}
+      {/* Total Durasi Kelas (Auto-Calculated) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-red-50/50 dark:bg-red-950/10 p-3 rounded-xl border border-red-100 dark:border-red-900/30">
         <div>
-          <label className="text-xs font-bold text-gray-700 dark:text-gray-300 block mb-1">
-            Total Estimasi Durasi
-          </label>
+          <div className="flex items-center justify-between mb-1">
+            <label className="text-xs font-bold text-gray-700 dark:text-gray-300">
+              Total Estimasi Durasi
+            </label>
+            <button
+              type="button"
+              onClick={() => {
+                handleAutoCalculateTotal();
+                toast.success("Total durasi playlist dihitung otomatis! ⚡");
+              }}
+              className="text-[10px] font-bold text-rn-accent hover:text-orange-600 dark:hover:text-orange-400 flex items-center gap-1 cursor-pointer transition-colors"
+              title="Hitung ulang total durasi dari semua video di playlist"
+            >
+              <Sparkles size={11} /> Hitung Otomatis
+            </button>
+          </div>
           <div className="relative">
             <Clock size={14} className="absolute left-3 top-3 text-gray-400" />
             <input
@@ -178,9 +260,9 @@ export function VideoListEditor({
             />
           </div>
         </div>
-        <div className="flex items-center text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+        <div className="flex flex-col justify-center text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
           <span>
-            💡 <strong>Info:</strong> Video disimpan unlisted di YouTube. User yang belum membeli hanya bisa menonton video yang ditandai <em>Trailer / Preview</em>.
+            ⚡ <strong>Otomatis:</strong> Durasi video terisi otomatis saat Anda memasukkan link YouTube, dan total durasi kursus dihitung otomatis dari seluruh materi.
           </span>
         </div>
       </div>
@@ -218,6 +300,8 @@ export function VideoListEditor({
           {videos.map((vid, idx) => {
             const ytThumb = getYoutubeThumbnail(vid.youtubeUrl);
             const isValidYt = !!getYoutubeVideoId(vid.youtubeUrl);
+            const isFetching = loadingIndex === idx;
+            const isAutoDetected = autoDetectedIndices[idx];
 
             return (
               <div
@@ -230,11 +314,19 @@ export function VideoListEditor({
                     <span className="bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 text-[10px] font-extrabold px-2 py-0.5 rounded-full">
                       VIDEO #{idx + 1}
                     </span>
-                    {isValidYt && (
+                    {isFetching ? (
+                      <span className="text-[10px] text-rn-accent font-medium flex items-center gap-1 animate-pulse">
+                        <Loader2 size={11} className="animate-spin" /> Membaca durasi YouTube...
+                      </span>
+                    ) : isAutoDetected ? (
+                      <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
+                        <Check size={11} className="stroke-[3]" /> Durasi terisi otomatis ({vid.duration})
+                      </span>
+                    ) : isValidYt ? (
                       <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-medium flex items-center gap-1">
                         ✓ Link YouTube Valid
                       </span>
-                    )}
+                    ) : null}
                   </div>
 
                   <div className="flex items-center gap-1">
@@ -279,14 +371,30 @@ export function VideoListEditor({
                       className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-lg px-2.5 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-rn-accent"
                     />
                   </div>
-                  <div className="sm:col-span-1">
+                  <div className="sm:col-span-1 relative">
                     <input
                       type="text"
                       value={vid.duration || ""}
                       onChange={(e) => updateItem(idx, "duration", e.target.value)}
                       placeholder="Durasi, cth: 12:45"
-                      className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-lg px-2.5 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-rn-accent"
+                      className="w-full bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-lg pl-2.5 pr-8 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-rn-accent"
                     />
+                    <button
+                      type="button"
+                      disabled={isFetching || !isValidYt}
+                      onClick={() => handleFetchMetadata(idx, vid.youtubeUrl)}
+                      title="Deteksi durasi otomatis dari link YouTube"
+                      className="absolute right-1.5 top-1.5 p-1 text-gray-400 hover:text-rn-accent disabled:opacity-30 cursor-pointer transition-colors"
+                    >
+                      {isFetching ? (
+                        <Loader2 size={13} className="animate-spin text-rn-accent" />
+                      ) : (
+                        <Sparkles
+                          size={13}
+                          className={isAutoDetected ? "text-emerald-500 fill-emerald-500/20" : ""}
+                        />
+                      )}
+                    </button>
                   </div>
                 </div>
 
@@ -302,7 +410,21 @@ export function VideoListEditor({
                   <input
                     type="url"
                     value={vid.youtubeUrl}
-                    onChange={(e) => updateItem(idx, "youtubeUrl", e.target.value)}
+                    onChange={(e) => {
+                      const newUrl = e.target.value;
+                      updateItem(idx, "youtubeUrl", newUrl);
+                      const newId = getYoutubeVideoId(newUrl);
+                      const oldId = getYoutubeVideoId(vid.youtubeUrl);
+                      if (newId && newId !== oldId) {
+                        handleFetchMetadata(idx, newUrl);
+                      }
+                    }}
+                    onBlur={(e) => {
+                      const val = e.target.value;
+                      if (getYoutubeVideoId(val) && !vid.duration) {
+                        handleFetchMetadata(idx, val);
+                      }
+                    }}
                     placeholder="Link YouTube (cth: https://www.youtube.com/watch?v=... atau https://youtu.be/...)"
                     required
                     className="flex-1 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-lg px-2.5 py-1.5 text-xs text-gray-900 dark:text-white focus:outline-none focus:border-rn-accent"

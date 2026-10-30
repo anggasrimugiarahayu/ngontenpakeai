@@ -8,6 +8,7 @@ import { attachLightweightCovers } from "@/lib/ebook-covers";
 import { deletePhysicalUploadFile } from "@/lib/server-uploads";
 import { HomepageCardConfig } from "@/lib/homepage-cards";
 import { getCachedHomepageCards } from "@/lib/cache";
+import { getYoutubeVideoId, parseYouTubeIsoDuration } from "@/lib/youtube-utils";
 
 async function assertAdmin() {
   const session = await auth();
@@ -504,4 +505,52 @@ export async function deleteVoucher(id: string) {
   await assertAdmin();
   await prisma.voucher.delete({ where: { id } });
   revalidateEbookCatalog();
+}
+
+/**
+ * Fetch video duration and metadata from YouTube API for automatic admin duration detection
+ */
+export async function getYoutubeMetadataAction(url: string) {
+  await assertAdmin();
+  const videoId = getYoutubeVideoId(url);
+  if (!videoId) {
+    return { success: false, error: "Link YouTube tidak valid" };
+  }
+
+  const apiKey = process.env.YOUTUBE_API_KEY?.trim();
+  if (!apiKey) {
+    return { success: false, error: "YOUTUBE_API_KEY belum dikonfigurasi di server" };
+  }
+
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?id=${videoId}&part=contentDetails,snippet&key=${apiKey}`,
+      { next: { revalidate: 86400 } }
+    );
+
+    if (!res.ok) {
+      return { success: false, error: `Gagal membaca YouTube API (${res.status})` };
+    }
+
+    const data = await res.json();
+    if (!data.items || data.items.length === 0) {
+      return { success: false, error: "Video tidak ditemukan atau bersifat Private" };
+    }
+
+    const item = data.items[0];
+    const isoDuration = item.contentDetails?.duration || "";
+    const parsed = parseYouTubeIsoDuration(isoDuration);
+    const title = item.snippet?.title || "";
+
+    return {
+      success: true,
+      videoId,
+      title,
+      duration: parsed.formattedDuration,
+      totalSeconds: parsed.totalSeconds,
+    };
+  } catch (err: any) {
+    console.error("Error fetching YouTube metadata:", err);
+    return { success: false, error: err.message || "Gagal mengambil data video YouTube" };
+  }
 }
