@@ -68,6 +68,7 @@ function revalidateEbookCatalog(slug?: string) {
 
 // 1. Models AI
 export async function getAiModels() {
+  await assertAdmin();
   return await prisma.aiModel.findMany({ orderBy: { createdAt: "desc" } });
 }
 export async function createAiModel(data: any) {
@@ -111,6 +112,7 @@ export async function deleteModel(id: string) {
 
 // 2. Settings (Default API Key)
 export async function getAppSettings() {
+  await assertAdmin();
   return await prisma.appSetting.findMany();
 }
 export async function saveAppSetting(key: string, value: string) {
@@ -193,6 +195,7 @@ export async function deleteAppSetting(key: string) {
 
 // 3. Features (Ruang Ngonten)
 export async function getFeatures() {
+  await assertAdmin();
   return await prisma.feature.findMany({ orderBy: { name: "asc" } });
 }
 export async function toggleFeatureStatus(id: string, isActive: boolean) {
@@ -222,6 +225,7 @@ export async function updateFeatureQuotaConfig(config: {
 
 // 4. Digital Categories & Products
 export async function getCategories() {
+  await assertAdmin();
   return await prisma.digitalCategory.findMany({ orderBy: { createdAt: "desc" } });
 }
 export async function createCategory(data: any) {
@@ -237,6 +241,7 @@ export async function createCategory(data: any) {
 }
 
 export async function getProducts() {
+  await assertAdmin();
   const [rawProducts, sortSetting] = await Promise.all([
     prisma.digitalProduct.findMany({
       select: {

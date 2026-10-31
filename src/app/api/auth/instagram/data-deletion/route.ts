@@ -10,8 +10,18 @@ export async function POST(req: NextRequest) {
   });
 }
 
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 export async function GET(req: NextRequest) {
-  const code = req.nextUrl.searchParams.get("code") || `REQ-${Date.now().toString(36).toUpperCase()}`;
+  const rawCode = req.nextUrl.searchParams.get("code") || `REQ-${Date.now().toString(36).toUpperCase()}`;
+  const code = escapeHtml(rawCode.slice(0, 100));
   const accept = req.headers.get("accept") || "";
 
   // If requested by browser, render a clean, professional status page for Meta Reviewers & users

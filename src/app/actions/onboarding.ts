@@ -2,7 +2,7 @@
 
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag, revalidateTag } from "next/cache";
 
 export async function saveOnboardingData(data: {
   niche: string;
@@ -23,6 +23,13 @@ export async function saveOnboardingData(data: {
         preferences: data,
       },
     });
+
+    try {
+      updateTag("user-session");
+    } catch {}
+    try {
+      (revalidateTag as any)("user-session");
+    } catch {}
 
     revalidatePath("/", "layout");
     return { success: true };

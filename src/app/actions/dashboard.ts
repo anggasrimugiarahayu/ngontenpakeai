@@ -34,7 +34,7 @@ async function populateOrderAddons(orders: any[]) {
   }));
 }
 
-export async function calculateDashboardStats() {
+async function calculateDashboardStats() {
   const now = new Date();
   const thirtyDaysAgo = new Date();
   thirtyDaysAgo.setDate(now.getDate() - 30);
@@ -279,7 +279,7 @@ export async function calculateDashboardStats() {
   };
 }
 
-export const getCachedDashboardStats = unstable_cache(
+const getCachedDashboardStats = unstable_cache(
   calculateDashboardStats,
   ['admin-dashboard-stats'],
   { revalidate: 3600, tags: ['admin-dashboard-stats'] }
@@ -325,8 +325,6 @@ export async function revalidateDashboardAction() {
 
   return { success: true };
 }
-
-export const revalidateAllAppDataAction = revalidateDashboardAction;
 
 export async function getDashboardDataAction(forceFresh = false) {
   const session = await auth();
@@ -410,7 +408,7 @@ export async function getAudienceInsightsAction() {
   }
 }
 
-export async function fetchAllDashboardUsersData() {
+async function fetchAllDashboardUsersData() {
   const [rawUsers, pricingSetting] = await Promise.all([
     prisma.user
       .findMany({
@@ -501,7 +499,7 @@ export async function fetchAllDashboardUsersData() {
   };
 }
 
-export const getCachedAllDashboardUsers = unstable_cache(
+const getCachedAllDashboardUsers = unstable_cache(
   fetchAllDashboardUsersData,
   ["admin-all-users-list"],
   { revalidate: 3600, tags: ["admin-users-list", "admin-dashboard-stats"] }
@@ -521,8 +519,6 @@ export async function getAllDashboardUsersAction(forceFresh = false) {
   }
   return getCachedAllDashboardUsers();
 }
-
-export const getDashboardUsersAction = getAllDashboardUsersAction;
 
 export async function adminUpdateUserAccessAction(params: {
   userId: string;

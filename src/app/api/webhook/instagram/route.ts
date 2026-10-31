@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 import { resolveAccountForEntry } from "./handlers/webhookHelpers";
 import { processPendingFollowUps } from "./handlers/followUpHandler";
 import { handleCommentEvent } from "./handlers/commentHandler";
@@ -39,7 +40,35 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
-    const body = await req.json();
+    const rawBody = await req.text();
+    const signature = req.headers.get("x-hub-signature-256");
+    const secret = process.env.INSTAGRAM_CLIENT_SECRET || process.env.META_APP_SECRET;
+
+    // Jika secret telah dikonfigurasi di environment, validasi HMAC SHA-256 Meta
+    if (secret) {
+      if (!signature) {
+        console.warn("⚠️ [Meta Webhook] Missing x-hub-signature-256 header");
+        return new Response("Forbidden: Missing signature", { status: 403 });
+      }
+
+      const hmac = crypto.createHmac("sha256", secret);
+      const expectedDigest = `sha256=${hmac.update(rawBody).digest("hex")}`;
+
+      const sigBuf = Buffer.from(signature);
+      const digestBuf = Buffer.from(expectedDigest);
+
+      if (sigBuf.length !== digestBuf.length || !crypto.timingSafeEqual(sigBuf, digestBuf)) {
+        console.warn("⚠️ [Meta Webhook] Invalid x-hub-signature-256");
+        return new Response("Forbidden: Invalid signature", { status: 403 });
+      }
+    }
+
+    let body: any;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return new NextResponse("INVALID_JSON", { status: 400 });
+    }
 
     // Verifikasi objek webhook berasal dari Instagram
     if (body.object !== "instagram") {

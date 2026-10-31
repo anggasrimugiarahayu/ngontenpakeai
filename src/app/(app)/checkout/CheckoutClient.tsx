@@ -272,10 +272,11 @@ export default function CheckoutClient({
         if (verifyRes.success && verifyRes.status === "SUCCESS") {
           setPaymentState("success");
         } else if (verifyRes.success && verifyRes.status === "PENDING") {
-          setPaymentState("success");
+          setPaymentState("pending");
+          if (verifyRes.expiryTime) setExpiryTime(verifyRes.expiryTime);
         } else {
           setPaymentState("error");
-          setErrorMessage("Pembayaran berhasil di Midtrans, tetapi gagal diverifikasi sistem. Silakan hubungi admin.");
+          setErrorMessage("Pembayaran berhasil di Midtrans, tetapi statusnya masih menunggu konfirmasi. Jika saldo sudah terpotong, silakan hubungi admin.");
         }
       },
       onPending: async function () {

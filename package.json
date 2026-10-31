@@ -1,5 +1,5 @@
 {
-  "name": "tmp_app",
+  "name": "ngonten-pakai-ai",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -30,6 +30,7 @@
     "react-markdown": "^10.1.0",
     "recharts": "^3.10.1",
     "remark-gfm": "^4.0.1",
+    "sharp": "^0.33.5",
     "sweetalert2": "^11.26.25",
     "swr": "^2.5.1",
     "xbogus": "^1.0.2"

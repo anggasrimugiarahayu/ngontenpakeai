@@ -1,19 +1,34 @@
 "use server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { revalidatePath, unstable_cache } from "next/cache";
-import { getAiModels, getAppSettings, getFeatures, getCategories, getProducts } from "@/app/actions/adminSettings";
+import { revalidatePath, unstable_cache, updateTag, revalidateTag } from "next/cache";
+import {
+  queryAiModels,
+  queryAppSettings,
+  queryFeatures,
+  queryCategories,
+  queryProducts
+} from "@/lib/server/adminDbQueries";
 import { getCachedFeatures, getCachedAppUser, getCachedUserOrders, getCachedUserUsages, getCachedQuotaConfig } from "@/lib/cache";
 import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
 
-export const getCachedAdminConfig = unstable_cache(
+function invalidateUserSessionTag() {
+  try {
+    updateTag("user-session");
+  } catch {}
+  try {
+    (revalidateTag as any)("user-session");
+  } catch {}
+}
+
+const getCachedAdminConfig = unstable_cache(
   async () => {
     const [models, settings, adminFeatures, categories, products] = await Promise.all([
-      getAiModels(),
-      getAppSettings(),
-      getFeatures(),
-      getCategories(),
-      getProducts()
+      queryAiModels(),
+      queryAppSettings(),
+      queryFeatures(),
+      queryCategories(),
+      queryProducts()
     ]);
     return { models, settings, features: adminFeatures, categories, products };
   },
@@ -72,7 +87,7 @@ export async function getPengaturanDataAction() {
   return JSON.parse(JSON.stringify({ userData, adminData, isPro, isAdmin: subStatus.isAdmin || isAdmin, dbUser, userOrders }));
 }
 
-export const getCachedPricingPackages = unstable_cache(
+const getCachedPricingPackages = unstable_cache(
   async () => {
     try {
       const setting = await prisma.appSetting.findUnique({
@@ -111,6 +126,7 @@ export async function updateProfile(formData: FormData) {
       },
     });
 
+    invalidateUserSessionTag();
     revalidatePath("/pengaturan");
     revalidatePath("/");
     
@@ -142,6 +158,7 @@ export async function updateApiKey(formData: FormData) {
       },
     });
 
+    invalidateUserSessionTag();
     revalidatePath("/pengaturan");
     
     return { success: true };
@@ -166,6 +183,7 @@ export async function deleteApiKey() {
       },
     });
 
+    invalidateUserSessionTag();
     revalidatePath("/pengaturan");
     
     return { success: true };

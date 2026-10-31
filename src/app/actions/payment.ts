@@ -35,18 +35,20 @@ export async function createCheckoutToken(data: {
   }
 
   let baseAmount = 0;
+  let productPrice = 0;
   let orderName = "";
   
-    if (data.type === "EBOOK") {
+  if (data.type === "EBOOK") {
     if (!data.productId) throw new Error("Product ID required for Ebook");
     const product = await prisma.digitalProduct.findUnique({ where: { id: data.productId } });
-    if (!product) throw new Error("Product not found");
+    if (!product || !product.isActive) throw new Error("Produk tidak ditemukan atau sedang tidak aktif");
     
     if (!product.price || product.price <= 0) {
       throw new Error("Produk ini gratis, silakan gunakan tombol klaim.");
     }
     
     baseAmount = product.price;
+    productPrice = product.price;
     orderName = `E-Book: ${product.title}`;
   } else {
     const setting = await prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
@@ -54,6 +56,9 @@ export async function createCheckoutToken(data: {
     const targetPkg = pricingConfig[data.type] || pricingConfig.packages?.[data.type];
     
     if (targetPkg) {
+      if (targetPkg.isActive === false) {
+        throw new Error("Paket langganan ini sedang dinonaktifkan");
+      }
       baseAmount = targetPkg.price;
       orderName = targetPkg.name;
     } else {
@@ -61,10 +66,9 @@ export async function createCheckoutToken(data: {
     }
   }
 
-  
   if (data.addonIds && data.addonIds.length > 0) {
     const addons = await prisma.digitalProduct.findMany({
-      where: { id: { in: data.addonIds } }
+      where: { id: { in: data.addonIds }, isActive: true }
     });
     
     addons.forEach(addon => {
@@ -75,18 +79,20 @@ export async function createCheckoutToken(data: {
   let verifiedDiscountAmount = 0;
   let verifiedVoucherCode: string | undefined = undefined;
 
-  if (data.voucherCode && data.voucherCode.trim()) {
+  // Voucher is strictly allowed ONLY for digital products (EBOOK), not subscription packages
+  if (data.type === "EBOOK" && data.productId && data.voucherCode && data.voucherCode.trim()) {
     const voucher = await prisma.voucher.findFirst({
       where: {
         code: data.voucherCode.trim().toUpperCase(),
+        digitalProductId: data.productId,
         isActive: true,
-        ...(data.productId ? { digitalProductId: data.productId } : {})
       }
     });
     if (voucher) {
       verifiedVoucherCode = voucher.code;
+      // Discount applies to the main product base price only (not addon upsells)
       if (voucher.discountType === "PERCENTAGE") {
-        verifiedDiscountAmount = Math.round((baseAmount * voucher.discountValue) / 100);
+        verifiedDiscountAmount = Math.floor((productPrice * voucher.discountValue) / 100);
       } else {
         verifiedDiscountAmount = voucher.discountValue;
       }
@@ -226,8 +232,18 @@ function normalizeMidtransExpiry(dateStr: string | null | undefined): string | n
 
 export async function verifyPayment(orderId: string) {
   try {
+    const session = await auth();
     const order = await prisma.order.findUnique({ where: { id: orderId } });
     if (!order) return { success: false };
+
+    // Security: Only order owner or admin can verify order status
+    if (
+      session?.user?.id &&
+      order.userId !== session.user.id &&
+      session?.user?.email?.toLowerCase() !== "anggasrimugiarahayu@gmail.com"
+    ) {
+      return { success: false, error: "Unauthorized" };
+    }
 
     // Fallback based on payment method: 15 mins for QRIS/E-Wallet, 24 hours for others
     const isShort = ['QRIS', 'GOPAY', 'SHOPEEPAY', 'OVO', 'DANA'].includes(order.paymentMethod || '');
@@ -267,7 +283,7 @@ export async function verifyPayment(orderId: string) {
       finalStatus = "PENDING";
     }
 
-    // Fallback: If still PENDING, check directly with Snap Token endpoint
+    // Check expiry time from Snap Token endpoint if available
     if (finalStatus === "PENDING" && order.midtransId) {
       try {
         const snapBaseUrl = isProduction ? "https://app.midtrans.com" : "https://app.sandbox.midtrans.com";
@@ -275,13 +291,7 @@ export async function verifyPayment(orderId: string) {
           headers: { "Accept": "application/json" },
           cache: "no-store"
         });
-        if (snapRes.status === 409) {
-          const snapText = await snapRes.text();
-          if (snapText.includes("succeed")) {
-            console.log("Verified SUCCESS via Snap token state for order:", orderId);
-            finalStatus = "SUCCESS";
-          }
-        } else if (snapRes.status === 200) {
+        if (snapRes.status === 200) {
           const snapJson = await snapRes.json();
           if (snapJson.expiry_time) {
             const norm = normalizeMidtransExpiry(snapJson.expiry_time);
@@ -295,11 +305,16 @@ export async function verifyPayment(orderId: string) {
 
     if (order.status !== "SUCCESS" && finalStatus === "SUCCESS") {
       await prisma.$transaction(async (tx) => {
-        // Update Order
-        await tx.order.update({
-          where: { id: orderId },
+        // Atomic compare-and-swap: guarantees fulfillment executes exactly once
+        const claimResult = await tx.order.updateMany({
+          where: { id: orderId, status: { not: "SUCCESS" } },
           data: { status: "SUCCESS" }
         });
+
+        if (claimResult.count === 0) {
+          // Already fulfilled concurrently by Midtrans webhook
+          return;
+        }
 
         // Grant the Item!
         if (order.orderType === "EBOOK") {

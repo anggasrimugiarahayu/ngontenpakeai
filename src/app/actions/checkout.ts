@@ -4,21 +4,36 @@ import { auth } from "@/auth";
 import { mergePricingConfig } from "@/lib/pricing-packages";
 import prisma from "@/lib/prisma";
 import { verifyPayment } from "@/app/actions/payment";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
 
 export async function revalidateAfterPurchaseAction() {
   try {
-    revalidateTag("user-ownership", "default");
-    revalidateTag("ebook-catalog", "default");
-    revalidateTag("user-orders", "default");
-    revalidateTag("user-session", "default");
-    revalidateTag("admin-dashboard-stats", "default");
+    const tags = [
+      "user-ownership",
+      "ebook-catalog",
+      "user-orders",
+      "user-session",
+      "admin-dashboard-stats",
+    ];
+    for (const tag of tags) {
+      try {
+        updateTag(tag);
+      } catch {}
+      try {
+        (revalidateTag as any)(tag);
+      } catch {}
+      try {
+        (revalidateTag as any)(tag, { expire: 0 });
+      } catch {}
+    }
     revalidatePath("/ruang-belajar");
     revalidatePath("/ruang-ngonten");
     revalidatePath("/ruang-riset");
     revalidatePath("/ruang-automation");
+    revalidatePath("/pengaturan");
     revalidatePath("/dashboard");
+    revalidatePath("/");
     return { success: true };
   } catch (e) {
     console.error("Revalidation error after purchase:", e);
@@ -41,7 +56,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     
     (type === "EBOOK" && productId) 
       ? prisma.digitalProduct.findUnique({
-          where: { id: productId },
+          where: { id: productId, isActive: true },
           select: { id: true, title: true, slug: true, price: true, description: true, updatedAt: true }
         }).catch(() => null)
       : Promise.resolve(null),
@@ -96,6 +111,9 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     const targetPkg = pricingConfig[type] || pricingConfig.packages?.[type];
 
     if (targetPkg) {
+      if (targetPkg.isActive === false) {
+        return { badRequest: true, redirect: "/?pricing=true" };
+      }
       baseAmount = targetPkg.price;
       itemName = targetPkg.name;
       itemDescription = targetPkg.desc || "Akses paket langganan ruangcreativemuslim.";

@@ -59,8 +59,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(redirectUrl);
   }
 
-  const clientId = process.env.INSTAGRAM_CLIENT_ID || process.env.META_APP_ID || "1136526275791179";
-  const clientSecret = process.env.INSTAGRAM_CLIENT_SECRET || process.env.META_APP_SECRET || "8f1fd37c9ffb8060320c89f03243fc4c";
+  const clientId = process.env.INSTAGRAM_CLIENT_ID || process.env.META_APP_ID;
+  const clientSecret = process.env.INSTAGRAM_CLIENT_SECRET || process.env.META_APP_SECRET;
 
   if (!clientId || !clientSecret) {
     console.error("Missing INSTAGRAM_CLIENT_ID or INSTAGRAM_CLIENT_SECRET in environment");

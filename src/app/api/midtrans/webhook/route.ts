@@ -40,14 +40,24 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Order not found" }, { status: 404 });
     }
 
+    if (statusResponse.gross_amount && Math.round(Number(statusResponse.gross_amount)) !== order.amount) {
+      console.warn(`Gross amount mismatch for order ${orderId}: expected ${order.amount}, got ${statusResponse.gross_amount}`);
+      return NextResponse.json({ error: "Gross amount mismatch" }, { status: 400 });
+    }
+
     // Only process if it was pending and became success
     if (order.status !== "SUCCESS" && finalStatus === "SUCCESS") {
       await prisma.$transaction(async (tx) => {
-        // Update Order
-        await tx.order.update({
-          where: { id: orderId },
+        // Atomic compare-and-swap: guarantees fulfillment executes exactly once
+        const claimResult = await tx.order.updateMany({
+          where: { id: orderId, status: { not: "SUCCESS" } },
           data: { status: "SUCCESS" }
         });
+
+        if (claimResult.count === 0) {
+          // Already fulfilled concurrently by verifyPayment
+          return;
+        }
 
         // Grant the Item!
         if (order.orderType === "EBOOK") {
@@ -121,11 +131,22 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-      revalidateTag("admin-dashboard-stats", "default");
-      revalidateTag("global-stats", "default");
-      revalidateTag("user-ownership", "default");
-      revalidateTag("user-orders", "default");
-      revalidateTag("user-session", "default");
+      const tags = [
+        "admin-dashboard-stats",
+        "global-stats",
+        "user-ownership",
+        "user-orders",
+        "user-session",
+        "ebook-catalog",
+      ];
+      for (const t of tags) {
+        try {
+          (revalidateTag as any)(t);
+        } catch {}
+        try {
+          (revalidateTag as any)(t, { expire: 0 });
+        } catch {}
+      }
       revalidatePath("/");
       revalidatePath("/ruang-belajar");
       revalidatePath("/ruang-ngonten");

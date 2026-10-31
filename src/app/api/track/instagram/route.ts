@@ -14,17 +14,79 @@ function stringifyLogMeta(meta: Record<string, any>): string {
   return `__META__:${JSON.stringify(meta)}`;
 }
 
+function isSafeRedirectUrl(urlStr: string, allowedUrls: string[] = []): boolean {
+  try {
+    const parsed = new URL(urlStr);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+      return false;
+    }
+
+    const hostname = parsed.hostname.toLowerCase();
+    if (
+      hostname === "ruangcreativemuslim.com" ||
+      hostname.endsWith(".ruangcreativemuslim.com") ||
+      hostname === "localhost"
+    ) {
+      return true;
+    }
+
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL || process.env.NEXTAUTH_URL;
+    if (appUrl) {
+      try {
+        const appHost = new URL(appUrl).hostname.toLowerCase();
+        if (hostname === appHost || hostname.endsWith(`.${appHost}`)) {
+          return true;
+        }
+      } catch {}
+    }
+
+    for (const allowed of allowedUrls) {
+      if (!allowed) continue;
+      try {
+        const allowedClean = allowed.trim();
+        const p = new URL(allowedClean.startsWith("http") ? allowedClean : `https://${allowedClean}`);
+        if (p.origin.toLowerCase() === parsed.origin.toLowerCase()) {
+          return true;
+        }
+      } catch {}
+    }
+
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = req.nextUrl;
-  const targetUrl = searchParams.get("url") || "https://ruangcreativemuslim.com";
+  const rawTargetUrl = searchParams.get("url") || "https://ruangcreativemuslim.com";
   const ruleId = searchParams.get("ruleId");
   const logId = searchParams.get("logId");
   const senderId = searchParams.get("senderId");
   const btnLabel = searchParams.get("btnLabel") || "Buka Website";
   const btnAction = searchParams.get("btnAction") || "Buka Website";
 
+  const targetUrl = /^https?:\/\//i.test(rawTargetUrl) ? rawTargetUrl : `https://${rawTargetUrl}`;
+  const allowedUrls: string[] = [];
+
   try {
     let targetLog: any = null;
+
+    if (ruleId) {
+      const rule = await (prisma as any).instagramAutomationRule.findUnique({
+        where: { id: ruleId },
+        select: { buttonUrl: true, dmMessage: true },
+      });
+      if (rule?.buttonUrl) allowedUrls.push(rule.buttonUrl);
+      if (rule?.dmMessage) {
+        try {
+          const cfg = JSON.parse(rule.dmMessage);
+          if (cfg.buttonUrl) allowedUrls.push(cfg.buttonUrl);
+          if (cfg.buttonUrl2) allowedUrls.push(cfg.buttonUrl2);
+          if (cfg.buttonUrl3) allowedUrls.push(cfg.buttonUrl3);
+        } catch {}
+      }
+    }
 
     if (logId) {
       targetLog = await (prisma as any).instagramAutomationLog.findUnique({
@@ -83,10 +145,9 @@ export async function GET(req: NextRequest) {
     console.warn("Link tracking log update warning:", err);
   }
 
-  // Pastikan URL tujuan memiliki protokol http/https
-  const finalDestination = /^https?:\/\//i.test(targetUrl)
+  const safeDestination = isSafeRedirectUrl(targetUrl, allowedUrls)
     ? targetUrl
-    : `https://${targetUrl}`;
+    : "https://ruangcreativemuslim.com";
 
-  return NextResponse.redirect(finalDestination, { status: 302 });
+  return NextResponse.redirect(safeDestination, { status: 302 });
 }

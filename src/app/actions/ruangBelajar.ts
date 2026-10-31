@@ -42,7 +42,7 @@ const CATALOG_PRODUCT_SELECT = {
   _count: { select: { owners: true, favorites: true } },
 } as const;
 
-export const getCachedDigitalProductsList = unstable_cache(
+const getCachedDigitalProductsList = unstable_cache(
   async () => {
     const [rawProducts, sortSetting] = await Promise.all([
       prisma.digitalProduct.findMany({
@@ -85,7 +85,7 @@ export const getCachedDigitalProductsList = unstable_cache(
   { revalidate: 3600, tags: ["ebook-catalog"] }
 );
 
-export const getCachedEbookBySlug = unstable_cache(
+const getCachedEbookBySlug = unstable_cache(
   async (slug: string) => {
     const rawEbook = await prisma.digitalProduct.findFirst({
       where: { slug: slug, isActive: true },
@@ -210,9 +210,19 @@ export async function getEbookDetailAction(slug: string) {
   const isAdmin = subStatus.isAdmin || session?.user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
   const isPro = subStatus.hasBook || isAdmin;
   const ownedProductIds = userProducts.map((up: any) => up.digitalProductId);
+  const isOwned = ownedProductIds.includes(cachedEbook.id);
+  const isFree = cachedEbook.accessLevel === "FREE" || !cachedEbook.price || cachedEbook.price <= 0;
+  const canAccessContent = isAdmin || isOwned || isFree;
+
+  const safeEbook = {
+    ...ebook,
+    fileUrl: canAccessContent ? ebook.fileUrl : null,
+    videoList: canAccessContent ? ebook.videoList : null,
+    resourceData: canAccessContent ? ebook.resourceData : null,
+  };
 
   return {
-    ebook: JSON.parse(JSON.stringify(ebook)),
+    ebook: JSON.parse(JSON.stringify(safeEbook)),
     isPro,
     isAdmin,
     ownedProductIds,
@@ -269,7 +279,7 @@ export async function addReview(productId: string, rating: number, comment: stri
   revalidatePath(`/ruang-belajar/[slug]`);
 }
 
-export async function claimFreeEbook(productId: string) {
+export async function claimFreeProduct(productId: string) {
   const session = await auth();
   if (!session?.user?.id) throw new Error("Unauthorized");
 
@@ -319,4 +329,4 @@ export async function claimFreeEbook(productId: string) {
 
 // Aliases for multi-format digital products (E-Book, Video Course, Notion / Link)
 export const getProductDetailAction = getEbookDetailAction;
-export const claimFreeProduct = claimFreeEbook;
+export const claimFreeEbook = claimFreeProduct;

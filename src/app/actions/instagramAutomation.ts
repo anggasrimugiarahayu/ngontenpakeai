@@ -27,7 +27,7 @@ function getDb(): PrismaClient {
   return fallbackPrisma;
 }
 
-export async function assertProAutomation(userId: string, email?: string | null) {
+async function assertProAutomation(userId: string, email?: string | null) {
   const isAdmin = email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
   if (isAdmin) return true;
 
@@ -50,7 +50,7 @@ export async function assertProAutomation(userId: string, email?: string | null)
  * Cache data automasi Instagram menggunakan unstable_cache (STA / SWR pattern di Next.js)
  * Cache otomatis di-revalidate tiap 60 detik atau instan saat ada perubahan aturan/koneksi.
  */
-export async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetAgentId?: string) {
+async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetAgentId?: string) {
   try {
     const db = getDb();
     
@@ -153,7 +153,7 @@ export async function fetchFreshInstagramData(userId: string, isAdmin: boolean, 
           if (cfg.postCoverUrl) return;
 
           const ownerAcc = allAccounts.find((a: any) => a.id === rule.accountId) || activeAccount;
-          const token = ownerAcc?.accessToken || process.env.INSTAGRAM_ACCESS_TOKEN;
+          const token = ownerAcc?.accessToken;
           if (!token) return;
 
           try {
@@ -222,14 +222,6 @@ export async function fetchFreshInstagramData(userId: string, isAdmin: boolean, 
       logs: []
     };
   }
-}
-
-export async function getCachedInstagramData(userId: string, isAdmin: boolean, targetAgentId?: string) {
-  return unstable_cache(
-    async () => fetchFreshInstagramData(userId, isAdmin, targetAgentId),
-    ["instagram-automation-data", userId, targetAgentId || "default"],
-    { revalidate: 60, tags: ["instagram-automation", `instagram-automation-${userId}`] }
-  )();
 }
 
 /**
@@ -458,6 +450,7 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
     }
 
     const userId = session.user.id;
+    await assertProAutomation(userId, session.user.email);
     const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
     const db = getDb();
 
@@ -477,12 +470,8 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
       });
     }
 
-    // 2. Tentukan access token: prioritaskan input token, token tersimpan di akun, atau env
-    const token =
-      tokenInput?.trim() ||
-      existingAccount?.accessToken ||
-      process.env.META_PAGE_ACCESS_TOKEN ||
-      process.env.INSTAGRAM_ACCESS_TOKEN;
+    // 2. Tentukan access token: prioritaskan input token atau token tersimpan di akun
+    const token = tokenInput?.trim() || existingAccount?.accessToken;
 
     if (!token) {
       return { success: false, error: "Token Akses Instagram tidak ditemukan" };
@@ -626,7 +615,8 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
     revalidateTag("instagram-automation");
     revalidateTag(`instagram-automation-${userId}`);
     revalidatePath("/ruang-automation");
-    return { success: true, account: JSON.parse(JSON.stringify(account)) };
+    const { accessToken, ...safeAccount } = account || {};
+    return { success: true, account: JSON.parse(JSON.stringify(safeAccount)) };
   } catch (error: any) {
     console.error("Connect Instagram error:", error);
     return { success: false, error: error.message || "Gagal menghubungkan akun Instagram" };
@@ -744,7 +734,7 @@ export async function getInstagramFeedMediaAction(limit: number = 12, accountId?
       });
     }
 
-    const token = account?.accessToken || process.env.INSTAGRAM_ACCESS_TOKEN;
+    const token = account?.accessToken;
     const instagramId = account?.instagramId;
 
     if (!token) {
@@ -889,7 +879,7 @@ export async function getInstagramStoriesAction(limit: number = 20, accountId?: 
       });
     }
 
-    const token = account?.accessToken || process.env.INSTAGRAM_ACCESS_TOKEN;
+    const token = account?.accessToken;
     const instagramId = account?.instagramId;
 
     if (!token) {
@@ -998,11 +988,28 @@ export async function saveAutomationRuleAction(payload: {
   if (!session?.user?.id) throw new Error("Unauthorized");
   await assertProAutomation(session.user.id, session.user.email);
 
+  const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
   const db = getDb();
   let targetAccountId = payload.accountId;
 
-  // Jika accountId tidak dikirim langsung, cari akun aktif milik user
-  if (!targetAccountId) {
+  // Jika accountId dikirim langsung, pastikan akun milik user (kecuali admin)
+  if (targetAccountId) {
+    const acc = await (db as any).instagramAccount.findFirst({
+      where: isAdmin
+        ? { id: targetAccountId }
+        : {
+            id: targetAccountId,
+            OR: [
+              { userId: session.user.id },
+              { user: { email: session.user.email || "" } }
+            ]
+          }
+    });
+    if (!acc) {
+      throw new Error("Akun Instagram tidak valid atau tidak memiliki izin");
+    }
+  } else {
+    // Jika accountId tidak dikirim langsung, cari akun aktif milik user
     const activeAccount = await (db as any).instagramAccount.findFirst({
       where: {
         OR: [
@@ -1067,6 +1074,18 @@ export async function saveAutomationRuleAction(payload: {
         : null;
 
     if (existingId) {
+      // Pastikan aturan yang diupdate milik akun user (atau user admin)
+      const existingRule = await (db as any).instagramAutomationRule.findUnique({
+        where: { id: existingId },
+        include: { account: true }
+      });
+      if (!existingRule) {
+        throw new Error("Aturan tidak ditemukan");
+      }
+      if (!isAdmin && existingRule.account?.userId !== session.user.id) {
+        throw new Error("Tidak memiliki izin untuk mengubah aturan ini");
+      }
+
       // Update
       const updated = await (db as any).instagramAutomationRule.update({
         where: { id: existingId },
@@ -1119,7 +1138,17 @@ export async function toggleAutomationRuleAction(ruleId: string, isActive: boole
   if (!session?.user?.id) throw new Error("Unauthorized");
   await assertProAutomation(session.user.id, session.user.email);
 
+  const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
   const db = getDb();
+  const rule = await (db as any).instagramAutomationRule.findUnique({
+    where: { id: ruleId },
+    include: { account: true }
+  });
+  if (!rule) throw new Error("Aturan tidak ditemukan");
+  if (!isAdmin && rule.account?.userId !== session.user.id) {
+    throw new Error("Tidak memiliki izin untuk mengubah aturan ini");
+  }
+
   await (db as any).instagramAutomationRule.update({
     where: { id: ruleId },
     data: { isActive }
@@ -1139,7 +1168,17 @@ export async function deleteAutomationRuleAction(ruleId: string) {
   if (!session?.user?.id) throw new Error("Unauthorized");
   await assertProAutomation(session.user.id, session.user.email);
 
+  const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
   const db = getDb();
+  const rule = await (db as any).instagramAutomationRule.findUnique({
+    where: { id: ruleId },
+    include: { account: true }
+  });
+  if (!rule) throw new Error("Aturan tidak ditemukan");
+  if (!isAdmin && rule.account?.userId !== session.user.id) {
+    throw new Error("Tidak memiliki izin untuk menghapus aturan ini");
+  }
+
   await (db as any).instagramAutomationRule.delete({
     where: { id: ruleId }
   });
@@ -1159,6 +1198,7 @@ export async function duplicateAutomationRuleAction(ruleId: string) {
     if (!session?.user?.id) throw new Error("Unauthorized");
     await assertProAutomation(session.user.id, session.user.email);
 
+    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
     const db = getDb();
     const rule = await (db as any).instagramAutomationRule.findUnique({
       where: { id: ruleId },
@@ -1167,6 +1207,9 @@ export async function duplicateAutomationRuleAction(ruleId: string) {
 
     if (!rule) {
       return { success: false, error: "Aturan tidak ditemukan" };
+    }
+    if (!isAdmin && rule.account?.userId !== session.user.id) {
+      return { success: false, error: "Tidak memiliki izin untuk menduplikasi aturan ini" };
     }
 
     const created = await (db as any).instagramAutomationRule.create({
@@ -1241,6 +1284,7 @@ export async function retryFailedAutomationLogsAction(ruleId: string) {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
+    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
     const db = getDb();
     const rule = await (db as any).instagramAutomationRule.findUnique({
       where: { id: ruleId },
@@ -1249,6 +1293,10 @@ export async function retryFailedAutomationLogsAction(ruleId: string) {
 
     if (!rule || !rule.account?.accessToken) {
       return { success: false, error: "Aturan atau token akses akun tidak ditemukan." };
+    }
+
+    if (!isAdmin && rule.account?.userId !== session.user.id) {
+      return { success: false, error: "Tidak memiliki izin untuk mengakses aturan ini." };
     }
 
     const accessToken = rule.account.accessToken;
@@ -1447,6 +1495,7 @@ export async function rewindAutomationCommentsAction(ruleId: string) {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
+    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
     const db = getDb();
     const rule = await (db as any).instagramAutomationRule.findUnique({
       where: { id: ruleId },
@@ -1455,6 +1504,10 @@ export async function rewindAutomationCommentsAction(ruleId: string) {
 
     if (!rule || !rule.account?.accessToken) {
       return { success: false, error: "Aturan atau token akses akun tidak ditemukan." };
+    }
+
+    if (!isAdmin && rule.account?.userId !== session.user.id) {
+      return { success: false, error: "Tidak memiliki izin untuk mengakses aturan ini." };
     }
 
     const accessToken = rule.account.accessToken;

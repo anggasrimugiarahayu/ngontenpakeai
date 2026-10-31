@@ -3,16 +3,31 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import sharp from "sharp";
 import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 import { deletePhysicalUploadFile } from "@/lib/server-uploads";
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_UPLOAD_SIZE_BYTES = 1 * 1024 * 1024; // 1MB
+
+async function verifyAdmin(userId: string, email?: string | null): Promise<boolean> {
+  if (email?.toLowerCase() === "anggasrimugiarahayu@gmail.com") return true;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { role: true },
+  });
+  return user?.role === "ADMIN";
+}
 
 export async function POST(req: NextRequest) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const isAdmin = await verifyAdmin(session.user.id, session.user.email);
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
 
     const data = await req.formData();
@@ -95,6 +110,11 @@ export async function DELETE(req: NextRequest) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const isAdmin = await verifyAdmin(session.user.id, session.user.email);
+    if (!isAdmin) {
+      return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
     }
 
     const body = await req.json();
