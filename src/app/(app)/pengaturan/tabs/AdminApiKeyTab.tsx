@@ -12,7 +12,6 @@ import {
   AlertTriangle,
   RefreshCw,
   ShieldAlert,
-  ShieldCheck,
   Globe,
 } from "lucide-react";
 import { InstagramIcon } from "@/app/(app)/ruang-riset/components/RisetIcons";
@@ -22,7 +21,6 @@ import {
   testInstagramSessionAction,
   saveInstagramSessionAction,
   deleteInstagramSessionAction,
-  saveRapidApiKeyAction,
 } from "@/app/actions/adminSettings";
 import { confirmSwal } from "./confirmSwal";
 import { RISET_CONFIG_KEY, InstagramRisetConfig } from "@/lib/riset-config";
@@ -53,11 +51,6 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
   const [statusError, setStatusError] = useState(parsedRiset.statusError || "");
   const [testingSession, setTestingSession] = useState(false);
   const [savingSession, setSavingSession] = useState(false);
-
-  // 3. RapidAPI Key
-  const [rapidApiKeyInput, setRapidApiKeyInput] = useState("");
-  const [savedRapidApiKey, setSavedRapidApiKey] = useState(parsedRiset.rapidApiKey || "");
-  const [savingRapid, setSavingRapid] = useState(false);
 
   // =========================================================================
   // HANDLERS: GOOGLE GEMINI KEY
@@ -170,24 +163,6 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
     }
   };
 
-  // =========================================================================
-  // HANDLERS: RAPIDAPI KEY
-  // =========================================================================
-  const handleSaveRapidKey = async () => {
-    if (!rapidApiKeyInput.trim()) return;
-    setSavingRapid(true);
-    try {
-      await saveRapidApiKeyAction(rapidApiKeyInput.trim());
-      setSavedRapidApiKey(rapidApiKeyInput.trim());
-      setRapidApiKeyInput("");
-      toast.success("RapidAPI Key berhasil disimpan!");
-    } catch (err: any) {
-      toast.error(err?.message || "Gagal menyimpan RapidAPI Key");
-    } finally {
-      setSavingRapid(false);
-    }
-  };
-
   const getMaskedKey = (key: string) => {
     if (!key) return "-";
     if (key.length <= 12) return "••••••••••••";
@@ -238,24 +213,13 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
       {/* 2. TABEL RINGKASAN STATUS KREDENSIAL SISTEM */}
       {/* ========================================================================= */}
       <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#141B31] shadow-xs">
-        <div className="mb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-gray-100 dark:border-[#2C3246] pb-4">
-          <div>
-            <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Key className="w-5 h-5 text-orange-500" /> Ringkasan Kredensial Global
-            </h2>
-            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-              Pantau status kesehatan dan validitas seluruh API Key dan Session Cookie sistem dari satu tempat.
-            </p>
-          </div>
-          <button
-            type="button"
-            onClick={handleTestSession}
-            disabled={testingSession || !savedSessionId}
-            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128] hover:bg-gray-100 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-200 transition-colors disabled:opacity-50 cursor-pointer"
-          >
-            <RefreshCw className={`w-3.5 h-3.5 ${testingSession ? "animate-spin" : ""}`} />
-            <span>Uji Status Sesi IG</span>
-          </button>
+        <div className="mb-5 border-b border-gray-100 dark:border-[#2C3246] pb-4">
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <Key className="w-5 h-5 text-orange-500" /> Ringkasan Kredensial Global
+          </h2>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+            Pantau status kesehatan dan validitas seluruh API Key dan Session Cookie sistem dari satu tempat.
+          </p>
         </div>
 
         {/* Tabel Kredensial */}
@@ -336,7 +300,7 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
                     </span>
                   ) : sessionStatus === "VALID" ? (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                      <ShieldCheck className="w-3.5 h-3.5" /> Aktif & Terverifikasi
+                      <CheckCircle2 className="w-3 h-3" /> Aktif
                     </span>
                   ) : sessionStatus === "EXPIRED" ? (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20 animate-pulse">
@@ -359,7 +323,7 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
                           type="button"
                           onClick={handleTestSession}
                           disabled={testingSession}
-                          className="p-1.5 text-gray-400 hover:text-orange-500 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-orange-500 rounded-lg hover:bg-orange-50 dark:hover:bg-orange-500/10 transition-colors cursor-pointer"
                           title="Uji Status Koneksi Sesi Ini"
                         >
                           <RefreshCw className={`w-4 h-4 ${testingSession ? "animate-spin" : ""}`} />
@@ -368,7 +332,7 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
                           type="button"
                           onClick={handleDeleteInstagramSession}
                           disabled={savingSession}
-                          className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+                          className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
                           title="Hapus Session ID"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -376,54 +340,6 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
                       </>
                     )}
                   </div>
-                </td>
-              </tr>
-
-              {/* Row 3: RapidAPI Scraper Key (Fallback) */}
-              <tr className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors">
-                <td className="py-3.5 px-3 font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <div className="w-7 h-7 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
-                    <Key className="w-4 h-4" />
-                  </div>
-                  <span>RapidAPI Scraper Key</span>
-                </td>
-                <td className="py-3.5 px-3 text-gray-500 dark:text-gray-400 text-xs">
-                  Fallback Riset IG (Residential Proxy)
-                </td>
-                <td className="py-3.5 px-3 font-mono text-xs text-gray-700 dark:text-gray-300">
-                  {getMaskedKey(savedRapidApiKey)}
-                </td>
-                <td className="py-3.5 px-3">
-                  {savedRapidApiKey ? (
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
-                      <CheckCircle2 className="w-3 h-3" /> Terpasang
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-gray-100 dark:bg-white/5 text-gray-400">
-                      Opsional
-                    </span>
-                  )}
-                </td>
-                <td className="py-3.5 px-3 text-gray-500 dark:text-gray-400 text-xs">
-                  {savedRapidApiKey ? "Siap Sebagai Fallback" : "-"}
-                </td>
-                <td className="py-3.5 px-3 text-right">
-                  {savedRapidApiKey && (
-                    <button
-                      type="button"
-                      onClick={async () => {
-                        if (await confirmSwal("Hapus RapidAPI Key?")) {
-                          await saveRapidApiKeyAction("");
-                          setSavedRapidApiKey("");
-                          toast.success("RapidAPI Key dihapus");
-                        }
-                      }}
-                      className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
-                      title="Hapus RapidAPI Key"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
                 </td>
               </tr>
             </tbody>
@@ -557,54 +473,6 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
                 <>
                   <Save className="w-4 h-4" />
                   <span>Simpan API Key</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* ========================================================================= */}
-      {/* 5. FORM KELOLA: RAPIDAPI KEY (FALLBACK OPSIONAL) */}
-      {/* ========================================================================= */}
-      <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#141B31] shadow-xs">
-        <div className="mb-6">
-          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
-            <Key className="w-5 h-5 text-purple-500" /> RapidAPI Instagram Scraper (Fallback Kuat)
-          </h3>
-          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
-            Opsional. Menggunakan scraper pihak ketiga berbasis residential proxy yang tahan banting terhadap pemblokiran IP cloud server. Jika diisi, sistem otomatis menggunakannya ketika Session ID gagal.
-          </p>
-        </div>
-
-        <div className="space-y-4">
-          <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
-            RapidAPI Key
-          </label>
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              type="password"
-              value={rapidApiKeyInput}
-              onChange={(e) => setRapidApiKeyInput(e.target.value)}
-              placeholder="Paste RapidAPI Key..."
-              autoComplete="off"
-              className="flex-1 w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-[#2C3246] bg-gray-50/50 dark:bg-[#0A1128] text-gray-900 dark:text-white font-mono text-xs sm:text-sm focus:outline-none focus:border-orange-500 transition-colors"
-            />
-            <button
-              type="button"
-              onClick={handleSaveRapidKey}
-              disabled={savingRapid || !rapidApiKeyInput.trim()}
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs sm:text-sm transition-all disabled:opacity-50 shadow-sm shadow-orange-500/20 cursor-pointer shrink-0"
-            >
-              {savingRapid ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span>Menyimpan...</span>
-                </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4" />
-                  <span>Simpan RapidAPI</span>
                 </>
               )}
             </button>
