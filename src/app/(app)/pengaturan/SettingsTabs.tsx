@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import useSWR from "swr";
 import { getPengaturanDataAction } from "@/app/actions/pengaturan";
@@ -24,6 +24,28 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
   if (!data) return <LoadingSpinner message="Memuat Pengaturan..." />;
   const { userData, adminData, isPro, isAdmin } = data;
   const isFullyPro = Boolean(userData?.isFullyPro || isAdmin);
+
+  // Map urutan agen untuk order automasi secara kronologis (dari order terlama ke terbaru)
+  // Order automasi ke-1 -> Agen 1, ke-2 -> Agen 2, dst.
+  const automationOrderAgentMap = useMemo(() => {
+    if (!orders || orders.length === 0) return new Map<string, number>();
+    const automationOrdersAsc = [...orders]
+      .filter((o: any) => {
+        if (o.orderType === "EBOOK") return false;
+        const meta = resolvePackageMeta(o.orderType, userData?.pricingConfig);
+        return meta.category === "automation";
+      })
+      .sort(
+        (a: any, b: any) =>
+          new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      );
+
+    const map = new Map<string, number>();
+    automationOrdersAsc.forEach((order: any, idx: number) => {
+      map.set(order.id, idx + 1);
+    });
+    return map;
+  }, [orders, userData?.pricingConfig]);
 
 
   const adminTabs = [
@@ -109,6 +131,12 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
                         userData?.pricingConfig
                       );
                       title = meta.name;
+
+                      // Flagging penomoran agen untuk paket automasi (e.g. "Paket Pro Auto (Agen 1)")
+                      if (meta.category === "automation") {
+                        const agentNumber = automationOrderAgentMap.get(order.id) || 1;
+                        title = `${meta.name} (Agen ${agentNumber})`;
+                      }
 
                       if (meta.category === "ebook" || meta.durationDays === 0) {
                         dateInfo = `${createdStr} – Selamanya`;
