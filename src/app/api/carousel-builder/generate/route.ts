@@ -13,7 +13,7 @@ import prisma from '@/lib/prisma';
 
 
 async function fetchKnowledgeBase() {
-  const kbDir = path.join(process.cwd(), 'public', 'knowledge_database');
+  const kbDir = path.join(process.cwd(), 'src', 'data', 'knowledge_database');
   const [carouselKbRes, ideasRes] = await Promise.all([
     fs.readFile(path.join(kbDir, 'carausel_knowledgebase.txt'), 'utf-8'),
     fs.readFile(path.join(kbDir, 'ide_konten.txt'), 'utf-8')

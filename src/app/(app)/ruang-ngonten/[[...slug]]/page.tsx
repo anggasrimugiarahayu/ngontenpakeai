@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getCachedFeatures, getCachedHasBlueprint, getCachedNicheReferences, getCachedAppUser } from "@/lib/cache";
 import WorkspaceApp from "../WorkspaceApp";
+import { isAdminEmail } from "@/lib/admin";
 
 export const metadata = {
   title: "Ruang Ngonten Workspace - ruangcreativemuslim",
@@ -10,7 +11,7 @@ export const metadata = {
 export default async function RuangNgontenCatchAllPage(props: { params: Promise<{ slug?: string[] }> }) {
   const [params, session] = await Promise.all([props.params, auth()]);
   const isLoggedIn = !!session?.user;
-  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = isAdminEmail(session?.user?.email);
 
   const [hasBlueprint, dbFeatures, nicheReferences, dbUser] = await Promise.all([
     session?.user?.id ? getCachedHasBlueprint(session.user.id) : Promise.resolve(false),

@@ -8,6 +8,7 @@ import {
   computeUserSubscriptionStatus,
   resolvePackageMeta,
 } from "@/lib/subscription-utils";
+import { isAdminEmail } from "@/lib/admin";
 
 async function populateOrderAddons(orders: any[]) {
   if (!orders || orders.length === 0) return orders;
@@ -287,7 +288,7 @@ const getCachedDashboardStats = unstable_cache(
 
 export async function revalidateDashboardAction() {
   const session = await auth();
-  if (!session?.user?.id || session?.user?.email !== "anggasrimugiarahayu@gmail.com") {
+  if (!session?.user?.id || !isAdminEmail(session?.user?.email)) {
     return { success: false, message: "Unauthorized" };
   }
   
@@ -329,7 +330,7 @@ export async function revalidateDashboardAction() {
 export async function getDashboardDataAction(forceFresh = false) {
   const session = await auth();
   if (!session?.user?.id) return null;
-  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = isAdminEmail(session?.user?.email);
   if (!isAdmin) return null;
 
   if (forceFresh) {
@@ -340,7 +341,7 @@ export async function getDashboardDataAction(forceFresh = false) {
 
 export async function getDashboardOrdersAction(page = 1, limit = 20, search = '', status = 'all') {
   const session = await auth();
-  if (!session?.user?.id || session?.user?.email !== "anggasrimugiarahayu@gmail.com") return { orders: [], total: 0 };
+  if (!session?.user?.id || !isAdminEmail(session?.user?.email)) return { orders: [], total: 0 };
 
   const where: any = {};
   if (status !== 'all') {
@@ -375,7 +376,7 @@ export async function getDashboardOrdersAction(page = 1, limit = 20, search = ''
 
 export async function getAudienceInsightsAction() {
   const session = await auth();
-  if (!session?.user?.id || session?.user?.email !== "anggasrimugiarahayu@gmail.com") return null;
+  if (!session?.user?.id || !isAdminEmail(session?.user?.email)) return null;
 
   try {
     const users = await prisma.user.findMany({
@@ -509,7 +510,7 @@ export async function getAllDashboardUsersAction(forceFresh = false) {
   const session = await auth();
   if (
     !session?.user?.id ||
-    session?.user?.email?.toLowerCase() !== "anggasrimugiarahayu@gmail.com"
+    !isAdminEmail(session?.user?.email)
   ) {
     return { users: [], total: 0 };
   }
@@ -529,7 +530,7 @@ export async function adminUpdateUserAccessAction(params: {
   const session = await auth();
   if (
     !session?.user?.id ||
-    session?.user?.email?.toLowerCase() !== "anggasrimugiarahayu@gmail.com"
+    !isAdminEmail(session?.user?.email)
   ) {
     return { success: false, message: "Unauthorized" };
   }

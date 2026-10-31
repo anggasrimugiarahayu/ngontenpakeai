@@ -5,12 +5,13 @@ import sharp from "sharp";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { deletePhysicalUploadFile } from "@/lib/server-uploads";
+import { isAdminEmail } from "@/lib/admin";
 
 const ALLOWED_MIME_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_UPLOAD_SIZE_BYTES = 1 * 1024 * 1024; // 1MB
 
 async function verifyAdmin(userId: string, email?: string | null): Promise<boolean> {
-  if (email?.toLowerCase() === "anggasrimugiarahayu@gmail.com") return true;
+  if (isAdminEmail(email)) return true;
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { role: true },

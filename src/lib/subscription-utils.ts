@@ -3,8 +3,9 @@ import {
   mergePricingConfig,
   PricingCategoryKey,
 } from "./pricing-packages";
+import { isAdminEmail, isAdminUser, SUPER_ADMIN_EMAILS } from "./admin";
 
-export const ADMIN_EMAIL = "anggasrimugiarahayu@gmail.com";
+export const ADMIN_EMAIL = SUPER_ADMIN_EMAILS[0];
 
 export interface ResolvedPackageMeta {
   id: string;
@@ -252,9 +253,7 @@ export function computeUserSubscriptionStatus(
   rawPricingConfig?: any
 ): UserSubscriptionStatus {
   const now = new Date();
-  const isAdmin = Boolean(
-    dbUser?.email?.toLowerCase() === ADMIN_EMAIL || dbUser?.role === "ADMIN"
-  );
+  const isAdmin = isAdminUser(dbUser);
 
   const hasTools =
     isAdmin ||

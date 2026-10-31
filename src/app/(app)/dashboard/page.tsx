@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import DashboardClient from "./DashboardClient";
 import { getDashboardDataAction } from "@/app/actions/dashboard";
+import { isAdminEmail } from "@/lib/admin";
 
 export const metadata = {
   title: "Admin Dashboard | ruangcreativemuslim",
@@ -14,7 +15,7 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = isAdminEmail(session?.user?.email);
   
   if (!isAdmin) {
     redirect("/");

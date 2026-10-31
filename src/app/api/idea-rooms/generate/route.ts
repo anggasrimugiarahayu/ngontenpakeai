@@ -10,7 +10,7 @@ import { GoogleGenAI } from "@google/genai";
 
 // Cache knowledge base files
 async function fetchKnowledgeBase() {
-  const kbDir = path.join(process.cwd(), 'public', 'knowledge_database');
+  const kbDir = path.join(process.cwd(), 'src', 'data', 'knowledge_database');
   const [hooksRes, ctaRes, styleRes, briefRes, ideasRes] = await Promise.all([
     fs.readFile(path.join(kbDir, 'hooks.txt'), 'utf-8'),
     fs.readFile(path.join(kbDir, 'cta_ctv.txt'), 'utf-8'),

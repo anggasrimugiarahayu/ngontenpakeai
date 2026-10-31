@@ -2,6 +2,7 @@ import { auth } from "@/auth";
 import { getCachedFeatures, getCachedHasBlueprint, getCachedAppUser, getCachedHomepageCards } from "@/lib/cache";
 import AppShellLayout from "@/components/layout/AppShellLayout";
 import { redirect } from "next/navigation";
+import { isAdminUser } from "@/lib/admin";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const session = await auth();
@@ -37,7 +38,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect("/onboarding");
   }
   
-  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
+  const isAdmin = isAdminUser(session?.user ? { email: session.user.email, role: userRole } : null);
   const isPro = hasTools || isAdmin;
   const isLoggedIn = !!session?.user;
   

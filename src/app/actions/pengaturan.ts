@@ -11,6 +11,7 @@ import {
 } from "@/lib/server/adminDbQueries";
 import { getCachedFeatures, getCachedAppUser, getCachedUserOrders, getCachedUserUsages, getCachedQuotaConfig } from "@/lib/cache";
 import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
+import { isAdminEmail } from "@/lib/admin";
 
 function invalidateUserSessionTag() {
   try {
@@ -40,7 +41,7 @@ export async function getPengaturanDataAction() {
   const session = await auth();
   if (!session?.user?.id) return null;
 
-  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = isAdminEmail(session?.user?.email);
   
   const [features, usages, dbUser, userOrders, adminData, pricingConfig, quotaConfig] = await Promise.all([
     getCachedFeatures(),

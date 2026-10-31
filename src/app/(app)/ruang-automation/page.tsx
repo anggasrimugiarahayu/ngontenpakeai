@@ -3,6 +3,7 @@ import { getInstagramAutomationDataAction } from "@/app/actions/instagramAutomat
 import { getCachedAppUser, getCachedFeatures, getCachedQuotaConfig } from "@/lib/cache";
 import prisma from "@/lib/prisma";
 import RuangAutomationClient from "./RuangAutomationClient";
+import { isAdminEmail } from "@/lib/admin";
 
 export const metadata = {
   title: "Ruang Automation | ruangcreativemuslim",
@@ -16,7 +17,7 @@ export default async function RuangAutomationPage({
 }) {
   const session = await auth();
   const isLoggedIn = !!session?.user;
-  const isAdmin = session?.user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = isAdminEmail(session?.user?.email);
 
   const [allFeatures, quotaConfig] = await Promise.all([
     getCachedFeatures(),

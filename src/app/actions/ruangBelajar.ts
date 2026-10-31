@@ -6,6 +6,7 @@ import { attachComputedBuyerCounts } from "@/lib/product-buyers";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
 import { getCachedAppUser, getCachedUserOrders, getCachedUserOwnedProducts } from "@/lib/cache";
 import { computeUserSubscriptionStatus, isBookPackageOrder } from "@/lib/subscription-utils";
+import { isAdminEmail, isAdminUser } from "@/lib/admin";
 
 function safeRevalidateTag(tag: string) {
   try {
@@ -151,7 +152,7 @@ export async function getRuangBelajarDataAction() {
 
   if (session?.user?.id && userObj) {
     const subStatus = computeUserSubscriptionStatus(userObj, userOrders);
-    isAdmin = subStatus.isAdmin || session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    isAdmin = subStatus.isAdmin || isAdminEmail(session.user.email);
     isPro = subStatus.hasBook || isAdmin;
     ownedProductIds = userProducts.map((up: any) => up.digitalProductId);
   }
@@ -207,7 +208,7 @@ export async function getEbookDetailAction(slug: string) {
   };
 
   const subStatus = computeUserSubscriptionStatus(userObj, userOrders);
-  const isAdmin = subStatus.isAdmin || session?.user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = subStatus.isAdmin || isAdminEmail(session?.user?.email);
   const isPro = subStatus.hasBook || isAdmin;
   const ownedProductIds = userProducts.map((up: any) => up.digitalProductId);
   const isOwned = ownedProductIds.includes(cachedEbook.id);
@@ -305,7 +306,7 @@ export async function claimFreeProduct(productId: string) {
   const isFree = product.accessLevel === "FREE";
   const isProEbook = product.accessLevel === "PRO";
 
-  const isAdmin = user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com" || user.role === "ADMIN";
+  const isAdmin = isAdminUser(user);
   const hasBookPackage = user.hasProBook || userOrders.some((o) => isBookPackageOrder(o.orderType));
 
   const canClaimProEbook = isAdmin || hasBookPackage;

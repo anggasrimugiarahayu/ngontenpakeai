@@ -5,6 +5,7 @@ import { preload } from "swr";
 import { getDashboardDataAction } from "@/app/actions/dashboard";
 import { getPengaturanDataAction } from "@/app/actions/pengaturan";
 import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
+import { isAdminEmail, isAdminUser } from "@/lib/admin";
 
 const handleHoverPrefetch = (href: string) => {
   if (href === '/dashboard') preload("dashboard", getDashboardDataAction);
@@ -84,7 +85,7 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
       const timer = setTimeout(() => {
         preload("ruangBelajar", getRuangBelajarDataAction);
         preload("pengaturan", getPengaturanDataAction);
-        if (session?.user?.email === "anggasrimugiarahayu@gmail.com") {
+        if (isAdminEmail(session?.user?.email)) {
           preload("dashboard", getDashboardDataAction);
         }
       }, 1500);
@@ -95,7 +96,7 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
   const isDark = mounted ? theme === "dark" : true;
   const isWorkspace = pathname === "/" || pathname?.startsWith("/dashboard") || pathname?.startsWith("/ruang-ngonten") || pathname?.startsWith("/ruang-belajar") || pathname?.startsWith("/ruang-automation") || pathname?.startsWith("/ruang-riset") || pathname?.startsWith("/ruang-growing") || pathname?.startsWith("/pengaturan") || pathname?.startsWith("/bantuan") || pathname?.startsWith("/feedback") || pathname?.startsWith("/checkout") || pathname?.startsWith("/login") || pathname?.startsWith("/signup");
   
-  const isAdmin = session?.user?.email === "anggasrimugiarahayu@gmail.com" || userRole === "ADMIN";
+  const isAdmin = isAdminUser(session?.user ? { email: session.user.email, role: userRole } : null);
   const isPro = badgeName !== "FREE";
 
   return (

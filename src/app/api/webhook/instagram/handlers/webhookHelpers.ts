@@ -1,4 +1,5 @@
 import prisma from "@/lib/prisma";
+import { isAdminUser } from "@/lib/admin";
 
 // Helper Spintax Randomizer
 export function parseSpintax(text: string): string {
@@ -462,7 +463,7 @@ export async function resolveAccountForEntry(igAccountId: string) {
 
   // Verifikasi Hak Akses & Masa Aktif PRO Automation Pemilik Akun
   const user = account.user;
-  const isAdmin = user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com" || user?.role === "ADMIN";
+  const isAdmin = isAdminUser(user);
   const isProAutomation = isAdmin || !!(
     user?.proAutomationExpiredAt && new Date(user.proAutomationExpiredAt) > new Date()
   );

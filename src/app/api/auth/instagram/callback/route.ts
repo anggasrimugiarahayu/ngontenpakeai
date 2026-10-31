@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { PrismaClient } from "@prisma/client";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { isAdminEmail, isAdminUser } from "@/lib/admin";
 
 // Defensive Prisma accessor
 let fallbackPrisma: PrismaClient | null = null;
@@ -293,7 +294,7 @@ export async function GET(request: NextRequest) {
     let boundAgentId = targetAgentId;
     let existingAgent: any = null;
 
-    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    const isAdmin = isAdminEmail(session.user.email);
     const userMatchCondition = isAdmin
       ? {}
       : {
@@ -410,7 +411,7 @@ export async function GET(request: NextRequest) {
         select: { role: true, automationAgentLimit: true },
       });
 
-      const isAdmin = userRecord?.role === "ADMIN" || session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+      const isAdmin = isAdminUser(userRecord ? { ...userRecord, email: session.user.email } : { email: session.user.email });
       const allowedLimit = userRecord?.automationAgentLimit || 1;
 
       const currentCount = await (db as any).instagramAccount.count({

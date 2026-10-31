@@ -8,6 +8,7 @@ import {
 } from "@/lib/cache";
 import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
 import RuangRisetClient from "./RuangRisetClient";
+import { isAdminEmail } from "@/lib/admin";
 
 export const metadata = {
   title: "Ruang Riset | ruangcreativemuslim",
@@ -21,7 +22,7 @@ export default async function RuangRisetPage({
 }) {
   const session = await auth();
   const isLoggedIn = !!session?.user;
-  const isAdmin = session?.user?.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = isAdminEmail(session?.user?.email);
 
   let isPro = isAdmin;
   if (!isAdmin && session?.user?.id) {

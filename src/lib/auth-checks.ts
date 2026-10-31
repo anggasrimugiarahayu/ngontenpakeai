@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import { revalidateTag } from "next/cache";
 import { getCachedFeatures, getCachedQuotaConfig } from "@/lib/cache";
+import { isAdminEmail } from "@/lib/admin";
 
 export interface FeatureAccessResult {
   authorized: boolean;
@@ -26,7 +27,7 @@ export async function verifyFeatureAccess(
   featureName: string,
   email?: string | null
 ): Promise<FeatureAccessResult> {
-  const isAdmin = email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = isAdminEmail(email);
   if (isAdmin) return { authorized: true, isPro: true, remainingQuota: 9999 };
 
   const [user, allFeatures, quotaConfig] = await Promise.all([

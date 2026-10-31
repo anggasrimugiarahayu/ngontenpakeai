@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { PrismaClient } from "@prisma/client";
 import { auth } from "@/auth";
 import { revalidatePath, revalidateTag as nextRevalidateTag, unstable_cache } from "next/cache";
+import { isAdminEmail } from "@/lib/admin";
 
 function revalidateTag(tag: string) {
   try {
@@ -28,7 +29,7 @@ function getDb(): PrismaClient {
 }
 
 async function assertProAutomation(userId: string, email?: string | null, agentId?: string) {
-  const isAdmin = email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = isAdminEmail(email);
   if (isAdmin) return true;
 
   const db = getDb();
@@ -255,7 +256,7 @@ export async function getInstagramAutomationDataAction(targetAgentId?: string) {
   }
 
   const userId = session.user.id;
-  const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = isAdminEmail(session.user.email);
 
   try {
     const data = await fetchFreshInstagramData(userId, isAdmin, targetAgentId);
@@ -282,7 +283,7 @@ export async function createInstagramAgentAction({ name }: { name: string }) {
 
     const db = getDb();
     const userId = session.user.id;
-    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    const isAdmin = isAdminEmail(session.user.email);
 
     // Validasi kuota agen:
     const user = await (db as any).user.findUnique({
@@ -353,7 +354,7 @@ export async function updateInstagramAgentAction({
 
     const db = getDb();
     const userId = session.user.id;
-    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    const isAdmin = isAdminEmail(session.user.email);
 
     const dataToUpdate: any = {};
     if (typeof name === "string") dataToUpdate.name = name.trim();
@@ -397,7 +398,7 @@ export async function deleteInstagramAgentAction(agentId: string) {
 
     const db = getDb();
     const userId = session.user.id;
-    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    const isAdmin = isAdminEmail(session.user.email);
 
     const existing = await (db as any).instagramAccount.findFirst({
       where: isAdmin
@@ -473,7 +474,7 @@ export async function connectInstagramAccountAction(tokenInput?: string, agentId
 
     const userId = session.user.id;
     await assertProAutomation(userId, session.user.email);
-    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    const isAdmin = isAdminEmail(session.user.email);
     const db = getDb();
 
     // 1. Dapatkan akun target jika agentId diberikan (misal saat Sinkronkan Ulang)
@@ -667,7 +668,7 @@ export async function disconnectInstagramAccountAction(accountId: string) {
     });
 
     const targetAccount = account || (
-      session.user.email === "anggasrimugiarahayu@gmail.com"
+      isAdminEmail(session.user.email)
         ? await (db as any).instagramAccount.findUnique({ where: { id: accountId } })
         : null
     );
@@ -729,7 +730,7 @@ export async function getInstagramFeedMediaAction(limit: number = 12, accountId?
     const db = getDb();
     let account: any = null;
 
-    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    const isAdmin = isAdminEmail(session.user.email);
     if (accountId) {
       account = await (db as any).instagramAccount.findFirst({
         where: isAdmin
@@ -874,7 +875,7 @@ export async function getInstagramStoriesAction(limit: number = 20, accountId?: 
     const db = getDb();
     let account: any = null;
 
-    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    const isAdmin = isAdminEmail(session.user.email);
     if (accountId) {
       account = await (db as any).instagramAccount.findFirst({
         where: isAdmin
@@ -1010,7 +1011,7 @@ export async function saveAutomationRuleAction(payload: {
   if (!session?.user?.id) throw new Error("Unauthorized");
   await assertProAutomation(session.user.id, session.user.email);
 
-  const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = isAdminEmail(session.user.email);
   const db = getDb();
   let targetAccountId = payload.accountId;
 
@@ -1160,7 +1161,7 @@ export async function toggleAutomationRuleAction(ruleId: string, isActive: boole
   if (!session?.user?.id) throw new Error("Unauthorized");
   await assertProAutomation(session.user.id, session.user.email);
 
-  const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = isAdminEmail(session.user.email);
   const db = getDb();
   const rule = await (db as any).instagramAutomationRule.findUnique({
     where: { id: ruleId },
@@ -1190,7 +1191,7 @@ export async function deleteAutomationRuleAction(ruleId: string) {
   if (!session?.user?.id) throw new Error("Unauthorized");
   await assertProAutomation(session.user.id, session.user.email);
 
-  const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+  const isAdmin = isAdminEmail(session.user.email);
   const db = getDb();
   const rule = await (db as any).instagramAutomationRule.findUnique({
     where: { id: ruleId },
@@ -1220,7 +1221,7 @@ export async function duplicateAutomationRuleAction(ruleId: string) {
     if (!session?.user?.id) throw new Error("Unauthorized");
     await assertProAutomation(session.user.id, session.user.email);
 
-    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    const isAdmin = isAdminEmail(session.user.email);
     const db = getDb();
     const rule = await (db as any).instagramAutomationRule.findUnique({
       where: { id: ruleId },
@@ -1306,7 +1307,7 @@ export async function retryFailedAutomationLogsAction(ruleId: string) {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    const isAdmin = isAdminEmail(session.user.email);
     const db = getDb();
     const rule = await (db as any).instagramAutomationRule.findUnique({
       where: { id: ruleId },
@@ -1517,7 +1518,7 @@ export async function rewindAutomationCommentsAction(ruleId: string) {
     const session = await auth();
     if (!session?.user?.id) return { success: false, error: "Unauthorized" };
 
-    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+    const isAdmin = isAdminEmail(session.user.email);
     const db = getDb();
     const rule = await (db as any).instagramAutomationRule.findUnique({
       where: { id: ruleId },

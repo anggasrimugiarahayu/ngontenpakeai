@@ -7,6 +7,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { calculatePaymentFees, PAYMENT_METHODS, PaymentMethodKey } from "@/lib/payment-calc";
 import { mergePricingConfig } from "@/lib/pricing-packages";
 import { calculateSubscriptionFulfillment } from "@/lib/subscription-utils";
+import { isAdminEmail } from "@/lib/admin";
 
 export async function createCheckoutToken(data: { 
   type: string, 
@@ -240,7 +241,7 @@ export async function verifyPayment(orderId: string) {
     if (
       session?.user?.id &&
       order.userId !== session.user.id &&
-      session?.user?.email?.toLowerCase() !== "anggasrimugiarahayu@gmail.com"
+      !isAdminEmail(session?.user?.email)
     ) {
       return { success: false, error: "Unauthorized" };
     }

@@ -9,13 +9,14 @@ import { deletePhysicalUploadFile } from "@/lib/server-uploads";
 import { HomepageCardConfig } from "@/lib/homepage-cards";
 import { getCachedHomepageCards } from "@/lib/cache";
 import { getYoutubeVideoId, parseYouTubeIsoDuration } from "@/lib/youtube-utils";
+import { isAdminEmail } from "@/lib/admin";
 
 async function assertAdmin() {
   const session = await auth();
   if (!session?.user?.id) {
     throw new Error("Unauthorized");
   }
-  if (session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com") {
+  if (isAdminEmail(session.user.email)) {
     return;
   }
   const dbUser = await prisma.user.findUnique({
