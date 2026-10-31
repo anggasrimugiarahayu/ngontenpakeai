@@ -317,6 +317,7 @@ export async function GET(request: NextRequest) {
           ...userMatchCondition,
           OR: [
             { instagramId },
+            { boundInstagramId: instagramId },
             { pageId },
             { instagramId: { startsWith: `unlinked_${targetAgentId || ""}` } },
           ],
@@ -338,32 +339,60 @@ export async function GET(request: NextRequest) {
       });
     }
 
-    // Pastikan tidak ada record agen lain yang masih memegang instagramId yang sama (menghindari bentrok @unique)
-    const conflictingAccounts = await (db as any).instagramAccount.findMany({
-      where: {
-        instagramId,
-        ...(existingAgent ? { id: { not: existingAgent.id } } : {}),
-      },
-    });
-    for (const conflict of conflictingAccounts) {
-      await (db as any).instagramAccount.update({
-        where: { id: conflict.id },
-        data: {
-          instagramId: `unlinked_${conflict.id}_${Date.now()}`,
-          pageId: null,
-          accessToken: "",
-          isActive: false,
+    if (existingAgent) {
+      // PERIKSA PENGUNCIAN AKUN:
+      // Jika agen ini sudah pernah terikat ke suatu akun Instagram (boundInstagramId terisi),
+      // maka akun Instagram yang login HARUS SAMA dengan boundInstagramId tersebut!
+      if (existingAgent.boundInstagramId && existingAgent.boundInstagramId !== instagramId) {
+        console.warn(
+          `[Meta OAuth Lock] Rejecting connection: Agent ${existingAgent.id} is bound to @${existingAgent.boundUsername || existingAgent.boundInstagramId}, but attempted login with @${username} (${instagramId})`
+        );
+
+        const redirectUrl = new URL("/ruang-automation", origin);
+        redirectUrl.searchParams.set("error", "account_mismatch");
+        redirectUrl.searchParams.set(
+          "boundUsername",
+          existingAgent.boundUsername || existingAgent.username || "akun sebelumnya"
+        );
+        redirectUrl.searchParams.set("attemptedUsername", username);
+        redirectUrl.searchParams.set("platform", "instagram");
+        if (targetAgentId) {
+          redirectUrl.searchParams.set("agentId", targetAgentId);
+        }
+
+        const response = NextResponse.redirect(redirectUrl);
+        response.cookies.delete("meta_oauth_state");
+        response.cookies.delete("meta_oauth_agent_id");
+        return response;
+      }
+
+      // Pastikan tidak ada record agen lain yang masih memegang instagramId yang sama (menghindari bentrok @unique)
+      const conflictingAccounts = await (db as any).instagramAccount.findMany({
+        where: {
+          instagramId,
+          id: { not: existingAgent.id },
         },
       });
-    }
+      for (const conflict of conflictingAccounts) {
+        await (db as any).instagramAccount.update({
+          where: { id: conflict.id },
+          data: {
+            instagramId: `unlinked_${conflict.id}_${Date.now()}`,
+            pageId: null,
+            accessToken: "",
+            isActive: false,
+          },
+        });
+      }
 
-    if (existingAgent) {
       // Perbarui agen yang sudah ada: pertahankan nama agen kustom, simpan kredensial Meta baru, aktifkan kembali
       await (db as any).instagramAccount.update({
         where: { id: existingAgent.id },
         data: {
           userId, // pastikan userId sesuai dengan session saat ini
           instagramId,
+          boundInstagramId: existingAgent.boundInstagramId || instagramId, // Kunci permanen
+          boundUsername: existingAgent.boundUsername || username,
           pageId,
           username,
           name: existingAgent.name && !existingAgent.name.startsWith("Agen @") ? existingAgent.name : name,
@@ -375,11 +404,39 @@ export async function GET(request: NextRequest) {
       });
       boundAgentId = existingAgent.id;
     } else {
-      // 4. Hanya buat agen baru jika user belum memiliki agen sama sekali
+      // 4. Jika agen belum ada, periksa kuota agen user sebelum membuat agen baru
+      const userRecord = await (db as any).user.findUnique({
+        where: { id: userId },
+        select: { role: true, automationAgentLimit: true },
+      });
+
+      const isAdmin = userRecord?.role === "ADMIN" || session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+      const allowedLimit = userRecord?.automationAgentLimit || 1;
+
+      const currentCount = await (db as any).instagramAccount.count({
+        where: userMatchCondition,
+      });
+
+      if (!isAdmin && currentCount >= allowedLimit) {
+        console.warn(
+          `[Meta OAuth Lock] Rejecting new agent: User ${userId} has ${currentCount} agents, limit is ${allowedLimit}`
+        );
+        const redirectUrl = new URL("/ruang-automation", origin);
+        redirectUrl.searchParams.set("error", "agent_limit_reached");
+        redirectUrl.searchParams.set("platform", "instagram");
+        const response = NextResponse.redirect(redirectUrl);
+        response.cookies.delete("meta_oauth_state");
+        response.cookies.delete("meta_oauth_agent_id");
+        return response;
+      }
+
+      // Buat agen baru dan langsung kunci ke akun ini
       const created = await (db as any).instagramAccount.create({
         data: {
           userId,
           instagramId,
+          boundInstagramId: instagramId, // Kunci permanen
+          boundUsername: username,
           pageId,
           username,
           name: name || `Agen @${username}`,

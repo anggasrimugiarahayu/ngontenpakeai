@@ -139,41 +139,70 @@ export function InstagramConnectionTab({
         })()
       ) : (
         /* DISCONNECTED STATE */
-        <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] p-5 sm:p-6 bg-white dark:bg-[#141B31] shadow-xs">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
-            {/* Left: Instagram Icon + Agent Info */}
-            <div className="flex items-start sm:items-center gap-3.5 sm:gap-4.5 min-w-0 flex-1">
-              <InstagramIcon className="w-12 h-12 sm:w-14 sm:h-14 text-gray-800 dark:text-gray-200 shrink-0" />
+        (() => {
+          const boundUser = currentAgent?.boundUsername || displayAccount?.boundUsername || account?.boundUsername;
+          const isBound = Boolean(currentAgent?.boundInstagramId || displayAccount?.boundInstagramId || account?.boundInstagramId);
 
-              <div className="min-w-0 flex-1">
-                <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white leading-tight truncate">
-                  {agentDisplayName}
-                </h2>
-                <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-normal leading-relaxed mt-1">
-                  Belum ada akun instagram terhubung, silahkan klik “Hubungkan Akun Instagram” sekarang.
-                </p>
+          return (
+            <div className="rounded-2xl border border-gray-200 dark:border-[#2C3246] p-5 sm:p-6 bg-white dark:bg-[#141B31] shadow-xs">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
+                {/* Left: Instagram Icon + Agent Info */}
+                <div className="flex items-start sm:items-center gap-3.5 sm:gap-4.5 min-w-0 flex-1">
+                  <InstagramIcon className="w-12 h-12 sm:w-14 sm:h-14 text-gray-800 dark:text-gray-200 shrink-0" />
+
+                  <div className="min-w-0 flex-1">
+                    <h2 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white leading-tight truncate">
+                      {agentDisplayName}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-normal leading-relaxed mt-1">
+                      {isBound ? (
+                        <>
+                          Agen ini terkunci permanen untuk akun{" "}
+                          <strong className="text-gray-900 dark:text-white">
+                            @{boundUser}
+                          </strong>
+                          . Silakan hubungkan kembali akun yang sama.
+                        </>
+                      ) : (
+                        "Belum ada akun instagram terhubung, silahkan klik “Hubungkan Akun IG” sekarang."
+                      )}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Right: Status (top right) & Action Button (bottom right) */}
+                <div className="flex flex-col items-center md:items-end justify-between gap-3.5 sm:gap-4 shrink-0 md:self-stretch pt-3 md:pt-0 border-t border-gray-100 dark:border-[#2C3246] md:border-t-0">
+                  <div className="w-full text-center md:text-right text-xs text-gray-400 dark:text-gray-500 font-normal">
+                    {isBound ? (
+                      <span className="text-amber-600 dark:text-amber-400 font-semibold">
+                        Terputus (Terkunci @{boundUser})
+                      </span>
+                    ) : (
+                      "Belum Terhubung ke akun"
+                    )}
+                  </div>
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={() => onStartMetaOAuth(displayAccount?.id || selectedAgentId || account?.id)}
+                    disabled={isPending}
+                    isLoading={isPending}
+                    className="w-full md:w-auto"
+                    title={
+                      isBound
+                        ? `Hubungkan kembali akun @${boundUser}`
+                        : "Hubungkan akun Instagram Anda secara resmi via Meta"
+                    }
+                  >
+                    <span>
+                      {isBound ? `Hubungkan Kembali @${boundUser}` : "Hubungkan Akun IG"}
+                    </span>
+                  </Button>
+                </div>
               </div>
             </div>
-
-            {/* Right: Status (top right) & Action Button (bottom right) */}
-            <div className="flex flex-col items-center md:items-end justify-between gap-3.5 sm:gap-4 shrink-0 md:self-stretch pt-3 md:pt-0 border-t border-gray-100 dark:border-[#2C3246] md:border-t-0">
-              <div className="w-full text-center md:text-right text-xs text-gray-400 dark:text-gray-500 font-normal">
-                Belum Terhubung ke akun
-              </div>
-              <Button
-                variant="primary"
-                size="md"
-                onClick={() => onStartMetaOAuth(displayAccount?.id || selectedAgentId || account?.id)}
-                disabled={isPending}
-                isLoading={isPending}
-                className="w-full md:w-auto"
-                title="Hubungkan akun Instagram Anda secara resmi via Meta"
-              >
-                <span>Hubungkan Akun IG</span>
-              </Button>
-            </div>
-          </div>
-        </div>
+          );
+        })()
       )}
     </div>
   );

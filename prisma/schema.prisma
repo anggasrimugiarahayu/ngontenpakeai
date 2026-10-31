@@ -48,6 +48,7 @@ model User {
   proToolsExpiredAt      DateTime?          @map("pro_tools_expired_at")
   proAutomationExpiredAt DateTime?          @map("pro_automation_expired_at")
   proRisetExpiredAt      DateTime?          @map("pro_riset_expired_at")
+  automationAgentLimit   Int                @default(1) @map("automation_agent_limit")
   image                  String?
   googleApiKey     String?           @map("google_api_key")
   onboardingCompleted Boolean           @default(false) @map("onboarding_completed")
@@ -355,18 +356,20 @@ model Voucher {
 }
 
 model InstagramAccount {
-  id              String   @id @default(cuid())
-  userId          String   @map("user_id")
-  instagramId     String   @unique @map("instagram_id")
-  username        String
-  name            String?
-  profileName     String?  @map("profile_name")
-  profilePicUrl   String?  @map("profile_pic_url")
-  accessToken     String   @db.Text @map("access_token")
-  pageId          String?  @map("page_id")
-  isActive        Boolean  @default(true) @map("is_active")
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  instagramId      String   @unique @map("instagram_id")
+  boundInstagramId String?  @map("bound_instagram_id")
+  boundUsername    String?  @map("bound_username")
+  username         String
+  name             String?
+  profileName      String?  @map("profile_name")
+  profilePicUrl    String?  @map("profile_pic_url")
+  accessToken      String   @db.Text @map("access_token")
+  pageId           String?  @map("page_id")
+  isActive         Boolean  @default(true) @map("is_active")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   rules           InstagramAutomationRule[]
@@ -374,6 +377,7 @@ model InstagramAccount {
 
   @@index([userId])
   @@index([pageId])
+  @@index([boundInstagramId])
   @@map("instagram_accounts")
 }
 

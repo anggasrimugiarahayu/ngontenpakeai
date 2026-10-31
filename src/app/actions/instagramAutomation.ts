@@ -70,6 +70,8 @@ export async function fetchFreshInstagramData(userId: string, isAdmin: boolean, 
       id: acc.id,
       name: acc.name || (acc.username ? `Agen @${acc.username}` : "Agen Instagram"),
       username: acc.username || "",
+      boundUsername: acc.boundUsername || null,
+      boundInstagramId: acc.boundInstagramId || null,
       profileName: acc.profileName || "",
       instagramId: acc.instagramId || "",
       profilePicUrl: acc.profilePicUrl || null,
@@ -80,6 +82,13 @@ export async function fetchFreshInstagramData(userId: string, isAdmin: boolean, 
       rulesCount: acc._count?.rules || 0,
       logsCount: acc._count?.logs || 0,
     }));
+
+    // Ambil data user untuk mengetahui kuota limit agen
+    const userRecord = await db.user.findUnique({
+      where: { id: userId },
+      select: { role: true, automationAgentLimit: true, proAutomationExpiredAt: true }
+    });
+    const agentLimit = (isAdmin || userRecord?.role === "ADMIN") ? 999 : (userRecord?.automationAgentLimit || 1);
 
     // 2. Tentukan agen mana yang aktif saat masuk ke workspace detail
     let activeAccount: any = null;
@@ -93,6 +102,7 @@ export async function fetchFreshInstagramData(userId: string, isAdmin: boolean, 
     if (!activeAccount) {
       return {
         agents,
+        agentLimit,
         account: null,
         rules: [],
         stats: { totalComments: 0, totalDms: 0 },
@@ -180,9 +190,12 @@ export async function fetchFreshInstagramData(userId: string, isAdmin: boolean, 
 
     return {
       agents,
+      agentLimit,
       account: {
         id: activeAccount.id,
         instagramId: activeAccount.instagramId,
+        boundInstagramId: activeAccount.boundInstagramId || null,
+        boundUsername: activeAccount.boundUsername || null,
         username: activeAccount.username || "",
         name: activeAccount.name || (activeAccount.username ? `Agen @${activeAccount.username}` : "Agen Instagram"),
         profileName: activeAccount.profileName || "",
@@ -256,6 +269,34 @@ export async function createInstagramAgentAction({ name }: { name: string }) {
 
     const db = getDb();
     const userId = session.user.id;
+    const isAdmin = session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
+
+    // Validasi kuota agen:
+    const user = await (db as any).user.findUnique({
+      where: { id: userId },
+      select: { role: true, automationAgentLimit: true, proAutomationExpiredAt: true }
+    });
+
+    const isUserAdmin = isAdmin || user?.role === "ADMIN";
+    const allowedLimit = user?.automationAgentLimit || 1;
+
+    const currentAgentCount = await (db as any).instagramAccount.count({
+      where: {
+        OR: [
+          { userId },
+          { user: { email: session.user.email || "" } }
+        ]
+      }
+    });
+
+    if (!isUserAdmin && currentAgentCount >= allowedLimit) {
+      return {
+        success: false,
+        error: "payment_required",
+        message: "Anda telah memiliki 1 agen aktif. Untuk membuat agen baru, silakan lakukan pembayaran paket terlebih dahulu."
+      };
+    }
+
     const cleanName = name?.trim() || "Agen Baru";
     const pendingId = `pending_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
 
@@ -355,6 +396,19 @@ export async function deleteInstagramAgentAction(agentId: string) {
             ]
           }
     });
+
+    if (!existing) {
+      return { success: false, error: "Agen tidak ditemukan" };
+    }
+
+    // Proteksi: Jika user bukan admin dan agen sudah pernah terikat ke akun Instagram,
+    // tidak boleh dihapus untuk mencegah manipulasi ganti akun gratis!
+    if (!isAdmin && existing.boundInstagramId) {
+      return {
+        success: false,
+        error: "Agen yang sudah terhubung dengan akun Instagram tidak dapat dihapus. Silakan hubungi admin jika ingin melakukan perubahan akun."
+      };
+    }
 
     if (existing?.accessToken) {
       await fetch(
@@ -623,14 +677,18 @@ export async function disconnectInstagramAccountAction(accountId: string) {
     }
 
     const unlinkedId = `unlinked_${accountId}_${Date.now()}`;
+    const boundId = targetAccount.boundInstagramId || (targetAccount.instagramId && !targetAccount.instagramId.startsWith("unlinked_") && !targetAccount.instagramId.startsWith("pending_") ? targetAccount.instagramId : null);
+    const boundUser = targetAccount.boundUsername || targetAccount.username || null;
+
     await (db as any).instagramAccount.update({
       where: { id: accountId },
       data: {
         accessToken: "",
         instagramId: unlinkedId,
         pageId: null,
-        username: "",
-        profilePicUrl: null,
+        boundInstagramId: boundId,
+        boundUsername: boundUser,
+        username: boundUser || "",
         isActive: false
       }
     });

@@ -78,6 +78,7 @@ export async function POST(req: NextRequest) {
               proToolsExpiredAt: true,
               proAutomationExpiredAt: true,
               proRisetExpiredAt: true,
+              automationAgentLimit: true,
             },
           });
 

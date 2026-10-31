@@ -29,6 +29,7 @@ interface InstagramAgentListSectionProps {
   onOpenEditAgentModal: (agent: any) => void;
   onDisconnectAgent: (agentId: string, agentName: string) => void;
   onDeleteAgent: (agentId: string, agentName: string) => void;
+  isAdmin?: boolean;
 }
 
 export function InstagramAgentListSection({
@@ -46,6 +47,7 @@ export function InstagramAgentListSection({
   onOpenEditAgentModal: onOpenEditAgent,
   onDisconnectAgent,
   onDeleteAgent,
+  isAdmin = false,
 }: InstagramAgentListSectionProps) {
   return (
     <div className="animate-in fade-in duration-200 space-y-6">
@@ -241,16 +243,22 @@ export function InstagramAgentListSection({
                   <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 leading-normal mt-1">
                     {agent.isLinked
                       ? "Otomatisasi komentar dan DM aktif 24/7"
+                      : agent.boundUsername
+                      ? `Terkunci untuk akun @${agent.boundUsername}`
                       : "Silahkan untuk hubungkan akun IG anda"}
                   </p>
-                  <div className="mt-1 sm:mt-1.5">
+                  <div className="mt-1 sm:mt-1.5 flex items-center gap-2">
                     {agent.isLinked ? (
                       <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                        Terhubung
+                        Terhubung (@{agent.username})
+                      </span>
+                    ) : agent.boundUsername ? (
+                      <span className="text-xs sm:text-sm font-semibold text-amber-600 dark:text-amber-400">
+                        Terputus (Terkunci @{agent.boundUsername})
                       </span>
                     ) : (
                       <span className="text-xs sm:text-sm font-semibold text-gray-400 dark:text-gray-500">
-                        Terputus
+                        Belum Terhubung
                       </span>
                     )}
                   </div>
@@ -308,18 +316,24 @@ export function InstagramAgentListSection({
                         </button>
                       )}
 
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setActiveDropdownAgentId(null);
-                          onDeleteAgent(agent.id, agent.name);
-                        }}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 border-t border-gray-100 dark:border-[#2C3246] cursor-pointer text-left"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                        <span>Hapus Agen</span>
-                      </button>
+                      {agent.boundInstagramId && !isAdmin ? (
+                        <div className="px-3.5 py-2 text-[10px] text-gray-400 dark:text-gray-500 italic border-t border-gray-100 dark:border-[#2C3246]">
+                          Terkunci permanen ke @{agent.boundUsername || agent.username}
+                        </div>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setActiveDropdownAgentId(null);
+                            onDeleteAgent(agent.id, agent.name);
+                          }}
+                          className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs font-semibold text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-500/10 border-t border-gray-100 dark:border-[#2C3246] cursor-pointer text-left"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Hapus Agen</span>
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>

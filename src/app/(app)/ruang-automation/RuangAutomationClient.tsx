@@ -261,6 +261,20 @@ export default function RuangAutomationClient({
       setSelectedPlatform("instagram");
       if (errorParam === "cancelled") {
         showToast("info", "Proses login Instagram dibatalkan.");
+      } else if (errorParam === "account_mismatch") {
+        const boundUser = params.get("boundUsername");
+        const attemptedUser = params.get("attemptedUsername");
+        showToast(
+          "error",
+          `Akun tidak cocok! Agen ini sudah terkunci permanen untuk akun @${boundUser || "sebelumnya"}. Anda tidak dapat menghubungkan akun @${attemptedUser || "lain"}.`
+        );
+      } else if (errorParam === "agent_limit_reached") {
+        showToast(
+          "info",
+          "Untuk membuat agen baru, silakan lakukan pembayaran paket terlebih dahulu."
+        );
+        window.dispatchEvent(new Event("app-loading-start"));
+        router.push("/?pricing=true&cat=automation");
       } else if (errorParam === "no_business_account") {
         const detailsParam = params.get("details");
         showToast(
@@ -373,8 +387,16 @@ export default function RuangAutomationClient({
         newUrl.searchParams.set("agentId", res.agent.id);
         window.history.pushState({}, "", newUrl.toString());
       } else {
-        showToast("error", res.error || "Gagal membuat agen");
-        await mutateData();
+        if (res.error === "payment_required") {
+          showToast("info", res.message || "Untuk membuat agen baru, silakan lakukan pembayaran paket terlebih dahulu.");
+          setIsCreateAgentModalOpen(false);
+          await mutateData();
+          window.dispatchEvent(new Event("app-loading-start"));
+          router.push("/?pricing=true&cat=automation");
+        } else {
+          showToast("error", res.error || "Gagal membuat agen");
+          await mutateData();
+        }
       }
     } catch (err: any) {
       showToast("error", err.message || "Terjadi kesalahan server");
@@ -1771,6 +1793,13 @@ export default function RuangAutomationClient({
             }
           }}
           onOpenCreateAgentModal={() => {
+            const agentLimit = (data as any)?.agentLimit ?? 1;
+            if (!isAdmin && agents.length >= agentLimit) {
+              showToast("info", "Untuk membuat agen baru, silakan lakukan pembayaran paket terlebih dahulu.");
+              window.dispatchEvent(new Event("app-loading-start"));
+              router.push("/?pricing=true&cat=automation");
+              return;
+            }
             setNewAgentName("");
             setIsCreateAgentModalOpen(true);
           }}
@@ -1785,6 +1814,7 @@ export default function RuangAutomationClient({
           onOpenEditAgentModal={handleOpenEditAgentModal}
           onDisconnectAgent={handleDisconnectAgent}
           onDeleteAgent={handleDeleteAgent}
+          isAdmin={isAdmin}
         />
       ) : (
         /* ========================================================================= */

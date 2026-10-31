@@ -330,6 +330,7 @@ export async function verifyPayment(orderId: string) {
               proToolsExpiredAt: true,
               proAutomationExpiredAt: true,
               proRisetExpiredAt: true,
+              automationAgentLimit: true,
             },
           });
 
