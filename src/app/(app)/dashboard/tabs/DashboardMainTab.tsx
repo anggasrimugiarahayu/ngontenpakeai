@@ -12,6 +12,10 @@ import {
   Calendar as CalendarIcon,
   Eye,
   Send,
+  BookOpen,
+  Sparkles,
+  Bot,
+  Search,
 } from "lucide-react";
 import {
   BarChart,
@@ -130,27 +134,81 @@ export function DashboardMainTab({
                 </h2>
               </div>
             </div>
-            <button className="text-gray-500 dark:text-gray-400 text-[11px] font-medium mt-2 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
-              Payout Setting Page
-            </button>
+            <a href="/pengaturan" className="text-gray-500 dark:text-gray-400 text-[11px] font-medium mt-2 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center gap-1 cursor-pointer">
+              Pengaturan Pembayaran & Kuota
+            </a>
           </div>
 
-          <div className="mt-4 bg-white/70 dark:bg-[#0A1128]/60 backdrop-blur-md p-2 rounded-xl border border-white/50 dark:border-[#2C3246] flex items-center justify-between group">
+          <div className="mt-4 bg-white/70 dark:bg-[#0A1128]/60 backdrop-blur-md p-2.5 rounded-xl border border-white/50 dark:border-[#2C3246] flex items-center justify-between group">
             <div className="px-1 overflow-hidden">
               <p className="text-[9px] font-bold text-gray-500 uppercase tracking-wider mb-0.5">
-                PayMe link
+                Link Checkout Platform
               </p>
               <p className="text-emerald-600 dark:text-emerald-400 text-xs font-medium truncate w-full">
-                lynkti.com/pay
+                /checkout
               </p>
             </div>
-            <button className="w-7 h-7 flex-shrink-0 flex items-center justify-center bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-lg shadow-sm text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer">
+            <a
+              href="/checkout"
+              target="_blank"
+              rel="noreferrer"
+              className="w-7 h-7 flex-shrink-0 flex items-center justify-center bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-lg shadow-sm text-gray-400 hover:text-gray-700 dark:hover:text-white transition-colors cursor-pointer"
+            >
               <LinkIcon size={12} />
-            </button>
+            </a>
           </div>
 
           <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-20">
             <Send size={40} className="transform -rotate-12" />
+          </div>
+        </div>
+      </div>
+
+      {/* 4 Pilar Pro Users Breakdown */}
+      <div className="bg-white dark:bg-[#141B31] rounded-2xl p-4 sm:p-5 shadow-sm border border-gray-200 dark:border-[#2C3246]">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+            <Layers size={14} className="text-rn-accent" />
+            Distribusi Pengguna Aktif per 4 Pilar Platform
+          </h3>
+          <span className="text-[11px] text-gray-400 font-medium">Status Hak Akses Aktif</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+          <div className="p-3 rounded-xl bg-blue-50/50 dark:bg-blue-950/20 border border-blue-100 dark:border-blue-900/30">
+            <div className="flex items-center gap-2 mb-1.5 text-blue-600 dark:text-blue-400 text-xs font-bold">
+              <BookOpen size={14} />
+              Ruang Belajar
+            </div>
+            <div className="text-lg font-black text-gray-900 dark:text-white">
+              {formatIDR(data.pillarStats?.belajar || 0)} <span className="text-xs font-normal text-gray-500">user</span>
+            </div>
+          </div>
+          <div className="p-3 rounded-xl bg-orange-50/50 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30">
+            <div className="flex items-center gap-2 mb-1.5 text-orange-600 dark:text-orange-400 text-xs font-bold">
+              <Sparkles size={14} />
+              Ruang Ngonten
+            </div>
+            <div className="text-lg font-black text-gray-900 dark:text-white">
+              {formatIDR(data.pillarStats?.ngonten || 0)} <span className="text-xs font-normal text-gray-500">user</span>
+            </div>
+          </div>
+          <div className="p-3 rounded-xl bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30">
+            <div className="flex items-center gap-2 mb-1.5 text-emerald-600 dark:text-emerald-400 text-xs font-bold">
+              <Bot size={14} />
+              Ruang Automation
+            </div>
+            <div className="text-lg font-black text-gray-900 dark:text-white">
+              {formatIDR(data.pillarStats?.automation || 0)} <span className="text-xs font-normal text-gray-500">user</span>
+            </div>
+          </div>
+          <div className="p-3 rounded-xl bg-purple-50/50 dark:bg-purple-950/20 border border-purple-100 dark:border-purple-900/30">
+            <div className="flex items-center gap-2 mb-1.5 text-purple-600 dark:text-purple-400 text-xs font-bold">
+              <Search size={14} />
+              Ruang Riset
+            </div>
+            <div className="text-lg font-black text-gray-900 dark:text-white">
+              {formatIDR(data.pillarStats?.riset || 0)} <span className="text-xs font-normal text-gray-500">user</span>
+            </div>
           </div>
         </div>
       </div>

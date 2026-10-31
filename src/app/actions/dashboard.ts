@@ -58,6 +58,10 @@ async function calculateDashboardStats() {
     ordersLast30,
     analyticsLast30,
     pricingSetting,
+    activeBelajarCount,
+    activeNgontenCount,
+    activeAutomationCount,
+    activeRisetCount,
   ] = await Promise.all([
     prisma.user.count().catch(() => 0),
     prisma.digitalProduct.count().catch(() => 0),
@@ -147,6 +151,84 @@ async function calculateDashboardStats() {
     prisma.appSetting
       .findUnique({ where: { key: "PRICING_PACKAGES" } })
       .catch(() => null),
+
+    prisma.user
+      .count({
+        where: {
+          OR: [
+            { role: "ADMIN" },
+            { hasProBook: true },
+            {
+              orders: {
+                some: {
+                  status: "SUCCESS",
+                  orderType: {
+                    in: ["PRO_BOOK", "PRO_BOOK_PRO", "PRO_PLUS", "PRO_PLUS_1Y"],
+                  },
+                },
+              },
+            },
+          ],
+        },
+      })
+      .catch(() => 0),
+
+    prisma.user
+      .count({
+        where: {
+          OR: [
+            { role: "ADMIN" },
+            { proToolsExpiredAt: { gt: now } },
+            {
+              orders: {
+                some: {
+                  status: "SUCCESS",
+                  orderType: { in: ["PRO_TOOLS", "PRO_PLUS", "PRO_PLUS_1Y"] },
+                },
+              },
+            },
+          ],
+        },
+      })
+      .catch(() => 0),
+
+    prisma.user
+      .count({
+        where: {
+          OR: [
+            { role: "ADMIN" },
+            { proAutomationExpiredAt: { gt: now } },
+            {
+              orders: {
+                some: {
+                  status: "SUCCESS",
+                  orderType: { in: ["PRO_AUTOMATION", "PRO_PLUS", "PRO_PLUS_1Y"] },
+                },
+              },
+            },
+          ],
+        },
+      })
+      .catch(() => 0),
+
+    prisma.user
+      .count({
+        where: {
+          OR: [
+            { role: "ADMIN" },
+            { proRisetExpiredAt: { gt: now } },
+            {
+              orders: {
+                some: {
+                  status: "SUCCESS",
+                  orderType: { in: ["PRO_RISET", "PRO_PLUS", "PRO_PLUS_1Y"] },
+                },
+              },
+            },
+          ],
+        },
+      })
+      .catch(() => 0),
   ]);
 
   let rawPricingConfig: any = null;
@@ -277,6 +359,12 @@ async function calculateDashboardStats() {
     salesChartData,
     viewsChartData,
     pricingConfig: rawPricingConfig,
+    pillarStats: {
+      belajar: activeBelajarCount,
+      ngonten: activeNgontenCount,
+      automation: activeAutomationCount,
+      riset: activeRisetCount,
+    },
   };
 }
 

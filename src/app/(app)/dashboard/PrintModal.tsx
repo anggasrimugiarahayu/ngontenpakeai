@@ -141,18 +141,18 @@ function ReceiptContent({ order, showLogo, hideProduct, showNote, size, session 
       )}
       
       <div className="text-center border-b border-t border-gray-900 py-3 mb-4">
-        <h2 className="font-bold text-base mb-1">Shipping Label</h2>
+        <h2 className="font-bold text-base mb-1">INVOICE TRANSAKSI DIGITAL</h2>
         <p className="text-[11px] break-all">{trxId}</p>
       </div>
 
       <div className={`flex ${size === '58mm' ? 'flex-col space-y-4' : 'justify-between gap-4'} mb-4 border-b border-gray-900 pb-4`}>
         <div className="flex-1">
-          <p className="font-bold mb-2 text-[10px] text-gray-500">SENDER</p>
+          <p className="font-bold mb-2 text-[10px] text-gray-500">PENJUAL</p>
           <p className="font-bold mb-1">{senderName}</p>
           <p>{senderPhone}</p>
         </div>
         <div className="flex-1">
-          <p className="font-bold mb-2 text-[10px] text-gray-500">RECEIVER</p>
+          <p className="font-bold mb-2 text-[10px] text-gray-500">PEMBELI</p>
           <p className="font-bold mb-1">{receiverName}</p>
           <p className="break-words" style={{ wordBreak: 'break-all' }}>{receiverEmail}</p>
           <p>{receiverPhone}</p>
@@ -160,17 +160,9 @@ function ReceiptContent({ order, showLogo, hideProduct, showNote, size, session 
       </div>
 
       <div className="mb-5 border-b border-gray-900 pb-4 space-y-2">
-        <p className="font-bold mb-3 text-[10px] text-gray-500">SHIPPING INFO</p>
+        <p className="font-bold mb-3 text-[10px] text-gray-500">INFORMASI TRANSAKSI</p>
         <div className="flex justify-between">
-          <span>Shipping Fee</span>
-          <span>Rp 0</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Total weight</span>
-          <span>0.0 kg</span>
-        </div>
-        <div className="flex justify-between">
-          <span>Total item ({1} item)</span>
+          <span>Total Item ({1} item)</span>
           <span>{formatIDR(mainItemPrice)}</span>
         </div>
         {addonCount > 0 && (
@@ -196,7 +188,7 @@ function ReceiptContent({ order, showLogo, hideProduct, showNote, size, session 
           <span className="font-bold">{formatIDR(order.amount || 0)}</span>
         </div>
         <div className="text-center mt-6 text-gray-400 text-[10px]">
-          Powered by <span className="font-bold text-gray-500">LYNK</span>
+          Powered by <span className="font-bold text-gray-500">ruangcreativemuslim</span>
         </div>
       </div>
 
