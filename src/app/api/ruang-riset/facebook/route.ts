@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/auth";
+import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import {
   FacebookUserProfile,
   FacebookPostItem,
@@ -289,6 +291,30 @@ async function handleFacebookResearchRequest(
   rawUsername: string,
   forceRefresh = false
 ) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  const userId = session.user.id;
+
+  const access = await verifyFeatureAccess(
+    session.user.id,
+    "Riset Facebook",
+    session.user.email
+  );
+
+  if (!access.authorized) {
+    return NextResponse.json(
+      {
+        error: access.reason || "Akses tidak diizinkan",
+        code: access.code,
+        isProOnly: access.isProOnly,
+        remainingQuota: access.remainingQuota ?? 0,
+      },
+      { status: 403 }
+    );
+  }
+
   const handle = extractFacebookHandle(rawUsername);
 
   if (!handle) {
@@ -306,6 +332,7 @@ async function handleFacebookResearchRequest(
         profile: cached.profile,
         posts: cached.posts,
         cached: true,
+        remainingQuota: access.isPro ? 9999 : access.remainingQuota,
       });
     }
   }
@@ -1154,9 +1181,15 @@ async function handleFacebookResearchRequest(
       });
     }
 
+    if (!access.isPro && access.featureId) {
+      await incrementFeatureUsage(userId, access.featureId);
+    }
+    const remainingQuota = access.isPro ? 9999 : Math.max(0, (access.remainingQuota ?? 1) - 1);
+
     return NextResponse.json({
       profile,
       posts: finalizedPosts,
+      remainingQuota,
     });
   } catch (err: any) {
     console.error("[Facebook Research API Error]:", err);

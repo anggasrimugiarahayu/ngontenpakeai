@@ -188,20 +188,11 @@ export function calculateSubscriptionFulfillment(params: {
       days,
       now
     );
-    // Jika user membeli paket automation lagi saat sudah punya automation aktif,
-    // tambahkan kuota agen (+1) karena 1 paket baru = 1 agen baru
-    const isCurrentlyActive =
-      currentUser?.proAutomationExpiredAt &&
-      new Date(currentUser.proAutomationExpiredAt) > now;
-    if (isCurrentlyActive) {
-      updateData.automationAgentLimit =
-        (currentUser?.automationAgentLimit || 1) + 1;
-    } else {
-      updateData.automationAgentLimit = Math.max(
-        1,
-        currentUser?.automationAgentLimit || 1
-      );
-    }
+    // Pertahankan batas agen (tidak otomatis memberikan agen ekstra gratis saat perpanjangan)
+    updateData.automationAgentLimit = Math.max(
+      1,
+      currentUser?.automationAgentLimit || 1
+    );
   } else if (meta.category === "riset") {
     updateData.proRisetExpiredAt = addDurationToExpiry(
       currentUser?.proRisetExpiredAt,

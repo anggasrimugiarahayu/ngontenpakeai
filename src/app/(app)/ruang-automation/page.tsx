@@ -59,17 +59,19 @@ export default async function RuangAutomationPage({
 
   const resolvedParams = searchParams ? await searchParams : {};
   const initialAgentId = typeof resolvedParams.agentId === "string" ? resolvedParams.agentId : null;
-  const canEnter = isLoggedIn && (isPro || isAdmin || !isAutoProOnly);
-  const initialPlatform = (canEnter && resolvedParams.platform === "instagram") ? "instagram" : null;
 
   let initialData = { agents: [], account: null, rules: [], stats: { totalComments: 0, totalDms: 0 }, logs: [] };
-  if (isLoggedIn && (isPro || isAdmin)) {
+  if (isLoggedIn) {
     try {
       initialData = await getInstagramAutomationDataAction(initialAgentId || undefined);
     } catch (err) {
       console.error("Error fetching initialData in RuangAutomationPage:", err);
     }
   }
+
+  const hasAgents = Array.isArray(initialData?.agents) && initialData.agents.length > 0;
+  const canEnter = isLoggedIn && (isPro || isAdmin || !isAutoProOnly || hasAgents);
+  const initialPlatform = (canEnter && resolvedParams.platform === "instagram") ? "instagram" : null;
 
   return (
     <RuangAutomationClient

@@ -198,7 +198,7 @@ Anda beroperasi dalam 3 Mode:
       parsedData = { is_error: true, error_message: "Format JSON tidak valid dari AI." };
     }
 
-    if (accessCheck.featureId && !parsedData.is_error) {
+    if (parsedData?.response_type === "ebook_result" && accessCheck.featureId && !parsedData.is_error) {
       await incrementFeatureUsage(session.user.id, accessCheck.featureId);
     }
 

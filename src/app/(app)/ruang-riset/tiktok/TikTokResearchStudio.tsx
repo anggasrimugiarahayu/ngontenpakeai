@@ -214,6 +214,17 @@ export function TikTokResearchStudio({
 
       const data = await res.json();
       if (!res.ok) {
+        if (data.code === "QUOTA_EXCEEDED") {
+          window.dispatchEvent(
+            new CustomEvent("riset-quota-exceeded", {
+              detail: {
+                featureName: "Riset TikTok",
+                used: 3,
+                limit: 3,
+              },
+            })
+          );
+        }
         throw new Error(data.error || "Gagal memuat data akun TikTok.");
       }
 

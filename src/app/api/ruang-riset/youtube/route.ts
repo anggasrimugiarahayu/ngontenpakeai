@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
-import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
+import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import { YouTubeChannelProfile, YouTubeVideoItem } from "@/app/(app)/ruang-riset/youtube/types";
 
 // In-memory cache (15 minutes TTL) for high performance & rate-limit protection
@@ -202,39 +202,22 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
 
-    // Verify PRO Riset or Admin access on server
-    const isAdminEmail =
-      session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
-    let hasAccess = isAdminEmail;
-    if (!hasAccess) {
-      const [dbUser, userOrders] = await Promise.all([
-        prisma.user.findUnique({
-          where: { id: session.user.id },
-          select: {
-            email: true,
-            role: true,
-            hasProBook: true,
-            proToolsExpiredAt: true,
-            proAutomationExpiredAt: true,
-            proRisetExpiredAt: true,
-          },
-        }),
-        prisma.order.findMany({
-          where: { userId: session.user.id, status: "SUCCESS" },
-          select: { orderType: true, status: true, createdAt: true },
-        }),
-      ]);
-      const subStatus = computeUserSubscriptionStatus(dbUser, userOrders);
-      hasAccess = subStatus.hasRiset || subStatus.isAdmin;
-    }
+    // Verify Riset YouTube feature access (Free limit vs PRO)
+    const access = await verifyFeatureAccess(
+      session.user.id,
+      "Riset YouTube",
+      session.user.email
+    );
 
-    if (!hasAccess) {
+    if (!access.authorized) {
       return NextResponse.json(
         {
-          error:
-            "Fitur Ruang Riset hanya tersedia untuk member PRO. Silakan upgrade paket Anda terlebih dahulu.",
-          code: "PRO_ONLY",
+          error: access.reason || "Akses tidak diizinkan",
+          code: access.code,
+          isProOnly: access.isProOnly,
+          remainingQuota: access.remainingQuota ?? 0,
         },
         { status: 403 }
       );
@@ -262,6 +245,7 @@ export async function POST(request: NextRequest) {
           source: "cache",
           profile: cached.profile,
           videos: cached.videos,
+          remainingQuota: access.isPro ? 9999 : access.remainingQuota,
         });
       }
     }
@@ -690,10 +674,16 @@ export async function POST(request: NextRequest) {
       videos: enrichedVideos,
     });
 
+    if (!access.isPro && access.featureId) {
+      await incrementFeatureUsage(userId, access.featureId);
+    }
+    const remainingQuota = access.isPro ? 9999 : Math.max(0, (access.remainingQuota ?? 1) - 1);
+
     return NextResponse.json({
       source: "live",
       profile: channelProfile,
       videos: enrichedVideos,
+      remainingQuota,
     });
   } catch (error: any) {
     console.error("YouTube Research API Error:", error);

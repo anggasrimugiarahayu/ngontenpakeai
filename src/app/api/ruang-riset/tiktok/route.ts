@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
-import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
+import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import { TikTokUserProfile, TikTokPostItem } from "@/app/(app)/ruang-riset/tiktok/types";
 
 // In-memory cache (15 minutes TTL) for high performance & anti-rate-limit
@@ -304,25 +303,22 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
 
-    // Verify PRO Riset or Admin access on server
-    const isAdminEmail =
-      session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
-    let hasAccess = isAdminEmail;
-    if (!hasAccess) {
-      const [dbUser, userOrders] = await Promise.all([
-        getCachedAppUser(session.user.id),
-        getCachedUserOrders(session.user.id).catch(() => []),
-      ]);
-      const subStatus = computeUserSubscriptionStatus(dbUser, userOrders);
-      hasAccess = subStatus.hasRiset || subStatus.isAdmin;
-    }
+    // Verify Riset TikTok feature access (Free limit vs PRO)
+    const access = await verifyFeatureAccess(
+      session.user.id,
+      "Riset TikTok",
+      session.user.email
+    );
 
-    if (!hasAccess) {
+    if (!access.authorized) {
       return NextResponse.json(
         {
-          error:
-            "Akses Ruang Riset membutuhkan langganan Pro Riset atau Admin aktif.",
+          error: access.reason || "Akses tidak diizinkan",
+          code: access.code,
+          isProOnly: access.isProOnly,
+          remainingQuota: access.remainingQuota ?? 0,
         },
         { status: 403 }
       );
@@ -360,6 +356,7 @@ export async function POST(request: NextRequest) {
           source: "cache",
           profile: cached.profile,
           videos: cached.videos,
+          remainingQuota: access.isPro ? 9999 : access.remainingQuota,
         });
       }
     }
@@ -559,10 +556,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    if (!access.isPro && access.featureId) {
+      await incrementFeatureUsage(userId, access.featureId);
+    }
+    const remainingQuota = access.isPro ? 9999 : Math.max(0, (access.remainingQuota ?? 1) - 1);
+
     return NextResponse.json({
       source: "live_frontity_embed_engine",
       profile,
       videos: formattedVideos,
+      remainingQuota,
     });
   } catch (err: any) {
     console.error("TikTok research API error:", err);

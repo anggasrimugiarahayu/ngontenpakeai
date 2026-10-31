@@ -332,7 +332,7 @@ ${blueprintContext}
       throw new Error("AI returned invalid JSON");
     }
 
-    if (accessCheck.featureId) {
+    if (action === 'generate-bios' && accessCheck.featureId) {
       await incrementFeatureUsage(session.user.id, accessCheck.featureId);
     }
 

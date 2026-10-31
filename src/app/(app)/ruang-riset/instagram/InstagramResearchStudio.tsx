@@ -207,6 +207,17 @@ export function InstagramResearchStudio({
       const data = await res.json();
 
       if (!res.ok || data.error) {
+        if (data.code === "QUOTA_EXCEEDED") {
+          window.dispatchEvent(
+            new CustomEvent("riset-quota-exceeded", {
+              detail: {
+                featureName: "Riset Instagram",
+                used: 3,
+                limit: 3,
+              },
+            })
+          );
+        }
         throw new Error(data.error || "Gagal mengambil data akun");
       }
 

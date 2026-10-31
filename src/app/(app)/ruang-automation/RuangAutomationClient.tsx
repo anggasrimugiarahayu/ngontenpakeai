@@ -304,7 +304,8 @@ export default function RuangAutomationClient({
       router.push("/login?redirect=/ruang-automation");
       return;
     }
-    if (isProOnly && !isPro && !isAdmin) {
+    const hasExistingAgents = Array.isArray(agents) && agents.length > 0;
+    if (isProOnly && !isPro && !isAdmin && !hasExistingAgents) {
       window.dispatchEvent(new Event("app-loading-start"));
       router.push("/?pricing=true&cat=automation");
       return;

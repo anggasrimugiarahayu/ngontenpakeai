@@ -27,7 +27,7 @@ function getDb(): PrismaClient {
   return fallbackPrisma;
 }
 
-async function assertProAutomation(userId: string, email?: string | null) {
+async function assertProAutomation(userId: string, email?: string | null, agentId?: string) {
   const isAdmin = email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
   if (isAdmin) return true;
 
@@ -39,9 +39,21 @@ async function assertProAutomation(userId: string, email?: string | null) {
 
   if (user?.role === "ADMIN") return true;
 
-  const isPro = !!(user?.proAutomationExpiredAt && new Date(user.proAutomationExpiredAt) > new Date());
+  const now = new Date();
+  if (agentId) {
+    const agent = await (db as any).instagramAccount.findUnique({
+      where: { id: agentId },
+      select: { expiredAt: true }
+    });
+    if (agent?.expiredAt) {
+      if (new Date(agent.expiredAt) > now) return true;
+      throw new Error("Masa aktif untuk Agen ini telah berakhir. Silakan perpanjang agen untuk mengelola aturan.");
+    }
+  }
+
+  const isPro = !!(user?.proAutomationExpiredAt && new Date(user.proAutomationExpiredAt) > now);
   if (!isPro) {
-    throw new Error("Masa aktif Paket PRO Automation Anda telah berakhir atau belum aktif. Silakan upgrade paket untuk mengelola aturan.");
+    throw new Error("Masa aktif Paket PRO Automation Anda telah berakhir atau belum aktif. Silakan perpanjang paket untuk mengelola aturan.");
   }
   return true;
 }
@@ -65,30 +77,39 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
       }
     });
 
-    // Format list agen untuk card grid di halaman depan IG Automation
-    const agents = allAccounts.map((acc: any) => ({
-      id: acc.id,
-      name: acc.name || (acc.username ? `Agen @${acc.username}` : "Agen Instagram"),
-      username: acc.username || "",
-      boundUsername: acc.boundUsername || null,
-      boundInstagramId: acc.boundInstagramId || null,
-      profileName: acc.profileName || "",
-      instagramId: acc.instagramId || "",
-      profilePicUrl: acc.profilePicUrl || null,
-      isActive: acc.isActive,
-      isLinked: Boolean(acc.accessToken && !acc.instagramId?.startsWith("pending_") && !acc.instagramId?.startsWith("unlinked_")),
-      createdAt: acc.createdAt ? new Date(acc.createdAt).toISOString() : new Date().toISOString(),
-      updatedAt: acc.updatedAt ? new Date(acc.updatedAt).toISOString() : new Date().toISOString(),
-      rulesCount: acc._count?.rules || 0,
-      logsCount: acc._count?.logs || 0,
-    }));
-
-    // Ambil data user untuk mengetahui kuota limit agen
+    // Ambil data user untuk mengetahui kuota limit agen & fallback expiry
     const userRecord = await db.user.findUnique({
       where: { id: userId },
       select: { role: true, automationAgentLimit: true, proAutomationExpiredAt: true }
     });
     const agentLimit = (isAdmin || userRecord?.role === "ADMIN") ? 999 : (userRecord?.automationAgentLimit || 1);
+    const now = new Date();
+
+    // Format list agen untuk card grid di halaman depan IG Automation
+    const agents = allAccounts.map((acc: any) => {
+      const expiry = acc.expiredAt ? new Date(acc.expiredAt) : (userRecord?.proAutomationExpiredAt ? new Date(userRecord.proAutomationExpiredAt) : null);
+      const isExpired = !isAdmin && userRecord?.role !== "ADMIN" && !!(expiry && expiry <= now);
+
+      return {
+        id: acc.id,
+        name: acc.name || (acc.username ? `Agen @${acc.username}` : "Agen Instagram"),
+        username: acc.username || "",
+        boundUsername: acc.boundUsername || null,
+        boundInstagramId: acc.boundInstagramId || null,
+        profileName: acc.profileName || "",
+        instagramId: acc.instagramId || "",
+        profilePicUrl: acc.profilePicUrl || null,
+        isActive: acc.isActive,
+        isLinked: Boolean(acc.accessToken && !acc.instagramId?.startsWith("pending_") && !acc.instagramId?.startsWith("unlinked_")),
+        expiredAt: expiry ? expiry.toISOString() : null,
+        isTrial: Boolean(acc.isTrial),
+        isExpired,
+        createdAt: acc.createdAt ? new Date(acc.createdAt).toISOString() : new Date().toISOString(),
+        updatedAt: acc.updatedAt ? new Date(acc.updatedAt).toISOString() : new Date().toISOString(),
+        rulesCount: acc._count?.rules || 0,
+        logsCount: acc._count?.logs || 0,
+      };
+    });
 
     // 2. Tentukan agen mana yang aktif saat masuk ke workspace detail
     let activeAccount: any = null;
@@ -300,6 +321,7 @@ export async function createInstagramAgentAction({ name }: { name: string }) {
         instagramId: pendingId,
         accessToken: "",
         isActive: true,
+        expiredAt: user?.proAutomationExpiredAt ? new Date(user.proAutomationExpiredAt) : null,
       }
     });
 

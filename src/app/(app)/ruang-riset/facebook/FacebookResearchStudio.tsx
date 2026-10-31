@@ -223,6 +223,17 @@ export function FacebookResearchStudio({
       }
 
       if (!res.ok) {
+        if (data.code === "QUOTA_EXCEEDED") {
+          window.dispatchEvent(
+            new CustomEvent("riset-quota-exceeded", {
+              detail: {
+                featureName: "Riset Facebook",
+                used: 3,
+                limit: 3,
+              },
+            })
+          );
+        }
         throw new Error(data.error || "Gagal memuat data akun Facebook.");
       }
 

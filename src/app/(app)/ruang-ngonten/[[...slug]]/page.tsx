@@ -28,6 +28,12 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
   // Intercept direct URL access
   if (params?.slug && params.slug.length > 0) {
     const currentSlug = params.slug[0];
+
+    if (!isLoggedIn) {
+      const slugPath = params.slug.join('/');
+      redirect(`/login?redirect=/ruang-ngonten/${slugPath}`);
+    }
+
     const matchingFeature = dbFeatures.find((f: any) => {
       const slugName = f.name.toLowerCase().replace(/\s+/g, '-');
       return (
@@ -43,14 +49,17 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
       );
     });
 
+    if (matchingFeature && !matchingFeature.isActive && !isAdmin) {
+      redirect("/ruang-ngonten");
+    }
+
     const isProOnly = matchingFeature ? matchingFeature.isProOnly : false;
     if (isProOnly && !isPro) {
       redirect("/?pricing=true&cat=tools");
     }
 
-    if (!isLoggedIn) {
-      const slugPath = params.slug.join('/');
-      redirect(`/login?redirect=/ruang-ngonten/${slugPath}`);
+    if (!hasBlueprint && currentSlug !== "master-blueprint") {
+      redirect("/ruang-ngonten");
     }
   }
 

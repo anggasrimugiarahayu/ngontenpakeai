@@ -172,11 +172,22 @@ export default function RuangRisetClient({
       }
     };
 
+    const handleQuotaExceededEvent = (e: any) => {
+      setQuotaModalInfo({
+        name: e.detail?.featureName || "Ruang Riset",
+        used: e.detail?.used || quotaConfig?.risetFreeLimit || 3,
+        limit: e.detail?.limit || quotaConfig?.risetFreeLimit || 3,
+      });
+      setQuotaModalOpen(true);
+    };
+
     window.addEventListener("popstate", syncFromUrl);
     window.addEventListener("riset-platform-change", handlePlatformChange);
+    window.addEventListener("riset-quota-exceeded", handleQuotaExceededEvent);
     return () => {
       window.removeEventListener("popstate", syncFromUrl);
       window.removeEventListener("riset-platform-change", handlePlatformChange);
+      window.removeEventListener("riset-quota-exceeded", handleQuotaExceededEvent);
     };
   }, [isLoggedIn, isPro, isAdmin, features]);
 

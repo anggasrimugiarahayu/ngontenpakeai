@@ -24,7 +24,7 @@ export default function ToolCard({
   const isMasterBlueprint = feature.href === "/ruang-ngonten/master-blueprint";
   const isProOnly = feature.isProOnly;
   const isActive = feature.isActive;
-  const isBlueprintLocked = isPro && !hasBlueprint && !isMasterBlueprint;
+  const isBlueprintLocked = (!isProOnly || isPro) && !hasBlueprint && !isMasterBlueprint;
   const canAccess = (isMasterBlueprint || hasBlueprint) && isActive && (!isProOnly || isPro);
 
   const router = useRouter();

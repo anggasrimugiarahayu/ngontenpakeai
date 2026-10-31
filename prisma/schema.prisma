@@ -369,6 +369,8 @@ model InstagramAccount {
   accessToken      String   @db.Text @map("access_token")
   pageId           String?  @map("page_id")
   isActive         Boolean  @default(true) @map("is_active")
+  expiredAt        DateTime? @map("expired_at")
+  isTrial          Boolean  @default(false) @map("is_trial")
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 

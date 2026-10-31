@@ -360,6 +360,25 @@ export async function verifyPayment(orderId: string) {
             data: updateData,
           });
 
+          // Update per-agent expiry jika paket adalah automation / plus
+          if (meta.category === "automation" || meta.category === "plus") {
+            const days = meta.durationDays > 0 ? meta.durationDays : 30;
+            const now = new Date();
+            const existingAccounts = await tx.instagramAccount.findMany({
+              where: { userId: order.userId },
+              orderBy: { createdAt: "asc" },
+            });
+            if (existingAccounts.length > 0) {
+              const target = existingAccounts[0];
+              const cur = target.expiredAt && new Date(target.expiredAt) > now ? new Date(target.expiredAt) : now;
+              const newAgentExpiry = new Date(cur.getTime() + days * 86400000);
+              await tx.instagramAccount.update({
+                where: { id: target.id },
+                data: { expiredAt: newAgentExpiry, isActive: true },
+              });
+            }
+          }
+
           // Unlock bundled E-books from PRICING_PACKAGES config + any add-on E-books purchased with the package
           const allGrantIds = Array.from(
             new Set([

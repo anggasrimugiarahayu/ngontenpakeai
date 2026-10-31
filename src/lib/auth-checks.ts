@@ -59,6 +59,15 @@ export async function verifyFeatureAccess(
     return { authorized: true, isPro: true, remainingQuota: 9999 };
   }
 
+  if (feature && !feature.isActive) {
+    return {
+      authorized: false,
+      isPro: false,
+      code: "FEATURE_INACTIVE",
+      reason: "Fitur ini sedang dinonaktifkan sementara oleh admin.",
+    };
+  }
+
   const category = (feature as any)?.category || "ngonten";
   const now = new Date();
 
@@ -78,14 +87,6 @@ export async function verifyFeatureAccess(
   }
 
   // User is Free
-  if (feature && !feature.isActive) {
-    return {
-      authorized: false,
-      isPro: false,
-      code: "FEATURE_INACTIVE",
-      reason: "Fitur ini sedang dinonaktifkan sementara oleh admin.",
-    };
-  }
 
   if (feature?.isProOnly) {
     const pkgName =

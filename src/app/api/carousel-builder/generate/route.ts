@@ -251,7 +251,7 @@ Untuk menjaga komposisi adegan agar logis dan tidak aneh:
 
     const data = JSON.parse(jsonMatch[0]);
 
-    if (accessCheck.featureId) {
+    if (data?.response_type === "cp_result" && accessCheck.featureId) {
       await incrementFeatureUsage(session.user.id, accessCheck.featureId);
     }
 

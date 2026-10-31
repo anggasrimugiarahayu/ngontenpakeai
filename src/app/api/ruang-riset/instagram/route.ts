@@ -6,7 +6,7 @@ import {
   InstagramTargetProfile,
 } from "@/app/(app)/ruang-riset/instagram/types";
 import { getResolvedRisetConfig } from "@/lib/riset-config";
-import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
+import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 
 // In-memory cache (15 minutes TTL) for fast repeated lookups & rate-limit protection
 const RISET_CACHE_TTL_MS = 15 * 60 * 1000;
@@ -1081,39 +1081,21 @@ export async function POST(request: NextRequest) {
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    const userId = session.user.id;
 
-    // Verify PRO Riset or Admin access on server
-    const isAdminEmail =
-      session.user.email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
-    let hasAccess = isAdminEmail;
-    if (!hasAccess) {
-      const [dbUser, userOrders] = await Promise.all([
-        prisma.user.findUnique({
-          where: { id: session.user.id },
-          select: {
-            email: true,
-            role: true,
-            hasProBook: true,
-            proToolsExpiredAt: true,
-            proAutomationExpiredAt: true,
-            proRisetExpiredAt: true,
-          },
-        }),
-        prisma.order.findMany({
-          where: { userId: session.user.id, status: "SUCCESS" },
-          select: { orderType: true, status: true, createdAt: true },
-        }),
-      ]);
-      const subStatus = computeUserSubscriptionStatus(dbUser, userOrders);
-      hasAccess = subStatus.hasRiset || subStatus.isAdmin;
-    }
+    const access = await verifyFeatureAccess(
+      session.user.id,
+      "Riset Instagram",
+      session.user.email
+    );
 
-    if (!hasAccess) {
+    if (!access.authorized) {
       return NextResponse.json(
         {
-          error:
-            "Fitur Ruang Riset hanya tersedia untuk member PRO. Silakan upgrade paket Anda terlebih dahulu.",
-          code: "PRO_ONLY",
+          error: access.reason || "Akses tidak diizinkan",
+          code: access.code,
+          isProOnly: access.isProOnly,
+          remainingQuota: access.remainingQuota ?? 0,
         },
         { status: 403 }
       );
@@ -1141,6 +1123,14 @@ export async function POST(request: NextRequest) {
       .split("?")[0]
       .toLowerCase();
 
+    const recordSuccess = async () => {
+      if (!access.isPro && access.featureId) {
+        await incrementFeatureUsage(userId, access.featureId);
+      }
+    };
+    const getRemainingQuota = () =>
+      access.isPro ? 9999 : Math.max(0, (access.remainingQuota ?? 1) - 1);
+
     if (!forceRefresh) {
       const cached = risetMemoryCache.get(cleanUsername);
       if (
@@ -1154,6 +1144,7 @@ export async function POST(request: NextRequest) {
           cached: true,
           profile: cached.profile,
           posts: cached.posts,
+          remainingQuota: access.isPro ? 9999 : access.remainingQuota,
         });
       }
     }
@@ -1163,6 +1154,7 @@ export async function POST(request: NextRequest) {
     // 1. Direct Instagram Graph API (for accounts connected in DB, e.g. @ruangngontenmuslim)
     const directData = await fetchDirectInstagramApi(cleanUsername);
     if (directData && directData.posts.length > 0) {
+      await recordSuccess();
       risetMemoryCache.set(cleanUsername, {
         expiresAt: Date.now() + RISET_CACHE_TTL_MS,
         source: "instagram_direct_api",
@@ -1174,6 +1166,7 @@ export async function POST(request: NextRequest) {
         source: "instagram_direct_api",
         profile: directData.profile,
         posts: directData.posts,
+        remainingQuota: getRemainingQuota(),
       });
     }
 
@@ -1185,6 +1178,7 @@ export async function POST(request: NextRequest) {
         requestedLimit
       );
       if (sessionData && sessionData.posts.length > 0) {
+        await recordSuccess();
         risetMemoryCache.set(cleanUsername, {
           expiresAt: Date.now() + RISET_CACHE_TTL_MS,
           source: "instagram_web_session",
@@ -1196,6 +1190,7 @@ export async function POST(request: NextRequest) {
           source: "instagram_web_session",
           profile: sessionData.profile,
           posts: sessionData.posts,
+          remainingQuota: getRemainingQuota(),
         });
       }
     }
@@ -1208,6 +1203,7 @@ export async function POST(request: NextRequest) {
         cfg.rapidApiHost
       );
       if (rapidData && rapidData.posts.length > 0) {
+        await recordSuccess();
         risetMemoryCache.set(cleanUsername, {
           expiresAt: Date.now() + RISET_CACHE_TTL_MS,
           source: "rapidapi_live_scraper",
@@ -1219,6 +1215,7 @@ export async function POST(request: NextRequest) {
           source: "rapidapi_live_scraper",
           profile: rapidData.profile,
           posts: rapidData.posts,
+          remainingQuota: getRemainingQuota(),
         });
       }
     }
@@ -1226,11 +1223,13 @@ export async function POST(request: NextRequest) {
     // 4. Live Public Profile + Verified Shortcode Hydrator (Never invents fake Unsplash posts!)
     const liveData = await fetchLivePublicProfileAndHydratedPosts(cleanUsername);
     if (liveData) {
+      await recordSuccess();
       return NextResponse.json({
         success: true,
         source: "instagram_public_live",
         profile: liveData.profile,
         posts: liveData.posts,
+        remainingQuota: getRemainingQuota(),
       });
     }
 

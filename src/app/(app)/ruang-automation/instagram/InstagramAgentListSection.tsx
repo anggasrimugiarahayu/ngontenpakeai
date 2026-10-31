@@ -252,13 +252,15 @@ export function InstagramAgentListSection({
                       : "Silahkan untuk hubungkan akun IG anda"}
                   </p>
                   <div className="mt-1 sm:mt-1.5 flex items-center gap-2">
-                    {!isPro && !isAdmin ? (
-                      <span className="text-xs sm:text-sm font-semibold text-rose-500 dark:text-rose-400">
-                        Masa Aktif Berakhir
+                    {agent.isExpired ? (
+                      <span className="text-xs sm:text-sm font-semibold text-rose-500 dark:text-rose-400 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
+                        Masa Aktif Berakhir {agent.expiredAt ? `(${new Date(agent.expiredAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })})` : ""}
                       </span>
                     ) : agent.isLinked ? (
-                      <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                        Terhubung
+                      <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                        Terhubung {agent.expiredAt ? `· Aktif s/d ${new Date(agent.expiredAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}` : ""}
                       </span>
                     ) : agent.boundUsername ? (
                       <span className="text-xs sm:text-sm font-semibold text-amber-600 dark:text-amber-400">
@@ -347,7 +349,7 @@ export function InstagramAgentListSection({
                 </div>
 
                 {/* Tombol Buka / Perpanjang */}
-                {!isPro && !isAdmin ? (
+                {agent.isExpired ? (
                   <button
                     type="button"
                     onClick={(e) => {
@@ -355,10 +357,11 @@ export function InstagramAgentListSection({
                       if (onRenewAgent) {
                         onRenewAgent(agent);
                       } else {
-                        onSelectAgent(agent.id);
+                        window.dispatchEvent(new Event("app-loading-start"));
+                        window.location.href = `/?pricing=true&cat=automation&agentId=${encodeURIComponent(agent.id)}&action=renew`;
                       }
                     }}
-                    className="whitespace-nowrap shrink-0 bg-amber-500 hover:bg-amber-600 text-white rounded-lg px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold shadow-sm shadow-amber-500/20 transition-all cursor-pointer"
+                    className="whitespace-nowrap shrink-0 bg-orange-500 hover:bg-orange-600 text-white rounded-lg px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all cursor-pointer"
                   >
                     Perpanjang
                   </button>

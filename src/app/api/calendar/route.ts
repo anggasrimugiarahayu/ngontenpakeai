@@ -1,12 +1,21 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
+import { verifyFeatureAccess } from '@/lib/auth-checks';
 
 export async function GET(req: Request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const access = await verifyFeatureAccess(session.user.id, "Content Calendar", session.user.email);
+    if (!access.authorized) {
+      return NextResponse.json({
+        error: access.reason || "Akses tidak diizinkan",
+        code: access.code,
+      }, { status: 403 });
     }
 
     const calendar = await prisma.contentCalendar.findFirst({
@@ -25,6 +34,14 @@ export async function POST(req: Request) {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const access = await verifyFeatureAccess(session.user.id, "Content Calendar", session.user.email);
+    if (!access.authorized) {
+      return NextResponse.json({
+        error: access.reason || "Akses tidak diizinkan",
+        code: access.code,
+      }, { status: 403 });
     }
 
     const body = await req.json();
