@@ -1,17 +1,12 @@
 import { InstagramPostItem, InstagramTargetProfile } from "./types";
 import JSZip from "jszip";
-
-/**
- * Format date strictly as YYYY-MM-DD
- */
-export function formatIsoDate(ts: string | number | Date): string {
-  const d = new Date(ts);
-  if (isNaN(d.getTime())) return "";
-  const year = d.getFullYear();
-  const month = String(d.getMonth() + 1).padStart(2, "0");
-  const day = String(d.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
-}
+import {
+  formatIsoDate,
+  escapeCSV,
+  cleanTextForTSV,
+  triggerDownload,
+} from "../shared/exportCore";
+export { formatIsoDate };
 
 export const EXPORT_HEADERS = [
   "No",
@@ -27,17 +22,6 @@ export const EXPORT_HEADERS = [
   "Caption Lengkap",
   "Tanggal Posting",
 ];
-
-const escapeCSV = (str: string | number | undefined | null) => {
-  if (str === undefined || str === null) return '""';
-  const stringified = String(str).replace(/"/g, '""');
-  return `"${stringified}"`;
-};
-
-const cleanTextForTSV = (str: string | number | undefined | null) => {
-  if (str === undefined || str === null) return "";
-  return String(str).replace(/[\t\r\n]+/g, " ").trim();
-};
 
 export function getExportRows(posts: InstagramPostItem[], profile: InstagramTargetProfile) {
   return posts.map((post, idx) => {
@@ -65,17 +49,6 @@ export function getExportRows(posts: InstagramPostItem[], profile: InstagramTarg
       date: formatIsoDate(post.timestamp),
     };
   });
-}
-
-function triggerDownload(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
 /**

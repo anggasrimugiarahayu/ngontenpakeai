@@ -1,12 +1,11 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { getDefaultAiModel } from "@/lib/get-ai-model";
 import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
-import { GoogleGenAI } from '@google/genai';
 import prisma from '@/lib/prisma';
+import { generateStructuredAiContent } from "@/lib/ai/geminiClient";
 
 async function fetchKnowledgeBase() {
   const kbDir = path.join(process.cwd(), 'src', 'data', 'knowledge_database');
@@ -52,8 +51,6 @@ export async function POST(req: Request) {
     if (!apiKey) {
       return NextResponse.json({ error: "Gemini API Key tidak ditemukan baik dari pengguna maupun sistem." }, { status: 400 });
     }
-
-    const ai = new GoogleGenAI({ apiKey });
 
     // 100% IDENTIK DENGAN REFERENSI LAMA
     const systemPrompt = `[MASTER PROMPT – RUANG NGONTEN AI]
@@ -140,38 +137,12 @@ PASTIKAN naskah padat, *punchy*, dan tidak terlalu panjang (bertele-tele) agar r
     // 100% IDENTIK DENGAN REFERENSI LAMA (Tanpa Histori Chat)
     const userPrompt = `Ide Konten: ${promptText}`;
 
-    const response = await ai.models.generateContent({
-      model: model || await getDefaultAiModel("gemini-2.5-flash"),
-      contents: userPrompt,
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: "application/json",
-        temperature: 0.7,
-      },
+    let parsedData = await generateStructuredAiContent({
+      apiKey,
+      userPrompt,
+      systemPrompt,
+      fallbackModelDefault: model || "gemini-2.5-flash",
     });
-
-    if (!response.text) {
-      throw new Error("AI returned empty response");
-    }
-    
-    // JSON Truncate Recovery Logic (Identik dari Referensi Lama)
-    let aiText = response.text;
-    let parsedData;
-    try {
-      const jsonMatch = aiText.match(/\{[\s\S]*\}/);
-      const cleanJsonStr = jsonMatch ? jsonMatch[0] : aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
-      parsedData = JSON.parse(cleanJsonStr);
-    } catch(truncateErr) {
-      console.warn("Mencoba memperbaiki JSON yang terpotong...");
-      const jsonMatch = aiText.match(/\{[\s\S]*\}/);
-      const cleanJsonStr = jsonMatch ? jsonMatch[0] : aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
-      const partialClean = cleanJsonStr.replace(/,\s*([\]}])/g, '$1'); 
-      try {
-        parsedData = JSON.parse(partialClean + (cleanJsonStr.endsWith('}') ? '' : ']}'));
-      } catch (fallbackErr) {
-        throw new Error("Failed to parse AI output. Try again with shorter request.");
-      }
-    }
 
     if (!parsedData.is_error) {
       // Normalisasi & Sanitasi (Identik dari Referensi Lama)
@@ -183,7 +154,7 @@ PASTIKAN naskah padat, *punchy*, dan tidak terlalu panjang (bertele-tele) agar r
           framework_digunakan: "Auto-Selected",
           hook_digunakan: "Custom",
           cta_digunakan: "Custom",
-          script_sections: [{ label: "Naskah Konten", content: aiText }],
+          script_sections: [{ label: "Naskah Konten", content: promptText }],
           caption: ""
         }];
       }

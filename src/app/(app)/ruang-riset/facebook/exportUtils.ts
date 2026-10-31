@@ -1,5 +1,10 @@
 import { FacebookPostItem, FacebookUserProfile } from "./types";
 import JSZip from "jszip";
+import {
+  escapeCSV,
+  cleanTextForTSV,
+  triggerDownload,
+} from "../shared/exportCore";
 
 export const FACEBOOK_EXPORT_HEADERS = [
   "No",
@@ -17,17 +22,6 @@ export const FACEBOOK_EXPORT_HEADERS = [
   "Link Postingan",
   "ID Postingan",
 ];
-
-const escapeCSV = (str: string | number | undefined | null) => {
-  if (str === undefined || str === null) return '""';
-  const stringified = String(str).replace(/"/g, '""');
-  return `"${stringified}"`;
-};
-
-const cleanTextForTSV = (str: string | number | undefined | null) => {
-  if (str === undefined || str === null) return "";
-  return String(str).replace(/[\t\r\n]+/g, " ").trim();
-};
 
 export function getFacebookExportRows(
   posts: FacebookPostItem[],
@@ -60,17 +54,6 @@ export function getFacebookExportRows(
       postId: post.id,
     };
   });
-}
-
-function triggerDownload(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
 export async function downloadMediaAsset(

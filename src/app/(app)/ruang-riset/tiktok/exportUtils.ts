@@ -1,5 +1,10 @@
 import { TikTokPostItem, TikTokUserProfile } from "./types";
 import JSZip from "jszip";
+import {
+  escapeCSV,
+  cleanTextForTSV,
+  triggerDownload,
+} from "../shared/exportCore";
 
 export const TIKTOK_EXPORT_HEADERS = [
   "No",
@@ -18,17 +23,6 @@ export const TIKTOK_EXPORT_HEADERS = [
   "Link Video",
   "ID Video",
 ];
-
-const escapeCSV = (str: string | number | undefined | null) => {
-  if (str === undefined || str === null) return '""';
-  const stringified = String(str).replace(/"/g, '""');
-  return `"${stringified}"`;
-};
-
-const cleanTextForTSV = (str: string | number | undefined | null) => {
-  if (str === undefined || str === null) return "";
-  return String(str).replace(/[\t\r\n]+/g, " ").trim();
-};
 
 export function getTikTokExportRows(videos: TikTokPostItem[], profile: TikTokUserProfile) {
   return videos.map((video, idx) => {
@@ -59,17 +53,6 @@ export function getTikTokExportRows(videos: TikTokPostItem[], profile: TikTokUse
       videoId: video.id,
     };
   });
-}
-
-function triggerDownload(blob: Blob, filename: string) {
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
 
 export async function downloadMediaAsset(url: string, filename: string): Promise<boolean> {

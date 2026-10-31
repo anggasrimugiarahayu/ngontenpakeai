@@ -1,10 +1,9 @@
-import { getDefaultAiModel, getFallbackAiModel } from "@/lib/get-ai-model";
 import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
-import { GoogleGenAI } from "@google/genai";
 import prisma from "@/lib/prisma";
+import { generateStructuredAiContent } from "@/lib/ai/geminiClient";
 
 export async function POST(req: Request) {
   try {
@@ -287,50 +286,12 @@ ${blueprintContext}
       return NextResponse.json({ error: "API Key tidak ditemukan. Silakan tambahkan di Pengaturan." }, { status: 400 });
     }
 
-    const ai = new GoogleGenAI({ apiKey });
-    
-    let response;
-    try {
-      response = await ai.models.generateContent({
-        model: await getDefaultAiModel("gemini-2.5-flash"),
-        contents: userPrompt,
-        config: {
-          systemInstruction: systemPrompt,
-          responseMimeType: 'application/json',
-        }
-      });
-    } catch (error: any) {
-      const errStr = String(error?.message || "");
-      if (error?.status === 503 || error?.status >= 500 || errStr.toLowerCase().includes('high demand') || errStr.toLowerCase().includes('overloaded') || errStr.toLowerCase().includes('internal')) {
-        console.warn("[Fallback] Bio Builder server overloaded. Retrying with fallback model...");
-        response = await ai.models.generateContent({
-          model: await getFallbackAiModel(),
-          contents: userPrompt,
-          config: {
-            systemInstruction: systemPrompt,
-            responseMimeType: 'application/json',
-          }
-        });
-      } else {
-        throw error;
-      }
-    }
-
-    const aiResultStr = response.text;
-    if (!aiResultStr) throw new Error("Kosong dari AI");
-
-    
-    // Parse JSON
-    const jsonMatch = aiResultStr.match(/\{[\s\S]*\}/);
-    const cleanJsonStr = jsonMatch ? jsonMatch[0] : aiResultStr.replace(/```json/gi, '').replace(/```/g, '').trim();
-    
-    let result = null;
-    try {
-      result = JSON.parse(cleanJsonStr);
-    } catch (e) {
-      console.error("Failed to parse AI JSON:", cleanJsonStr);
-      throw new Error("AI returned invalid JSON");
-    }
+    const result = await generateStructuredAiContent({
+      apiKey,
+      userPrompt,
+      systemPrompt,
+      fallbackModelDefault: "gemini-2.5-flash",
+    });
 
     if (action === 'generate-bios' && accessCheck.featureId) {
       await incrementFeatureUsage(session.user.id, accessCheck.featureId);
