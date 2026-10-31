@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import dynamic from "next/dynamic";
 import useSWR from "swr";
 import { BackButton } from "@/components/ui/BackButton";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
 import {
   CheckCircle2,
   AlertCircle,
@@ -12,6 +14,7 @@ import {
   Info,
   Check,
   Filter,
+  Bot,
 } from "lucide-react";
 import {
   getInstagramAutomationDataAction,
@@ -334,6 +337,8 @@ export default function RuangAutomationClient({
 
   // Agent Modals & Menus State
   const [isCreateAgentModalOpen, setIsCreateAgentModalOpen] = useState(false);
+  const [isPayToCreateModalOpen, setIsPayToCreateModalOpen] = useState(false);
+  const [renewAgentModalData, setRenewAgentModalData] = useState<any | null>(null);
   const [newAgentName, setNewAgentName] = useState("");
   const [isSubmittingAgent, setIsSubmittingAgent] = useState(false);
   const [activeDropdownAgentId, setActiveDropdownAgentId] = useState<string | null>(null);
@@ -449,6 +454,15 @@ export default function RuangAutomationClient({
     } finally {
       setIsSubmittingAgent(false);
     }
+  };
+
+  const handleSelectAgent = (agentId: string) => {
+    setSelectedAgentId(agentId);
+    setActiveIgTab("koneksi");
+    const newUrl = new URL(window.location.href);
+    newUrl.searchParams.set("agentId", agentId);
+    window.history.pushState({}, "", newUrl.toString());
+    window.dispatchEvent(new Event("app-shallow-navigate"));
   };
 
   // Delete Agent
@@ -1795,26 +1809,19 @@ export default function RuangAutomationClient({
           onOpenCreateAgentModal={() => {
             const agentLimit = (data as any)?.agentLimit ?? 1;
             if (!isAdmin && agents.length >= agentLimit) {
-              showToast("info", "Untuk membuat agen baru, silakan lakukan pembayaran paket terlebih dahulu.");
-              window.dispatchEvent(new Event("app-loading-start"));
-              router.push("/?pricing=true&cat=automation");
+              setIsPayToCreateModalOpen(true);
               return;
             }
             setNewAgentName("");
             setIsCreateAgentModalOpen(true);
           }}
-          onSelectAgent={(agentId) => {
-            setSelectedAgentId(agentId);
-            setActiveIgTab("koneksi");
-            const newUrl = new URL(window.location.href);
-            newUrl.searchParams.set("agentId", agentId);
-            window.history.pushState({}, "", newUrl.toString());
-            window.dispatchEvent(new Event("app-shallow-navigate"));
-          }}
+          onSelectAgent={handleSelectAgent}
           onOpenEditAgentModal={handleOpenEditAgentModal}
           onDisconnectAgent={handleDisconnectAgent}
           onDeleteAgent={handleDeleteAgent}
           isAdmin={isAdmin}
+          isPro={isPro}
+          onRenewAgent={(agent) => setRenewAgentModalData(agent)}
         />
       ) : (
         /* ========================================================================= */
@@ -1840,6 +1847,28 @@ export default function RuangAutomationClient({
           </h1>
 
           <div className="space-y-6">
+            {/* Banner Peringatan Masa Aktif Berakhir */}
+            {!isPro && !isAdmin && (
+              <div className="p-4 rounded-2xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-amber-800 dark:text-amber-300">
+                <div className="flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+                  <p className="text-xs sm:text-sm font-medium">
+                    Masa aktif paket automasi Anda telah berakhir. Automasi komentar dan DM saat ini dijeda.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    window.dispatchEvent(new Event("app-loading-start"));
+                    router.push("/?pricing=true&cat=automation");
+                  }}
+                  className="px-4 py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] text-white font-bold text-xs shadow-sm shadow-orange-500/20 shrink-0 cursor-pointer self-start sm:self-auto transition-colors"
+                >
+                  Perpanjang Sekarang
+                </button>
+              </div>
+            )}
+
             {/* Horizontal Tabs Navigation */}
             <div className="flex items-center gap-2 overflow-x-auto pb-4 scrollbar-hide">
               {igTabs.map((tab) => (
@@ -2095,6 +2124,118 @@ export default function RuangAutomationClient({
           handleSaveEditAgent={handleSaveEditAgent}
         />
       )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: BAYAR UNTUK BUAT AGEN BARU */}
+      {/* ========================================================================= */}
+      <Modal
+        isOpen={isPayToCreateModalOpen}
+        onClose={() => setIsPayToCreateModalOpen(false)}
+        title="Buat Agen Baru"
+        description="Untuk membuat agen baru, silakan lakukan pembayaran paket terlebih dahulu."
+        icon={
+          <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
+            <Bot className="w-5 h-5" />
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="p-4 rounded-xl bg-orange-50/60 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+            <p className="font-semibold text-gray-900 dark:text-white mb-1.5">
+              Ketentuan Slot Akun Instagram:
+            </p>
+            <ul className="list-disc pl-4 space-y-1.5 text-gray-600 dark:text-gray-400">
+              <li>1 Paket berlaku untuk <strong>1 akun Instagram</strong> yang terhubung.</li>
+              <li>Akun yang terhubung terkunci secara permanen untuk menjaga keandalan data automasi.</li>
+              <li>Untuk mengotomasi akun Instagram lainnya, Anda dapat menambah slot dengan berlangganan paket automasi baru.</li>
+            </ul>
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-[#2C3246]/60">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsPayToCreateModalOpen(false)}
+            >
+              Batal
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setIsPayToCreateModalOpen(false);
+                window.dispatchEvent(new Event("app-loading-start"));
+                router.push("/?pricing=true&cat=automation");
+              }}
+              className="bg-[#f97316] hover:bg-[#ea580c] text-white font-bold"
+            >
+              Beli Paket Automation
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
+      {/* ========================================================================= */}
+      {/* MODAL: PERPANJANG MASA AKTIF AGEN */}
+      {/* ========================================================================= */}
+      <Modal
+        isOpen={Boolean(renewAgentModalData)}
+        onClose={() => setRenewAgentModalData(null)}
+        title="Perpanjang Masa Aktif Agen"
+        description={`Masa aktif langganan untuk agen "${renewAgentModalData?.name || "Instagram"}" telah berakhir.`}
+        icon={
+          <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
+            <AlertCircle className="w-5 h-5" />
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="p-4 rounded-xl bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200/60 dark:border-amber-900/40 text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+            <p className="font-semibold text-amber-900 dark:text-amber-200 mb-1.5">
+              Status Automasi Saat Ini: Dijeda
+            </p>
+            <p className="text-gray-600 dark:text-gray-400 mb-2">
+              Seluruh trigger balasan otomatis komentar dan DM untuk akun <strong>@{renewAgentModalData?.username || "instagram"}</strong> sedang dijeda sementara.
+            </p>
+            <ul className="list-disc pl-4 space-y-1.5 text-gray-600 dark:text-gray-400">
+              <li>Semua aturan balasan (rules), alur DM, dan histori log Anda tetap tersimpan aman.</li>
+              <li>Setelah diperpanjang, agen akan langsung aktif kembali secara otomatis tanpa perlu setup ulang.</li>
+            </ul>
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-[#2C3246]/60">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => {
+                const targetAgent = renewAgentModalData;
+                setRenewAgentModalData(null);
+                if (targetAgent) {
+                  handleSelectAgent(targetAgent.id);
+                }
+              }}
+            >
+              Lihat Pengaturan
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setRenewAgentModalData(null);
+                window.dispatchEvent(new Event("app-loading-start"));
+                router.push("/?pricing=true&cat=automation");
+              }}
+              className="bg-[#f97316] hover:bg-[#ea580c] text-white font-bold"
+            >
+              Perpanjang Sekarang
+            </Button>
+          </div>
+        </div>
+      </Modal>
 
       {/* ========================================================================= */}
       {/* MODAL STUDIO: BUAT / EDIT OTOMASI BARU (MODULAR) */}

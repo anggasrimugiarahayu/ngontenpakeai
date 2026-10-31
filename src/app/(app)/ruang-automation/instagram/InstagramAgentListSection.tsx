@@ -30,6 +30,8 @@ interface InstagramAgentListSectionProps {
   onDisconnectAgent: (agentId: string, agentName: string) => void;
   onDeleteAgent: (agentId: string, agentName: string) => void;
   isAdmin?: boolean;
+  isPro?: boolean;
+  onRenewAgent?: (agent: any) => void;
 }
 
 export function InstagramAgentListSection({
@@ -48,6 +50,8 @@ export function InstagramAgentListSection({
   onDisconnectAgent,
   onDeleteAgent,
   isAdmin = false,
+  isPro = true,
+  onRenewAgent,
 }: InstagramAgentListSectionProps) {
   return (
     <div className="animate-in fade-in duration-200 space-y-6">
@@ -248,9 +252,13 @@ export function InstagramAgentListSection({
                       : "Silahkan untuk hubungkan akun IG anda"}
                   </p>
                   <div className="mt-1 sm:mt-1.5 flex items-center gap-2">
-                    {agent.isLinked ? (
+                    {!isPro && !isAdmin ? (
+                      <span className="text-xs sm:text-sm font-semibold text-rose-500 dark:text-rose-400">
+                        Masa Aktif Berakhir
+                      </span>
+                    ) : agent.isLinked ? (
                       <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400">
-                        Terhubung (@{agent.username})
+                        Terhubung
                       </span>
                     ) : agent.boundUsername ? (
                       <span className="text-xs sm:text-sm font-semibold text-amber-600 dark:text-amber-400">
@@ -338,17 +346,34 @@ export function InstagramAgentListSection({
                   )}
                 </div>
 
-                {/* Tombol Buka */}
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onSelectAgent(agent.id);
-                  }}
-                  className="whitespace-nowrap shrink-0 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white rounded-lg px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all cursor-pointer"
-                >
-                  Buka
-                </button>
+                {/* Tombol Buka / Perpanjang */}
+                {!isPro && !isAdmin ? (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (onRenewAgent) {
+                        onRenewAgent(agent);
+                      } else {
+                        onSelectAgent(agent.id);
+                      }
+                    }}
+                    className="whitespace-nowrap shrink-0 bg-amber-500 hover:bg-amber-600 text-white rounded-lg px-3.5 py-1.5 sm:py-2 text-xs sm:text-sm font-bold shadow-sm shadow-amber-500/20 transition-all cursor-pointer"
+                  >
+                    Perpanjang
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onSelectAgent(agent.id);
+                    }}
+                    className="whitespace-nowrap shrink-0 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white rounded-lg px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all cursor-pointer"
+                  >
+                    Buka
+                  </button>
+                )}
               </div>
             </div>
           ))}
