@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
-import { Save, Sparkles, Bot, Search } from "lucide-react";
+import { Save, LayoutTemplate, Bot, Search } from "lucide-react";
 import { tokens, cn } from "@/lib/design-tokens";
 
 const NGONTEN_ORDER = [
@@ -167,7 +167,7 @@ export function AdminRuangNgontenTab({
               : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#1f2947]"
           )}
         >
-          <Sparkles className="w-4 h-4" />
+          <LayoutTemplate className="w-4 h-4" />
           Ruang Ngonten
         </button>
 
@@ -208,7 +208,7 @@ export function AdminRuangNgontenTab({
         >
           <div className="space-y-1">
             <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-orange-500" />
+              <LayoutTemplate className="w-4 h-4 text-orange-500" />
               Batas Percobaan Gratis Ruang Ngonten
             </h4>
             <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
