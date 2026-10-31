@@ -194,17 +194,21 @@ export default function RuangRisetClient({
   const handleSelectPlatform = (
     platformId: "instagram" | "youtube" | "tiktok" | "facebook"
   ) => {
-    if (!isLoggedIn) {
-      window.dispatchEvent(new Event("app-loading-start"));
-      router.push(`/login?redirect=/ruang-riset?platform=${platformId}`);
-      return;
-    }
-
     const feature = getMatchedFeature(platformId);
     const isActive = feature !== undefined ? Boolean(feature?.isActive) : true;
     const isProOnly = feature !== undefined ? Boolean(feature?.isProOnly) : true;
 
     if (!isActive) {
+      return;
+    }
+
+    if (!isLoggedIn) {
+      window.dispatchEvent(new Event("app-loading-start"));
+      if (isProOnly) {
+        router.push("/?pricing=true&cat=riset");
+      } else {
+        router.push(`/login?redirect=${encodeURIComponent(`/ruang-riset?platform=${platformId}`)}`);
+      }
       return;
     }
 

@@ -299,17 +299,6 @@ export default function RuangAutomationClient({
 
   // Handle click on Instagram Automation Card
   const handleSelectInstagram = () => {
-    if (!isLoggedIn) {
-      window.dispatchEvent(new Event("app-loading-start"));
-      router.push("/login?redirect=/ruang-automation");
-      return;
-    }
-    const hasExistingAgents = Array.isArray(agents) && agents.length > 0;
-    if (isProOnly && !isPro && !isAdmin && !hasExistingAgents) {
-      window.dispatchEvent(new Event("app-loading-start"));
-      router.push("/?pricing=true&cat=automation");
-      return;
-    }
     setUserHasExitedToHub(false);
     setSelectedPlatform("instagram");
     if (typeof window !== "undefined") {
@@ -321,6 +310,16 @@ export default function RuangAutomationClient({
 
   // Redirect to official Meta OAuth login
   const handleStartMetaOAuth = (agentIdToConnect?: any) => {
+    if (!isLoggedIn) {
+      window.dispatchEvent(new Event("app-loading-start"));
+      if (isProOnly) {
+        router.push("/?pricing=true&cat=automation");
+      } else {
+        router.push(`/login?redirect=${encodeURIComponent("/ruang-automation?platform=instagram")}`);
+      }
+      return;
+    }
+
     const validId =
       typeof agentIdToConnect === "string" && agentIdToConnect.trim() && agentIdToConnect !== "[object Object]"
         ? agentIdToConnect.trim()
@@ -465,6 +464,15 @@ export default function RuangAutomationClient({
   };
 
   const handleSelectAgent = (agentId: string) => {
+    if (!isLoggedIn) {
+      window.dispatchEvent(new Event("app-loading-start"));
+      if (isProOnly) {
+        router.push("/?pricing=true&cat=automation");
+      } else {
+        router.push(`/login?redirect=${encodeURIComponent(`/ruang-automation?platform=instagram&agentId=${agentId}`)}`);
+      }
+      return;
+    }
     setSelectedAgentId(agentId);
     setActiveIgTab("koneksi");
     const newUrl = new URL(window.location.href);
@@ -1816,6 +1824,20 @@ export default function RuangAutomationClient({
             }
           }}
           onOpenCreateAgentModal={() => {
+            if (!isLoggedIn) {
+              window.dispatchEvent(new Event("app-loading-start"));
+              if (isProOnly) {
+                router.push("/?pricing=true&cat=automation");
+              } else {
+                router.push(`/login?redirect=${encodeURIComponent("/ruang-automation?platform=instagram")}`);
+              }
+              return;
+            }
+            if (isProOnly && !isPro && !isAdmin) {
+              window.dispatchEvent(new Event("app-loading-start"));
+              router.push("/?pricing=true&cat=automation");
+              return;
+            }
             const agentLimit = (data as any)?.agentLimit ?? 1;
             if (!isAdmin && agents.length >= agentLimit) {
               setIsPayToCreateModalOpen(true);

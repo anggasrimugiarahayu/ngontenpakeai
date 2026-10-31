@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 import { getInstagramAutomationDataAction } from "@/app/actions/instagramAutomation";
 import { getCachedAppUser, getCachedFeatures, getCachedQuotaConfig } from "@/lib/cache";
 import prisma from "@/lib/prisma";
@@ -61,6 +62,14 @@ export default async function RuangAutomationPage({
   const resolvedParams = searchParams ? await searchParams : {};
   const initialAgentId = typeof resolvedParams.agentId === "string" ? resolvedParams.agentId : null;
 
+  if (initialAgentId && !isLoggedIn) {
+    if (isAutoProOnly) {
+      redirect("/?pricing=true&cat=automation");
+    } else {
+      redirect(`/login?redirect=${encodeURIComponent(`/ruang-automation?platform=instagram&agentId=${initialAgentId}`)}`);
+    }
+  }
+
   let initialData = { agents: [], account: null, rules: [], stats: { totalComments: 0, totalDms: 0 }, logs: [] };
   if (isLoggedIn) {
     try {
@@ -71,8 +80,7 @@ export default async function RuangAutomationPage({
   }
 
   const hasAgents = Array.isArray(initialData?.agents) && initialData.agents.length > 0;
-  const canEnter = isLoggedIn && (isPro || isAdmin || !isAutoProOnly || hasAgents);
-  const initialPlatform = (canEnter && resolvedParams.platform === "instagram") ? "instagram" : null;
+  const initialPlatform = resolvedParams.platform === "instagram" ? "instagram" : null;
 
   return (
     <RuangAutomationClient

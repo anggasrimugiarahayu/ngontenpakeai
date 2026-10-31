@@ -1,4 +1,5 @@
 import { auth } from "@/auth";
+import { redirect } from "next/navigation";
 import {
   getCachedAppUser,
   getCachedUserOrders,
@@ -60,6 +61,16 @@ export default async function RuangRisetPage({
       )
     : null;
 
+  if (plat && matchedFeature) {
+    if (!isLoggedIn) {
+      if (matchedFeature.isProOnly) {
+        redirect("/?pricing=true&cat=riset");
+      } else {
+        redirect(`/login?redirect=${encodeURIComponent(`/ruang-riset?platform=${plat}`)}`);
+      }
+    }
+  }
+
   const canEnterInitial =
     isLoggedIn && (isPro || isAdmin || (matchedFeature && !matchedFeature.isProOnly));
 
@@ -69,7 +80,7 @@ export default async function RuangRisetPage({
       plat === "youtube" ||
       plat === "tiktok" ||
       plat === "facebook")
-      ? plat
+      ? (plat as "instagram" | "youtube" | "tiktok" | "facebook")
       : null;
 
   return (
