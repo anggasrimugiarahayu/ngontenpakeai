@@ -5,7 +5,7 @@ import {
   InstagramPostItem,
   InstagramTargetProfile,
 } from "@/app/(app)/ruang-riset/instagram/types";
-import { getResolvedRisetConfig } from "@/lib/riset-config";
+import { getResolvedRisetConfig, updateInstagramSessionStatus } from "@/lib/riset-config";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 
 // In-memory cache (15 minutes TTL) for fast repeated lookups & rate-limit protection
@@ -353,11 +353,16 @@ async function fetchFromInstagramWebSession(
       }
     );
 
-    if (!pageRes.ok) {
+    if (!pageRes.ok || pageRes.redirected) {
       console.warn(
         "fetchFromInstagramWebSession HTML status:",
-        pageRes.status
+        pageRes.status,
+        "redirected:",
+        pageRes.redirected
       );
+      if (pageRes.status === 302 || pageRes.redirected) {
+        updateInstagramSessionStatus("EXPIRED", "Instagram mengalihkan sesi ke login (Sesi Kadaluarsa)").catch(() => {});
+      }
       return null;
     }
 
@@ -744,8 +749,11 @@ async function fetchFromInstagramWebSession(
     const rawPosts = Array.from(postMap.values());
     if (rawPosts.length === 0) return null;
     return enrichPostsAndProfile(rawProfile, rawPosts);
-  } catch (err) {
+  } catch (err: any) {
     console.error("fetchFromInstagramWebSession error:", err);
+    if (String(err?.message || "").includes("redirect")) {
+      updateInstagramSessionStatus("EXPIRED", "Sesi kadaluarsa (Redirect count exceeded oleh Meta)").catch(() => {});
+    }
     return null;
   }
 }
@@ -1233,9 +1241,13 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    const isSessionExpired = cfg.sessionStatus === "EXPIRED";
     return NextResponse.json(
       {
-        error: `Akun @${cleanUsername} tidak ditemukan di Instagram atau bersifat Privat.`,
+        error: isSessionExpired
+          ? `Gagal mengambil data akun @${cleanUsername}. Sesi scraping Instagram saat ini kadaluarsa / memerlukan pembaruan session ID oleh Admin.`
+          : `Akun @${cleanUsername} tidak ditemukan di Instagram atau bersifat Privat.`,
+        isSessionExpired,
       },
       { status: 404 }
     );

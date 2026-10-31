@@ -50,7 +50,7 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
 
   const adminTabs = [
     { id: "profil", label: "Profil" },
-    { id: "api", label: "API Key Global" },
+    { id: "api", label: "API & Kredensial" },
     { id: "model", label: "Model AI" },
     { id: "fitur", label: "Manajemen Fitur" },
     { id: "belajar", label: "Ruang Belajar" },

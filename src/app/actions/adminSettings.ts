@@ -10,6 +10,12 @@ import { HomepageCardConfig } from "@/lib/homepage-cards";
 import { getCachedHomepageCards } from "@/lib/cache";
 import { getYoutubeVideoId, parseYouTubeIsoDuration } from "@/lib/youtube-utils";
 import { isAdminEmail } from "@/lib/admin";
+import {
+  RISET_CONFIG_KEY,
+  InstagramRisetConfig,
+  getResolvedRisetConfig,
+  updateInstagramSessionStatus,
+} from "@/lib/riset-config";
 
 async function assertAdmin() {
   const session = await auth();
@@ -573,4 +579,165 @@ export async function getYoutubeMetadataAction(url: string) {
     console.error("Error fetching YouTube metadata:", err);
     return { success: false, error: err.message || "Gagal mengambil data video YouTube" };
   }
+}
+
+export async function testInstagramSessionAction(sessionIdInput?: string) {
+  await assertAdmin();
+  let rawSessionId = sessionIdInput?.trim();
+  if (!rawSessionId) {
+    const cfg = await getResolvedRisetConfig();
+    rawSessionId = cfg.instagramSessionId;
+  }
+  if (!rawSessionId) {
+    return { success: false, status: "UNKNOWN", message: "Session ID belum diisi" };
+  }
+
+  const rawCleaned = rawSessionId.replace(/^sessionid=/i, "").split(";")[0].trim();
+  const sessionId = rawCleaned.includes(":") ? encodeURIComponent(rawCleaned) : rawCleaned;
+  const dsUserId = sessionId.split(/%3A|:/i)[0] || "";
+
+  try {
+    const res = await fetch("https://www.instagram.com/", {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        Cookie: `sessionid=${sessionId}; ds_user_id=${dsUserId}; ig_nrcb=1;`,
+      },
+      redirect: "manual",
+      cache: "no-store",
+    });
+
+    const isRedirect = res.status >= 300 && res.status < 400;
+    if (isRedirect) {
+      await updateInstagramSessionStatus("EXPIRED", "Instagram mengalihkan sesi (Redirect 302/Loop - Sesi Kadaluarsa)");
+      return {
+        success: false,
+        status: "EXPIRED",
+        statusCode: res.status,
+        message: "Session ID kadaluarsa atau ditolak oleh Instagram (Redirect 302/Loop). Perlu diperbarui.",
+      };
+    }
+
+    if (res.status === 200) {
+      await updateInstagramSessionStatus("VALID");
+      return {
+        success: true,
+        status: "VALID",
+        statusCode: 200,
+        message: "Session ID terverifikasi aktif & sehat (HTTP 200 OK)!",
+      };
+    }
+
+    await updateInstagramSessionStatus("UNKNOWN", `Respon tidak terduga: HTTP ${res.status}`);
+    return {
+      success: false,
+      status: "UNKNOWN",
+      statusCode: res.status,
+      message: `Instagram merespons dengan status HTTP ${res.status}`,
+    };
+  } catch (err: any) {
+    const isRedirectLoop = String(err?.message || "").includes("redirect");
+    const status = isRedirectLoop ? "EXPIRED" : "UNKNOWN";
+    const msg = isRedirectLoop
+      ? "Session ID kadaluarsa (Redirect count exceeded oleh Meta)."
+      : (err?.message || "Gagal menghubungi Instagram");
+
+    await updateInstagramSessionStatus(status, msg);
+    return { success: false, status, message: msg };
+  }
+}
+
+export async function saveInstagramSessionAction(rawSessionId: string) {
+  await assertAdmin();
+  const cleaned = rawSessionId.trim();
+  if (!cleaned) {
+    return { success: false, error: "Session ID tidak boleh kosong" };
+  }
+
+  const row = await prisma.appSetting.findUnique({
+    where: { key: RISET_CONFIG_KEY },
+  });
+  const current: InstagramRisetConfig = row?.value ? JSON.parse(row.value) : {};
+
+  const testRes = await testInstagramSessionAction(cleaned);
+
+  const updated: InstagramRisetConfig = {
+    ...current,
+    instagramSessionId: cleaned,
+    sessionStatus: (testRes.status as any) || "VALID",
+    lastCheckedAt: new Date().toISOString(),
+    statusError: testRes.success ? "" : testRes.message,
+  };
+
+  await prisma.appSetting.upsert({
+    where: { key: RISET_CONFIG_KEY },
+    update: { value: JSON.stringify(updated) },
+    create: { key: RISET_CONFIG_KEY, value: JSON.stringify(updated) },
+  });
+
+  try {
+    revalidatePath("/pengaturan");
+    revalidatePath("/ruang-riset");
+  } catch {}
+
+  return {
+    success: true,
+    testStatus: testRes.status,
+    message: testRes.success
+      ? "Session ID berhasil disimpan dan terverifikasi AKTIF!"
+      : `Session ID berhasil disimpan, namun status saat ini: ${testRes.message}`,
+  };
+}
+
+export async function deleteInstagramSessionAction() {
+  await assertAdmin();
+  const row = await prisma.appSetting.findUnique({
+    where: { key: RISET_CONFIG_KEY },
+  });
+  const current: InstagramRisetConfig = row?.value ? JSON.parse(row.value) : {};
+  const updated: InstagramRisetConfig = {
+    ...current,
+    instagramSessionId: "",
+    sessionStatus: "UNKNOWN",
+    lastCheckedAt: new Date().toISOString(),
+    statusError: "",
+  };
+
+  await prisma.appSetting.upsert({
+    where: { key: RISET_CONFIG_KEY },
+    update: { value: JSON.stringify(updated) },
+    create: { key: RISET_CONFIG_KEY, value: JSON.stringify(updated) },
+  });
+
+  try {
+    revalidatePath("/pengaturan");
+    revalidatePath("/ruang-riset");
+  } catch {}
+
+  return { success: true };
+}
+
+export async function saveRapidApiKeyAction(key: string, host?: string) {
+  await assertAdmin();
+  const row = await prisma.appSetting.findUnique({
+    where: { key: RISET_CONFIG_KEY },
+  });
+  const current: InstagramRisetConfig = row?.value ? JSON.parse(row.value) : {};
+  const updated: InstagramRisetConfig = {
+    ...current,
+    rapidApiKey: key.trim(),
+    rapidApiHost: host?.trim() || current.rapidApiHost || "instagram-scraper-api2.p.rapidapi.com",
+  };
+
+  await prisma.appSetting.upsert({
+    where: { key: RISET_CONFIG_KEY },
+    update: { value: JSON.stringify(updated) },
+    create: { key: RISET_CONFIG_KEY, value: JSON.stringify(updated) },
+  });
+
+  try {
+    revalidatePath("/pengaturan");
+  } catch {}
+
+  return { success: true };
 }
