@@ -81,6 +81,7 @@ model Feature {
   id          String   @id @default(cuid())
   name        String   @unique
   description String?
+  category    String   @default("ngonten")
   isActive    Boolean  @default(true)
   createdAt   DateTime @default(now())
   isProOnly   Boolean  @default(false) @map("is_pro_only")

@@ -206,6 +206,20 @@ export async function toggleFeaturePro(id: string, isProOnly: boolean) {
   revalidateAdminConfig();
 }
 
+export async function updateFeatureQuotaConfig(config: {
+  ngontenFreeLimit: number;
+  risetFreeLimit: number;
+  automationFreeTrialDays: number;
+}) {
+  await assertAdmin();
+  await prisma.appSetting.upsert({
+    where: { key: "FEATURE_QUOTA_CONFIG" },
+    update: { value: JSON.stringify(config) },
+    create: { key: "FEATURE_QUOTA_CONFIG", value: JSON.stringify(config) },
+  });
+  revalidateAdminConfig();
+}
+
 // 4. Digital Categories & Products
 export async function getCategories() {
   return await prisma.digitalCategory.findMany({ orderBy: { createdAt: "desc" } });

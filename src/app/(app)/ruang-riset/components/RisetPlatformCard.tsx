@@ -1,26 +1,32 @@
 "use client";
 
 import React from "react";
+import { Badge } from "@/components/ui/Badge";
 
 export interface RisetPlatform {
   id: string;
   name: string;
   description: string;
   icon: React.ComponentType<{ className?: string }>;
-  badge: string;
+  badge?: string;
   isActive: boolean;
   points: string[];
 }
 
 export function RisetPlatformCard({
   platform,
+  isPro = false,
+  feature,
   onSelect,
 }: {
   platform: RisetPlatform;
+  isPro?: boolean;
+  feature?: any;
   onSelect?: () => void;
 }) {
   const Icon = platform.icon;
-  const isActive = platform.isActive;
+  const isActive = feature !== undefined ? Boolean(feature?.isActive) : platform.isActive;
+  const isProOnly = feature !== undefined ? Boolean(feature?.isProOnly) : true;
 
   const handleClick = () => {
     if (isActive && onSelect) {
@@ -67,15 +73,25 @@ export function RisetPlatformCard({
               {platform.name}
             </h3>
             <div className="flex items-center gap-1 shrink-0">
-              <span
-                className={`text-[9px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider ${
-                  isActive
-                    ? "bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400"
-                    : "bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400"
-                }`}
-              >
-                {platform.badge}
-              </span>
+              {!isActive ? (
+                <Badge variant="neutral" size="xs">
+                  COMING SOON
+                </Badge>
+              ) : isProOnly ? (
+                !isPro ? (
+                  <Badge variant="primary" size="xs">
+                    PRO
+                  </Badge>
+                ) : (
+                  <Badge variant="neutral" size="xs">
+                    PRO
+                  </Badge>
+                )
+              ) : (
+                <Badge variant="success" size="xs">
+                  FREE
+                </Badge>
+              )}
             </div>
           </div>
         </div>

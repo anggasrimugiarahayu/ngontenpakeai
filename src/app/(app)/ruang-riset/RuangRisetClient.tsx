@@ -13,12 +13,21 @@ import { InstagramResearchStudio } from "./instagram/InstagramResearchStudio";
 import { YouTubeResearchStudio } from "./youtube/YouTubeResearchStudio";
 import { TikTokResearchStudio } from "./tiktok/TikTokResearchStudio";
 import { FacebookResearchStudio } from "./facebook/FacebookResearchStudio";
+import { Modal } from "@/components/ui/Modal";
+import { Button } from "@/components/ui/Button";
+import { Sparkles } from "lucide-react";
 
 interface RuangRisetClientProps {
   isLoggedIn: boolean;
   isPro?: boolean;
   isAdmin?: boolean;
   initialPlatform?: "instagram" | "youtube" | "tiktok" | "facebook" | null;
+  features?: any[];
+  usages?: any[];
+  quotaConfig?: {
+    risetFreeLimit?: number;
+    [key: string]: any;
+  };
 }
 
 const RISET_PLATFORMS: RisetPlatform[] = [
@@ -28,7 +37,6 @@ const RISET_PLATFORMS: RisetPlatform[] = [
     description:
       "Analisis performa akun, temukan Reels dengan Outlier Score tinggi, dan urutkan konten viral.",
     icon: InstagramIcon,
-    badge: "Populer",
     isActive: true,
     points: [
       "Bongkar Outlier Score & Konten Paling Viral",
@@ -42,7 +50,6 @@ const RISET_PLATFORMS: RisetPlatform[] = [
     description:
       "Bongkar Outlier Score video & Shorts kompetitor, pisahkan format konten, dan ekspor data ide.",
     icon: YouTubeIcon,
-    badge: "Populer",
     isActive: true,
     points: [
       "Bongkar Outlier Score & Video Paling Meledak",
@@ -56,7 +63,6 @@ const RISET_PLATFORMS: RisetPlatform[] = [
     description:
       "Bongkar Outlier Score video & Photo Slide kompetitor, sortir views tertinggi, dan ekspor data ide.",
     icon: TikTokIcon,
-    badge: "Baru",
     isActive: true,
     points: [
       "Bongkar Outlier Score & Konten Paling FYP",
@@ -70,7 +76,6 @@ const RISET_PLATFORMS: RisetPlatform[] = [
     description:
       "Bongkar Outlier Score Reels, Video & Foto halaman kompetitor, sortir interaksi tertinggi, dan ekspor data ide.",
     icon: FacebookIcon,
-    badge: "Baru",
     isActive: true,
     points: [
       "Bongkar Outlier Score & Konten Paling Viral",
@@ -85,11 +90,21 @@ export default function RuangRisetClient({
   isPro = false,
   isAdmin = false,
   initialPlatform = null,
+  features = [],
+  usages = [],
+  quotaConfig,
 }: RuangRisetClientProps) {
   const router = useRouter();
   const [selectedPlatform, setSelectedPlatform] = useState<
     "instagram" | "youtube" | "tiktok" | "facebook" | null
   >(initialPlatform);
+
+  const [quotaModalOpen, setQuotaModalOpen] = useState(false);
+  const [quotaModalInfo, setQuotaModalInfo] = useState<{
+    name: string;
+    used: number;
+    limit: number;
+  } | null>(null);
 
   // Set platform yang sudah pernah dibuka (untuk Keep-Alive / DOM Preservation)
   const [visitedPlatforms, setVisitedPlatforms] = useState<Set<string>>(
@@ -107,6 +122,14 @@ export default function RuangRisetClient({
     }
   }, [selectedPlatform]);
 
+  const getMatchedFeature = (platformId: string) => {
+    return (features || []).find(
+      (f: any) =>
+        f.name.toLowerCase() === `riset ${platformId}` ||
+        f.name.toLowerCase().includes(platformId)
+    );
+  };
+
   // Sync state with URL search params on mount & popstate
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -115,29 +138,33 @@ export default function RuangRisetClient({
       const params = new URLSearchParams(window.location.search);
       const platformParam = params.get("platform");
       if (
-        (platformParam === "instagram" ||
-          platformParam === "youtube" ||
-          platformParam === "tiktok" ||
-          platformParam === "facebook") &&
-        isLoggedIn &&
-        (isPro || isAdmin)
+        platformParam === "instagram" ||
+        platformParam === "youtube" ||
+        platformParam === "tiktok" ||
+        platformParam === "facebook"
       ) {
-        setSelectedPlatform(platformParam);
-        window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: platformParam }));
-      } else {
-        setSelectedPlatform(null);
-        window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: null }));
+        const feature = getMatchedFeature(platformParam);
+        const isProOnly = feature ? feature.isProOnly : true;
+        if (isLoggedIn && (isPro || isAdmin || !isProOnly)) {
+          setSelectedPlatform(platformParam);
+          window.dispatchEvent(
+            new CustomEvent("riset-platform-change", { detail: platformParam })
+          );
+          return;
+        }
       }
+      setSelectedPlatform(null);
+      window.dispatchEvent(
+        new CustomEvent("riset-platform-change", { detail: null })
+      );
     };
 
     const handlePlatformChange = (e: any) => {
       if (
-        (e.detail === "instagram" ||
-          e.detail === "youtube" ||
-          e.detail === "tiktok" ||
-          e.detail === "facebook") &&
-        isLoggedIn &&
-        (isPro || isAdmin)
+        e.detail === "instagram" ||
+        e.detail === "youtube" ||
+        e.detail === "tiktok" ||
+        e.detail === "facebook"
       ) {
         setSelectedPlatform(e.detail);
       } else {
@@ -145,27 +172,59 @@ export default function RuangRisetClient({
       }
     };
 
-    syncFromUrl();
     window.addEventListener("popstate", syncFromUrl);
     window.addEventListener("riset-platform-change", handlePlatformChange);
     return () => {
       window.removeEventListener("popstate", syncFromUrl);
       window.removeEventListener("riset-platform-change", handlePlatformChange);
     };
-  }, [isLoggedIn, isPro, isAdmin]);
+  }, [isLoggedIn, isPro, isAdmin, features]);
 
   const handleSelectPlatform = (
     platformId: "instagram" | "youtube" | "tiktok" | "facebook"
   ) => {
-    if (!isLoggedIn || (!isPro && !isAdmin)) {
+    if (!isLoggedIn) {
+      window.dispatchEvent(new Event("app-loading-start"));
+      router.push(`/login?redirect=/ruang-riset?platform=${platformId}`);
+      return;
+    }
+
+    const feature = getMatchedFeature(platformId);
+    const isActive = feature !== undefined ? Boolean(feature?.isActive) : true;
+    const isProOnly = feature !== undefined ? Boolean(feature?.isProOnly) : true;
+
+    if (!isActive) {
+      return;
+    }
+
+    if (isProOnly && !isPro && !isAdmin) {
       window.dispatchEvent(new Event("app-loading-start"));
       router.push("/?pricing=true&cat=riset");
       return;
     }
+
+    // Free Mode check
+    if (!isProOnly && !isPro && !isAdmin) {
+      const usageCount =
+        (usages || []).find((u: any) => u.featureId === feature?.id)?.count || 0;
+      const maxQuota = quotaConfig?.risetFreeLimit || 3;
+      if (usageCount >= maxQuota) {
+        setQuotaModalInfo({
+          name: feature?.name || `Riset ${platformId}`,
+          used: usageCount,
+          limit: maxQuota,
+        });
+        setQuotaModalOpen(true);
+        return;
+      }
+    }
+
     setSelectedPlatform(platformId);
     if (typeof window !== "undefined") {
       window.history.pushState(null, "", `/ruang-riset?platform=${platformId}`);
-      window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: platformId }));
+      window.dispatchEvent(
+        new CustomEvent("riset-platform-change", { detail: platformId })
+      );
       window.dispatchEvent(new Event("app-shallow-navigate"));
     }
   };
@@ -174,7 +233,9 @@ export default function RuangRisetClient({
     setSelectedPlatform(null);
     if (typeof window !== "undefined") {
       window.history.pushState(null, "", "/ruang-riset");
-      window.dispatchEvent(new CustomEvent("riset-platform-change", { detail: null }));
+      window.dispatchEvent(
+        new CustomEvent("riset-platform-change", { detail: null })
+      );
       window.dispatchEvent(new Event("app-shallow-navigate"));
     }
   };
@@ -227,30 +288,83 @@ export default function RuangRisetClient({
 
           {/* Platform Cards Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
-            {RISET_PLATFORMS.map((platform) => (
-              <RisetPlatformCard
-                key={platform.id}
-                platform={platform}
-                onSelect={
-                  platform.id === "instagram" ||
-                  platform.id === "youtube" ||
-                  platform.id === "tiktok" ||
-                  platform.id === "facebook"
-                    ? () =>
-                        handleSelectPlatform(
-                          platform.id as
-                            | "instagram"
-                            | "youtube"
-                            | "tiktok"
-                            | "facebook"
-                        )
-                    : undefined
-                }
-              />
-            ))}
+            {RISET_PLATFORMS.map((platform) => {
+              const matchedFeature = getMatchedFeature(platform.id);
+              return (
+                <RisetPlatformCard
+                  key={platform.id}
+                  platform={platform}
+                  isPro={isPro || isAdmin}
+                  feature={matchedFeature}
+                  onSelect={
+                    platform.id === "instagram" ||
+                    platform.id === "youtube" ||
+                    platform.id === "tiktok" ||
+                    platform.id === "facebook"
+                      ? () =>
+                          handleSelectPlatform(
+                            platform.id as
+                              | "instagram"
+                              | "youtube"
+                              | "tiktok"
+                              | "facebook"
+                          )
+                      : undefined
+                  }
+                />
+              );
+            })}
           </div>
         </>
       )}
+
+      {/* Modal Batas Riset Gratis Tercapai */}
+      <Modal
+        isOpen={quotaModalOpen}
+        onClose={() => setQuotaModalOpen(false)}
+        title="Batas Riset Gratis Tercapai"
+        description={`Kuota percobaan gratis kamu untuk ${quotaModalInfo?.name || "fitur ini"} sudah mencapai batas (${quotaModalInfo?.used || 3}/${quotaModalInfo?.limit || 3}).`}
+        icon={
+          <div className="w-9 h-9 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center">
+            <Sparkles className="w-5 h-5" />
+          </div>
+        }
+      >
+        <div className="space-y-4">
+          <div className="p-4 rounded-xl bg-orange-50/60 dark:bg-orange-950/20 border border-orange-100 dark:border-orange-900/30 text-xs sm:text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
+            <p className="font-semibold text-gray-900 dark:text-white mb-1">
+              Nikmati Riset Tanpa Batas dengan Paket PRO Riset
+            </p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Upgrade sekarang untuk membongkar outlier score, naskah konten viral, dan analisis kompetitor tanpa batasan kuota.
+            </p>
+          </div>
+
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-gray-100 dark:border-[#2C3246]/60">
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setQuotaModalOpen(false)}
+            >
+              Nanti Saja
+            </Button>
+            <Button
+              type="button"
+              variant="primary"
+              size="sm"
+              onClick={() => {
+                setQuotaModalOpen(false);
+                window.dispatchEvent(new Event("app-loading-start"));
+                router.push("/?pricing=true&cat=riset");
+              }}
+              className="bg-[#f97316] hover:bg-[#ea580c] text-white font-bold"
+            >
+              Upgrade ke PRO Riset
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

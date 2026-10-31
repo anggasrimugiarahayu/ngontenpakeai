@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { revalidateTag } from "next/cache";
-import { getCachedFeatures } from "@/lib/cache";
+import { getCachedFeatures, getCachedQuotaConfig } from "@/lib/cache";
 
 export interface FeatureAccessResult {
   authorized: boolean;
@@ -14,12 +14,12 @@ export interface FeatureAccessResult {
 }
 
 /**
- * Memvalidasi apakah user memiliki akses ke fitur tertentu (Freemium 3x vs PRO).
+ * Memvalidasi apakah user memiliki akses ke fitur tertentu (Freemium vs PRO).
  * - Admin: Selalu lolos (Unlimited)
- * - Pro Tools / Pro Plus: Selalu lolos (Unlimited)
+ * - Pro (sesuai kategori fitur): Selalu lolos (Unlimited)
  * - Free:
  *   - Jika fitur diset isProOnly = true -> Ditolak (PRO_ONLY)
- *   - Jika fitur diset Free -> Dicek kuota 3x percobaan gratis (QUOTA_EXCEEDED jika >= 3)
+ *   - Jika fitur diset Free -> Dicek kuota percobaan gratis dari konfigurasi admin
  */
 export async function verifyFeatureAccess(
   userId: string,
@@ -29,12 +29,18 @@ export async function verifyFeatureAccess(
   const isAdmin = email?.toLowerCase() === "anggasrimugiarahayu@gmail.com";
   if (isAdmin) return { authorized: true, isPro: true, remainingQuota: 9999 };
 
-  const [user, allFeatures] = await Promise.all([
+  const [user, allFeatures, quotaConfig] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { role: true, proToolsExpiredAt: true },
+      select: {
+        role: true,
+        proToolsExpiredAt: true,
+        proAutomationExpiredAt: true,
+        proRisetExpiredAt: true,
+      },
     }),
     getCachedFeatures(),
+    getCachedQuotaConfig(),
   ]);
 
   const feature =
@@ -53,7 +59,20 @@ export async function verifyFeatureAccess(
     return { authorized: true, isPro: true, remainingQuota: 9999 };
   }
 
-  const isPro = !!(user.proToolsExpiredAt && new Date(user.proToolsExpiredAt) > new Date());
+  const category = (feature as any)?.category || "ngonten";
+  const now = new Date();
+
+  // Evaluasi isPro spesifik berdasarkan kategori fitur
+  let isPro = false;
+  if (category === "riset") {
+    isPro = !!(user.proRisetExpiredAt && new Date(user.proRisetExpiredAt) > now);
+  } else if (category === "automation") {
+    isPro = !!(user.proAutomationExpiredAt && new Date(user.proAutomationExpiredAt) > now);
+  } else {
+    // ngonten / tools
+    isPro = !!(user.proToolsExpiredAt && new Date(user.proToolsExpiredAt) > now);
+  }
+
   if (isPro) {
     return { authorized: true, isPro: true, featureId: feature?.id, remainingQuota: 9999 };
   }
@@ -69,17 +88,28 @@ export async function verifyFeatureAccess(
   }
 
   if (feature?.isProOnly) {
+    const pkgName =
+      category === "riset"
+        ? "Paket PRO Riset"
+        : category === "automation"
+        ? "Paket PRO Auto"
+        : "Paket PRO Tools";
+
     return {
       authorized: false,
       isPro: false,
       isProOnly: true,
       code: "PRO_ONLY",
-      reason: "Fitur ini khusus untuk pengguna PRO. Silakan upgrade ke Paket PRO Tools untuk mengakses.",
+      reason: `Fitur ini khusus untuk pengguna PRO. Silakan upgrade ke ${pkgName} untuk mengakses.`,
     };
   }
 
-  // Free mode feature -> check 3x quota
-  const MAX_FREE_QUOTA = 3;
+  // Free mode feature -> check dynamic quota from admin setting
+  const maxQuota =
+    category === "riset"
+      ? quotaConfig.risetFreeLimit || 3
+      : quotaConfig.ngontenFreeLimit || 3;
+
   let currentUsage = 0;
   if (feature) {
     const usage = await prisma.usage.findUnique({
@@ -93,7 +123,7 @@ export async function verifyFeatureAccess(
     currentUsage = usage?.count || 0;
   }
 
-  if (currentUsage >= MAX_FREE_QUOTA) {
+  if (currentUsage >= maxQuota) {
     return {
       authorized: false,
       isPro: false,
@@ -102,7 +132,7 @@ export async function verifyFeatureAccess(
       currentUsage,
       remainingQuota: 0,
       code: "QUOTA_EXCEEDED",
-      reason: "Kuota percobaan gratis kamu sudah habis (3/3).",
+      reason: `Kuota percobaan gratis kamu sudah habis (${maxQuota}/${maxQuota}). Silakan upgrade ke Paket PRO untuk akses tanpa batas.`,
     };
   }
 
@@ -112,7 +142,7 @@ export async function verifyFeatureAccess(
     isProOnly: false,
     featureId: feature?.id,
     currentUsage,
-    remainingQuota: MAX_FREE_QUOTA - currentUsage,
+    remainingQuota: maxQuota - currentUsage,
   };
 }
 

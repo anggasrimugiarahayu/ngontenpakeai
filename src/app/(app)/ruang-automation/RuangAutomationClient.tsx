@@ -83,6 +83,7 @@ export default function RuangAutomationClient({
   isLoggedIn = true,
   isPro,
   isAdmin,
+  isProOnly = true,
   initialAgentId = null,
   initialPlatform = null,
 }: {
@@ -90,6 +91,7 @@ export default function RuangAutomationClient({
   isLoggedIn?: boolean;
   isPro: boolean;
   isAdmin: boolean;
+  isProOnly?: boolean;
   initialAgentId?: string | null;
   initialPlatform?: "instagram" | null;
 }) {
@@ -297,7 +299,12 @@ export default function RuangAutomationClient({
 
   // Handle click on Instagram Automation Card
   const handleSelectInstagram = () => {
-    if (!isLoggedIn || (!isPro && !isAdmin)) {
+    if (!isLoggedIn) {
+      window.dispatchEvent(new Event("app-loading-start"));
+      router.push("/login?redirect=/ruang-automation");
+      return;
+    }
+    if (isProOnly && !isPro && !isAdmin) {
       window.dispatchEvent(new Event("app-loading-start"));
       router.push("/?pricing=true&cat=automation");
       return;
@@ -1781,6 +1788,7 @@ export default function RuangAutomationClient({
           isLoggedIn={isLoggedIn}
           isPro={isPro}
           isAdmin={isAdmin}
+          isProOnly={isProOnly}
           onSelectInstagram={handleSelectInstagram}
         />
       ) : selectedAgentId === null ? (

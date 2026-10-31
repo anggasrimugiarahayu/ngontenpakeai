@@ -20,7 +20,7 @@ export function AdminSettingsContent({
     <>
       {activeTab === "api" && <AdminApiKeyTab settings={settings} />}
       {activeTab === "model" && <AdminAiModelTab models={models} />}
-      {activeTab === "fitur" && <AdminRuangNgontenTab features={features} />}
+      {activeTab === "fitur" && <AdminRuangNgontenTab features={features} settings={settings} />}
       {activeTab === "pricing" && (
         <PricingConfigSection products={products} settings={settings} />
       )}

@@ -4,11 +4,13 @@ import React from "react";
 import { InstagramIcon } from "./AutomationIcons";
 import { TikTokPlatformCard } from "../tiktok/TikTokAutomationSection";
 import { WhatsAppPlatformCard } from "../whatsapp/WhatsAppAutomationSection";
+import { Badge } from "@/components/ui/Badge";
 
 interface PlatformHubSectionProps {
   isLoggedIn: boolean;
   isPro: boolean;
   isAdmin: boolean;
+  isProOnly?: boolean;
   onSelectInstagram: () => void;
 }
 
@@ -16,6 +18,7 @@ export function PlatformHubSection({
   isLoggedIn,
   isPro,
   isAdmin,
+  isProOnly = true,
   onSelectInstagram,
 }: PlatformHubSectionProps) {
   const canAccess = isLoggedIn && (isPro || isAdmin);
@@ -62,14 +65,20 @@ export function PlatformHubSection({
                   Instagram Automation
                 </h3>
                 <div className="flex items-center gap-1 shrink-0">
-                  {canAccess ? (
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400 uppercase tracking-wider">
-                      AKTIF
-                    </span>
+                  {isProOnly ? (
+                    !canAccess ? (
+                      <Badge variant="primary" size="xs">
+                        PRO
+                      </Badge>
+                    ) : (
+                      <Badge variant="neutral" size="xs">
+                        PRO
+                      </Badge>
+                    )
                   ) : (
-                    <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-orange-100 text-orange-600 dark:bg-orange-900/40 dark:text-orange-400 uppercase tracking-wider">
-                      PRO
-                    </span>
+                    <Badge variant="success" size="xs">
+                      FREE
+                    </Badge>
                   )}
                 </div>
               </div>

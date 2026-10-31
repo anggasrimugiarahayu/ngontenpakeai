@@ -1,5 +1,11 @@
 import { auth } from "@/auth";
-import { getCachedAppUser, getCachedUserOrders } from "@/lib/cache";
+import {
+  getCachedAppUser,
+  getCachedUserOrders,
+  getCachedFeatures,
+  getCachedQuotaConfig,
+  getCachedUserUsages,
+} from "@/lib/cache";
 import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
 import RuangRisetClient from "./RuangRisetClient";
 
@@ -31,11 +37,33 @@ export default async function RuangRisetPage({
     }
   }
 
+  const [allFeatures, quotaConfig, userUsages] = await Promise.all([
+    getCachedFeatures(),
+    getCachedQuotaConfig(),
+    session?.user?.id
+      ? getCachedUserUsages(session.user.id).catch(() => [])
+      : Promise.resolve([]),
+  ]);
+
+  const risetFeatures = allFeatures.filter(
+    (f: any) => f.category === "riset" || f.name.toLowerCase().startsWith("riset ")
+  );
+
   const resolvedParams = searchParams ? await searchParams : {};
   const plat = resolvedParams.platform;
+  const matchedFeature = plat
+    ? risetFeatures.find(
+        (f: any) =>
+          f.name.toLowerCase() === `riset ${plat}` ||
+          f.name.toLowerCase().includes(plat as string)
+      )
+    : null;
+
+  const canEnterInitial =
+    isLoggedIn && (isPro || isAdmin || (matchedFeature && !matchedFeature.isProOnly));
+
   const initialPlatform =
-    isLoggedIn &&
-    (isPro || isAdmin) &&
+    canEnterInitial &&
     (plat === "instagram" ||
       plat === "youtube" ||
       plat === "tiktok" ||
@@ -49,6 +77,9 @@ export default async function RuangRisetPage({
       isPro={isPro}
       isAdmin={isAdmin}
       initialPlatform={initialPlatform}
+      features={risetFeatures}
+      usages={userUsages}
+      quotaConfig={quotaConfig}
     />
   );
 }

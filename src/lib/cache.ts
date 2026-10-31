@@ -34,6 +34,42 @@ export const getCachedFeatures = unstable_cache(
   { revalidate: 3600, tags: ['features'] }
 );
 
+export interface FeatureQuotaConfig {
+  ngontenFreeLimit: number;
+  risetFreeLimit: number;
+  automationFreeTrialDays: number;
+}
+
+export const DEFAULT_QUOTA_CONFIG: FeatureQuotaConfig = {
+  ngontenFreeLimit: 3,
+  risetFreeLimit: 3,
+  automationFreeTrialDays: 3,
+};
+
+export const getCachedQuotaConfig = unstable_cache(
+  async (): Promise<FeatureQuotaConfig> => {
+    try {
+      const setting = await prisma.appSetting.findUnique({
+        where: { key: "FEATURE_QUOTA_CONFIG" },
+      });
+      if (setting?.value) {
+        const parsed = JSON.parse(setting.value);
+        return {
+          ngontenFreeLimit: Number(parsed.ngontenFreeLimit) || 3,
+          risetFreeLimit: Number(parsed.risetFreeLimit) || 3,
+          automationFreeTrialDays: Number(parsed.automationFreeTrialDays) || 3,
+        };
+      }
+      return DEFAULT_QUOTA_CONFIG;
+    } catch (e) {
+      console.error("Failed to fetch quota config in cache:", e);
+      return DEFAULT_QUOTA_CONFIG;
+    }
+  },
+  ['feature-quota-config'],
+  { revalidate: 3600, tags: ['quota-config', 'admin-config'] }
+);
+
 export const getCachedHasBlueprint = unstable_cache(
   async (userId: string) => {
     try {

@@ -52,7 +52,7 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
     { id: "profil", label: "Profil" },
     { id: "api", label: "API Key Global" },
     { id: "model", label: "Model AI" },
-    { id: "fitur", label: "Ruang Ngonten" },
+    { id: "fitur", label: "Manajemen Fitur" },
     { id: "belajar", label: "Ruang Belajar" },
     { id: "pricing", label: "Pricing Paket" },
     { id: "homepage", label: "Home Page" },

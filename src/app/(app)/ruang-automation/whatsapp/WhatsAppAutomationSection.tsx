@@ -2,6 +2,7 @@
 
 import React from "react";
 import { WhatsAppIcon } from "../components/AutomationIcons";
+import { Badge } from "@/components/ui/Badge";
 
 export function WhatsAppPlatformCard() {
   const waPoints = [
@@ -26,9 +27,9 @@ export function WhatsAppPlatformCard() {
               WhatsApp Automation
             </h3>
             <div className="flex items-center gap-1 shrink-0">
-              <span className="text-[9px] font-bold px-1.5 py-0.5 rounded bg-gray-100 text-gray-500 dark:bg-white/10 dark:text-gray-400 uppercase tracking-wider">
+              <Badge variant="neutral" size="xs">
                 COMING SOON
-              </span>
+              </Badge>
             </div>
           </div>
         </div>
