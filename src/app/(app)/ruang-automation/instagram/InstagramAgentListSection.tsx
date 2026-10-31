@@ -160,27 +160,19 @@ export function InstagramAgentListSection({
 
       {/* List Agen: Empty State vs Cards Grid */}
       {agents.length === 0 ? (
-        <div className="rounded-[24px] border-2 border-dashed border-gray-200 dark:border-[#2C3246] p-8 sm:p-12 text-center bg-gray-50/50 dark:bg-white/[0.02] flex flex-col items-center justify-center max-w-xl mx-auto my-8">
+        <div className="w-full rounded-2xl border-2 border-dashed border-gray-200 dark:border-[#2C3246] p-8 sm:p-12 text-center bg-gray-50/50 dark:bg-white/[0.02] flex flex-col items-center justify-center">
           <div className="w-16 h-16 rounded-2xl bg-orange-500/10 text-orange-500 flex items-center justify-center mb-4 shadow-sm">
             <Bot className="w-8 h-8" />
           </div>
           <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white mb-2">
             Belum Ada Agen Otomasi
           </h3>
-          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto mb-6 leading-relaxed">
+          <p className="text-sm text-gray-500 dark:text-gray-400 max-w-md mx-auto leading-relaxed">
             Buat agen pertama Anda untuk menghubungkan akun Instagram dan mengotomasi balasan komentar serta DM secara cerdas dan efisien.
           </p>
-          <button
-            type="button"
-            onClick={onOpenCreateAgent}
-            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-sm shadow-lg shadow-orange-500/25 transition-all cursor-pointer"
-          >
-            <Plus className="w-4 h-4" />
-            <span>Buat Agen Pertama</span>
-          </button>
         </div>
       ) : filteredAgents.length === 0 ? (
-        <div className="rounded-[20px] border border-gray-200 dark:border-[#2C3246] p-8 text-center bg-white dark:bg-[#141B31] max-w-md mx-auto my-8 shadow-sm">
+        <div className="w-full rounded-2xl border border-gray-200 dark:border-[#2C3246] p-8 text-center bg-white dark:bg-[#141B31] shadow-sm">
           <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
             Tidak ada agen dengan status filter yang dipilih.
           </p>
