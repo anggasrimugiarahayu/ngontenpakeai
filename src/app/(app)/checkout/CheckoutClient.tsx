@@ -7,6 +7,7 @@ import { createCheckoutToken, verifyPayment, cancelPayment } from "@/app/actions
 import { validatePromoCodeAction } from "@/app/actions/checkout";
 import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle2, ChevronRight, X, Lock, CreditCard, AlertCircle } from "lucide-react";
+import { ClawdVerifyVisual } from "@/components/ui/ClawdLoadingVisuals";
 import { BackButton } from "@/components/ui/BackButton";
 import Link from "next/link";
 import dynamic from "next/dynamic";
@@ -372,8 +373,10 @@ export default function CheckoutClient({
 
   if (paymentState === "verifying") {
     return (
-      <div className="bg-white dark:bg-[#141B31] p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-[#2C3246] max-w-md w-full mx-auto text-center mt-10">
-        <Loader2 className="w-16 h-16 text-rn-accent animate-spin mx-auto mb-6" />
+      <div className="bg-white dark:bg-[#141B31] p-8 rounded-2xl shadow-xl border border-gray-200 dark:border-[#2C3246] max-w-md w-full mx-auto text-center mt-10 animate-in fade-in duration-200">
+        <div className="flex justify-center mb-5">
+          <ClawdVerifyVisual />
+        </div>
         <h2 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">Memverifikasi Status...</h2>
         <p className="text-gray-500 text-sm">Sistem sedang menghubungi Midtrans.</p>
       </div>

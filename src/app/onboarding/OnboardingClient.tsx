@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { saveOnboardingData } from "@/app/actions/onboarding";
 import { ChevronRight, Sparkles, Target, Zap, LayoutTemplate } from "lucide-react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
+import { ClawdOnboardingVisual } from "@/components/ui/ClawdLoadingVisuals";
 
 export default function OnboardingClient() {
   const router = useRouter();
@@ -86,8 +87,11 @@ export default function OnboardingClient() {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center text-center">
-        <LoadingSpinner message="Menyiapkan ruang kerja personalmu..." />
+      <div className="flex flex-col items-center justify-center text-center p-6 animate-in fade-in duration-200">
+        <ClawdOnboardingVisual step={5} />
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-3 tracking-tight">
+          Menyiapkan ruang kerja personalmu...
+        </p>
       </div>
     );
   }
@@ -106,7 +110,8 @@ export default function OnboardingClient() {
 
       <div className="p-6 md:p-8">
         <div className="text-center mb-6">
-          <div className="text-orange-500 font-black text-sm mb-3 tracking-wider uppercase">Langkah {step} dari 4</div>
+          <ClawdOnboardingVisual step={step} className="mb-2" />
+          <div className="text-orange-500 font-black text-sm mb-2 tracking-wider uppercase">Langkah {step} dari 4</div>
           <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2 leading-tight">
             {currentStepData.title}
           </h2>

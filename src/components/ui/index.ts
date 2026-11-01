@@ -8,5 +8,6 @@ export * from "./EmptyState";
 export * from "./Pagination";
 export * from "./CustomSelect";
 export * from "./LoadingSpinner";
+export * from "./ClawdLoadingVisuals";
 export * from "./BlueprintRequiredModal";
 export * from "./ScheduleToCalendarModal";

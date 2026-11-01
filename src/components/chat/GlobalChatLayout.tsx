@@ -2,6 +2,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
 import GlobalChatbox from './GlobalChatbox';
 import GlobalChatBubble from './GlobalChatBubble';
+import { ClawdAiThinkingVisual } from '@/components/ui/ClawdLoadingVisuals';
 
 export interface ChatMessage {
   id: number;
@@ -207,10 +208,11 @@ export default function GlobalChatLayout({
             
             {isLoading && (
               <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="flex gap-1.5 p-4 bg-gray-50 dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246] rounded-2xl rounded-tl-sm w-fit">
-                  <span className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce"></span>
-                  <span className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce [animation-delay:0.2s]"></span>
-                  <span className="w-2 h-2 rounded-full bg-gray-400 dark:bg-gray-500 animate-bounce [animation-delay:0.4s]"></span>
+                <div className="flex items-center gap-2.5 px-3.5 py-2 bg-gray-50 dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246] rounded-2xl rounded-tl-sm w-fit shadow-sm">
+                  <ClawdAiThinkingVisual />
+                  <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                    Meracik konten...
+                  </span>
                 </div>
               </div>
             )}

@@ -5,15 +5,16 @@ import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
 import useSWR from "swr";
 import { getBlueprintAction } from "@/app/actions/blueprint";
+import { ClawdPageVisual } from "@/components/ui/ClawdLoadingVisuals";
 import ToolGrid from "./ToolGrid";
 
 const ToolLoading = ({ title }: { title: string }) => (
-  <div className="flex-1 w-full min-h-[60vh] flex flex-col items-center justify-center p-6 text-center">
-    <div className="w-9 h-9 border-3 border-orange-500 border-t-transparent rounded-full animate-spin mb-3" />
-    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+  <div className="flex-1 w-full min-h-[60vh] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-200">
+    <ClawdPageVisual />
+    <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-2">
       Memuat {title}...
     </p>
-    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+    <p className="text-xs text-gray-400 dark:text-gray-500 mt-0.5">
       Menyiapkan asisten AI dan sistem workspace
     </p>
   </div>

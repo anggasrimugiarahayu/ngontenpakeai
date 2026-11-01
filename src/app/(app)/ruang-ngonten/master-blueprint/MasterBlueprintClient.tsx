@@ -13,6 +13,7 @@ import CanvasCell from "@/components/master-blueprint/CanvasCell";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { BackButton } from "@/components/ui/BackButton";
 import { Button } from "@/components/ui/Button";
+import { ClawdPageVisual } from "@/components/ui/ClawdLoadingVisuals";
 import QuotaExceededModal from "@/components/ui/QuotaExceededModal";
 
 
@@ -340,8 +341,11 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
 
   if (status === "loading" || (isLoading && !canvasData)) {
     return (
-      <div className="flex-1 flex justify-center items-center py-20">
-        <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+      <div className="flex-1 flex flex-col justify-center items-center py-20 text-center animate-in fade-in duration-200">
+        <ClawdPageVisual />
+        <p className="text-sm font-semibold text-gray-700 dark:text-gray-300 mt-2">
+          Memuat Master Blueprint...
+        </p>
       </div>
     );
   }

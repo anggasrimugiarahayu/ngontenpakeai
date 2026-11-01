@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
+import { ClawdRisetVisual } from "@/components/ui/ClawdLoadingVisuals";
 import {
   FacebookUserProfile,
   FacebookPostItem,
@@ -529,7 +530,7 @@ export function FacebookResearchStudio({
       {/* Loading Progress Indicator */}
       {isLoading && (
         <div className="w-full p-6 sm:p-8 bg-white dark:bg-[#141B31] rounded-2xl border border-gray-200 dark:border-[#2C3246] shadow-sm text-center space-y-4 animate-in fade-in duration-200 max-w-2xl mx-auto">
-          <div className="w-10 h-10 rounded-full border-3 border-orange-500 border-t-transparent animate-spin mx-auto" />
+          <ClawdRisetVisual isDone={loadingPercent === 100} />
           <div className="space-y-1.5 max-w-md mx-auto">
             <div className="flex items-center justify-between text-xs font-bold">
               <span className="text-gray-600 dark:text-gray-300">
