@@ -23,6 +23,7 @@ import { Switch } from "@/components/ui/Switch";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
+import { Pagination } from "@/components/ui/Pagination";
 import { confirmSwal } from "./confirmSwal";
 import {
   upsertCarouselStyleArt,
@@ -59,6 +60,8 @@ export function AdminCarouselVisualsSection({
   const [styles, setStyles] = useState<CarouselVisualItem[]>(initialStyles);
   const [fonts, setFonts] = useState<CarouselVisualItem[]>(initialFonts);
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   // Modal State
@@ -248,17 +251,32 @@ export function AdminCarouselVisualsSection({
     }
   };
 
-  // Filter items based on active tab & search query
+  // Reset halaman ke 1 saat tab berganti atau melakukan pencarian
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery]);
+
+  // Filter & Urutkan items secara natural (numeric sort agar FONT 1, FONT 2, ... FONT 10 rapi)
   const currentItems = activeTab === "styles" ? styles : fonts;
-  const filteredItems = currentItems.filter((item) => {
-    const q = searchQuery.toLowerCase().trim();
-    if (!q) return true;
-    return (
-      item.kode.toLowerCase().includes(q) ||
-      item.namaLabel.toLowerCase().includes(q) ||
-      item.deskripsiPrompt.toLowerCase().includes(q)
+  const filteredItems = currentItems
+    .filter((item) => {
+      const q = searchQuery.toLowerCase().trim();
+      if (!q) return true;
+      return (
+        item.kode.toLowerCase().includes(q) ||
+        item.namaLabel.toLowerCase().includes(q) ||
+        item.deskripsiPrompt.toLowerCase().includes(q)
+      );
+    })
+    .sort((a, b) =>
+      a.kode.localeCompare(b.kode, undefined, { numeric: true, sensitivity: "base" })
     );
-  });
+
+  const totalPages = Math.ceil(filteredItems.length / ITEMS_PER_PAGE) || 1;
+  const paginatedItems = filteredItems.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
 
   return (
     <div className="mt-8 border-t border-gray-200 dark:border-[#2C3246] pt-8 space-y-6">
@@ -278,22 +296,8 @@ export function AdminCarouselVisualsSection({
           </p>
         </div>
 
-        {/* Global Action Buttons */}
+        {/* Action Button: Tambah Item */}
         <div className="flex items-center gap-2 shrink-0">
-          <Button
-            type="button"
-            variant="secondary"
-            size="sm"
-            onClick={handleSeedDefaults}
-            disabled={isSeeding}
-            isLoading={isSeeding}
-            icon={<Sparkles className="w-3.5 h-3.5 text-amber-500" />}
-            className="text-xs font-bold"
-            title="Muat preset standar bawaan jika database kosong atau butuh rekomendasi awal"
-          >
-            Muat Preset Bawaan
-          </Button>
-
           <Button
             type="button"
             variant="primary"
@@ -419,7 +423,7 @@ export function AdminCarouselVisualsSection({
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-[#2C3246]/50">
-                {filteredItems.map((item) => (
+                {paginatedItems.map((item) => (
                   <tr
                     key={item.id}
                     className="hover:bg-gray-50/70 dark:hover:bg-white/5 transition-colors group"
@@ -498,6 +502,17 @@ export function AdminCarouselVisualsSection({
                 ))}
               </tbody>
             </table>
+          </div>
+
+          {/* Pagination Controls - Style persis seperti di Orders */}
+          <div className="p-4 sm:p-5 border-t border-gray-100 dark:border-[#2C3246] bg-white dark:bg-[#141B31]">
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={(p) => setCurrentPage(p)}
+              totalItems={filteredItems.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+            />
           </div>
         </div>
       )}
