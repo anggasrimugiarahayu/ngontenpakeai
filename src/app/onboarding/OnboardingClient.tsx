@@ -10,6 +10,8 @@ import { ClawdOnboardingVisual } from "@/components/ui/ClawdLoadingVisuals";
 export default function OnboardingClient() {
   const router = useRouter();
   const [step, setStep] = useState(1);
+  const [reactKey, setReactKey] = useState(0);
+  const [isPending, setIsPending] = useState(false);
   const [loading, setLoading] = useState(false);
   const [answers, setAnswers] = useState({
     niche: "",
@@ -19,22 +21,30 @@ export default function OnboardingClient() {
   });
 
   const handleSelect = async (field: keyof typeof answers, value: string) => {
+    if (isPending) return;
+    setIsPending(true);
+    setReactKey((prev) => prev + 1);
+
     const newAnswers = { ...answers, [field]: value };
     setAnswers(newAnswers);
 
-    if (step < 4) {
-      setStep(step + 1);
-    } else {
-      // Selesai
-      setLoading(true);
-      const res = await saveOnboardingData(newAnswers);
-      if (res.success) {
-        router.push("/");
+    // Jeda ~0.25 detik agar Clawd sempat bereaksi senang (sparkle & jump) sebelum ganti langkah
+    setTimeout(async () => {
+      if (step < 4) {
+        setStep((prev) => prev + 1);
+        setIsPending(false);
       } else {
-        alert(res.error || "Terjadi kesalahan.");
-        setLoading(false);
+        setLoading(true);
+        setIsPending(false);
+        const res = await saveOnboardingData(newAnswers);
+        if (res.success) {
+          router.push("/");
+        } else {
+          alert(res.error || "Terjadi kesalahan.");
+          setLoading(false);
+        }
       }
-    }
+    }, 250);
   };
 
   const steps = [
@@ -110,7 +120,7 @@ export default function OnboardingClient() {
 
       <div className="p-6 md:p-8">
         <div className="text-center mb-6">
-          <ClawdOnboardingVisual step={step} className="mb-2" />
+          <ClawdOnboardingVisual step={step} reactKey={reactKey} className="mb-2" />
           <div className="text-orange-500 font-black text-sm mb-2 tracking-wider uppercase">Langkah {step} dari 4</div>
           <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-2 leading-tight">
             {currentStepData.title}
@@ -124,8 +134,9 @@ export default function OnboardingClient() {
           {currentStepData.options.map((opt, i) => (
             <button
               key={i}
+              disabled={isPending}
               onClick={() => handleSelect(currentStepData.field, opt.label)}
-              className="flex items-center justify-between w-full p-3 md:p-4 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128] hover:border-rn-accent hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-all text-left group"
+              className="flex items-center justify-between w-full p-3 md:p-4 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-gray-50 dark:bg-[#0A1128] hover:border-rn-accent hover:bg-orange-50 dark:hover:bg-orange-950/20 disabled:pointer-events-none transition-all text-left group"
             >
               <div className="flex items-center gap-4 text-gray-700 dark:text-gray-300 group-hover:text-rn-accent transition-colors">
                 <div className="text-gray-400 group-hover:text-rn-accent transition-colors">
