@@ -72,3 +72,25 @@ export async function queryProducts() {
 
   return products;
 }
+
+export async function queryCarouselStyleArts() {
+  try {
+    return await prisma.carouselStyleArt.findMany({
+      orderBy: { kode: "asc" }
+    });
+  } catch (e) {
+    console.error("Error queryCarouselStyleArts:", e);
+    return [];
+  }
+}
+
+export async function queryCarouselFonts() {
+  try {
+    return await prisma.carouselFont.findMany({
+      orderBy: { kode: "asc" }
+    });
+  } catch (e) {
+    console.error("Error queryCarouselFonts:", e);
+    return [];
+  }
+}

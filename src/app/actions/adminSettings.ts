@@ -741,3 +741,246 @@ export async function saveRapidApiKeyAction(key: string, host?: string) {
 
   return { success: true };
 }
+
+// ==========================================
+// CAROUSEL BUILDER: STYLE ART & FONT SETTINGS
+// ==========================================
+
+function revalidateCarouselConfig() {
+  safeRevalidateTag("admin-config");
+  try {
+    revalidatePath("/pengaturan");
+  } catch {}
+  try {
+    revalidatePath("/ruang-ngonten");
+  } catch {}
+  try {
+    revalidatePath("/ruang-ngonten/carousel-builder");
+  } catch {}
+}
+
+export async function getCarouselStyleArts() {
+  await assertAdmin();
+  return await prisma.carouselStyleArt.findMany({
+    orderBy: { kode: "asc" },
+  });
+}
+
+export async function upsertCarouselStyleArt(data: {
+  id?: string;
+  kode: string;
+  namaLabel: string;
+  deskripsiPrompt: string;
+  isActive?: boolean;
+}) {
+  await assertAdmin();
+  const kode = data.kode.trim();
+  const namaLabel = data.namaLabel.trim();
+  const deskripsiPrompt = data.deskripsiPrompt.trim();
+  const isActive = data.isActive !== undefined ? Boolean(data.isActive) : true;
+
+  if (!kode || !namaLabel || !deskripsiPrompt) {
+    throw new Error("Kode, Nama Label, dan Deskripsi Prompt wajib diisi");
+  }
+
+  let result;
+  if (data.id) {
+    result = await prisma.carouselStyleArt.update({
+      where: { id: data.id },
+      data: { kode, namaLabel, deskripsiPrompt, isActive },
+    });
+  } else {
+    result = await prisma.carouselStyleArt.upsert({
+      where: { kode },
+      update: { namaLabel, deskripsiPrompt, isActive },
+      create: { kode, namaLabel, deskripsiPrompt, isActive },
+    });
+  }
+
+  revalidateCarouselConfig();
+  return result;
+}
+
+export async function toggleCarouselStyleArt(id: string, isActive: boolean) {
+  await assertAdmin();
+  const res = await prisma.carouselStyleArt.update({
+    where: { id },
+    data: { isActive },
+  });
+  revalidateCarouselConfig();
+  return res;
+}
+
+export async function deleteCarouselStyleArt(id: string) {
+  await assertAdmin();
+  const res = await prisma.carouselStyleArt.delete({
+    where: { id },
+  });
+  revalidateCarouselConfig();
+  return res;
+}
+
+export async function getCarouselFonts() {
+  await assertAdmin();
+  return await prisma.carouselFont.findMany({
+    orderBy: { kode: "asc" },
+  });
+}
+
+export async function upsertCarouselFont(data: {
+  id?: string;
+  kode: string;
+  namaLabel: string;
+  deskripsiPrompt: string;
+  isActive?: boolean;
+}) {
+  await assertAdmin();
+  const kode = data.kode.trim();
+  const namaLabel = data.namaLabel.trim();
+  const deskripsiPrompt = data.deskripsiPrompt.trim();
+  const isActive = data.isActive !== undefined ? Boolean(data.isActive) : true;
+
+  if (!kode || !namaLabel || !deskripsiPrompt) {
+    throw new Error("Kode, Nama Label, dan Deskripsi Prompt wajib diisi");
+  }
+
+  let result;
+  if (data.id) {
+    result = await prisma.carouselFont.update({
+      where: { id: data.id },
+      data: { kode, namaLabel, deskripsiPrompt, isActive },
+    });
+  } else {
+    result = await prisma.carouselFont.upsert({
+      where: { kode },
+      update: { namaLabel, deskripsiPrompt, isActive },
+      create: { kode, namaLabel, deskripsiPrompt, isActive },
+    });
+  }
+
+  revalidateCarouselConfig();
+  return result;
+}
+
+export async function toggleCarouselFont(id: string, isActive: boolean) {
+  await assertAdmin();
+  const res = await prisma.carouselFont.update({
+    where: { id },
+    data: { isActive },
+  });
+  revalidateCarouselConfig();
+  return res;
+}
+
+export async function deleteCarouselFont(id: string) {
+  await assertAdmin();
+  const res = await prisma.carouselFont.delete({
+    where: { id },
+  });
+  revalidateCarouselConfig();
+  return res;
+}
+
+const DEFAULT_CAROUSEL_STYLES = [
+  {
+    kode: "STYLE_01",
+    namaLabel: "3D Claymation Minimalist",
+    deskripsiPrompt: "3D claymation style, cute handcrafted clay texture, smooth plasticine material, soft studio lighting, pastel color background, octane render 8k, whimsical and charming character design",
+  },
+  {
+    kode: "STYLE_02",
+    namaLabel: "Flat Vector Illustration",
+    deskripsiPrompt: "Modern flat vector art, clean sharp geometric lines, minimal shadows, corporate Memphis aesthetic, vibrant bold colors, high contrast, clean negative space, aesthetic editorial illustration",
+  },
+  {
+    kode: "STYLE_03",
+    namaLabel: "Cinematic Realistic 3D",
+    deskripsiPrompt: "Cinematic 3D render, realistic PBR materials, dramatic rim lighting, depth of field bokeh, photorealistic texturing, Unreal Engine 5 render, high-end commercial aesthetic",
+  },
+  {
+    kode: "STYLE_04",
+    namaLabel: "Isometric 3D Infographic",
+    deskripsiPrompt: "Isometric 3D scene, clean miniature dioramas, high-angle orthographic projection, soft diffuse ambient occlusion, tech-lifestyle aesthetic, modern architectural vibe",
+  },
+  {
+    kode: "STYLE_05",
+    namaLabel: "Editorial Paper Collage",
+    deskripsiPrompt: "Modern editorial collage, ripped paper textures, subtle grain overlay, retro halftones, scrapbook cutout elements, nostalgic yet trendy magazine spread aesthetic",
+  },
+  {
+    kode: "STYLE_06",
+    namaLabel: "Neon Cyberpunk Aesthetic",
+    deskripsiPrompt: "Cyberpunk futuristic aesthetic, vivid neon glow accents (cyan, magenta, electric purple), dark moody atmospheric background, reflective surfaces, high energy high tech",
+  },
+  {
+    kode: "STYLE_07",
+    namaLabel: "Watercolor Soft Pastel",
+    deskripsiPrompt: "Hand-painted soft watercolor illustration, gentle fluid color bleeding, textured cold-press paper background, delicate ink line art, calm and thoughtful aesthetic",
+  },
+  {
+    kode: "STYLE_08",
+    namaLabel: "Bold Pop Art Comic",
+    deskripsiPrompt: "Bold comic pop art style, thick black ink outlines, dotted halftone shading, vibrant retro color palette, expressive and dynamic visuals",
+  },
+];
+
+const DEFAULT_CAROUSEL_FONTS = [
+  {
+    kode: "FONT_01",
+    namaLabel: "Bold Modern Sans-Serif",
+    deskripsiPrompt: "Typography: Bold extra-black geometric sans-serif for headline (like Montserrat/Inter/Clash Display), ultra-clean readability, paired with neutral medium sans-serif for body copy",
+  },
+  {
+    kode: "FONT_02",
+    namaLabel: "Luxury Editorial Serif",
+    deskripsiPrompt: "Typography: Elegant high-contrast luxury serif for headline (like Playfair Display/Cinzel), sophisticated editorial look, paired with minimalist clean sans-serif for body",
+  },
+  {
+    kode: "FONT_03",
+    namaLabel: "Dynamic Display Condensed",
+    deskripsiPrompt: "Typography: Ultra-tall condensed uppercase display font for headline (like Bebas Neue/Anton), punchy and attention-grabbing, paired with crisp compact grotesque body font",
+  },
+  {
+    kode: "FONT_04",
+    namaLabel: "Handwritten Accent Script",
+    deskripsiPrompt: "Typography: Modern organic brush handwriting/script accent for emotional keywords, paired with bold geometric sans-serif for key hooks and paragraphs",
+  },
+  {
+    kode: "FONT_05",
+    namaLabel: "Tech Monospace Brutalist",
+    deskripsiPrompt: "Typography: Neo-brutalist monospace typeface (like JetBrains Mono/Space Mono) for headers and labels, technical and analytical vibe, modern coder/creator aesthetic",
+  },
+  {
+    kode: "FONT_06",
+    namaLabel: "Rounded Playful Sans",
+    deskripsiPrompt: "Typography: Friendly rounded sans-serif font (like Quicksand/Nunito), warm, welcoming and approachable, paired with legible clean regular sans for body",
+  },
+];
+
+export async function seedDefaultCarouselStylesAndFonts() {
+  await assertAdmin();
+
+  let stylesAdded = 0;
+  let fontsAdded = 0;
+
+  for (const item of DEFAULT_CAROUSEL_STYLES) {
+    await prisma.carouselStyleArt.upsert({
+      where: { kode: item.kode },
+      update: { namaLabel: item.namaLabel, deskripsiPrompt: item.deskripsiPrompt },
+      create: { kode: item.kode, namaLabel: item.namaLabel, deskripsiPrompt: item.deskripsiPrompt, isActive: true },
+    });
+    stylesAdded++;
+  }
+
+  for (const item of DEFAULT_CAROUSEL_FONTS) {
+    await prisma.carouselFont.upsert({
+      where: { kode: item.kode },
+      update: { namaLabel: item.namaLabel, deskripsiPrompt: item.deskripsiPrompt },
+      create: { kode: item.kode, namaLabel: item.namaLabel, deskripsiPrompt: item.deskripsiPrompt, isActive: true },
+    });
+    fontsAdded++;
+  }
+
+  revalidateCarouselConfig();
+  return { success: true, stylesAdded, fontsAdded };
+}

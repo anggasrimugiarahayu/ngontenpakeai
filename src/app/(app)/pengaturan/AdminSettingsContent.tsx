@@ -14,13 +14,20 @@ export function AdminSettingsContent({
   activeTab: string;
   adminData: any;
 }) {
-  const { models, settings, features, categories, products } = adminData;
+  const { models, settings, features, categories, products, carouselStyles, carouselFonts } = adminData || {};
 
   return (
     <>
       {activeTab === "api" && <AdminApiKeyTab settings={settings} />}
       {activeTab === "model" && <AdminAiModelTab models={models} />}
-      {activeTab === "fitur" && <AdminRuangNgontenTab features={features} settings={settings} />}
+      {activeTab === "fitur" && (
+        <AdminRuangNgontenTab
+          features={features}
+          settings={settings}
+          initialStyles={carouselStyles || []}
+          initialFonts={carouselFonts || []}
+        />
+      )}
       {activeTab === "pricing" && (
         <PricingConfigSection products={products} settings={settings} />
       )}

@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/Input";
 import { Badge } from "@/components/ui/Badge";
 import { Save, LayoutTemplate, Bot, Search } from "lucide-react";
 import { tokens, cn } from "@/lib/design-tokens";
+import { AdminCarouselVisualsSection } from "./AdminCarouselVisualsSection";
 
 const NGONTEN_ORDER = [
   "Master Blueprint",
@@ -43,9 +44,13 @@ const RISET_ORDER = [
 export function AdminRuangNgontenTab({
   features,
   settings,
+  initialStyles = [],
+  initialFonts = [],
 }: {
   features: any[];
   settings?: any[];
+  initialStyles?: any[];
+  initialFonts?: any[];
 }) {
   const router = useRouter();
   const [activeSubTab, setActiveSubTab] = useState<"ngonten" | "automation" | "riset">("ngonten");
@@ -397,6 +402,14 @@ export function AdminRuangNgontenTab({
           </div>
         ))}
       </div>
+
+      {/* Visual Assets Carousel Prompt Builder (Hanya tampil di Sub-Tab Ruang Ngonten) */}
+      {activeSubTab === "ngonten" && (
+        <AdminCarouselVisualsSection
+          initialStyles={initialStyles}
+          initialFonts={initialFonts}
+        />
+      )}
     </div>
   );
 }

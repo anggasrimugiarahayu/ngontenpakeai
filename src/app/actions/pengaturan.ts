@@ -7,7 +7,9 @@ import {
   queryAppSettings,
   queryFeatures,
   queryCategories,
-  queryProducts
+  queryProducts,
+  queryCarouselStyleArts,
+  queryCarouselFonts
 } from "@/lib/server/adminDbQueries";
 import { getCachedFeatures, getCachedAppUser, getCachedUserOrders, getCachedUserUsages, getCachedQuotaConfig } from "@/lib/cache";
 import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
@@ -24,14 +26,16 @@ function invalidateUserSessionTag() {
 
 const getCachedAdminConfig = unstable_cache(
   async () => {
-    const [models, settings, adminFeatures, categories, products] = await Promise.all([
+    const [models, settings, adminFeatures, categories, products, carouselStyles, carouselFonts] = await Promise.all([
       queryAiModels(),
       queryAppSettings(),
       queryFeatures(),
       queryCategories(),
-      queryProducts()
+      queryProducts(),
+      queryCarouselStyleArts(),
+      queryCarouselFonts()
     ]);
-    return { models, settings, features: adminFeatures, categories, products };
+    return { models, settings, features: adminFeatures, categories, products, carouselStyles, carouselFonts };
   },
   ['admin-config-data'],
   { revalidate: 3600, tags: ['admin-config'] }

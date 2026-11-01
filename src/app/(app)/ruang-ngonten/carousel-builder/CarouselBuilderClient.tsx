@@ -76,8 +76,20 @@ export default function CarouselBuilderClient() {
     fetch('/api/carousel-builder/config-data')
       .then(res => res.json())
       .then(data => {
-        if (data.styles) setDbStyles(data.styles);
-        if (data.fonts) setDbFonts(data.fonts);
+        if (data.styles && Array.isArray(data.styles) && data.styles.length > 0) {
+          setDbStyles(data.styles);
+          setConfigData(prev => ({
+            ...prev,
+            style_art: prev.style_art || data.styles[0]?.deskripsiPrompt || ''
+          }));
+        }
+        if (data.fonts && Array.isArray(data.fonts) && data.fonts.length > 0) {
+          setDbFonts(data.fonts);
+          setConfigData(prev => ({
+            ...prev,
+            typography: prev.typography || data.fonts[0]?.deskripsiPrompt || ''
+          }));
+        }
       })
       .catch(err => console.error("Failed to load config data", err));
   }, []);
