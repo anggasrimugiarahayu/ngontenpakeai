@@ -88,9 +88,12 @@ export function InstagramRuleDetailModal({
     setLogPage(1);
   }, [detailRuleId]);
 
-  // Hitung 7 KPI Metrics secara akurat dari database log
+  // Hitung 7 KPI Metrics secara akurat dari database log (Lifetime / All-time Total per-rule)
   const sentLogs = allRuleLogs.filter((l: any) => l.dmStatus === "SENT");
-  const kpiSend = sentLogs.length > 0 ? sentLogs.length : (detailRule._count?.logs || 0);
+  const kpiSend =
+    typeof detailRule?.totalSentCount === "number"
+      ? detailRule.totalSentCount
+      : (sentLogs.length > 0 ? sentLogs.length : (detailRule?._count?.logs || 0));
   let kpiRead = 0;
   let kpiClicked = 0;
   let kpiNewFollower = 0;

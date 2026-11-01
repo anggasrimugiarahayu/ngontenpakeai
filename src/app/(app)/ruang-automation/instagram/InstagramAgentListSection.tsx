@@ -243,17 +243,23 @@ export function InstagramAgentListSection({
                       ? `Terkunci untuk akun @${agent.boundUsername}`
                       : "Silahkan untuk hubungkan akun IG anda"}
                   </p>
-                  <div className="mt-1 sm:mt-1.5 flex items-center gap-2">
+                  <div className="mt-1 sm:mt-1.5">
                     {agent.isExpired ? (
                       <span className="text-xs sm:text-sm font-semibold text-rose-500 dark:text-rose-400 flex items-center gap-1.5">
                         <span className="w-2 h-2 rounded-full bg-rose-500 animate-pulse" />
                         Masa Aktif Berakhir {agent.expiredAt ? `(${new Date(agent.expiredAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })})` : ""}
                       </span>
                     ) : agent.isLinked ? (
-                      <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-emerald-500" />
-                        Terhubung {agent.expiredAt ? `· Aktif s/d ${new Date(agent.expiredAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })}` : ""}
-                      </span>
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400">
+                          Terhubung
+                        </span>
+                        {agent.expiredAt && (
+                          <span className="text-[11px] sm:text-xs text-gray-500 dark:text-gray-400 font-normal">
+                            (Aktif s/d {new Date(agent.expiredAt).toLocaleDateString("id-ID", { day: "numeric", month: "short", year: "numeric" })})
+                          </span>
+                        )}
+                      </div>
                     ) : agent.boundUsername ? (
                       <span className="text-xs sm:text-sm font-semibold text-amber-600 dark:text-amber-400">
                         Terputus (Terkunci @{agent.boundUsername})

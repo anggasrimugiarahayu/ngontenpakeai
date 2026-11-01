@@ -135,8 +135,8 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
     const allAccountIds = allAccounts.map((a: any) => a.id);
 
     // 3. Hitung statistik dan ambil seluruh rules & log untuk semua agen milik user sekaligus
-    // agar saat user klik agen & buka Komentar IG ke DM, card langsung tampil 0ms tanpa delay fetch ulang
-    const [rules, totalComments, totalDms, recentLogs] = await Promise.all([
+    // Termasuk agregasi riil seumur hidup (Lifetime All-Time Total) per-rule agar tidak terpotong limit 500
+    const [rules, totalComments, totalDms, recentLogs, sentCountsByRule] = await Promise.all([
       (db as any).instagramAutomationRule.findMany({
         where: { accountId: { in: allAccountIds } },
         orderBy: { createdAt: "desc" },
@@ -157,8 +157,37 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
         take: 500,
         orderBy: { createdAt: "desc" },
         include: { rule: { select: { name: true } } }
+      }).catch(() => []),
+      (db as any).instagramAutomationLog.groupBy({
+        by: ["ruleId"],
+        where: {
+          accountId: { in: allAccountIds },
+          dmStatus: "SENT",
+          ruleId: { not: null }
+        },
+        _count: { id: true }
       }).catch(() => [])
     ]);
+
+    // Map agregasi pengiriman DM sukses murni per-rule (Lifetime All-Time Total)
+    const sentCountMap: Record<string, number> = {};
+    if (Array.isArray(sentCountsByRule)) {
+      for (const item of sentCountsByRule) {
+        if (item && item.ruleId) {
+          sentCountMap[item.ruleId] = item._count?.id || 0;
+        }
+      }
+    }
+
+    if (Array.isArray(rules)) {
+      for (const rule of rules) {
+        // totalSentCount murni untuk otomatisasi ini (per-rule), bukan total gabungan semua rule
+        const dbSentCount = sentCountMap[rule.id];
+        rule.totalSentCount = typeof dbSentCount === "number"
+          ? dbSentCount
+          : (rule._count?.logs || 0);
+      }
+    }
 
     // Auto-backfill postCoverUrl jika ada rule SPECIFIC_POST / SPECIFIC_STORY yang kehilangan postCoverUrl saat di-edit sebelumnya
     if (Array.isArray(rules) && rules.length > 0) {

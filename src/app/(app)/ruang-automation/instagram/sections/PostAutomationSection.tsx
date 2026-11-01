@@ -112,10 +112,13 @@ export function PostRuleCard({
     imgFailed,
   ]);
 
-  // Real metrics dari log rule ini
+  // Real metrics dari log rule ini (Lifetime / All-time Total per-rule)
   const ruleLogs = (logs || []).filter((l: any) => l.ruleId === rule.id);
   const sentLogsCount = ruleLogs.filter((l: any) => l.dmStatus === "SENT").length;
-  const sentCount = sentLogsCount > 0 ? sentLogsCount : (rule._count?.logs || 0);
+  const sentCount =
+    typeof rule.totalSentCount === "number"
+      ? rule.totalSentCount
+      : (sentLogsCount > 0 ? sentLogsCount : (rule._count?.logs || 0));
 
   let clickCount = 0;
   let followerCount = 0;

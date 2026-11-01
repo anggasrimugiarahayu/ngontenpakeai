@@ -1555,7 +1555,8 @@ export default function RuangAutomationClient({
       dmMessage: payload.dmMessage,
       isActive: payload.isActive,
       createdAt: new Date().toISOString(),
-      _count: { logs: 0 }
+      _count: { logs: editingRule?._count?.logs ?? 0 },
+      totalSentCount: editingRule?.totalSentCount ?? 0
     };
 
     mutateData(
