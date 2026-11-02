@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { revalidateTag } from "next/cache";
-import { getCachedFeatures, getCachedQuotaConfig } from "@/lib/cache";
+import { getCachedFeatures, getCachedQuotaConfig, getCachedMaintenanceConfig } from "@/lib/cache";
 import { isAdminEmail } from "@/lib/admin";
 
 export interface FeatureAccessResult {
@@ -30,7 +30,7 @@ export async function verifyFeatureAccess(
   const isAdmin = isAdminEmail(email);
   if (isAdmin) return { authorized: true, isPro: true, remainingQuota: 9999 };
 
-  const [user, allFeatures, quotaConfig] = await Promise.all([
+  const [user, allFeatures, quotaConfig, maintConfig] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
       select: {
@@ -42,6 +42,7 @@ export async function verifyFeatureAccess(
     }),
     getCachedFeatures(),
     getCachedQuotaConfig(),
+    getCachedMaintenanceConfig(),
   ]);
 
   const feature =
@@ -58,6 +59,16 @@ export async function verifyFeatureAccess(
 
   if (user.role === "ADMIN") {
     return { authorized: true, isPro: true, remainingQuota: 9999 };
+  }
+
+  // Tolak akses jika mode maintenance aktif untuk non-admin
+  if (maintConfig?.isActive) {
+    return {
+      authorized: false,
+      isPro: false,
+      code: "FEATURE_INACTIVE",
+      reason: "Sistem sedang dalam mode pemeliharaan (Under Maintenance). Silakan coba beberapa saat lagi.",
+    };
   }
 
   if (feature && !feature.isActive) {

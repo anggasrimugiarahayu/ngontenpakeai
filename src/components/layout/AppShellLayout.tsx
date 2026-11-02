@@ -409,6 +409,29 @@ export default function AppShellLayout({
     };
   }).filter((tool) => tool.isActive);
 
+  const mappedAutomationTools = AUTOMATION_TOOLS.map((tool) => {
+    const dbMatch = dbFeatures.find((db) => db.name.toLowerCase() === tool.label.toLowerCase());
+    return {
+      ...tool,
+      isActive: dbMatch ? dbMatch.isActive : (tool.disabled ? false : true),
+      isProOnly: dbMatch ? dbMatch.isProOnly : false,
+      disabled: dbMatch ? !dbMatch.isActive : tool.disabled,
+    };
+  }).filter((tool) => tool.isActive);
+
+  const mappedRisetTools = RISET_TOOLS.map((tool) => {
+    const dbMatch = dbFeatures.find((db) => 
+      db.name.toLowerCase() === tool.label.toLowerCase() ||
+      db.name.toLowerCase() === `riset ${tool.platformKey}` ||
+      db.name.toLowerCase().includes(tool.platformKey)
+    );
+    return {
+      ...tool,
+      isActive: dbMatch ? dbMatch.isActive : true,
+      isProOnly: dbMatch ? dbMatch.isProOnly : false,
+    };
+  }).filter((tool) => tool.isActive);
+
   let itemsToRender: any[] = GLOBAL_NAV_ITEMS;
   let backHref = "/";
   let drawerTitle = "Navigasi";
@@ -418,11 +441,11 @@ export default function AppShellLayout({
     backHref = "/ruang-ngonten";
     drawerTitle = "Menu Tools";
   } else if (isAutomationMode) {
-    itemsToRender = AUTOMATION_TOOLS;
+    itemsToRender = mappedAutomationTools;
     backHref = "/ruang-automation";
     drawerTitle = "Menu Automasi";
   } else if (isRisetMode) {
-    itemsToRender = RISET_TOOLS;
+    itemsToRender = mappedRisetTools;
     backHref = "/ruang-riset";
     drawerTitle = "Menu Riset";
   } else if (isEbookDetail) {
@@ -432,6 +455,19 @@ export default function AppShellLayout({
     backHref = "/";
     drawerTitle = "Navigasi";
   }
+
+  const isCurrentRouteDisabled = !isAdmin && (
+    (isBelajarDisabled && pathname.startsWith("/ruang-belajar")) ||
+    (isNgontenDisabled && pathname.startsWith("/ruang-ngonten")) ||
+    (isAutomationDisabled && pathname.startsWith("/ruang-automation")) ||
+    (isRisetDisabled && pathname.startsWith("/ruang-riset"))
+  );
+
+  useEffect(() => {
+    if (isCurrentRouteDisabled) {
+      router.replace("/");
+    }
+  }, [isCurrentRouteDisabled, router]);
 
   const showBackButton = !isHomepage;
 
@@ -445,6 +481,10 @@ export default function AppShellLayout({
     if (!isAdmin && !isAuthOrLegalRoute) {
       return <MaintenanceView config={activeMaintConfig} isAdmin={false} />;
     }
+  }
+
+  if (isCurrentRouteDisabled) {
+    return null;
   }
 
   return (

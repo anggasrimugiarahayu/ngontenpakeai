@@ -50,6 +50,10 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
   }, []);
 
   useEffect(() => {
+    setIsDropdownOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
     setIsPricingModalOpen(isPricingParam);
   }, [isPricingParam]);
 
@@ -251,17 +255,17 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
                 <div className="py-1">
                   
                   {isAdmin && (
-                    <Link prefetch={true} onMouseEnter={() => handleHoverPrefetch("/dashboard")} onTouchStart={() => handleHoverPrefetch("/dashboard")} href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <Link prefetch={true} onClick={() => setIsDropdownOpen(false)} onMouseEnter={() => handleHoverPrefetch("/dashboard")} onTouchStart={() => handleHoverPrefetch("/dashboard")} href="/dashboard" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
                       Dashboard
                     </Link>
                   )}
-                  <Link prefetch={true} onMouseEnter={() => handleHoverPrefetch("/pengaturan")} onTouchStart={() => handleHoverPrefetch("/pengaturan")} href="/pengaturan" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
+                  <Link prefetch={true} onClick={() => setIsDropdownOpen(false)} onMouseEnter={() => handleHoverPrefetch("/pengaturan")} onTouchStart={() => handleHoverPrefetch("/pengaturan")} href="/pengaturan" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
                     Pengaturan
                   </Link>
-                  <Link prefetch={true} href="/bantuan" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
+                  <Link prefetch={true} onClick={() => setIsDropdownOpen(false)} href="/bantuan" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
                     Bantuan
                   </Link>
-                  <Link prefetch={true} href="/feedback" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
+                  <Link prefetch={true} onClick={() => setIsDropdownOpen(false)} href="/feedback" className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-white/5 hover:text-gray-900 dark:hover:text-white transition-colors">
                     Feedback
                   </Link>
                   <button

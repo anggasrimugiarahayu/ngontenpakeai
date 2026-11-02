@@ -43,11 +43,13 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     console.error("Error fetching cache/blueprint", error);
   }
   
-  if (needsOnboarding) {
+  const isAdmin = isAdminUser(session?.user ? { email: session.user.email, role: userRole } : null);
+
+  // Jika maintenance mode aktif untuk non-admin, biarkan AppShellLayout menampilkan MaintenanceView terlebih dahulu
+  if (needsOnboarding && !(maintenanceConfig?.isActive && !isAdmin)) {
     redirect("/onboarding");
   }
-  
-  const isAdmin = isAdminUser(session?.user ? { email: session.user.email, role: userRole } : null);
+
   const isPro = hasTools || isAdmin;
   const isLoggedIn = !!session?.user;
   
