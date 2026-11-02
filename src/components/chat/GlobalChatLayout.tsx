@@ -221,9 +221,10 @@ export default function GlobalChatLayout({
           <div className="sticky bottom-6 flex justify-center z-[100] mt-auto pointer-events-none w-full max-w-3xl">
             <button 
               onClick={scrollToBottom}
-              className="pointer-events-auto bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white shadow-xl shadow-orange-500/20 rounded-full p-2.5 transition-all transform hover:scale-105 active:scale-95 animate-in fade-in slide-in-from-bottom-2 flex items-center justify-center"
+              className="pointer-events-auto w-10 h-10 aspect-square shrink-0 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white shadow-xl shadow-orange-500/20 rounded-full transition-all transform hover:scale-105 active:scale-95 animate-in fade-in slide-in-from-bottom-2 flex items-center justify-center cursor-pointer"
+              title="Scroll ke bawah"
             >
-              <ChevronDown size={20} strokeWidth={3} className="animate-bounce mt-1" />
+              <ChevronDown size={20} strokeWidth={3} className="animate-bounce" />
             </button>
           </div>
         )}
