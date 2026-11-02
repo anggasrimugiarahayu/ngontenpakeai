@@ -432,9 +432,13 @@ export default function CheckoutClient({
             </div>
 
             {/* Addons Section */}
-            {availableAddons && availableAddons.length > 0 && (
+            {((availableAddons && availableAddons.length > 0) || (includedAddons && includedAddons.length > 0)) && (
               <div className="mt-5 pt-4 border-t border-gray-100 dark:border-[#2C3246]">
-                <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-3 uppercase">ADD-ON PRODUK LAIN</h3>
+                <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-3 uppercase">
+                  {includedAddons.length > 0 && (!availableAddons || availableAddons.length === 0)
+                    ? "PRODUK INCLUDED DALAM PAKET"
+                    : "ADD-ON & BUNDLE PRODUK"}
+                </h3>
                 <div className="space-y-3">
                   {includedAddons.length > 0 && (
                     <div className="mb-2">
@@ -480,13 +484,15 @@ export default function CheckoutClient({
                     );
                   })}
 
-                  <button
-                    onClick={() => setShowAddonModal(true)}
-                    disabled={isPending}
-                    className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-orange-500/50 text-orange-600 dark:text-orange-400 text-sm font-bold hover:bg-orange-500/5 dark:hover:bg-orange-500/10 transition-colors disabled:opacity-50"
-                  >
-                    + Add on
-                  </button>
+                  {availableAddons && availableAddons.length > 0 && (
+                    <button
+                      onClick={() => setShowAddonModal(true)}
+                      disabled={isPending}
+                      className="w-full flex items-center justify-center gap-2 py-3 rounded-xl border border-dashed border-orange-500/50 text-orange-600 dark:text-orange-400 text-sm font-bold hover:bg-orange-500/5 dark:hover:bg-orange-500/10 transition-colors disabled:opacity-50"
+                    >
+                      + Add on
+                    </button>
+                  )}
                 </div>
               </div>
             )}

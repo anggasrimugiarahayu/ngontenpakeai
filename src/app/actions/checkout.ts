@@ -6,6 +6,8 @@ import prisma from "@/lib/prisma";
 import { verifyPayment } from "@/app/actions/payment";
 import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
+import { getCachedUserOrders, getCachedUserOwnedProducts } from "@/lib/cache";
+import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
 
 export async function revalidateAfterPurchaseAction() {
   try {
@@ -47,17 +49,25 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
   if (!type) return { badRequest: true };
 
   // Run independent queries concurrently
-  const [user, rawProduct, pendingDbOrder, rawAvailableAddons, pricingSetting] = await Promise.all([
+  const [user, userOrders, userOwned, rawProduct, pendingDbOrder, rawDigitalProducts, pricingSetting] = await Promise.all([
     userId
       ? prisma.user.findUnique({
           where: { id: userId }
         }).catch(() => null)
       : Promise.resolve(null),
+
+    userId
+      ? getCachedUserOrders(userId).catch(() => [])
+      : Promise.resolve([]),
+
+    userId
+      ? getCachedUserOwnedProducts(userId).catch(() => [])
+      : Promise.resolve([]),
     
     (type === "EBOOK" && productId) 
       ? prisma.digitalProduct.findUnique({
           where: { id: productId, isActive: true },
-          select: { id: true, title: true, slug: true, price: true, description: true, updatedAt: true }
+          select: { id: true, title: true, slug: true, price: true, description: true, updatedAt: true, accessLevel: true }
         }).catch(() => null)
       : Promise.resolve(null),
       
@@ -73,9 +83,14 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
         }).catch(() => null)
       : Promise.resolve(null),
     
+    // Ambil produk digital berbayar yang aktif (PRO & PREMIUM) untuk keperluan Add-on & Included Addons
     prisma.digitalProduct.findMany({
-      where: { isActive: true, id: { not: productId || undefined } },
-      select: { id: true, title: true, price: true, updatedAt: true }
+      where: {
+        isActive: true,
+        price: { gt: 0 },
+        accessLevel: { in: ["PRO", "PREMIUM"] },
+      },
+      select: { id: true, title: true, price: true, updatedAt: true, accessLevel: true, slug: true }
     }).catch(() => []),
 
     type !== "EBOOK"
@@ -83,28 +98,40 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
       : Promise.resolve(null),
   ]);
 
+  const ownedProductIds = new Set((userOwned || []).map((up: any) => up.digitalProductId));
+  const subStatus = user ? computeUserSubscriptionStatus(user, userOrders) : { hasBook: false, isAdmin: false };
+  const userHasBookAccess = Boolean(subStatus.hasBook || subStatus.isAdmin);
+
+  if (type === "EBOOK") {
+    if (!productId || !rawProduct) return { badRequest: true, redirect: "/ruang-belajar" };
+    // Jika user sudah memiliki produk ini, arahkan langsung ke halaman produk
+    if (ownedProductIds.has(productId)) {
+      return { badRequest: true, redirect: `/ruang-belajar/${rawProduct.slug}` };
+    }
+    if (!rawProduct.price || rawProduct.price <= 0) {
+      return { badRequest: true, redirect: `/ruang-belajar/${rawProduct.slug}` };
+    }
+  }
+
   const combinedRawProducts = [
     ...(rawProduct ? [rawProduct] : []),
-    ...rawAvailableAddons,
+    ...rawDigitalProducts,
   ];
   const combinedWithCovers = await attachLightweightCovers(combinedRawProducts, false);
   const product = rawProduct ? (combinedWithCovers.find((p) => p.id === rawProduct.id) || null) : null;
-  const availableAddons = combinedWithCovers.filter((p) => p.id !== rawProduct?.id);
 
   let baseAmount = 0;
   let bundledIds: string[] = [];
   let itemName = "";
   let itemDescription = "";
   let productImage = "";
+  let isPackageEbookOrPlus = false;
 
   if (type === "EBOOK") {
-    if (!productId || !product) return { badRequest: true, redirect: "/ruang-belajar" };
-    if (!product.price || product.price <= 0) return { badRequest: true, redirect: `/ruang-belajar/${(product as any).slug}` };
-    
-    baseAmount = product.price;
-    itemName = product.title;
-    itemDescription = (product as any).description || "Akses selamanya untuk produk ini.";
-    productImage = (product as any).coverUrl || "";
+    baseAmount = product?.price || rawProduct?.price || 0;
+    itemName = product?.title || rawProduct?.title || "";
+    itemDescription = (rawProduct as any)?.description || "Akses selamanya untuk produk ini.";
+    productImage = product?.coverUrl || "";
   } else {
     // Dynamic lookup for any package in PRICING_PACKAGES
     const pricingConfig = mergePricingConfig(pricingSetting?.value ? JSON.parse(pricingSetting.value) : null);
@@ -124,9 +151,24 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
       else if (type.includes("AUTO") || cat === "automation") productImage = "/img_paket/paket_tools.png";
       else if (type.includes("RISET") || cat === "riset") productImage = "/img_paket/paket_tools.png";
       else productImage = "/img_paket/paket_lengkap.png";
+
+      if (cat === "ebook" || cat === "plus" || type.includes("BOOK") || type.includes("PLUS")) {
+        isPackageEbookOrPlus = true;
+      }
     } else {
       return { badRequest: true, redirect: "/" };
     }
+  }
+
+  // Tentukan produk yang sudah "Included (Gratis)" dengan paket yang sedang di-checkout
+  const includedSet = new Set<string>();
+  if (bundledIds.length > 0) {
+    bundledIds.forEach((id) => includedSet.add(id));
+  } else if (isPackageEbookOrPlus) {
+    // Jika paket E-book / Plus dan belum ada bundledIds manual, semua produk PRO otomatis included
+    rawDigitalProducts
+      .filter((p) => p.accessLevel === "PRO")
+      .forEach((p) => includedSet.add(p.id));
   }
 
   const isProduction = process.env.MIDTRANS_IS_PRODUCTION === "true";
@@ -137,10 +179,41 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     ? await verifyPayment(pendingDbOrder.id)
     : null;
 
-  const bundledSet = new Set(bundledIds || []);
-  const includedAddons = (type.startsWith("PRO_") && bundledSet.size > 0)
-    ? availableAddons.filter((a) => bundledSet.has(a.id))
+  // Daftar produk yang termasuk paket gratis (Included)
+  const includedAddons = (type.startsWith("PRO_") && includedSet.size > 0)
+    ? combinedWithCovers
+        .filter((p) => includedSet.has(p.id))
+        .map((p) => ({
+          id: p.id,
+          title: p.title,
+          coverUrl: p.coverUrl,
+          price: p.price,
+        }))
     : [];
+
+  // Daftar Add-on Tambahan Berbayar:
+  // 1. Bukan produk utama yang sedang dibeli
+  // 2. Bukan produk GRATIS (FREE) dan harga > 0
+  // 3. Belum dimiliki oleh user
+  // 4. Belum termasuk dalam paket yang sedang dibeli (bukan includedSet)
+  // 5. Jika user sedang checkout paket E-book/Plus ATAU sudah punya akses member E-Book,
+  //    sembunyikan produk PRO (karena produk PRO sudah otomatis gratis bagi mereka),
+  //    sehingga tombol Add-on murni fokus meng-upsell produk PREMIUM!
+  const availableAddons = combinedWithCovers
+    .filter((p) => {
+      if (p.id === productId) return false;
+      if (p.accessLevel === "FREE" || !p.price || p.price <= 0) return false;
+      if (ownedProductIds.has(p.id)) return false;
+      if (includedSet.has(p.id)) return false;
+      if ((isPackageEbookOrPlus || userHasBookAccess) && p.accessLevel === "PRO") return false;
+      return true;
+    })
+    .map((p) => ({
+      id: p.id,
+      title: p.title,
+      coverUrl: p.coverUrl,
+      price: p.price,
+    }));
 
   if (verifyRes && verifyRes.success && verifyRes.status === "PENDING" && verifyRes.expiryTime && pendingDbOrder) {
     existingPendingOrder = {
