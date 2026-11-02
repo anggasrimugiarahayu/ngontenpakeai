@@ -439,8 +439,12 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
                     setDraggedIdx(null);
                     setDragOverIdx(null);
                   }}
-                  className={`group relative flex flex-col justify-start rounded-2xl border-2 p-6 text-left transition-all duration-300 select-none ${
-                    dragOverIdx === index ? "border-orange-500 scale-[1.02]" : ""
+                  className={`cursor-grab active:cursor-grabbing group relative flex flex-col justify-start rounded-2xl border-2 p-6 text-left transition-all duration-200 select-none ${
+                    draggedIdx === index
+                      ? "opacity-30 scale-95 border-dashed border-orange-500 ring-2 ring-orange-500/30"
+                      : ""
+                  } ${
+                    dragOverIdx === index && draggedIdx !== index ? "border-orange-500 scale-[1.02] ring-2 ring-orange-500/20" : ""
                   } ${
                     card.isActive
                       ? "bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-gray-600 shadow-sm"
