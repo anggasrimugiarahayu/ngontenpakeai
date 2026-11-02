@@ -303,8 +303,8 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
               </span>
             </div>
 
-            {/* Grid Kartu Live Preview Under Maintenance */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+            {/* Kartu Live Preview Under Maintenance Full Width */}
+            <div className="w-full">
               <div
                 className={`group relative flex flex-col justify-start rounded-2xl border-2 p-6 text-left transition-all duration-200 select-none ${
                   maintConfig.isActive
@@ -313,18 +313,15 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
                 }`}
               >
                 {/* Header Kartu: Posisi Badge Status + Kanan Menu Titik 3 */}
-                <div className="flex items-center justify-between w-full mb-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md">
-                      #1
-                    </span>
+                <div className="flex items-center justify-between w-full mb-4">
+                  <div>
                     {maintConfig.isActive ? (
-                      <span className="text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-500/15 border border-amber-500/30 px-2 py-0.5 rounded-md flex items-center gap-1">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                      <span className="text-xs font-bold text-amber-600 dark:text-amber-400 bg-amber-500/15 border border-amber-500/30 px-3 py-1 rounded-lg flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
                         Mode Maintenance Aktif
                       </span>
                     ) : (
-                      <span className="text-[11px] font-semibold text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md">
+                      <span className="text-xs font-semibold text-gray-500 bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 px-3 py-1 rounded-lg">
                         Nonaktif (Normal)
                       </span>
                     )}
@@ -335,12 +332,12 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
                     <button
                       type="button"
                       onClick={() => setIsMaintMenuOpen(!isMaintMenuOpen)}
-                      className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
+                      className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-white/10 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors cursor-pointer"
                     >
                       <MoreVertical className="w-4 h-4" />
                     </button>
 
-                    {/* Popover Menu Dropdown */}
+                    {/* Popover Menu Dropdown (Hanya ON / OFF) */}
                     {isMaintMenuOpen && (
                       <>
                         <div
@@ -348,14 +345,13 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
                           onClick={() => setIsMaintMenuOpen(false)}
                         />
                         <div className="absolute right-0 top-full mt-1 w-56 rounded-xl bg-white dark:bg-[#1A2238] border border-gray-200 dark:border-gray-700 shadow-xl z-50 p-1.5 text-xs animate-in fade-in zoom-in-95 duration-150">
-                          {/* Item 1: Toggle ON / OFF */}
                           <button
                             type="button"
                             onClick={() => {
                               setIsMaintMenuOpen(false);
                               handleSaveMaintenance({ isActive: !maintConfig.isActive });
                             }}
-                            className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left font-medium transition-colors cursor-pointer ${
+                            className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-left font-semibold transition-colors cursor-pointer ${
                               maintConfig.isActive
                                 ? "text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
                                 : "text-emerald-600 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30"
@@ -373,31 +369,6 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
                               </>
                             )}
                           </button>
-
-                          {/* Item 2: Edit Konten & Pesan */}
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setIsMaintMenuOpen(false);
-                              setShowMaintEditModal(true);
-                            }}
-                            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                          >
-                            <Edit3 className="w-4 h-4 text-orange-500 shrink-0" />
-                            <span>Edit Konten &amp; Pesan</span>
-                          </button>
-
-                          {/* Item 3: Lihat Halaman Depan */}
-                          <a
-                            href="/"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            onClick={() => setIsMaintMenuOpen(false)}
-                            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg text-left font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
-                          >
-                            <ExternalLink className="w-4 h-4 text-gray-400 shrink-0" />
-                            <span>Lihat Halaman Depan</span>
-                          </a>
                         </div>
                       </>
                     )}
@@ -405,25 +376,23 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
                 </div>
 
                 {/* Visual Animasi Karakter Clawd */}
-                <div className="pointer-events-none py-3 flex items-center justify-center bg-gray-50/60 dark:bg-white/5 rounded-xl overflow-hidden mb-3.5 border border-gray-100 dark:border-white/5">
-                  <ClawdMaintenanceVisual className="scale-75 origin-center my-[-12px]" />
+                <div className="pointer-events-none py-4 flex items-center justify-center bg-gray-50/60 dark:bg-white/5 rounded-2xl overflow-hidden mb-5 border border-gray-100 dark:border-white/5">
+                  <ClawdMaintenanceVisual className="scale-90 origin-center my-[-8px]" />
                 </div>
 
                 {/* Konten Judul & Pesan */}
-                <div className="relative space-y-2 flex-1 flex flex-col justify-between">
-                  <div>
-                    <h4 className="font-heading text-lg font-bold leading-snug transition-colors duration-200 text-gray-900 dark:text-[#F3F4F6]">
-                      {maintConfig.title || "Sistem Sedang Dalam Pemeliharaan"}
-                    </h4>
-                    <p className="text-sm leading-relaxed transition-colors duration-200 text-gray-600 dark:text-[#9CA3AF] line-clamp-3 mt-1">
-                      {maintConfig.message}
-                    </p>
-                  </div>
+                <div className="relative text-center max-w-2xl mx-auto space-y-3 pb-2">
+                  <h4 className="font-heading text-xl sm:text-2xl font-bold leading-snug transition-colors duration-200 text-gray-900 dark:text-[#F3F4F6]">
+                    {maintConfig.title || "Sistem Sedang Dalam Pemeliharaan"}
+                  </h4>
+                  <p className="text-sm sm:text-base leading-relaxed transition-colors duration-200 text-gray-600 dark:text-[#9CA3AF]">
+                    {maintConfig.message}
+                  </p>
 
                   {maintConfig.estimatedTime && (
-                    <div className="pt-2">
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
-                        <Clock className="w-3.5 h-3.5" />
+                    <div className="pt-2 flex justify-center">
+                      <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs sm:text-sm font-semibold bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20">
+                        <Clock className="w-4 h-4" />
                         <span>Estimasi: {maintConfig.estimatedTime}</span>
                       </span>
                     </div>
