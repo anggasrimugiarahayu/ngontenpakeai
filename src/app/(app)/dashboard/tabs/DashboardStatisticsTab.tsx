@@ -129,36 +129,118 @@ export function DashboardStatisticsTab({
     return filtered.length > 0 ? filtered : raw.slice(-7);
   }, [salesChartData, data?.salesChartData, activeDate]);
 
-  // Aggregated period totals
-  const { periodViews, periodClicks, periodSalesCount, periodSalesIDR } =
-    useMemo(() => {
-      let views = 0;
-      let clicks = 0;
-      filteredViewsData.forEach((item: any) => {
-        views += item.views || 0;
-        clicks += item.clicks || 0;
-      });
+  // Function to calculate growth percentage
+  const calculateGrowth = (curr: number, prev: number) => {
+    if (prev === 0) {
+      return curr > 0 ? 100 : 0;
+    }
+    return parseFloat((((curr - prev) / prev) * 100).toFixed(2));
+  };
 
-      let count = 0;
-      let salesIDR = 0;
-      filteredSalesData.forEach((item: any) => {
-        count += item.count || 0;
-        salesIDR += item.sales || 0;
-      });
+  // Aggregated period totals & Dynamic % vs previous period calculation
+  const {
+    periodViews,
+    periodClicks,
+    periodSalesCount,
+    periodSalesIDR,
+    viewsGrowth,
+    clicksGrowth,
+    salesAmountGrowth,
+    salesValueGrowth,
+  } = useMemo(() => {
+    const rawViews =
+      chartData && chartData.length > 0
+        ? chartData
+        : data?.viewsChartData || [];
+    const rawSales =
+      salesChartData && salesChartData.length > 0
+        ? salesChartData
+        : data?.salesChartData || [];
 
-      return {
-        periodViews: views > 0 ? views : dynamicTotalViews,
-        periodClicks: clicks > 0 ? clicks : dynamicTotalClicks,
-        periodSalesCount: count > 0 ? count : (data?.lifetimeOrders || 0),
-        periodSalesIDR: salesIDR > 0 ? salesIDR : (data?.lifetimeSalesIDR || 0),
-      };
-    }, [
-      filteredViewsData,
-      filteredSalesData,
-      dynamicTotalViews,
-      dynamicTotalClicks,
-      data,
-    ]);
+    // Current period interval
+    const fromDate = activeDate?.from
+      ? startOfDay(activeDate.from)
+      : subDays(new Date(), 6);
+    const toDate = activeDate?.to
+      ? endOfDay(activeDate.to)
+      : endOfDay(fromDate);
+    const currFromTime = fromDate.getTime();
+    const currToTime = toDate.getTime();
+    const durationMs = Math.max(86400000, currToTime - currFromTime);
+
+    // Previous period interval (same duration immediately preceding)
+    const prevToTime = currFromTime - 1;
+    const prevFromTime = prevToTime - durationMs;
+
+    let currViews = 0;
+    let currClicks = 0;
+    let prevViews = 0;
+    let prevClicks = 0;
+
+    rawViews.forEach((item: any) => {
+      if (item.rawDate) {
+        const t = new Date(item.rawDate).getTime();
+        if (t >= currFromTime && t <= currToTime) {
+          currViews += item.views || 0;
+          currClicks += item.clicks || 0;
+        } else if (t >= prevFromTime && t <= prevToTime) {
+          prevViews += item.views || 0;
+          prevClicks += item.clicks || 0;
+        }
+      }
+    });
+
+    let currSalesCount = 0;
+    let currSalesIDR = 0;
+    let prevSalesCount = 0;
+    let prevSalesIDR = 0;
+
+    rawSales.forEach((item: any) => {
+      if (item.rawDate) {
+        const t = new Date(item.rawDate).getTime();
+        if (t >= currFromTime && t <= currToTime) {
+          currSalesCount += item.count || 0;
+          currSalesIDR += item.sales || 0;
+        } else if (t >= prevFromTime && t <= prevToTime) {
+          prevSalesCount += item.count || 0;
+          prevSalesIDR += item.sales || 0;
+        }
+      }
+    });
+
+    // Fallbacks if entire range selected or 0
+    const finalViews = currViews > 0 ? currViews : dynamicTotalViews;
+    const finalClicks = currClicks > 0 ? currClicks : dynamicTotalClicks;
+    const finalSalesCount =
+      currSalesCount > 0 ? currSalesCount : data?.lifetimeOrders || 0;
+    const finalSalesIDR =
+      currSalesIDR > 0 ? currSalesIDR : data?.lifetimeSalesIDR || 0;
+
+    const vGrowth = calculateGrowth(currViews, prevViews);
+    const cGrowth = calculateGrowth(currClicks, prevClicks);
+    const sCountGrowth = calculateGrowth(currSalesCount, prevSalesCount);
+    const sValGrowth = calculateGrowth(currSalesIDR, prevSalesIDR);
+
+    return {
+      periodViews: finalViews,
+      periodClicks: finalClicks,
+      periodSalesCount: finalSalesCount,
+      periodSalesIDR: finalSalesIDR,
+      viewsGrowth: vGrowth !== 0 ? vGrowth : data?.viewsGrowth || 0,
+      clicksGrowth: cGrowth !== 0 ? cGrowth : data?.viewsGrowth || 0,
+      salesAmountGrowth:
+        sCountGrowth !== 0 ? sCountGrowth : data?.salesGrowth || 0,
+      salesValueGrowth:
+        sValGrowth !== 0 ? sValGrowth : data?.salesGrowth || 0,
+    };
+  }, [
+    chartData,
+    salesChartData,
+    data,
+    activeDate,
+    dynamicTotalViews,
+    dynamicTotalClicks,
+  ]);
 
   // Custom 2-line tick for X-Axis (Day on top, Month below)
   const renderCustomAxisTick = ({ x, y, payload }: any) => {
@@ -277,16 +359,16 @@ export function DashboardStatisticsTab({
                     <span className="text-2xl font-black text-gray-900 dark:text-white">
                       {formatIDR(periodViews)}
                     </span>
-                    <div className="flex items-center text-[10px] font-bold text-red-500">
-                      {data?.viewsGrowth >= 0 ? (
+                    <div className="flex items-center text-[10px] font-bold">
+                      {viewsGrowth >= 0 ? (
                         <span className="flex items-center text-emerald-500">
                           <ArrowUp size={11} className="mr-0.5" />
-                          {data.viewsGrowth}%
+                          {viewsGrowth}%
                         </span>
                       ) : (
                         <span className="flex items-center text-red-500">
                           <ArrowDown size={11} className="mr-0.5" />
-                          {Math.abs(data?.viewsGrowth || 0)}%
+                          {Math.abs(viewsGrowth)}%
                         </span>
                       )}
                       <span className="text-gray-400 font-normal ml-1">
@@ -308,11 +390,18 @@ export function DashboardStatisticsTab({
                     <span className="text-2xl font-black text-gray-900 dark:text-white">
                       {formatIDR(periodClicks)}
                     </span>
-                    <div className="flex items-center text-[10px] font-bold text-red-500">
-                      <span className="flex items-center text-red-500">
-                        <ArrowDown size={11} className="mr-0.5" />
-                        4.72%
-                      </span>
+                    <div className="flex items-center text-[10px] font-bold">
+                      {clicksGrowth >= 0 ? (
+                        <span className="flex items-center text-emerald-500">
+                          <ArrowUp size={11} className="mr-0.5" />
+                          {clicksGrowth}%
+                        </span>
+                      ) : (
+                        <span className="flex items-center text-red-500">
+                          <ArrowDown size={11} className="mr-0.5" />
+                          {Math.abs(clicksGrowth)}%
+                        </span>
+                      )}
                       <span className="text-gray-400 font-normal ml-1">
                         vs previous period
                       </span>
@@ -490,55 +579,70 @@ export function DashboardStatisticsTab({
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-8 mb-6">
-                {/* Sales Amount */}
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]"></div>
-                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                      Sales Amount
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-black text-gray-900 dark:text-white">
-                      {periodSalesCount}
-                    </span>
-                    <div className="flex items-center text-[10px] font-bold text-red-500">
-                      {data?.salesGrowth >= 0 ? (
-                        <span className="flex items-center text-emerald-500">
-                          <ArrowUp size={11} className="mr-0.5" />
-                          {data.salesGrowth}%
-                        </span>
-                      ) : (
-                        <span className="flex items-center text-red-500">
-                          <ArrowDown size={11} className="mr-0.5" />
-                          {Math.abs(data?.salesGrowth || 0)}%
-                        </span>
-                      )}
-                      <span className="text-gray-400 font-normal ml-1">
-                        vs previous period
+              <div className="mb-6">
+                {salesMetricView === "amount" ? (
+                  /* When Sales Amount is selected, ONLY show Sales Amount */
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]"></div>
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                        Sales Amount
                       </span>
                     </div>
-                  </div>
-                </div>
-
-                {/* Sales Value IDR */}
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#10b981]"></div>
-                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                      Sales Value (IDR)
-                    </span>
-                  </div>
-                  <div className="flex items-baseline gap-2">
-                    <span className="text-2xl font-black text-gray-900 dark:text-white">
-                      Rp {formatIDR(periodSalesIDR)}
-                    </span>
-                    <div className="flex items-center text-[10px] font-bold text-gray-400 ml-1">
-                      <span>Total Periode</span>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-black text-gray-900 dark:text-white">
+                        {periodSalesCount}
+                      </span>
+                      <div className="flex items-center text-[10px] font-bold">
+                        {salesAmountGrowth >= 0 ? (
+                          <span className="flex items-center text-emerald-500">
+                            <ArrowUp size={11} className="mr-0.5" />
+                            {salesAmountGrowth}%
+                          </span>
+                        ) : (
+                          <span className="flex items-center text-red-500">
+                            <ArrowDown size={11} className="mr-0.5" />
+                            {Math.abs(salesAmountGrowth)}%
+                          </span>
+                        )}
+                        <span className="text-gray-400 font-normal ml-1">
+                          vs previous period
+                        </span>
+                      </div>
                     </div>
                   </div>
-                </div>
+                ) : (
+                  /* When Sales Value (IDR) is selected, ONLY show Sales Value (IDR) */
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <div className="w-2.5 h-2.5 rounded-full bg-[#10b981]"></div>
+                      <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                        Sales Value (IDR)
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-2xl font-black text-gray-900 dark:text-white">
+                        {formatIDR(periodSalesIDR)}
+                      </span>
+                      <div className="flex items-center text-[10px] font-bold">
+                        {salesValueGrowth >= 0 ? (
+                          <span className="flex items-center text-emerald-500">
+                            <ArrowUp size={11} className="mr-0.5" />
+                            {salesValueGrowth}%
+                          </span>
+                        ) : (
+                          <span className="flex items-center text-red-500">
+                            <ArrowDown size={11} className="mr-0.5" />
+                            {Math.abs(salesValueGrowth)}%
+                          </span>
+                        )}
+                        <span className="text-gray-400 font-normal ml-1">
+                          vs previous period
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
 
