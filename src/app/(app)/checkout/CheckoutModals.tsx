@@ -274,8 +274,8 @@ export default function CheckoutModals({
               </div>
               <div className="flex justify-between items-center pb-2 border-b border-gray-200/60 dark:border-[#2C3246]">
                 <span className="text-gray-500 dark:text-gray-400">Status</span>
-                <span className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full text-[11px]">
-                  <CheckCircle2 className="w-3.5 h-3.5" /> LUNAS
+                <span className="inline-flex items-center font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full text-[11px] tracking-wide">
+                  LUNAS
                 </span>
               </div>
               <div className="flex justify-between items-center pt-1 font-bold">
@@ -390,8 +390,8 @@ export default function CheckoutModals({
               )}
               <div className="flex justify-between items-center pt-0.5">
                 <span className="text-gray-500 dark:text-gray-400">Status</span>
-                <span className="inline-flex items-center gap-1 font-bold text-red-600 dark:text-red-400 text-xs">
-                  <AlertCircle className="w-3.5 h-3.5" /> Gagal / Expired
+                <span className="inline-flex items-center font-bold text-red-600 dark:text-red-400 text-[11px] tracking-wide bg-red-100/60 dark:bg-red-950/40 px-2.5 py-0.5 rounded-full">
+                  GAGAL / EXPIRED
                 </span>
               </div>
             </div>
