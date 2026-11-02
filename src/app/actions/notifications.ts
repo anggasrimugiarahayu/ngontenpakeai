@@ -192,8 +192,8 @@ export async function getNotificationsAction(): Promise<{
       const productNotifs: AppNotification[] = newProducts.map((product) => ({
         id: `user-product-${product.id}`,
         type: "NEW_PRODUCT",
-        title: "Produk Baru Tersedia! 🚀",
-        message: `"${product.title}" telah dirilis di Ruang Belajar. Pelajari strategi dan skill terbarunya!`,
+        title: "Produk Baru Tersedia",
+        message: `"${product.title}" telah dirilis di Ruang Belajar. Pelajari materi terbarunya sekarang!`,
         timestamp: product.createdAt.toISOString(),
         link: `/ruang-belajar/${product.slug}`,
         meta: {
