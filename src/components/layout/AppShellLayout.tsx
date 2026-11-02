@@ -415,16 +415,25 @@ export default function AppShellLayout({
       ...tool,
       isActive: dbMatch ? dbMatch.isActive : (tool.disabled ? false : true),
       isProOnly: dbMatch ? dbMatch.isProOnly : false,
-      disabled: dbMatch ? !dbMatch.isActive : tool.disabled,
+      disabled: tool.disabled || (dbMatch ? !dbMatch.isActive : false),
     };
-  }).filter((tool) => tool.isActive);
+  });
 
   const mappedRisetTools = RISET_TOOLS.map((tool) => {
-    const dbMatch = dbFeatures.find((db) => 
-      db.name.toLowerCase() === tool.label.toLowerCase() ||
-      db.name.toLowerCase() === `riset ${tool.platformKey}` ||
-      db.name.toLowerCase().includes(tool.platformKey)
-    );
+    const dbMatch = dbFeatures.find((db) => {
+      const isRiset = db.category === "riset" || db.name.toLowerCase().startsWith("riset");
+      if (!isRiset) return false;
+
+      const dbName = db.name.toLowerCase();
+      const toolLabel = tool.label.toLowerCase();
+      const standardName = `riset ${tool.platformKey}`;
+
+      return (
+        dbName === toolLabel ||
+        dbName === standardName ||
+        dbName.includes(tool.platformKey)
+      );
+    });
     return {
       ...tool,
       isActive: dbMatch ? dbMatch.isActive : true,
@@ -536,7 +545,14 @@ export default function AppShellLayout({
                   }`}
                 >
                   <Icon size={isExpanded ? 18 : 20} className="shrink-0" />
-                  {isExpanded && <span className="text-sm font-medium whitespace-nowrap truncate">{tool.label}</span>}
+                  {isExpanded && (
+                    <>
+                      <span className="text-sm font-medium whitespace-nowrap truncate">{tool.label}</span>
+                      <span className="text-[10px] ml-auto bg-gray-100 dark:bg-gray-800 text-gray-500 px-1.5 py-0.5 rounded font-semibold shrink-0">
+                        Segera
+                      </span>
+                    </>
+                  )}
                 </div>
               );
             }
