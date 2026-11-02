@@ -2,7 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import { attachComputedBuyerCounts } from "@/lib/product-buyers";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
 import { deletePhysicalUploadFile } from "@/lib/server-uploads";
@@ -45,6 +45,9 @@ function safeRevalidateTag(tag: string) {
   } catch {}
   try {
     (revalidateTag as any)(tag, "default");
+  } catch {}
+  try {
+    (updateTag as any)(tag);
   } catch {}
 }
 

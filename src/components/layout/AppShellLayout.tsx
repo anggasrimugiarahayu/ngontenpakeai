@@ -213,6 +213,21 @@ export default function AppShellLayout({
   const { data: blueprintData } = useSWR(isLoggedIn ? "blueprint" : null, getBlueprintAction);
   const activeHasBlueprint = hasBlueprint || !!blueprintData?.aiResult || !!blueprintData;
   const [blueprintModal, setBlueprintModal] = useState<{ isOpen: boolean; toolName?: string }>({ isOpen: false });
+  const [activeMaintConfig, setActiveMaintConfig] = useState<MaintenanceConfig | null>(maintenanceConfig ?? null);
+
+  useEffect(() => {
+    setActiveMaintConfig(maintenanceConfig ?? null);
+  }, [maintenanceConfig]);
+
+  useEffect(() => {
+    const handleMaintChange = (e: any) => {
+      if (e.detail) {
+        setActiveMaintConfig(e.detail);
+      }
+    };
+    window.addEventListener("maintenance-mode-change", handleMaintChange);
+    return () => window.removeEventListener("maintenance-mode-change", handleMaintChange);
+  }, []);
 
   useEffect(() => {
     const handleOpenModal = (e: any) => {
@@ -426,12 +441,12 @@ export default function AppShellLayout({
     pathname === "/kebijakan-privasi" ||
     pathname === "/syarat-ketentuan";
 
-  if (maintenanceConfig?.isActive) {
+  if (activeMaintConfig?.isActive) {
     if (!isAdmin && !isAuthOrLegalRoute) {
-      return <MaintenanceView config={maintenanceConfig} isAdmin={false} />;
+      return <MaintenanceView config={activeMaintConfig} isAdmin={false} />;
     }
     if (isAdmin && pathname === "/") {
-      return <MaintenanceView config={maintenanceConfig} isAdmin={true} />;
+      return <MaintenanceView config={activeMaintConfig} isAdmin={true} />;
     }
   }
 
@@ -702,7 +717,7 @@ export default function AppShellLayout({
 
       {/* Main Content Area */}
       <div className="flex-1 w-full flex flex-col transition-all duration-300">
-        {maintenanceConfig?.isActive && isAdmin && (
+        {activeMaintConfig?.isActive && isAdmin && (
           <aside
             aria-label="Maintenance mode active banner"
             className="w-full bg-amber-500 text-white text-xs py-2 px-4 flex items-center justify-between font-medium z-30 shadow-xs shrink-0"
@@ -713,7 +728,7 @@ export default function AppShellLayout({
                 Mode Pemeliharaan (Under Maintenance) sedang <strong>AKTIF</strong>. Pengunjung umum dialihkan ke halaman pemeliharaan.
               </span>
               <Link
-                href="/pengaturan?tab=homepage"
+                href="/pengaturan?tab=homepage&sub=maintenance"
                 className="underline font-bold hover:text-amber-100 ml-1 inline-flex items-center gap-1"
               >
                 Kelola / Matikan di Pengaturan

@@ -205,7 +205,7 @@ export interface MaintenanceConfig {
 export const DEFAULT_MAINTENANCE_CONFIG: MaintenanceConfig = {
   isActive: false,
   title: "Sistem Sedang Dalam Pemeliharaan",
-  message: "Clawd sedang meng-upgrade mesin & merapikan sistem agar pengalaman ngontenmu makin ngebut. Kami akan segera kembali!",
+  message: "Kami sedang melakukan peningkatan sistem dan pembaruan fitur agar pengalaman ngontenmu semakin optimal. Kami akan segera kembali!",
   estimatedTime: "",
 };
 

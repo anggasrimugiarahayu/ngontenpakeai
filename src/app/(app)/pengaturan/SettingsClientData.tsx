@@ -238,34 +238,42 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
             )}
           </div>
         </div>
-      </div>
 
-      {((userData?.ownedProducts && userData.ownedProducts.length > 0) || ownedEbooks.length > 0) && (
-        <div className="pt-4 border-t border-gray-200 dark:border-[#2C3246]">
+        {/* Divider */}
+        <div className="border-t border-gray-100 dark:border-[#2C3246]" />
+
+        {/* 4. AKSES PERMANEN (RUANG BELAJAR) */}
+        <div>
           <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-orange-500" />
             Akses Permanen (Ruang Belajar)
           </h3>
-          <ul className="space-y-2">
-            {(userData?.ownedProducts || ownedEbooks.map((t: string) => ({ title: t }))).map((prod: any, index: number) => (
-              <li key={index} className="text-sm text-gray-700 dark:text-gray-300 flex items-center justify-between p-2.5 rounded-xl border border-gray-100 dark:border-[#2C3246] bg-gray-50/50 dark:bg-black/10">
-                <div className="flex items-center gap-2.5 truncate mr-2">
-                  <span className="w-2 h-2 rounded-full bg-rn-accent shrink-0"></span>
-                  <span className="font-semibold text-gray-900 dark:text-white truncate">{prod.title}</span>
-                  {prod.productType === "VIDEO" ? (
-                    <span className="text-[10px] font-bold text-red-500 bg-red-100 dark:bg-red-950/40 px-2 py-0.5 rounded shrink-0">Video</span>
-                  ) : prod.productType === "LINK" ? (
-                    <span className="text-[10px] font-bold text-purple-500 bg-purple-100 dark:bg-purple-950/40 px-2 py-0.5 rounded shrink-0">Link</span>
-                  ) : (
-                    <span className="text-[10px] font-bold text-blue-500 bg-blue-100 dark:bg-blue-950/40 px-2 py-0.5 rounded shrink-0">E-Book</span>
-                  )}
+          <div className="space-y-3">
+            {((userData?.ownedProducts && userData.ownedProducts.length > 0) || ownedEbooks.length > 0) ? (
+              (userData?.ownedProducts || ownedEbooks.map((t: string) => ({ title: t }))).map((prod: any, index: number) => (
+                <div
+                  key={index}
+                  className="flex justify-between items-center text-sm border-b border-gray-100 dark:border-[#2C3246] pb-2 last:border-0 last:pb-0"
+                >
+                  <div className="flex items-center gap-2 truncate mr-2">
+                    <span className="text-gray-700 dark:text-gray-300 truncate">{prod.title}</span>
+                    {prod.productType === "VIDEO" ? (
+                      <span className="text-[10px] font-bold text-red-500 bg-red-100 dark:bg-red-950/40 px-2 py-0.5 rounded shrink-0">Video</span>
+                    ) : prod.productType === "LINK" ? (
+                      <span className="text-[10px] font-bold text-purple-500 bg-purple-100 dark:bg-purple-950/40 px-2 py-0.5 rounded shrink-0">Link</span>
+                    ) : (
+                      <span className="text-[10px] font-bold text-blue-500 bg-blue-100 dark:bg-blue-950/40 px-2 py-0.5 rounded shrink-0">E-Book</span>
+                    )}
+                  </div>
+                  <span className="text-emerald-500 font-medium shrink-0">Akses Selamanya</span>
                 </div>
-                <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xs shrink-0">Akses Selamanya</span>
-              </li>
-            ))}
-          </ul>
+              ))
+            ) : (
+              <div className="text-sm text-gray-500 dark:text-gray-400 italic">Belum ada produk ruang belajar yang dimiliki.</div>
+            )}
+          </div>
         </div>
-      )}
+      </div>
     </div>
   );
 }
