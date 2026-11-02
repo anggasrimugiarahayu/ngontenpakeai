@@ -400,6 +400,9 @@ export default function DashboardClient({
             dynamicTotalViews={dynamicTotalViews}
             dynamicTotalClicks={dynamicTotalClicks}
             salesChartData={salesChartData}
+            chartData={chartData}
+            date={date}
+            setDate={setDate}
             formatIDR={formatIDR}
             formatShortIDR={formatShortIDR}
             selectedPackage={selectedPackage}

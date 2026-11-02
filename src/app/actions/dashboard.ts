@@ -275,9 +275,11 @@ async function calculateDashboardStats() {
   const viewsGrowth = valVCPrev30 === 0 ? (valVC30 > 0 ? 100 : 0) : (((valVC30 - valVCPrev30) / valVCPrev30) * 100);
 
   const salesChartMap: Record<string, number> = {};
+  const salesCountMap: Record<string, number> = {};
   ordersLast30.forEach(o => {
     const dateStr = o.createdAt.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
     salesChartMap[dateStr] = (salesChartMap[dateStr] || 0) + o.amount;
+    salesCountMap[dateStr] = (salesCountMap[dateStr] || 0) + 1;
   });
 
   const viewsChartMap: Record<string, {views: number, clicks: number}> = {};
@@ -294,8 +296,18 @@ async function calculateDashboardStats() {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });
-    salesChartData.push({ date: dateStr, sales: salesChartMap[dateStr] || 0 });
-    viewsChartData.push({ date: dateStr, views: viewsChartMap[dateStr]?.views || 0, clicks: viewsChartMap[dateStr]?.clicks || 0 });
+    salesChartData.push({
+      date: dateStr,
+      sales: salesChartMap[dateStr] || 0,
+      count: salesCountMap[dateStr] || 0,
+      rawDate: d.toISOString(),
+    });
+    viewsChartData.push({
+      date: dateStr,
+      views: viewsChartMap[dateStr]?.views || 0,
+      clicks: viewsChartMap[dateStr]?.clicks || 0,
+      rawDate: d.toISOString(),
+    });
   }
 
 

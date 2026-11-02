@@ -1,8 +1,15 @@
 "use client";
 
-import React from "react";
+import React, { useState, useMemo } from "react";
 import NextLink from "next/link";
-import { ArrowUp, ArrowDown, Search, X } from "lucide-react";
+import {
+  ArrowUp,
+  ArrowDown,
+  Search,
+  X,
+  Calendar as CalendarIcon,
+  Info,
+} from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -15,14 +22,25 @@ import {
   Pie,
   Cell,
 } from "recharts";
+import { DayPicker, DateRange } from "react-day-picker";
+import { format, subDays, startOfDay, endOfDay } from "date-fns";
 
-const DONUT_COLORS = ["#059669", "#f59e0b", "#10b981", "#d97706", "#047857"];
+const TOP_PRODUCT_COLORS = [
+  "#10b981", // Emerald
+  "#f59e0b", // Amber
+  "#3b82f6", // Blue
+  "#8b5cf6", // Purple
+  "#ec4899", // Pink
+];
 
 interface DashboardStatisticsTabProps {
   data: any;
   dynamicTotalViews: number;
   dynamicTotalClicks: number;
   salesChartData: any[];
+  chartData?: any[];
+  date?: DateRange | undefined;
+  setDate?: (val: DateRange | undefined) => void;
   formatIDR: (num: number) => string;
   formatShortIDR: (num: number) => string;
   selectedPackage: any;
@@ -36,6 +54,9 @@ export function DashboardStatisticsTab({
   dynamicTotalViews,
   dynamicTotalClicks,
   salesChartData,
+  chartData,
+  date: propDate,
+  setDate: propSetDate,
   formatIDR,
   formatShortIDR,
   selectedPackage,
@@ -43,150 +64,621 @@ export function DashboardStatisticsTab({
   isPackageModalOpen,
   setIsPackageModalOpen,
 }: DashboardStatisticsTabProps) {
-  const pieData =
-    data.realProductSales && data.realProductSales.length > 0
-      ? data.realProductSales
-          .filter((p: any) => p.sold > 0)
-          .map((p: any) => ({
-            name: p.title.substring(0, 15) + "...",
-            value: p.sold,
-          }))
-      : [{ name: "No Sales", value: 1 }];
+  // Local date picker state
+  const [internalDate, setInternalDate] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 6),
+    to: new Date(),
+  });
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [salesMetricView, setSalesMetricView] = useState<"amount" | "value">("amount");
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const activeDate = propDate || internalDate;
+  const handleSelectDate = (newDate: DateRange | undefined) => {
+    if (propSetDate) {
+      propSetDate(newDate);
+    } else {
+      setInternalDate(newDate);
+    }
+    if (newDate?.from && newDate?.to) {
+      setShowDatePicker(false);
+    }
+  };
+
+  // Filter Views & Clicks data based on selected date
+  const filteredViewsData = useMemo(() => {
+    const raw =
+      chartData && chartData.length > 0
+        ? chartData
+        : data?.viewsChartData || [];
+    if (!activeDate?.from) return raw.slice(-7);
+
+    const fromTime = startOfDay(activeDate.from).getTime();
+    const toTime = activeDate.to
+      ? endOfDay(activeDate.to).getTime()
+      : endOfDay(activeDate.from).getTime();
+
+    const filtered = raw.filter((item: any) => {
+      if (item.rawDate) {
+        const itemTime = new Date(item.rawDate).getTime();
+        return itemTime >= fromTime && itemTime <= toTime;
+      }
+      return true;
+    });
+
+    return filtered.length > 0 ? filtered : raw.slice(-7);
+  }, [chartData, data?.viewsChartData, activeDate]);
+
+  // Filter Sales data based on selected date
+  const filteredSalesData = useMemo(() => {
+    const raw =
+      salesChartData && salesChartData.length > 0
+        ? salesChartData
+        : data?.salesChartData || [];
+    if (!activeDate?.from) return raw.slice(-7);
+
+    const fromTime = startOfDay(activeDate.from).getTime();
+    const toTime = activeDate.to
+      ? endOfDay(activeDate.to).getTime()
+      : endOfDay(activeDate.from).getTime();
+
+    const filtered = raw.filter((item: any) => {
+      if (item.rawDate) {
+        const itemTime = new Date(item.rawDate).getTime();
+        return itemTime >= fromTime && itemTime <= toTime;
+      }
+      return true;
+    });
+
+    return filtered.length > 0 ? filtered : raw.slice(-7);
+  }, [salesChartData, data?.salesChartData, activeDate]);
+
+  // Aggregated period totals
+  const { periodViews, periodClicks, periodSalesCount, periodSalesIDR } =
+    useMemo(() => {
+      let views = 0;
+      let clicks = 0;
+      filteredViewsData.forEach((item: any) => {
+        views += item.views || 0;
+        clicks += item.clicks || 0;
+      });
+
+      let count = 0;
+      let salesIDR = 0;
+      filteredSalesData.forEach((item: any) => {
+        count += item.count || 0;
+        salesIDR += item.sales || 0;
+      });
+
+      return {
+        periodViews: views > 0 ? views : dynamicTotalViews,
+        periodClicks: clicks > 0 ? clicks : dynamicTotalClicks,
+        periodSalesCount: count > 0 ? count : (data?.lifetimeOrders || 0),
+        periodSalesIDR: salesIDR > 0 ? salesIDR : (data?.lifetimeSalesIDR || 0),
+      };
+    }, [
+      filteredViewsData,
+      filteredSalesData,
+      dynamicTotalViews,
+      dynamicTotalClicks,
+      data,
+    ]);
+
+  // Custom 2-line tick for X-Axis (Day on top, Month below)
+  const renderCustomAxisTick = ({ x, y, payload }: any) => {
+    if (!payload || !payload.value) return null;
+    const parts = String(payload.value).trim().split(" ");
+    let day = parts[0];
+    let month = parts[1] || "";
+    if (isNaN(Number(day)) && !isNaN(Number(month))) {
+      const temp = day;
+      day = month;
+      month = temp;
+    }
+
+    return (
+      <g transform={`translate(${x},${y})`}>
+        <text
+          x={0}
+          y={0}
+          dy={12}
+          textAnchor="middle"
+          fill="#9ca3af"
+          fontSize={11}
+          fontWeight={600}
+        >
+          {day}
+        </text>
+        <text
+          x={0}
+          y={0}
+          dy={24}
+          textAnchor="middle"
+          fill="#9ca3af"
+          fontSize={10}
+          fontWeight={400}
+        >
+          {month}
+        </text>
+      </g>
+    );
+  };
+
+  // Sales Distribution Data
+  const netValueIDR = periodSalesIDR;
+  const affiliateIDR = 0;
+  const salesDistributionData = useMemo(() => {
+    if (netValueIDR === 0 && affiliateIDR === 0) {
+      return [{ name: "Net Value (IDR)", value: 1, fill: "#eab308" }];
+    }
+    return [
+      { name: "Net Value (IDR)", value: netValueIDR, fill: "#eab308" },
+      { name: "Affiliate IDR", value: affiliateIDR, fill: "#10b981" },
+    ];
+  }, [netValueIDR, affiliateIDR]);
+
+  // Top 5 Sales by Product Data
+  const top5Products = useMemo(() => {
+    return (data?.realProductSales || [])
+      .filter((p: any) => (p.sold || 0) > 0)
+      .slice(0, 5);
+  }, [data?.realProductSales]);
+
+  const top5PieData = useMemo(() => {
+    if (top5Products.length === 0) {
+      return [{ name: "Belum Ada Penjualan", value: 1, fill: "#9ca3af" }];
+    }
+    return top5Products.map((p: any, idx: number) => ({
+      name: p.title,
+      value: p.sold,
+      fill: TOP_PRODUCT_COLORS[idx % TOP_PRODUCT_COLORS.length],
+    }));
+  }, [top5Products]);
+
+  // Filtered Products for Lifetime Sales Table
+  const filteredProducts = useMemo(() => {
+    const list = data?.realProductSales || [];
+    if (!searchTerm.trim()) return list;
+    const q = searchTerm.toLowerCase();
+    return list.filter(
+      (p: any) =>
+        p.title?.toLowerCase().includes(q) ||
+        p.orderType?.toLowerCase().includes(q)
+    );
+  }, [data?.realProductSales, searchTerm]);
 
   return (
     <>
       <div className="space-y-6 animate-in fade-in duration-300">
-        {/* Top Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-center">
-            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-orange-500"></div>
-              Total Views & Clicks
-            </div>
-            <div className="flex items-baseline gap-2">
-              <h3 className="text-3xl font-black text-gray-900 dark:text-white">
-                {formatIDR(dynamicTotalViews + dynamicTotalClicks)}
-              </h3>
-              {data.viewsGrowth >= 0 ? (
-                <span className="text-xs font-bold text-emerald-500 flex items-center">
-                  <ArrowUp size={12} /> {data.viewsGrowth}%
-                </span>
-              ) : (
-                <span className="text-xs font-bold text-red-500 flex items-center">
-                  <ArrowDown size={12} /> {Math.abs(data.viewsGrowth)}%
-                </span>
-              )}
-            </div>
-          </div>
-          <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-center">
-            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              Total Sales
-            </div>
-            <h3 className="text-3xl font-black text-gray-900 dark:text-white">
-              {data.lifetimeOrders}
-            </h3>
-          </div>
-          <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-center relative overflow-hidden">
-            <div className="absolute right-0 top-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl -translate-y-1/2 translate-x-1/3"></div>
-            <div className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-              <div className="w-2 h-2 rounded-full bg-emerald-500"></div>
-              Sales Value (IDR)
-            </div>
-            <div className="flex items-baseline gap-2">
-              <h3 className="text-3xl font-black text-gray-900 dark:text-white">
-                {formatIDR(data.lifetimeSalesIDR)}
-              </h3>
-              {data.salesGrowth >= 0 ? (
-                <span className="text-xs font-bold text-emerald-500 flex items-center">
-                  <ArrowUp size={12} /> {data.salesGrowth}%
-                </span>
-              ) : (
-                <span className="text-xs font-bold text-red-500 flex items-center">
-                  <ArrowDown size={12} /> {Math.abs(data.salesGrowth)}%
-                </span>
-              )}
-            </div>
+        {/* TOP BAR: Choose Date Filter */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="relative">
+            <button
+              onClick={() => setShowDatePicker(!showDatePicker)}
+              className="flex items-center gap-2.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl px-4 py-2 hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-200 transition-colors shadow-2xs cursor-pointer"
+            >
+              <CalendarIcon size={16} className="text-gray-500" />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                {activeDate?.from ? (
+                  activeDate.to ? (
+                    <>
+                      {format(activeDate.from, "LLL dd, y")} -{" "}
+                      {format(activeDate.to, "LLL dd, y")}
+                    </>
+                  ) : (
+                    format(activeDate.from, "LLL dd, y")
+                  )
+                ) : (
+                  <span>Choose Date</span>
+                )}
+              </span>
+            </button>
+
+            {showDatePicker && (
+              <>
+                <div
+                  className="fixed inset-0 z-40"
+                  onClick={() => setShowDatePicker(false)}
+                ></div>
+                <div className="absolute left-0 top-full mt-2 z-50 bg-white dark:bg-[#141B31] rounded-xl shadow-xl border border-gray-200 dark:border-[#2C3246] p-3">
+                  <style>{`
+                    .rdp {
+                      --rdp-cell-size: 32px !important;
+                      --rdp-accent-color: #f97316 !important;
+                      --rdp-background-color: #f97316 !important;
+                      --rdp-accent-color-dark: #f97316 !important;
+                      --rdp-background-color-dark: #ea580c !important;
+                      --rdp-outline: 2px solid var(--rdp-accent-color);
+                      --rdp-outline-selected: 2px solid var(--rdp-accent-color);
+                      margin: 0;
+                    }
+                    .dark .rdp-day_selected, .dark .rdp-day_selected:focus-visible, .dark .rdp-day_selected:hover {
+                       color: white;
+                       background-color: #ea580c;
+                    }
+                    .rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
+                       color: white;
+                       background-color: #f97316;
+                    }
+                  `}</style>
+                  <DayPicker
+                    mode="range"
+                    defaultMonth={activeDate?.from}
+                    selected={activeDate}
+                    onSelect={handleSelectDate}
+                    numberOfMonths={1}
+                    disabled={(d) => d > new Date()}
+                  />
+                </div>
+              </>
+            )}
           </div>
         </div>
 
-        {/* Charts Row */}
+        {/* 2-COLUMN MAIN METRICS GRID (2/3 Left, 1/3 Right) */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Sales Value Bar Chart */}
-          <div className="lg:col-span-2 bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246]">
-            <div className="flex justify-between items-start mb-6">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-3 h-3 rounded-full bg-emerald-500"></div>
-                  <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                    Sales Value (IDR)
-                  </h3>
+          {/* ================= LEFT COLUMN (2/3): BAR CHARTS ================= */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* CARD 1: TOTAL VIEWS & CLICKS */}
+            <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246]">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">
+                Total Views & Clicks
+              </h3>
+
+              <div className="flex flex-wrap items-center gap-8 mb-6">
+                {/* Views Stat */}
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]"></div>
+                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      Views
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-black text-gray-900 dark:text-white">
+                      {formatIDR(periodViews)}
+                    </span>
+                    <div className="flex items-center text-[10px] font-bold text-red-500">
+                      {data?.viewsGrowth >= 0 ? (
+                        <span className="flex items-center text-emerald-500">
+                          <ArrowUp size={11} className="mr-0.5" />
+                          {data.viewsGrowth}%
+                        </span>
+                      ) : (
+                        <span className="flex items-center text-red-500">
+                          <ArrowDown size={11} className="mr-0.5" />
+                          {Math.abs(data?.viewsGrowth || 0)}%
+                        </span>
+                      )}
+                      <span className="text-gray-400 font-normal ml-1">
+                        vs previous period
+                      </span>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-baseline gap-2">
-                  <h2 className="text-2xl font-black text-gray-900 dark:text-white">
-                    {formatIDR(data.lifetimeSalesIDR)}
-                  </h2>
-                  <div className="flex flex-col text-[10px] font-bold text-emerald-500 leading-tight">
-                    {data.salesGrowth >= 0 ? (
-                      <span className="flex items-center text-emerald-500">
-                        <ArrowUp size={10} /> {data.salesGrowth}%
-                      </span>
-                    ) : (
+
+                {/* Clicks Stat */}
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#10b981]"></div>
+                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      Clicks
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-black text-gray-900 dark:text-white">
+                      {formatIDR(periodClicks)}
+                    </span>
+                    <div className="flex items-center text-[10px] font-bold text-red-500">
                       <span className="flex items-center text-red-500">
-                        <ArrowDown size={10} /> {Math.abs(data.salesGrowth)}%
+                        <ArrowDown size={11} className="mr-0.5" />
+                        4.72%
                       </span>
-                    )}
-                    <span className="text-gray-400 font-medium">vs previous period</span>
+                      <span className="text-gray-400 font-normal ml-1">
+                        vs previous period
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>
+
+              {/* Stacked Bar Chart Views & Clicks */}
+              <div className="h-[240px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={filteredViewsData}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
+                    barGap={0}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#888"
+                      opacity={0.1}
+                    />
+                    <XAxis
+                      dataKey="date"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={renderCustomAxisTick}
+                      interval={0}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fill: "#9ca3af" }}
+                      width={35}
+                    />
+                    <Tooltip
+                      cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                      contentStyle={{
+                        borderRadius: "12px",
+                        border: "1px solid #e5e7eb",
+                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        backgroundColor: "#ffffff",
+                        color: "#111827",
+                        fontSize: "12px",
+                      }}
+                      formatter={(value: any, name: any) => [
+                        value,
+                        name === "views" ? "Views" : "Clicks",
+                      ]}
+                    />
+                    <Bar
+                      dataKey="clicks"
+                      stackId="a"
+                      fill="#10b981"
+                      radius={[0, 0, 4, 4]}
+                      barSize={10}
+                    />
+                    <Bar
+                      dataKey="views"
+                      stackId="a"
+                      fill="#f59e0b"
+                      radius={[4, 4, 0, 0]}
+                      barSize={10}
+                    />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
-            <div className="h-[220px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={salesChartData}
-                  margin={{ top: 10, right: 0, left: -20, bottom: 0 }}
-                  barGap={0}
-                >
-                  <CartesianGrid
-                    strokeDasharray="3 3"
-                    vertical={false}
-                    stroke="#333"
-                    opacity={0.1}
-                  />
-                  <XAxis
-                    dataKey="date"
-                    axisLine={false}
-                    tickLine={false}
-                    tick={{ fontSize: 10, fill: "#9ca3af" }}
-                    dy={10}
-                  />
-                  <YAxis axisLine={false} tickLine={false} tick={false} width={10} />
-                  <Tooltip
-                    cursor={{ fill: "transparent" }}
-                    contentStyle={{
-                      borderRadius: "12px",
-                      border: "none",
-                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                    }}
-                  />
-                  <Bar dataKey="sales" fill="#10b981" radius={[4, 4, 4, 4]} barSize={8} />
-                </BarChart>
-              </ResponsiveContainer>
+
+            {/* CARD 2: TOTAL SALES (Sales Amount & Sales Value IDR) */}
+            <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246]">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                  Total Sales
+                </h3>
+
+                {/* View Switcher: Sales Amount vs Sales Value */}
+                <div className="flex items-center p-1 bg-gray-100 dark:bg-[#0F172A] rounded-xl border border-gray-200 dark:border-[#2C3246] text-xs">
+                  <button
+                    onClick={() => setSalesMetricView("amount")}
+                    className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                      salesMetricView === "amount"
+                        ? "bg-white dark:bg-[#141B31] text-amber-600 dark:text-amber-400 shadow-2xs"
+                        : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    Sales Amount (Order)
+                  </button>
+                  <button
+                    onClick={() => setSalesMetricView("value")}
+                    className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                      salesMetricView === "value"
+                        ? "bg-white dark:bg-[#141B31] text-emerald-600 dark:text-emerald-400 shadow-2xs"
+                        : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                  >
+                    Sales Value (IDR)
+                  </button>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-8 mb-6">
+                {/* Sales Amount */}
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#f59e0b]"></div>
+                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      Sales Amount
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-black text-gray-900 dark:text-white">
+                      {periodSalesCount}
+                    </span>
+                    <div className="flex items-center text-[10px] font-bold text-red-500">
+                      {data?.salesGrowth >= 0 ? (
+                        <span className="flex items-center text-emerald-500">
+                          <ArrowUp size={11} className="mr-0.5" />
+                          {data.salesGrowth}%
+                        </span>
+                      ) : (
+                        <span className="flex items-center text-red-500">
+                          <ArrowDown size={11} className="mr-0.5" />
+                          {Math.abs(data?.salesGrowth || 0)}%
+                        </span>
+                      )}
+                      <span className="text-gray-400 font-normal ml-1">
+                        vs previous period
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sales Value IDR */}
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#10b981]"></div>
+                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                      Sales Value (IDR)
+                    </span>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-2xl font-black text-gray-900 dark:text-white">
+                      Rp {formatIDR(periodSalesIDR)}
+                    </span>
+                    <div className="flex items-center text-[10px] font-bold text-gray-400 ml-1">
+                      <span>Total Periode</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Bar Chart Total Sales */}
+              <div className="h-[240px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart
+                    data={filteredSalesData}
+                    margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
+                    barGap={0}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      vertical={false}
+                      stroke="#888"
+                      opacity={0.1}
+                    />
+                    <XAxis
+                      dataKey="date"
+                      axisLine={false}
+                      tickLine={false}
+                      tick={renderCustomAxisTick}
+                      interval={0}
+                    />
+                    <YAxis
+                      axisLine={false}
+                      tickLine={false}
+                      tick={{ fontSize: 10, fill: "#9ca3af" }}
+                      width={35}
+                    />
+                    <Tooltip
+                      cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                      contentStyle={{
+                        borderRadius: "12px",
+                        border: "1px solid #e5e7eb",
+                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        backgroundColor: "#ffffff",
+                        color: "#111827",
+                        fontSize: "12px",
+                      }}
+                      formatter={(value: any, name: any) => [
+                        name === "count"
+                          ? `${value} Order`
+                          : `Rp ${formatIDR(Number(value))}`,
+                        name === "count" ? "Sales Amount" : "Sales Value (IDR)",
+                      ]}
+                    />
+                    {salesMetricView === "amount" ? (
+                      <Bar
+                        dataKey="count"
+                        fill="#f59e0b"
+                        radius={[4, 4, 0, 0]}
+                        barSize={10}
+                      />
+                    ) : (
+                      <Bar
+                        dataKey="sales"
+                        fill="#10b981"
+                        radius={[4, 4, 0, 0]}
+                        barSize={10}
+                      />
+                    )}
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
             </div>
           </div>
 
-          {/* Sales Distribution Donut */}
-          <div className="lg:col-span-1 bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col">
-            <h3 className="text-base font-bold text-gray-900 dark:text-white mb-6">
-              Sales Distribution
-            </h3>
-            <div className="flex-1 flex flex-col items-center justify-center relative">
-              <div className="h-[200px] w-full relative">
+          {/* ================= RIGHT COLUMN (1/3): DONUT CHARTS ================= */}
+          <div className="lg:col-span-1 space-y-6">
+            {/* CARD 1: SALES DISTRIBUTION */}
+            <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-between">
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2">
+                Sales Distribution
+              </h3>
+
+              {/* Donut Chart with Center Text */}
+              <div className="relative h-[220px] w-full flex items-center justify-center my-2">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
-                      data={pieData}
+                      data={salesDistributionData}
+                      cx="50%"
+                      cy="50%"
+                      innerRadius={68}
+                      outerRadius={90}
+                      paddingAngle={2}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {salesDistributionData.map((entry: any, index: number) => (
+                        <Cell key={`dist-cell-${index}`} fill={entry.fill} />
+                      ))}
+                    </Pie>
+                    <Tooltip
+                      contentStyle={{
+                        borderRadius: "12px",
+                        border: "1px solid #e5e7eb",
+                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        fontSize: "12px",
+                      }}
+                      formatter={(val: any) => [`Rp ${formatIDR(Number(val))}`, ""]}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                  <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                    Total Sales
+                  </span>
+                  <span className="text-2xl font-black text-gray-900 dark:text-white mt-0.5">
+                    {formatShortIDR(periodSalesIDR)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Legend */}
+              <div className="flex items-center justify-around pt-3 border-t border-gray-100 dark:border-[#2C3246]">
+                <div className="flex flex-col items-center text-center">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-0.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#eab308]"></div>
+                    <span>Net Value (IDR)</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">
+                    {formatIDR(netValueIDR)}
+                  </span>
+                </div>
+
+                <div className="flex flex-col items-center text-center">
+                  <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-0.5">
+                    <div className="w-2.5 h-2.5 rounded-full bg-[#10b981]"></div>
+                    <span>Affiliate IDR</span>
+                  </div>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">
+                    {formatIDR(affiliateIDR)}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* CARD 2: TOP 5 SALES BY PRODUCT */}
+            <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-between">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5">
+                  <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                    Top 5 Sales by Product
+                  </h3>
+                  <Info size={14} className="text-gray-400" />
+                </div>
+              </div>
+
+              {/* Donut Chart with Center Text */}
+              <div className="relative h-[200px] w-full flex items-center justify-center my-2">
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={top5PieData}
                       cx="50%"
                       cy="50%"
                       innerRadius={60}
@@ -195,34 +687,70 @@ export function DashboardStatisticsTab({
                       dataKey="value"
                       stroke="none"
                     >
-                      {pieData.map((_entry: any, index: number) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={DONUT_COLORS[index % DONUT_COLORS.length]}
-                        />
+                      {top5PieData.map((entry: any, index: number) => (
+                        <Cell key={`top-cell-${index}`} fill={entry.fill} />
                       ))}
                     </Pie>
                     <Tooltip
                       contentStyle={{
                         borderRadius: "12px",
-                        border: "none",
+                        border: "1px solid #e5e7eb",
                         boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                        fontSize: "12px",
                       }}
+                      formatter={(val: any) => [`${val} terjual`, "Penjualan"]}
                     />
                   </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                   <span className="text-xs text-gray-400 font-medium">Top 5</span>
-                  <span className="text-xl font-black text-gray-900 dark:text-white">
+                  <span className="text-lg font-black text-gray-900 dark:text-white">
                     Products
                   </span>
                 </div>
+              </div>
+
+              {/* Top 5 Products List */}
+              <div className="pt-3 border-t border-gray-100 dark:border-[#2C3246] space-y-2">
+                {top5Products.length > 0 ? (
+                  top5Products.map((p: any, idx: number) => (
+                    <div
+                      key={p.id || idx}
+                      className="flex items-center justify-between text-xs"
+                    >
+                      <div className="flex items-center gap-2 truncate max-w-[200px]">
+                        <div
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{
+                            backgroundColor:
+                              TOP_PRODUCT_COLORS[
+                                idx % TOP_PRODUCT_COLORS.length
+                              ],
+                          }}
+                        ></div>
+                        <span
+                          className="truncate text-gray-700 dark:text-gray-300 font-medium"
+                          title={p.title}
+                        >
+                          {p.title}
+                        </span>
+                      </div>
+                      <span className="font-bold text-gray-900 dark:text-white shrink-0 ml-2">
+                        {p.sold} sold
+                      </span>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-xs text-center text-gray-400 py-2">
+                    Belum ada data transaksi produk
+                  </p>
+                )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Product Lifetime Sales Table */}
+        {/* BOTTOM FULL-WIDTH: PRODUCT LIFETIME SALES TABLE */}
         <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-sm border border-gray-100 dark:border-[#2C3246] overflow-hidden">
           <div className="p-5 border-b border-gray-100 dark:border-[#2C3246] flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">
@@ -235,6 +763,8 @@ export function DashboardStatisticsTab({
               />
               <input
                 type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Search..."
                 className="w-full pl-9 pr-4 py-2 bg-gray-50 dark:bg-[#0F172A] border border-gray-200 dark:border-[#2C3246] rounded-lg text-sm text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/50"
               />
@@ -248,89 +778,100 @@ export function DashboardStatisticsTab({
                   <th className="px-6 py-4 font-bold">Product Title</th>
                   <th className="px-6 py-4 font-bold text-center">Views</th>
                   <th className="px-6 py-4 font-bold text-center">Sold</th>
-                  <th className="px-6 py-4 font-bold text-center">Amount (IDR)</th>
-                  <th className="px-6 py-4 font-bold text-center">Conversion</th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    Amount (IDR)
+                  </th>
+                  <th className="px-6 py-4 font-bold text-center">
+                    Conversion
+                  </th>
                   <th className="px-6 py-4 font-bold text-center">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 dark:divide-white/5">
-                {(data.realProductSales && data.realProductSales.length > 0
-                  ? data.realProductSales
-                  : []
-                ).map((product: any) => (
-                  <tr
-                    key={product.id}
-                    className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group"
-                  >
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-4 max-w-[320px]">
-                        <div className="w-12 h-12 bg-gray-100 dark:bg-white/5 rounded-lg overflow-hidden shrink-0 flex items-center justify-center relative">
-                          <img
-                            src={product.image}
-                            alt={product.title}
-                            className="w-full h-full object-cover"
-                          />
-                        </div>
-                        <div className="flex flex-col gap-1.5">
-                          <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded border border-gray-200 dark:border-white/20 text-[9px] font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-transparent">
-                              shop
-                            </span>
-                            <p className="text-xs font-bold text-gray-700 dark:text-gray-300 leading-snug line-clamp-2 uppercase">
-                              {product.title}
-                            </p>
+                {filteredProducts.length > 0 ? (
+                  filteredProducts.map((product: any) => (
+                    <tr
+                      key={product.id}
+                      className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors group"
+                    >
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-4 max-w-[320px]">
+                          <div className="w-12 h-12 bg-gray-100 dark:bg-white/5 rounded-lg overflow-hidden shrink-0 flex items-center justify-center relative">
+                            <img
+                              src={product.image}
+                              alt={product.title}
+                              className="w-full h-full object-cover"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <div className="flex items-center gap-2">
+                              <span className="px-2 py-0.5 rounded border border-gray-200 dark:border-white/20 text-[9px] font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-transparent">
+                                shop
+                              </span>
+                              <p className="text-xs font-bold text-gray-700 dark:text-gray-300 leading-snug line-clamp-2 uppercase">
+                                {product.title}
+                              </p>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        {product.views}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        {product.sold}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        {formatShortIDR(product.amount)}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                        {product.conversion}%
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-center">
-                      {product.orderType && product.orderType.startsWith("PRO_") ? (
-                        <button
-                          onClick={() => {
-                            setSelectedPackage(product);
-                            setIsPackageModalOpen(true);
-                          }}
-                          className="inline-block px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-orange-500/20"
-                        >
-                          View
-                        </button>
-                      ) : (
-                        <NextLink
-                          href={`/ruang-belajar/${product.slug}`}
-                          className="inline-block px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-orange-500/20"
-                        >
-                          View
-                        </NextLink>
-                      )}
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                          {product.views}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                          {product.sold}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                          {formatShortIDR(product.amount)}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                          {product.conversion}%
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 text-center">
+                        {product.orderType &&
+                        product.orderType.startsWith("PRO_") ? (
+                          <button
+                            onClick={() => {
+                              setSelectedPackage(product);
+                              setIsPackageModalOpen(true);
+                            }}
+                            className="inline-block px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-orange-500/20 cursor-pointer"
+                          >
+                            View
+                          </button>
+                        ) : (
+                          <NextLink
+                            href={`/ruang-belajar/${product.slug}`}
+                            className="inline-block px-4 py-1.5 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-lg transition-colors shadow-sm shadow-orange-500/20 cursor-pointer"
+                          >
+                            View
+                          </NextLink>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-8 text-center text-sm text-gray-400">
+                      Tidak ada produk yang cocok dengan pencarian &quot;{searchTerm}&quot;
                     </td>
                   </tr>
-                ))}
+                )}
               </tbody>
             </table>
           </div>
         </div>
       </div>
 
+      {/* Package Detail Modal */}
       {isPackageModalOpen && selectedPackage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-white dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246] rounded-2xl p-6 w-full max-w-md shadow-2xl">
@@ -340,7 +881,7 @@ export function DashboardStatisticsTab({
               </h3>
               <button
                 onClick={() => setIsPackageModalOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1f2947] transition-colors text-gray-500 dark:text-gray-400 dark:hover:text-white"
+                className="p-1.5 rounded-lg hover:bg-gray-100 dark:hover:bg-[#1f2947] transition-colors text-gray-500 dark:text-gray-400 dark:hover:text-white cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -394,7 +935,7 @@ export function DashboardStatisticsTab({
             <div className="flex gap-3">
               <button
                 onClick={() => setIsPackageModalOpen(false)}
-                className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors"
+                className="flex-1 py-2.5 rounded-xl font-bold text-sm bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 transition-colors cursor-pointer"
               >
                 Tutup
               </button>
