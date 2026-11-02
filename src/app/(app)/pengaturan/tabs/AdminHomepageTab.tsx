@@ -186,7 +186,33 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-300">
+    <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31] space-y-6 animate-in fade-in duration-300">
+      {/* Header Utama Tab Home Page */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+            Manajemen Homepage
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Kelola tampilan kartu beranda serta kendalikan mode pemeliharaan sistem (under maintenance).
+          </p>
+        </div>
+
+        {/* Tombol Edit Teks & Badge (khusus sub-tab homepage) */}
+        {activeSubTab === "homepage" && (
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowEditModal(true)}
+              className="justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer"
+            >
+              <Edit3 className="w-4 h-4" />
+              <span>Edit Konten &amp; Badge</span>
+            </button>
+          </div>
+        )}
+      </div>
+
       {/* Horizontal Sub-Tabs Navigation (Persis gaya Manajemen Fitur) */}
       <div className="flex items-center gap-2 border-b border-gray-100 dark:border-[#2C3246]/60 pb-3 overflow-x-auto scrollbar-hide">
         <button
@@ -230,7 +256,7 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
           className={`border rounded-2xl p-6 transition-all duration-300 ${
             maintConfig.isActive
               ? "border-amber-400 dark:border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20 shadow-md shadow-amber-500/10"
-              : "border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] shadow-xs"
+              : "border-gray-200 dark:border-[#2C3246] bg-gray-50/40 dark:bg-white/5 shadow-xs"
           }`}
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -246,9 +272,9 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">
                     Mode Pemeliharaan Sistem (Under Maintenance)
-                  </h2>
+                  </h3>
                   {maintConfig.isActive ? (
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
                       <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
@@ -323,7 +349,7 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
                 rows={2}
                 value={maintConfig.message}
                 onChange={(e) => setMaintConfig({ ...maintConfig, message: e.target.value })}
-                placeholder="Tuliskan pesan penjelasan untuk pengunjung saat maintenance..."
+                placeholder="Kami sedang melakukan peningkatan sistem dan pembaruan fitur agar pengalaman ngontenmu semakin optimal. Kami akan segera kembali!"
                 className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E2538] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
               />
             </div>
@@ -361,336 +387,142 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
 
       {/* Sub-Tab 2: MANAJEMEN HOMEPAGE CARDS */}
       {activeSubTab === "homepage" && (
-        <>
-          {/* 1. CARD HEADER ATAS (PERSIS TAMPILAN RUANG BELAJAR) */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31] shadow-xs">
-            <div>
-              <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-                Manajemen Homepage
-              </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Kelola tampilan kartu beranda, atur urutan posisi dengan drag &amp; drop, serta aktifkan atau nonaktifkan kartu.
-              </p>
+        <div className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2">
+              <div className="w-2 h-6 bg-rn-accent rounded-full"></div>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Live Preview</h3>
             </div>
-
-            {/* Tombol Edit Teks & Badge di Header Kanan */}
-            <div className="flex items-center gap-2 shrink-0">
-              <button
-                type="button"
-                onClick={() => setShowEditModal(true)}
-                className="justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer"
-              >
-                <Edit3 className="w-4 h-4" />
-                <span>Edit Konten &amp; Badge</span>
-              </button>
-            </div>
+            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+              {cards.filter((c) => c.isActive).length} dari {cards.length} Aktif
+            </span>
           </div>
 
-          {/* 2. GRID 4 KARTU BERBENTUK FISIK ASLI HOMEPAGE */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between px-1">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-6 bg-rn-accent rounded-full"></div>
-                <h2 className="text-xl font-bold text-gray-900 dark:text-white">Live Preview</h2>
-              </div>
-              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-                {cards.filter((c) => c.isActive).length} dari {cards.length} Aktif
-              </span>
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
+            {cards.map((card, index) => {
+              const isMenuOpen = openMenuId === card.id;
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-              {cards.map((card, index) => {
-                const isMenuOpen = openMenuId === card.id;
-
-                return (
-                  <div
-                    key={card.id}
-                    draggable
-                    onDragStart={(e) => {
-                      setDraggedIdx(index);
-                      e.dataTransfer.effectAllowed = "move";
-                      e.dataTransfer.setData("text/plain", card.id);
-                    }}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.dataTransfer.dropEffect = "move";
-                      if (dragOverIdx !== index) {
-                        setDragOverIdx(index);
-                      }
-                    }}
-                    onDragLeave={() => {
-                      if (dragOverIdx === index) {
-                        setDragOverIdx(null);
-                      }
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      handleDrop(index);
-                    }}
-                    onDragEnd={() => {
-                      setDraggedIdx(null);
+              return (
+                <div
+                  key={card.id}
+                  draggable
+                  onDragStart={(e) => {
+                    setDraggedIdx(index);
+                    e.dataTransfer.effectAllowed = "move";
+                    e.dataTransfer.setData("text/plain", card.id);
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = "move";
+                    if (dragOverIdx !== index) {
+                      setDragOverIdx(index);
+                    }
+                  }}
+                  onDragLeave={() => {
+                    if (dragOverIdx === index) {
                       setDragOverIdx(null);
-                    }}
-                    className={`group relative flex flex-col justify-start rounded-2xl border-2 p-6 text-left transition-all duration-300 select-none ${
-                      dragOverIdx === index ? "border-orange-500 scale-[1.02]" : ""
-                    } ${
-                      card.isActive
-                        ? "bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-gray-600 shadow-sm"
-                        : "bg-gray-100/60 dark:bg-[#101626]/60 border-dashed border-gray-300 dark:border-gray-700 opacity-60"
-                    }`}
-                  >
-                    {/* Header Kartu: Posisi Drag & Drop Handle + Kanan Badge/Menu */}
-                    <div className="flex items-center justify-between w-full mb-3">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md">
-                          #{index + 1}
+                    }
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    handleDrop(index);
+                  }}
+                  onDragEnd={() => {
+                    setDraggedIdx(null);
+                    setDragOverIdx(null);
+                  }}
+                  className={`group relative flex flex-col justify-start rounded-2xl border-2 p-6 text-left transition-all duration-300 select-none ${
+                    dragOverIdx === index ? "border-orange-500 scale-[1.02]" : ""
+                  } ${
+                    card.isActive
+                      ? "bg-white dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-gray-600 shadow-sm"
+                      : "bg-gray-100/60 dark:bg-[#101626]/60 border-dashed border-gray-300 dark:border-gray-700 opacity-60"
+                  }`}
+                >
+                  {/* Header Kartu: Posisi Drag & Drop Handle + Kanan Badge/Menu */}
+                  <div className="flex items-center justify-between w-full mb-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-gray-400 dark:text-gray-500 bg-gray-100 dark:bg-white/5 px-2 py-0.5 rounded-md">
+                        #{index + 1}
+                      </span>
+                      {!card.isActive && (
+                        <span className="text-[11px] font-semibold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-md">
+                          Nonaktif
                         </span>
-                        {!card.isActive && (
-                          <span className="text-[11px] font-semibold text-rose-500 bg-rose-500/10 px-2 py-0.5 rounded-md">
-                            Nonaktif
-                          </span>
-                        )}
-                      </div>
+                      )}
+                    </div>
 
-                      <div className="flex items-center gap-1.5 relative">
-                        {/* Badge Teks */}
-                        {card.showBadge && card.badgeText && (
-                          <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white bg-rn-accent shadow-xs">
-                            {card.badgeText}
-                          </span>
-                        )}
+                    <div className="flex items-center gap-1.5 relative">
+                      {/* Badge Teks */}
+                      {card.showBadge && card.badgeText && (
+                        <span className="rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white bg-rn-accent shadow-xs">
+                          {card.badgeText}
+                        </span>
+                      )}
 
-                        {/* Dropdown Menu Titik Tiga */}
-                        <div className="relative">
-                          <button
-                            type="button"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              setOpenMenuId(isMenuOpen ? null : card.id);
-                            }}
-                            className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                      {/* Dropdown Menu Titik Tiga */}
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setOpenMenuId(isMenuOpen ? null : card.id);
+                          }}
+                          className="p-1 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                        >
+                          <MoreVertical className="w-4 h-4" />
+                        </button>
+
+                        {isMenuOpen && (
+                          <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-[#1A2238] rounded-xl shadow-xl border border-gray-200 dark:border-[#2C3246] py-1.5 z-20 animate-in fade-in zoom-in-95 duration-150"
                           >
-                            <MoreVertical className="w-4 h-4" />
-                          </button>
-
-                          {isMenuOpen && (
-                            <div
-                              onClick={(e) => e.stopPropagation()}
-                              className="absolute right-0 top-full mt-1 w-44 bg-white dark:bg-[#1A2238] rounded-xl shadow-xl border border-gray-200 dark:border-[#2C3246] py-1.5 z-20 animate-in fade-in zoom-in-95 duration-150"
+                            <button
+                              type="button"
+                              onClick={() => handleToggleActive(card.id)}
+                              className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer"
                             >
-                              <button
-                                type="button"
-                                onClick={() => handleToggleActive(card.id)}
-                                className="w-full px-3 py-2 text-left text-xs font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-white/5 flex items-center gap-2 transition-colors cursor-pointer"
-                              >
-                                {card.isActive ? (
-                                  <>
-                                    <EyeOff className="w-3.5 h-3.5 text-rose-500" />
-                                    <span>Nonaktifkan Kartu</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Eye className="w-3.5 h-3.5 text-emerald-500" />
-                                    <span>Aktifkan Kartu</span>
-                                  </>
-                                )}
-                              </button>
-                            </div>
-                          )}
-                        </div>
+                              {card.isActive ? (
+                                <>
+                                  <EyeOff className="w-3.5 h-3.5 text-rose-500" />
+                                  <span>Nonaktifkan Kartu</span>
+                                </>
+                              ) : (
+                                <>
+                                  <Eye className="w-3.5 h-3.5 text-emerald-500" />
+                                  <span>Aktifkan Kartu</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        )}
                       </div>
-                    </div>
-
-                    {/* Visual Animasi SVG Asli Card */}
-                    <div className="pointer-events-none">
-                      <HomeCardVisual id={card.id} />
-                    </div>
-
-                    {/* Konten Judul & Teks Deskripsi */}
-                    <div className="relative mt-4 space-y-1">
-                      <h2 className="font-heading text-lg font-bold leading-snug transition-colors duration-200 text-gray-900 dark:text-[#F3F4F6]">
-                        {card.title}
-                      </h2>
-                      <p className="text-sm leading-relaxed transition-colors duration-200 text-gray-600 dark:text-[#9CA3AF] line-clamp-3">
-                        {card.description}
-                      </p>
                     </div>
                   </div>
-                );
-              })}
-            </div>
+
+                  {/* Visual Animasi SVG Asli Card */}
+                  <div className="pointer-events-none">
+                    <HomeCardVisual id={card.id} />
+                  </div>
+
+                  {/* Konten Judul & Teks Deskripsi */}
+                  <div className="relative mt-4 space-y-1">
+                    <h4 className="font-heading text-lg font-bold leading-snug transition-colors duration-200 text-gray-900 dark:text-[#F3F4F6]">
+                      {card.title}
+                    </h4>
+                    <p className="text-sm leading-relaxed transition-colors duration-200 text-gray-600 dark:text-[#9CA3AF] line-clamp-3">
+                      {card.description}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </>
+        </div>
       )}
 
-      {/* 3. MODAL EDIT KONTEN & BADGE */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31] shadow-xs">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-            Manajemen Homepage
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Kelola tampilan kartu beranda, atur urutan posisi dengan drag &amp; drop, serta aktifkan atau nonaktifkan kartu.
-          </p>
-        </div>
-
-        {/* Tombol Edit Teks & Badge di Header Kanan */}
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            type="button"
-            onClick={() => setShowEditModal(true)}
-            className="justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer"
-          >
-            <Edit3 className="w-4 h-4" />
-            <span>Edit Konten &amp; Badge</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 2. GRID 4 KARTU BERBENTUK FISIK ASLI HOMEPAGE */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between px-1">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-6 bg-rn-accent rounded-full"></div>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">Live Preview</h2>
-          </div>
-          <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-            {cards.filter((c) => c.isActive).length} dari {cards.length} Aktif
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
-          {cards.map((card, index) => {
-            const isMenuOpen = openMenuId === card.id;
-
-            return (
-              <div
-                key={card.id}
-                draggable
-                onDragStart={(e) => {
-                  setDraggedIdx(index);
-                  e.dataTransfer.effectAllowed = "move";
-                  e.dataTransfer.setData("text/plain", card.id);
-                }}
-                onDragOver={(e) => {
-                  e.preventDefault();
-                  e.dataTransfer.dropEffect = "move";
-                  if (dragOverIdx !== index) {
-                    setDragOverIdx(index);
-                  }
-                }}
-                onDragLeave={() => {
-                  if (dragOverIdx === index) {
-                    setDragOverIdx(null);
-                  }
-                }}
-                onDrop={(e) => {
-                  e.preventDefault();
-                  handleDrop(index);
-                }}
-                onDragEnd={() => {
-                  setDraggedIdx(null);
-                  setDragOverIdx(null);
-                }}
-                className={`group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-150 z-0 overflow-visible bg-white dark:bg-[#141B31] select-none cursor-grab active:cursor-grabbing ${
-                  draggedIdx === index
-                    ? "opacity-30 scale-95 border-dashed border-orange-500 ring-2 ring-orange-500/30"
-                    : ""
-                } ${
-                  dragOverIdx === index && draggedIdx !== index
-                    ? "ring-2 ring-orange-500 shadow-2xl border-orange-500 scale-[1.02]"
-                    : ""
-                } ${
-                  card.isActive
-                    ? "border-gray-200 dark:border-[#2C3246] hover:border-gray-300 dark:hover:border-[#3E4766] hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)]"
-                    : "opacity-50 grayscale-[40%] bg-gray-50/80 dark:bg-[#141B31]/50 border-dashed border-gray-300 dark:border-[#2C3246]"
-                }`}
-              >
-                {/* Top Corner: Badge & Tombol Titik Tiga (⋮) */}
-                <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
-                  {/* Badge (jika showBadge aktif & ada teks) */}
-                  {card.showBadge && card.badgeText && (
-                    <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-orange-500 shadow-sm shrink-0">
-                      {card.badgeText}
-                    </span>
-                  )}
-
-                  {/* Tombol Titik Tiga (⋮) Khusus untuk Enable/Disable */}
-                  <div className="relative" onMouseDown={(e) => e.stopPropagation()}>
-                    <button
-                      type="button"
-                      onClick={() => setOpenMenuId(isMenuOpen ? null : card.id)}
-                      className={`p-1.5 rounded-lg border transition-colors shadow-2xs ${
-                        card.isActive
-                          ? "bg-white/90 dark:bg-[#141B31] border-gray-200 dark:border-[#2C3246] text-gray-600 dark:text-gray-300 hover:text-orange-500 hover:border-orange-500"
-                          : "bg-red-500/10 border-red-500/30 text-red-500 hover:bg-red-500/20"
-                      }`}
-                      title="Pengaturan Enable / Disable Card"
-                    >
-                      <MoreVertical size={15} />
-                    </button>
-
-                    {/* Dropdown Popup Titik Tiga */}
-                    {isMenuOpen && (
-                      <>
-                        <div
-                          className="fixed inset-0 z-30"
-                          onClick={() => setOpenMenuId(null)}
-                        />
-                        <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] p-2 z-40 text-xs animate-in fade-in zoom-in-95 duration-150">
-                          <div className="px-2.5 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-[#2C3246] mb-1 flex items-center justify-between">
-                            <span>Status Card</span>
-                            <span
-                              className={`w-2 h-2 rounded-full ${
-                                card.isActive ? "bg-emerald-500" : "bg-gray-400"
-                              }`}
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => handleToggleActive(card.id)}
-                            className={`w-full flex items-center justify-between gap-2 px-2.5 py-2 rounded-xl font-bold transition-colors text-left cursor-pointer ${
-                              card.isActive
-                                ? "hover:bg-red-50 dark:hover:bg-red-500/10 text-gray-700 dark:text-gray-200 hover:text-red-600 dark:hover:text-red-400"
-                                : "hover:bg-emerald-50 dark:hover:bg-emerald-500/10 text-gray-700 dark:text-gray-200 hover:text-emerald-600 dark:hover:text-emerald-400"
-                            }`}
-                          >
-                            <span className="flex items-center gap-2">
-                              {card.isActive ? (
-                                <EyeOff size={14} className="text-red-500" />
-                              ) : (
-                                <Eye size={14} className="text-emerald-500" />
-                              )}
-                              {card.isActive ? "Nonaktifkan Card" : "Aktifkan Card"}
-                            </span>
-                          </button>
-                        </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-
-                {/* Visual Animasi SVG Asli Card */}
-                <div className="pointer-events-none">
-                  <HomeCardVisual id={card.id} />
-                </div>
-
-                {/* Konten Judul & Teks Deskripsi */}
-                <div className="relative mt-4 space-y-1">
-                  <h2 className="font-heading text-lg font-bold leading-snug transition-colors duration-200 text-gray-900 dark:text-[#F3F4F6]">
-                    {card.title}
-                  </h2>
-                  <p className="text-sm leading-relaxed transition-colors duration-200 text-gray-600 dark:text-[#9CA3AF] line-clamp-3">
-                    {card.description}
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* 3. MODAL EDIT KONTEN & BADGE */}
+      {/* MODAL EDIT KONTEN & BADGE */}
       <HomepageEditModal
         isOpen={showEditModal}
         onClose={() => setShowEditModal(false)}
