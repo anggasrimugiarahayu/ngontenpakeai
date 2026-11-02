@@ -4,7 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { DayPicker, DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, X } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 
 export interface DateRangePickerProps {
   value?: DateRange | undefined;
@@ -55,13 +55,6 @@ export function DateRangePicker({
     }
   };
 
-  const handleClear = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (onChange) {
-      onChange(undefined);
-    }
-  };
-
   const formattedLabel = () => {
     if (!value?.from) return placeholder;
     if (value.from && value.to) {
@@ -75,7 +68,7 @@ export function DateRangePicker({
 
   return (
     <div ref={containerRef} className={`relative inline-block ${className}`}>
-      {/* Trigger Button */}
+      {/* Trigger Button - Clean & Consistent */}
       <button
         type="button"
         disabled={disabled}
@@ -84,15 +77,6 @@ export function DateRangePicker({
       >
         <CalendarIcon size={16} className="text-gray-500 shrink-0" />
         <span className="truncate">{formattedLabel()}</span>
-        {value?.from && (
-          <span
-            onClick={handleClear}
-            className="p-0.5 rounded-full hover:bg-gray-200 dark:hover:bg-white/10 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors cursor-pointer ml-1"
-            title="Reset Tanggal"
-          >
-            <X size={14} />
-          </span>
-        )}
       </button>
 
       {/* Popover */}
@@ -102,7 +86,7 @@ export function DateRangePicker({
             align === "right" ? "right-0" : "left-0"
           }`}
         >
-          {/* Scoped CSS: Solid Orange on Start/End, Reduced Opacity Orange Strip in Middle */}
+          {/* Scoped CSS: Circular / Bulat Highlight */}
           <style>{`
             .compact-date-picker {
               --rdp-cell-size: 32px !important;
@@ -115,7 +99,7 @@ export function DateRangePicker({
               margin: 0;
             }
             .compact-date-picker .rdp-day {
-              border-radius: 6px;
+              border-radius: 9999px !important;
               font-size: 13px;
               font-weight: 500;
               transition: background-color 0.15s ease, color 0.15s ease;
@@ -123,56 +107,54 @@ export function DateRangePicker({
             .compact-date-picker .rdp-day:hover:not(.rdp-day_selected):not(.rdp-day_range_middle) {
               background-color: rgba(249, 115, 22, 0.1) !important;
               color: #f97316 !important;
+              border-radius: 9999px !important;
             }
 
-            /* Range Start: Solid Orange Penuh + White Text */
+            /* Range Start: Solid Orange Penuh + Bulat */
             .compact-date-picker .rdp-day_range_start {
               background-color: #f97316 !important;
               color: #ffffff !important;
-              border-top-left-radius: 8px !important;
-              border-bottom-left-radius: 8px !important;
-              border-top-right-radius: 0px !important;
-              border-bottom-right-radius: 0px !important;
+              border-radius: 9999px !important;
               font-weight: 700 !important;
             }
 
-            /* Range End: Solid Orange Penuh + White Text */
+            /* Range End: Solid Orange Penuh + Bulat */
             .compact-date-picker .rdp-day_range_end {
               background-color: #f97316 !important;
               color: #ffffff !important;
-              border-top-right-radius: 8px !important;
-              border-bottom-right-radius: 8px !important;
-              border-top-left-radius: 0px !important;
-              border-bottom-left-radius: 0px !important;
+              border-radius: 9999px !important;
               font-weight: 700 !important;
             }
 
-            /* Single Day Selected (Start & End on same day) */
+            /* Single Day Selected */
             .compact-date-picker .rdp-day_range_start.rdp-day_range_end {
-              border-radius: 8px !important;
+              border-radius: 9999px !important;
             }
 
-            /* Range Middle: Opasitas Diturunkan (Soft Orange Transparent Strip) */
+            /* Range Middle: Opasitas Diturunkan (~20%) + Bulat */
             .compact-date-picker .rdp-day_range_middle {
               background-color: rgba(249, 115, 22, 0.2) !important;
               color: #ea580c !important;
-              border-radius: 0px !important;
+              border-radius: 9999px !important;
               font-weight: 600 !important;
             }
             .dark .compact-date-picker .rdp-day_range_middle {
               background-color: rgba(249, 115, 22, 0.3) !important;
               color: #fdba74 !important;
+              border-radius: 9999px !important;
             }
 
             /* Standalone Selected Fallback */
             .compact-date-picker .rdp-day_selected:not(.rdp-day_range_middle) {
               background-color: #f97316 !important;
               color: #ffffff !important;
+              border-radius: 9999px !important;
               font-weight: 700 !important;
             }
             .dark .compact-date-picker .rdp-day_selected:not(.rdp-day_range_middle) {
               background-color: #ea580c !important;
               color: #ffffff !important;
+              border-radius: 9999px !important;
             }
           `}</style>
 

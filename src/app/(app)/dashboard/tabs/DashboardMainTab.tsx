@@ -28,6 +28,7 @@ import {
 } from "recharts";
 import { DayPicker, DateRange } from "react-day-picker";
 import { format } from "date-fns";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
 
 interface DashboardMainTabProps {
   data: any;
@@ -240,72 +241,8 @@ export function DashboardMainTab({
             </div>
           </div>
 
-          {/* Popover Date Filter */}
-          <div className="relative">
-            <button
-              onClick={() => setShowDatePicker(!showDatePicker)}
-              className="flex items-center bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl px-4 py-2 hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-200 transition-colors shadow-2xs cursor-pointer"
-            >
-              <CalendarIcon size={16} className="text-gray-500 mr-2" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {date?.from ? (
-                  date.to ? (
-                    <>
-                      {format(date.from, "LLL dd, y")} - {format(date.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(date.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Select Date..</span>
-                )}
-              </span>
-            </button>
-
-            {showDatePicker && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowDatePicker(false)}
-                ></div>
-                <div className="absolute right-0 top-full mt-2 z-50 bg-white dark:bg-[#141B31] rounded-xl shadow-xl border border-gray-200 dark:border-[#2C3246] p-3">
-                  <style>{`
-                    .rdp {
-                      --rdp-cell-size: 32px !important;
-                      --rdp-accent-color: #f97316 !important;
-                      --rdp-background-color: #f97316 !important;
-                      --rdp-accent-color-dark: #f97316 !important;
-                      --rdp-background-color-dark: #ea580c !important;
-                      --rdp-outline: 2px solid var(--rdp-accent-color);
-                      --rdp-outline-selected: 2px solid var(--rdp-accent-color);
-                      margin: 0;
-                    }
-                    .dark .rdp-day_selected, .dark .rdp-day_selected:focus-visible, .dark .rdp-day_selected:hover {
-                       color: white;
-                       background-color: #ea580c;
-                    }
-                    .rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
-                       color: white;
-                       background-color: #f97316;
-                    }
-                  `}</style>
-                  <DayPicker
-                    mode="range"
-                    defaultMonth={date?.from}
-                    selected={date}
-                    onSelect={(newDate) => {
-                      setDate(newDate);
-                      if (newDate?.from && newDate?.to) {
-                        setShowDatePicker(false);
-                      }
-                    }}
-                    numberOfMonths={1}
-                    disabled={(d) => d > new Date()}
-                  />
-                </div>
-              </>
-            )}
-          </div>
+          {/* Popover Date Filter (Global Reusable DateRangePicker) */}
+          <DateRangePicker value={date} onChange={setDate} align="right" />
         </div>
 
         <div className="h-[250px] w-full">
