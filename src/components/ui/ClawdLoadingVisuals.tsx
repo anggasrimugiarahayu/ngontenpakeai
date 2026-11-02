@@ -1647,7 +1647,237 @@ function renderOnboardingScene(ctx: SceneCtx, step: number, reactKey: number) {
 }
 
 // ============================================================================
-// 10. PUBLIC COMPONENTS
+// 10. SCENE: UNDER MAINTENANCE (CLAWD THE MECHANIC)
+// ----------------------------------------------------------------------------
+// Clawd mengenakan safety helmet kuning, memegang kunci pas (wrench).
+// Di sebelah kanan ada mesin server / terminal AI dengan roda gigi dan lampu status.
+// Clawd mendekat, mengencangkan baut mesin (sparks!), lampu berubah hijau,
+// roda gigi berputar halus, lalu Clawd melompat senang mengacungkan jempol (thumbs up)!
+// ============================================================================
+function gearSVG(cx: number, cy: number, r: number, teeth: number, rot: number, col: string) {
+  let d = "";
+  const step = (Math.PI * 2) / teeth;
+  for (let i = 0; i < teeth; i++) {
+    const a0 = i * step;
+    const a1 = a0 + step * 0.25;
+    const a2 = a0 + step * 0.5;
+    const a3 = a0 + step * 0.75;
+    const rIn = r * 0.76;
+    const rOut = r * 1.16;
+    const x0 = cx + Math.cos(a0) * rIn;
+    const y0 = cy + Math.sin(a0) * rIn;
+    const x1 = cx + Math.cos(a1) * rOut;
+    const y1 = cy + Math.sin(a1) * rOut;
+    const x2 = cx + Math.cos(a2) * rOut;
+    const y2 = cy + Math.sin(a2) * rOut;
+    const x3 = cx + Math.cos(a3) * rIn;
+    const y3 = cy + Math.sin(a3) * rIn;
+    if (i === 0) d += `M ${f1(x0)} ${f1(y0)} `;
+    d += `L ${f1(x1)} ${f1(y1)} L ${f1(x2)} ${f1(y2)} L ${f1(x3)} ${f1(y3)} `;
+  }
+  d += "Z";
+  return (
+    `<g transform="rotate(${f1(rot)} ${cx} ${cy})">` +
+    `<path d="${d}" fill="${col}" stroke="${PAL.ink}" stroke-width="1.2"/>` +
+    `<circle cx="${cx}" cy="${cy}" r="${f1(r * 0.35)}" fill="${PAL.ink}"/>` +
+    `</g>`
+  );
+}
+
+function wrenchProp(angle = 0) {
+  return (
+    `<g transform="rotate(${f1(angle)})">` +
+    `<rect x="-2" y="-14" width="4" height="15" rx="1.5" fill="#94A3B8" stroke="${PAL.ink}" stroke-width="1.3"/>` +
+    `<path d="M -6 -13 C -6 -19 6 -19 6 -13 C 6 -11 3 -10 3 -10 L -3 -10 C -3 -10 -6 -11 -6 -13 Z" fill="#CBD5E1" stroke="${PAL.ink}" stroke-width="1.3"/>` +
+    `<circle cx="0" cy="-14" r="2.2" fill="${PAL.ink}"/>` +
+    `</g>`
+  );
+}
+
+function safetyHelmet(x: number, y: number, u: number, rot = 0) {
+  return (
+    `<g transform="translate(${f1(x)} ${f1(y)}) rotate(${f1(rot)})">` +
+    `<path d="M ${f1(-4.2 * u)} 0 C ${f1(-4.2 * u)} ${f1(-3.6 * u)} ${f1(4.2 * u)} ${f1(-3.6 * u)} ${f1(4.2 * u)} 0 Z" fill="#FBBF24" stroke="${PAL.ink}" stroke-width="1.5"/>` +
+    `<path d="M ${f1(-5.2 * u)} ${f1(0.2 * u)} Q 0 ${f1(-0.5 * u)} ${f1(5.2 * u)} ${f1(0.2 * u)} Q 0 ${f1(1.6 * u)} ${f1(-5.2 * u)} ${f1(0.2 * u)} Z" fill="#F59E0B" stroke="${PAL.ink}" stroke-width="1.3"/>` +
+    `<path d="M ${f1(-0.8 * u)} ${f1(-3.2 * u)} Q 0 ${f1(-3.6 * u)} ${f1(0.8 * u)} ${f1(-3.2 * u)}" stroke="${PAL.ink}" stroke-width="1.1" fill="none"/>` +
+    `<ellipse cx="${f1(-1.4 * u)}" cy="${f1(-2.0 * u)}" rx="${f1(1.2 * u)}" ry="${f1(0.5 * u)}" fill="#FEF08A" opacity="0.6"/>` +
+    `</g>`
+  );
+}
+
+function sweatDrop(x: number, y: number, op = 1) {
+  if (op <= 0.05) return "";
+  return `<path d="M ${f1(x)} ${f1(y - 5)} C ${f1(x - 2.5)} ${f1(y - 2)} ${f1(x - 2.5)} ${f1(y + 2)} ${f1(x)} ${f1(y + 2)} C ${f1(x + 2.5)} ${f1(y + 2)} ${f1(x + 2.5)} ${f1(y - 2)} ${f1(x)} ${f1(y - 5)} Z" fill="#38BDF8" stroke="${PAL.ink}" stroke-width="1.1" opacity="${op.toFixed(2)}"/>`;
+}
+
+function renderMaintenanceScene({ t, dt, isDark, st }: SceneCtx) {
+  const L = 5.2;
+  const U = 3.9;
+  const G = 64;
+  const n = Math.floor(t / L);
+  const c = t - n * L;
+
+  let svg = "";
+
+  // 1. Ground shadow under server & work area
+  svg += `<ellipse cx="132" cy="${G + 2}" rx="32" ry="5" fill="${isDark ? "rgba(0,0,0,0.35)" : "rgba(15,23,42,0.08)"}"/>`;
+  svg += `<ellipse cx="62" cy="${G + 2}" rx="22" ry="4" fill="${isDark ? "rgba(0,0,0,0.3)" : "rgba(15,23,42,0.07)"}"/>`;
+
+  // 2. Server Machine Station at x=132, y=40
+  const machineX = 132;
+  const machineY = 40;
+  const isFixed = c >= 2.4;
+
+  // Outer casing
+  svg +=
+    `<g transform="translate(${machineX}, ${machineY})">` +
+    `<rect x="-26" y="-32" width="52" height="56" rx="6" fill="${isDark ? "#1E293B" : "#F8FAFC"}" stroke="${PAL.ink}" stroke-width="1.8"/>` +
+    `<rect x="-22" y="-28" width="44" height="22" rx="3.5" fill="${isDark ? "#0F172A" : "#0F172A"}"/>`;
+
+  // Screen terminal content (waveform / code lines)
+  if (isFixed) {
+    const waveT = t * 6;
+    const waveY0 = Math.sin(waveT) * 2;
+    const waveY1 = Math.sin(waveT + 1) * 3;
+    svg +=
+      `<path d="M -18 -17 L -10 -17 L -6 ${f1(-17 + waveY0)} L -2 ${f1(-23 + waveY1)} L 2 ${f1(-11 - waveY0)} L 6 -17 L 18 -17" fill="none" stroke="${PAL.emerald}" stroke-width="1.8" stroke-linecap="round"/>` +
+      `<circle cx="14" cy="-24" r="2.2" fill="${PAL.emerald}"/>`;
+  } else {
+    const glitch = Math.sin(t * 18) > 0.4 ? 2 : -1;
+    svg +=
+      `<path d="M -18 -17 L -8 -17 L -4 ${f1(-19 + glitch)} L 0 ${f1(-14 - glitch)} L 4 -17 L 18 -17" fill="none" stroke="${PAL.orange}" stroke-width="1.6" stroke-linecap="round"/>` +
+      `<circle cx="14" cy="-24" r="2.2" fill="${PAL.rose}"/>`;
+  }
+
+  // Ventilation grilles
+  svg +=
+    `<line x1="-20" y1="2" x2="0" y2="2" stroke="${isDark ? "#475569" : "#CBD5E1"}" stroke-width="2" stroke-linecap="round"/>` +
+    `<line x1="-20" y1="7" x2="0" y2="7" stroke="${isDark ? "#475569" : "#CBD5E1"}" stroke-width="2" stroke-linecap="round"/>` +
+    `<line x1="-20" y1="12" x2="0" y2="12" stroke="${isDark ? "#475569" : "#CBD5E1"}" stroke-width="2" stroke-linecap="round"/>`;
+
+  // Status LED
+  const ledCol = isFixed ? PAL.emerald : Math.sin(t * 10) > 0 ? PAL.orange : PAL.rose;
+  svg +=
+    `<circle cx="15" cy="7" r="3.2" fill="${ledCol}"/>` +
+    `<circle cx="15" cy="7" r="5" fill="${ledCol}" opacity="0.35"/>`;
+
+  // Bolt target at x = -26 (left edge of server), y = 8 (world coord: 106, 48)
+  const boltAngle = isFixed ? 45 : (c * 60) % 360;
+  svg +=
+    `<circle cx="-26" cy="8" r="4.5" fill="#94A3B8" stroke="${PAL.ink}" stroke-width="1.4"/>` +
+    `<g transform="translate(-26 8) rotate(${f1(boltAngle)})"><line x1="-3" y1="0" x2="3" y2="0" stroke="${PAL.ink}" stroke-width="1.4"/></g>`;
+
+  svg += `</g>`;
+
+  // Gears beside the server
+  const gearRot = isFixed ? t * 180 : t * 45 + Math.sin(t * 12) * 6;
+  svg += gearSVG(146, 52, 9, 8, gearRot, PAL.ochre);
+  svg += gearSVG(160, 43, 6.5, 6, -gearRot * 1.38 + 15, PAL.teal);
+
+  // 3. Clawd character pose & choreography
+  let clawdX = 52;
+  let isMoving = false;
+  if (c < 1.1) {
+    clawdX = lerp(46, 68, ease(c / 1.1));
+    isMoving = true;
+  } else if (c < 2.6) {
+    clawdX = 68;
+  } else if (c < 3.2) {
+    clawdX = lerp(68, 60, ease((c - 2.6) / 0.6));
+  } else {
+    clawdX = 60;
+  }
+
+  const walkPhase = isMoving ? (clawdX / 3.5) * Math.PI : undefined;
+  const hopCelebration = hopCurve(c, 3.4, 0.38, 2.6);
+  const dy = hopCelebration.dy;
+  const sq = hopCelebration.sq;
+
+  const pose: ClawdPose = {
+    id: "clawd-maintenance",
+    view: "q",
+    dy: dy / U,
+    sq,
+    walkPhase,
+    walkAmp: isMoving ? 0.75 : 0,
+    brows: isFixed ? (c >= 3.3 ? "confident" : null) : "focus",
+    eyes: isFixed ? (c >= 3.4 && c < 4.8 ? "spark" : "happy") : "focus" as any,
+    mouth: isFixed ? "grin" : "flat",
+    blush: c >= 3.4 && c < 4.8 ? 1 : 0,
+  };
+
+  // Clawd arms and wrench interaction
+  if (c < 1.2) {
+    pose.handL = [-18, -10, -0.4];
+    pose.handR = [20, -12, 0.4];
+    pose.propR = wrenchProp(20);
+    pose.lean = 0.12;
+  } else if (c < 2.4) {
+    pose.lean = 0.28;
+    pose.handL = [-12, -8, -0.2];
+
+    const strike1 = seg(c, 1.45, 1.7);
+    const strike2 = seg(c, 1.95, 2.2);
+
+    let wrenchRot = -30;
+    if (c >= 1.45 && c < 1.7) {
+      wrenchRot = lerp(-30, 25, ease(strike1));
+    } else if (c >= 1.7 && c < 1.95) {
+      wrenchRot = lerp(25, -20, ease((c - 1.7) / 0.25));
+    } else if (c >= 1.95 && c < 2.2) {
+      wrenchRot = lerp(-20, 35, ease(strike2));
+    } else if (c >= 2.2) {
+      wrenchRot = 10;
+    }
+
+    pose.handR = [32, -18, 0.8];
+    pose.propR = wrenchProp(wrenchRot);
+
+    if (c >= 1.68 && c < 2.0) {
+      svg += sparkleBurst(c - 1.68, 106, 48, 5, 12);
+    }
+    if (c >= 2.18 && c < 2.5) {
+      svg += sparkleBurst(c - 2.18, 106, 48, 7, 16);
+    }
+  } else if (c < 3.3) {
+    pose.lean = 0.05;
+    pose.handL = [-18, -12, -0.3];
+    pose.handR = [18, -26, 0.4];
+    pose.propR = wrenchProp(65);
+    pose.eyes = "happy";
+    pose.mouth = "smile";
+  } else if (c < 4.8) {
+    const popK = seg(c, 3.45, 3.7);
+    pose.lean = 0;
+    pose.handL = [-22, -32, -0.6];
+    pose.handR = [22, -32, 0.6];
+    pose.propR = thumbsUpProp(popK);
+    svg += sparkleBurst(c - 3.45, clawdX, G - 42, 6, 20);
+  } else {
+    pose.handL = [-18, -10, -0.3];
+    pose.handR = [20, -12, 0.3];
+    pose.propR = wrenchProp(15);
+  }
+
+  // Sweat drop when working hard
+  if (c >= 0.9 && c < 2.6) {
+    const sweatOp = c < 1.3 ? seg(c, 0.9, 1.3) : c > 2.3 ? 1 - seg(c, 2.3, 2.6) : 1;
+    svg += sweatDrop(clawdX + 8, G + dy - 34, sweatOp);
+  }
+
+  pose.forceBlink = faceBlink(st, "maint", `${pose.eyes}|${pose.mouth}`, t);
+  svg += drawClawd(clawdX, G, U, pose, t, isDark);
+
+  // Yellow safety helmet on Clawd's head
+  const headY = G + dy - 29.5 * (1 - sq * 0.45);
+  const helmetTilt = (pose.lean || 0) * 18 + (sq * -10);
+  svg += safetyHelmet(clawdX + (pose.lean || 0) * 8, headY, U, helmetTilt);
+
+  return svg;
+}
+
+// ============================================================================
+// 11. PUBLIC COMPONENTS
 // ============================================================================
 export function ClawdPageVisual({ className = "" }: { className?: string }) {
   const svgRef = useClawdScene(renderPageScene, 85, 50);
@@ -1759,6 +1989,15 @@ export function ClawdOnboardingVisual({
   return (
     <div className={`flex items-center justify-center pointer-events-none select-none ${className}`} aria-hidden="true">
       <svg ref={svgRef} viewBox="0 0 210 70" className="w-48 h-16 sm:w-56 sm:h-20 overflow-visible" xmlns="http://www.w3.org/2000/svg" />
+    </div>
+  );
+}
+
+export function ClawdMaintenanceVisual({ className = "" }: { className?: string }) {
+  const svgRef = useClawdScene(renderMaintenanceScene, 90, 42);
+  return (
+    <div className={`flex items-center justify-center pointer-events-none select-none ${className}`} aria-hidden="true">
+      <svg ref={svgRef} viewBox="0 0 180 84" className="w-64 h-32 sm:w-80 sm:h-40 overflow-visible" xmlns="http://www.w3.org/2000/svg" />
     </div>
   );
 }

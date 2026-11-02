@@ -1,5 +1,11 @@
 import { auth } from "@/auth";
-import { getCachedFeatures, getCachedHasBlueprint, getCachedAppUser, getCachedHomepageCards } from "@/lib/cache";
+import {
+  getCachedFeatures,
+  getCachedHasBlueprint,
+  getCachedAppUser,
+  getCachedHomepageCards,
+  getCachedMaintenanceConfig,
+} from "@/lib/cache";
 import AppShellLayout from "@/components/layout/AppShellLayout";
 import { redirect } from "next/navigation";
 import { isAdminUser } from "@/lib/admin";
@@ -9,20 +15,23 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   let hasBlueprint = false;
   let dbFeatures: any = [];
   let homepageCards: any = [];
+  let maintenanceConfig: any = null;
   let userRole = "USER";
   let hasTools = false;
   let needsOnboarding = false;
 
   try {
-    const [fetchedHasBlueprint, features, cards, dbUser] = await Promise.all([
+    const [fetchedHasBlueprint, features, cards, dbUser, maint] = await Promise.all([
       session?.user?.id ? getCachedHasBlueprint(session.user.id) : Promise.resolve(false),
       getCachedFeatures(),
       getCachedHomepageCards(),
       session?.user?.id ? getCachedAppUser(session.user.id) : Promise.resolve(null),
+      getCachedMaintenanceConfig(),
     ]);
     hasBlueprint = fetchedHasBlueprint;
     dbFeatures = features;
     homepageCards = cards;
+    maintenanceConfig = maint;
     if (dbUser) {
       if (!dbUser.onboardingCompleted) {
         needsOnboarding = true;
@@ -42,5 +51,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const isPro = hasTools || isAdmin;
   const isLoggedIn = !!session?.user;
   
-  return <AppShellLayout hasBlueprint={hasBlueprint} dbFeatures={dbFeatures} isPro={isPro} isAdmin={isAdmin} isLoggedIn={isLoggedIn} homepageCards={homepageCards}>{children}</AppShellLayout>;
+  return (
+    <AppShellLayout
+      hasBlueprint={hasBlueprint}
+      dbFeatures={dbFeatures}
+      isPro={isPro}
+      isAdmin={isAdmin}
+      isLoggedIn={isLoggedIn}
+      homepageCards={homepageCards}
+      maintenanceConfig={maintenanceConfig}
+    >
+      {children}
+    </AppShellLayout>
+  );
 }

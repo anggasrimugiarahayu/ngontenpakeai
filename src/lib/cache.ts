@@ -194,3 +194,45 @@ export const getCachedUserUsages = unstable_cache(
   { revalidate: 86400, tags: ['user-usages'] }
 );
 
+export interface MaintenanceConfig {
+  isActive: boolean;
+  title: string;
+  message: string;
+  estimatedTime?: string;
+  updatedAt?: string;
+}
+
+export const DEFAULT_MAINTENANCE_CONFIG: MaintenanceConfig = {
+  isActive: false,
+  title: "Sistem Sedang Dalam Pemeliharaan",
+  message: "Clawd sedang meng-upgrade mesin & merapikan sistem agar pengalaman ngontenmu makin ngebut. Kami akan segera kembali!",
+  estimatedTime: "",
+};
+
+export const getCachedMaintenanceConfig = unstable_cache(
+  async (): Promise<MaintenanceConfig> => {
+    try {
+      const setting = await prisma.appSetting.findUnique({
+        where: { key: "MAINTENANCE_CONFIG" },
+      });
+      if (setting?.value) {
+        const parsed = JSON.parse(setting.value);
+        return {
+          isActive: Boolean(parsed.isActive),
+          title: parsed.title || DEFAULT_MAINTENANCE_CONFIG.title,
+          message: parsed.message || DEFAULT_MAINTENANCE_CONFIG.message,
+          estimatedTime: parsed.estimatedTime ?? "",
+          updatedAt: parsed.updatedAt,
+        };
+      }
+      return DEFAULT_MAINTENANCE_CONFIG;
+    } catch (e) {
+      console.error("Failed to fetch maintenance config in cache:", e);
+      return DEFAULT_MAINTENANCE_CONFIG;
+    }
+  },
+  ['maintenance-config-data'],
+  { revalidate: 3600, tags: ['maintenance-config'] }
+);
+
+

@@ -9,20 +9,29 @@ import {
   MoreVertical,
   Eye,
   EyeOff,
+  Wrench,
+  AlertTriangle,
+  Clock,
+  ExternalLink,
+  Save,
 } from "lucide-react";
 import {
   HomepageCardConfig,
   DEFAULT_HOMEPAGE_CARDS,
   mergeHomepageCards,
 } from "@/lib/homepage-cards";
-import { saveHomepageCardsAction } from "@/app/actions/adminSettings";
+import {
+  saveHomepageCardsAction,
+  saveMaintenanceConfigAction,
+} from "@/app/actions/adminSettings";
+import { MaintenanceConfig, DEFAULT_MAINTENANCE_CONFIG } from "@/lib/cache";
 import { HomeCardVisual } from "@/components/home/HomeCardVisuals";
 import { HomepageEditModal } from "./HomepageEditModal";
 
 export function AdminHomepageTab({ settings }: { settings: any[] }) {
   const router = useRouter();
 
-  // Find stored settings
+  // Find stored settings for HOMEPAGE_CARDS
   const rawSetting = settings?.find((s) => s.key === "HOMEPAGE_CARDS")?.value;
   let initialCards = DEFAULT_HOMEPAGE_CARDS;
   try {
@@ -33,7 +42,20 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
     console.error("Failed to parse HOMEPAGE_CARDS setting:", e);
   }
 
+  // Find stored settings for MAINTENANCE_CONFIG
+  const rawMaintSetting = settings?.find((s) => s.key === "MAINTENANCE_CONFIG")?.value;
+  let initialMaint: MaintenanceConfig = DEFAULT_MAINTENANCE_CONFIG;
+  try {
+    if (rawMaintSetting) {
+      initialMaint = { ...DEFAULT_MAINTENANCE_CONFIG, ...JSON.parse(rawMaintSetting) };
+    }
+  } catch (e) {
+    console.error("Failed to parse MAINTENANCE_CONFIG setting:", e);
+  }
+
   const [cards, setCards] = useState<HomepageCardConfig[]>(initialCards);
+  const [maintConfig, setMaintConfig] = useState<MaintenanceConfig>(initialMaint);
+  const [isSavingMaint, setIsSavingMaint] = useState(false);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [showEditModal, setShowEditModal] = useState(false);
   const [draggedIdx, setDraggedIdx] = useState<number | null>(null);
@@ -46,6 +68,35 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
       } catch (e) {}
     }
   }, [rawSetting]);
+
+  useEffect(() => {
+    if (rawMaintSetting) {
+      try {
+        setMaintConfig({ ...DEFAULT_MAINTENANCE_CONFIG, ...JSON.parse(rawMaintSetting) });
+      } catch (e) {}
+    }
+  }, [rawMaintSetting]);
+
+  const handleSaveMaintenance = async (overrideConfig?: Partial<MaintenanceConfig>) => {
+    setIsSavingMaint(true);
+    const toSave: MaintenanceConfig = { ...maintConfig, ...(overrideConfig || {}) };
+    try {
+      await saveMaintenanceConfigAction(toSave);
+      setMaintConfig(toSave);
+      mutate("pengaturan");
+      router.refresh();
+      if (toSave.isActive) {
+        toast.success("Mode Maintenance AKTIF! Halaman depan kini menampilkan Under Maintenance.");
+      } else {
+        toast.success("Mode Maintenance NONAKTIF! Halaman depan kembali normal.");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Gagal menyimpan pengaturan Maintenance.");
+    } finally {
+      setIsSavingMaint(false);
+    }
+  };
 
   // Handle Enable / Disable toggle via the 3-dots menu
   const handleToggleActive = async (cardId: string) => {
@@ -112,6 +163,139 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
+      {/* 0. KONTROL MODE UNDER MAINTENANCE */}
+      <div
+        className={`border rounded-2xl p-6 transition-all duration-300 ${
+          maintConfig.isActive
+            ? "border-amber-400 dark:border-amber-500/50 bg-amber-50/50 dark:bg-amber-950/20 shadow-md shadow-amber-500/10"
+            : "border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] shadow-xs"
+        }`}
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div
+              className={`p-3 rounded-xl shrink-0 ${
+                maintConfig.isActive
+                  ? "bg-amber-500 text-white"
+                  : "bg-gray-100 dark:bg-white/5 text-gray-500 dark:text-gray-400"
+              }`}
+            >
+              <Wrench className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h2 className="text-lg font-bold text-gray-900 dark:text-white">
+                  Mode Pemeliharaan Sistem (Under Maintenance)
+                </h2>
+                {maintConfig.isActive ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                    AKTIF
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    NORMAL
+                  </span>
+                )}
+              </div>
+              <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1 max-w-xl">
+                Alihkan halaman depan &amp; ruang fitur menjadi tampilan <strong>Under Maintenance</strong> dengan animasi karakter Clawd. Admin tetap dapat mengakses dashboard dan pengaturan.
+              </p>
+            </div>
+          </div>
+
+          {/* Toggle Switch */}
+          <div className="flex items-center gap-3 self-end sm:self-center shrink-0">
+            <label className="relative inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                checked={maintConfig.isActive}
+                onChange={(e) => {
+                  const updated = { ...maintConfig, isActive: e.target.checked };
+                  setMaintConfig(updated);
+                  handleSaveMaintenance({ isActive: e.target.checked });
+                }}
+                className="sr-only peer"
+              />
+              <div className="w-12 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-500" />
+            </label>
+            <span className="text-xs font-bold text-gray-700 dark:text-gray-300 min-w-[3.5rem]">
+              {maintConfig.isActive ? "AKTIF" : "OFF"}
+            </span>
+          </div>
+        </div>
+
+        {/* Form kustomisasi pesan maintenance */}
+        <div className="mt-5 pt-5 border-t border-gray-200/70 dark:border-white/10 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              Judul Halaman Maintenance
+            </label>
+            <input
+              type="text"
+              value={maintConfig.title}
+              onChange={(e) => setMaintConfig({ ...maintConfig, title: e.target.value })}
+              placeholder="Contoh: Sistem Sedang Dalam Pemeliharaan"
+              className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E2538] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              Estimasi Waktu Selesai (Opsional)
+            </label>
+            <input
+              type="text"
+              value={maintConfig.estimatedTime || ""}
+              onChange={(e) => setMaintConfig({ ...maintConfig, estimatedTime: e.target.value })}
+              placeholder="Contoh: Estimasi selesai: 30 Menit (atau kosongkan)"
+              className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E2538] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+            />
+          </div>
+
+          <div className="md:col-span-2">
+            <label className="block text-xs font-semibold text-gray-700 dark:text-gray-300 mb-1.5">
+              Pesan Informasi Pengunjung
+            </label>
+            <textarea
+              rows={2}
+              value={maintConfig.message}
+              onChange={(e) => setMaintConfig({ ...maintConfig, message: e.target.value })}
+              placeholder="Tuliskan pesan penjelasan untuk pengunjung saat maintenance..."
+              className="w-full text-xs sm:text-sm px-3.5 py-2.5 rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1E2538] text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 resize-none"
+            />
+          </div>
+
+          <div className="md:col-span-2 flex flex-wrap items-center justify-between gap-3 pt-2">
+            <p className="text-[11px] text-gray-500 dark:text-gray-400">
+              {maintConfig.updatedAt && (
+                <>Terakhir diperbarui: {new Date(maintConfig.updatedAt).toLocaleString("id-ID")}</>
+              )}
+            </p>
+            <div className="flex items-center gap-2">
+              <a
+                href="/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl bg-gray-100 dark:bg-white/5 hover:bg-gray-200 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 transition-colors"
+              >
+                <ExternalLink size={13} />
+                <span>Lihat Halaman Depan</span>
+              </a>
+              <button
+                type="button"
+                onClick={() => handleSaveMaintenance()}
+                disabled={isSavingMaint}
+                className="inline-flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-orange-500 hover:bg-orange-600 text-white shadow-sm shadow-orange-500/20 transition-all disabled:opacity-60 cursor-pointer"
+              >
+                <Save size={14} />
+                <span>{isSavingMaint ? "Menyimpan..." : "Simpan Pesan Maintenance"}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* 1. CARD HEADER ATAS (PERSIS TAMPILAN RUANG BELAJAR) */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31] shadow-xs">
         <div>

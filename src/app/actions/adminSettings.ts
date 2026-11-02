@@ -7,7 +7,12 @@ import { attachComputedBuyerCounts } from "@/lib/product-buyers";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
 import { deletePhysicalUploadFile } from "@/lib/server-uploads";
 import { HomepageCardConfig } from "@/lib/homepage-cards";
-import { getCachedHomepageCards } from "@/lib/cache";
+import {
+  getCachedHomepageCards,
+  MaintenanceConfig,
+  DEFAULT_MAINTENANCE_CONFIG,
+  getCachedMaintenanceConfig,
+} from "@/lib/cache";
 import { getYoutubeVideoId, parseYouTubeIsoDuration } from "@/lib/youtube-utils";
 import { isAdminEmail } from "@/lib/admin";
 import {
@@ -177,6 +182,42 @@ export async function saveHomepageCardsAction(cards: HomepageCardConfig[]) {
   } catch (e) {}
   revalidateAdminConfig();
   return { success: true };
+}
+
+export async function getMaintenanceConfigAction(): Promise<MaintenanceConfig> {
+  return await getCachedMaintenanceConfig();
+}
+
+export async function saveMaintenanceConfigAction(config: Partial<MaintenanceConfig>) {
+  await assertAdmin();
+  const payload: MaintenanceConfig = {
+    isActive: Boolean(config.isActive),
+    title: config.title?.trim() || DEFAULT_MAINTENANCE_CONFIG.title,
+    message: config.message?.trim() || DEFAULT_MAINTENANCE_CONFIG.message,
+    estimatedTime: config.estimatedTime?.trim() || "",
+    updatedAt: new Date().toISOString(),
+  };
+
+  await prisma.appSetting.upsert({
+    where: { key: "MAINTENANCE_CONFIG" },
+    update: { value: JSON.stringify(payload) },
+    create: { key: "MAINTENANCE_CONFIG", value: JSON.stringify(payload) },
+  });
+
+  safeRevalidateTag("maintenance-config");
+  safeRevalidateTag("admin-config");
+  try {
+    revalidatePath("/", "layout");
+  } catch (e) {}
+  try {
+    revalidatePath("/");
+  } catch (e) {}
+  try {
+    revalidatePath("/pengaturan");
+  } catch (e) {}
+  revalidateAdminConfig();
+
+  return { success: true, config: payload };
 }
 
 export async function deleteAppSetting(key: string) {
