@@ -1157,6 +1157,168 @@ function renderVerifyScene({ t, dt, isDark, st }: SceneCtx) {
 }
 
 // ============================================================================
+// 8B. SCENE: PEMBAYARAN BERHASIL (Selebrasi Clawd: lompat gembira, perisai hijau emerald)
+// ----------------------------------------------------------------------------
+// Perisai berubah hijau emerald dengan centang (✓) bercahaya.
+// Partikel sparkle/bintang bertebaran.
+// Clawd melompat gembira dengan squash-and-stretch, jempol terangkat, mata berbinar.
+// ============================================================================
+function renderSuccessScene({ t, dt, isDark, st }: SceneCtx) {
+  const L = 2.8;
+  const U = 3.8;
+  const X = 32;
+  const G = 48;
+  const SX = 88;
+  const SY = 28;
+  const c = t % L;
+
+  let svg = "";
+
+  // Jalur sinyal sukses (hijau emerald meluncur)
+  svg += `<line x1="56" y1="28" x2="${SX - 18}" y2="${SY}" stroke="${PAL.emerald}" stroke-width="1.8" stroke-dasharray="3 3.5" stroke-dashoffset="${f1(-t * 14)}" stroke-linecap="round" opacity="0.8"/>`;
+
+  // Perisai Hijau Emerald dengan Centang Sukses
+  const pulse = 1 + 0.05 * Math.sin(t * 5);
+  const ringWave = seg(c, 0.3, 1.1);
+
+  svg += `<g transform="translate(${SX}, ${SY}) scale(${pulse.toFixed(3)})">`;
+  if (ringWave > 0 && ringWave < 1) {
+    svg += `<circle r="${f1(16 + ringWave * 12)}" fill="none" stroke="${PAL.emerald}" stroke-width="1.5" opacity="${(0.6 * (1 - ringWave)).toFixed(2)}"/>`;
+  }
+  svg += `<circle r="18" fill="${PAL.emerald}" opacity="0.18"/>`;
+  svg +=
+    `<rect x="-14" y="-15" width="28" height="30" rx="6" fill="${surface(isDark)}" stroke="${PAL.emerald}" stroke-width="1.8"/>` +
+    `<path d="M 0 -8 L 8 -5 L 8 1 C 8 7 4 10 0 12 C -4 10 -8 7 -8 1 L -8 -5 Z" fill="${PAL.emerald}" opacity="0.25" stroke="${PAL.emerald}" stroke-width="1.3"/>` +
+    `<path d="M -4.5 1 L -1.2 4.5 L 5 -2.5" fill="none" stroke="${PAL.emerald}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>` +
+    `</g>`;
+
+  // Sparkles & Confetti di sekitar perisai
+  svg += sparkleBurst((c * 1.2) % 1.2, SX, SY - 10, 6, 16);
+  svg += drawSparkle(SX + 14, SY - 16, 4, PAL.emerald, 0.7 + 0.3 * Math.sin(t * 6));
+  svg += drawSparkle(SX - 16, SY + 12, 3, PAL.ochre, 0.6 + 0.4 * Math.cos(t * 5));
+
+  // Animasi lompatan gembira Clawd (hopCurve dengan squash & stretch)
+  const hop = hopCurve(c, 0.35, 0.38, 1.8);
+  const isJumping = c >= 0.35 && c < 0.73;
+
+  // Tangan & Pose Clawd
+  const thumbsProgress = seg(c, 0.4, 0.7) * (1 - seg(c, 2.4, 2.7));
+  const handR = lerpArr([18, -16, 0.35], [23, -28, 0.4], thumbsProgress || 0.85);
+  const handL = isJumping ? [-18, -28, -0.6] : [-16, -18, -0.4];
+
+  // Efek debu / mendarat saat Clawd turun
+  svg += dustPuff(c - 0.73, X, G, isDark);
+
+  // Sparkle di atas kepala Clawd saat lompat
+  if (isJumping) {
+    svg += drawSparkle(X - 12, 12, 3.5, PAL.ochre, 0.9);
+    svg += drawSparkle(X + 16, 10, 4, PAL.emerald, 0.9);
+  }
+
+  svg += drawClawd(
+    X,
+    G,
+    U,
+    {
+      id: "success-loader-clawd",
+      view: "q",
+      dy: hop.dy,
+      sq: hop.sq,
+      lean: isJumping ? 0.08 : 0.15,
+      rot: isJumping ? -3 : 0,
+      lookX: 0.8,
+      lookY: -0.2,
+      eyes: "happy",
+      brows: "confident",
+      mouth: "grin",
+      blush: 0.9,
+      handL,
+      handR,
+      propR: thumbsUpProp(1),
+      forceBlink: faceBlink(st, "success", "happy|grin", t),
+    },
+    t,
+    isDark
+  );
+  return svg;
+}
+
+// ============================================================================
+// 8C. SCENE: PEMBAYARAN GAGAL / WAKTU HABIS (Clawd ramah: bingung, perisai merah/oranye)
+// ----------------------------------------------------------------------------
+// Perisai merah/oranye bergetar lembut dengan tanda (!).
+// Garis sinyal terputus-putus samar.
+// Clawd menggaruk kepala ramah, alis khawatir lembut, mengajak coba bayar ulang.
+// ============================================================================
+function renderErrorScene({ t, dt, isDark, st }: SceneCtx) {
+  const L = 3.4;
+  const U = 3.8;
+  const X = 32;
+  const G = 48;
+  const SX = 88;
+  const SY = 28;
+  const c = t % L;
+
+  let svg = "";
+
+  // Garis sinyal terputus / error
+  svg += `<line x1="56" y1="28" x2="${SX - 18}" y2="${SY}" stroke="#EF4444" stroke-width="1.5" stroke-dasharray="2.5 4" stroke-linecap="round" opacity="0.45"/>`;
+
+  // Getar kecil perisai saat error
+  const shake = Math.sin(t * 14) * 0.8 * (c < 1.2 ? 1 : 0.2);
+
+  svg += `<g transform="translate(${SX + shake}, ${SY})">`;
+  svg += `<circle r="18" fill="#EF4444" opacity="0.12"/>`;
+  svg +=
+    `<rect x="-14" y="-15" width="28" height="30" rx="6" fill="${surface(isDark)}" stroke="#EF4444" stroke-width="1.8"/>` +
+    `<path d="M 0 -8 L 8 -5 L 8 1 C 8 7 4 10 0 12 C -4 10 -8 7 -8 1 L -8 -5 Z" fill="#EF4444" opacity="0.18" stroke="#EF4444" stroke-width="1.3"/>` +
+    `<line x1="0" y1="-4" x2="0" y2="2" stroke="#EF4444" stroke-width="2.2" stroke-linecap="round"/>` +
+    `<circle cx="0" cy="5.5" r="1.2" fill="#EF4444"/>` +
+    `</g>`;
+
+  // Keringat dingin kecil melayang di dekat pelipis Clawd
+  const sweatOp = 0.5 + 0.4 * Math.sin(t * 4);
+  svg += `<path d="M ${X + 13} 20 C ${X + 13} 17 ${X + 16} 15 ${X + 16} 15 C ${X + 16} 15 ${X + 19} 17 ${X + 19} 20 C ${X + 19} 22 ${X + 16} 23 ${X + 13} 20 Z" fill="${PAL.sky}" opacity="${sweatOp.toFixed(2)}"/>`;
+
+  // Tangan garuk kepala / bingung
+  const scratch = Math.sin(t * 6) * 1.5;
+  const handL: number[] = [-4, -27 + scratch, -0.8];
+  const handR: number[] = [18, -14, 0.35];
+
+  const errDoc =
+    `<g transform="rotate(10)">` +
+    `<rect x="-8" y="-11" width="16" height="14" rx="2" fill="${PAL.cream}" stroke="${PAL.ink}" stroke-width="1.2"/>` +
+    `<line x1="-5" y1="-6" x2="5" y2="-6" stroke="#EF4444" stroke-width="1.8" stroke-linecap="round"/>` +
+    `<line x1="-5" y1="-2" x2="3" y2="-2" stroke="#94A3B8" stroke-width="1.2" stroke-linecap="round"/>` +
+    `</g>`;
+
+  svg += drawClawd(
+    X,
+    G,
+    U,
+    {
+      id: "error-loader-clawd",
+      view: "q",
+      lean: -0.05,
+      rot: 0,
+      lookX: 0.4,
+      lookY: 0.2,
+      eyes: "wide",
+      brows: "worried",
+      mouth: "wobble",
+      blush: 0.35,
+      handL,
+      handR,
+      propR: errDoc,
+      forceBlink: faceBlink(st, "error", "wide|wobble", t),
+    },
+    t,
+    isDark
+  );
+  return svg;
+}
+
+// ============================================================================
 // 9. SCENE: ONBOARDING (Langkah 1-4 + transisi "ruang siap")
 // ============================================================================
 function chipSvg(label: string, col: string, isDark: boolean, focused = false, w = 50) {
@@ -1582,6 +1744,24 @@ export function ClawdVerifyVisual({ className = "" }: { className?: string }) {
   return (
     <div className={`inline-flex items-center justify-center pointer-events-none select-none ${className}`} aria-hidden="true">
       <svg ref={svgRef} viewBox="0 0 114 54" className="w-28 h-14 overflow-visible" xmlns="http://www.w3.org/2000/svg" />
+    </div>
+  );
+}
+
+export function ClawdSuccessVisual({ className = "" }: { className?: string }) {
+  const svgRef = useClawdScene(renderSuccessScene, 57, 30);
+  return (
+    <div className={`inline-flex items-center justify-center pointer-events-none select-none ${className}`} aria-hidden="true">
+      <svg ref={svgRef} viewBox="0 0 114 54" className="w-32 h-16 sm:w-36 sm:h-18 overflow-visible" xmlns="http://www.w3.org/2000/svg" />
+    </div>
+  );
+}
+
+export function ClawdErrorVisual({ className = "" }: { className?: string }) {
+  const svgRef = useClawdScene(renderErrorScene, 57, 30);
+  return (
+    <div className={`inline-flex items-center justify-center pointer-events-none select-none ${className}`} aria-hidden="true">
+      <svg ref={svgRef} viewBox="0 0 114 54" className="w-32 h-16 sm:w-36 sm:h-18 overflow-visible" xmlns="http://www.w3.org/2000/svg" />
     </div>
   );
 }

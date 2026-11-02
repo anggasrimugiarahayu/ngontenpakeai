@@ -154,6 +154,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
   return {
     type,
     productId,
+    productSlug: (rawProduct as any)?.slug || "",
     itemName,
     itemDescription,
     baseAmount,

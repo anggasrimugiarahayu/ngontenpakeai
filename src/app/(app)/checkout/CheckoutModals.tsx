@@ -2,9 +2,11 @@
 
 import React from "react";
 import Button from "@/components/ui/Button";
-import { Loader2, CheckCircle2, X, CreditCard } from "lucide-react";
+import Link from "next/link";
+import { Loader2, CheckCircle2, X, CreditCard, AlertCircle, MessageSquare, RefreshCw } from "lucide-react";
 import { PAYMENT_METHODS, PaymentMethodKey } from "@/lib/payment-calc";
 import { revalidateAfterPurchaseAction } from "@/app/actions/checkout";
+import { ClawdSuccessVisual, ClawdErrorVisual } from "@/components/ui/ClawdLoadingVisuals";
 
 export interface CheckoutAddonItem {
   id: string;
@@ -15,6 +17,17 @@ export interface CheckoutAddonItem {
 
 interface CheckoutModalsProps {
   type: string;
+  productId?: string;
+  productSlug?: string;
+  currentOrderId?: string;
+  itemName?: string;
+  grossAmount?: number;
+  errorMessage?: string;
+  customerEmail?: string;
+  customerName?: string;
+  customerPhone?: string;
+  onRetryPayment?: () => void;
+  onCloseErrorModal?: () => void;
   showAddonModal: boolean;
   setShowAddonModal: (v: boolean) => void;
   availableAddons: CheckoutAddonItem[];
@@ -44,6 +57,17 @@ interface CheckoutModalsProps {
 
 export default function CheckoutModals({
   type,
+  productId,
+  productSlug,
+  currentOrderId,
+  itemName,
+  grossAmount = 0,
+  errorMessage,
+  customerEmail,
+  customerName,
+  customerPhone,
+  onRetryPayment,
+  onCloseErrorModal,
   showAddonModal,
   setShowAddonModal,
   availableAddons,
@@ -217,19 +241,67 @@ export default function CheckoutModals({
 
       {paymentState === "success" && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
-          <div className="bg-white dark:bg-[#141B31] p-8 rounded-3xl shadow-2xl border border-gray-200 dark:border-[#2C3246] max-w-md w-full mx-auto text-center animate-in zoom-in-95 duration-300">
-            <div className="w-20 h-20 bg-green-50 text-green-500 dark:bg-green-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <CheckCircle2 className="w-10 h-10" />
+          <div className="bg-white dark:bg-[#141B31] p-6 sm:p-8 rounded-3xl shadow-2xl border border-gray-200 dark:border-[#2C3246] max-w-md w-full mx-auto text-center animate-in zoom-in-95 duration-300">
+            <div className="flex justify-center mb-2">
+              <ClawdSuccessVisual />
             </div>
-            <h2 className="text-2xl font-black mb-2 text-gray-900 dark:text-white">Pembayaran Berhasil!</h2>
-            <p className="text-gray-600 dark:text-gray-400 mb-8">Terima kasih, pembayaran Anda telah kami terima.</p>
+            <h2 className="text-2xl font-black mb-1 text-gray-900 dark:text-white">Pembayaran Berhasil!</h2>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-5">
+              Alhamdulillah, pembayaran Anda telah kami terima.
+            </p>
+
+            {/* Digital Receipt Card */}
+            <div className="bg-gray-50/80 dark:bg-[#0F172A] border border-gray-200/80 dark:border-[#2C3246] rounded-2xl p-4 mb-6 text-left text-xs sm:text-sm space-y-2.5">
+              {currentOrderId && (
+                <div className="flex justify-between items-center pb-2 border-b border-gray-200/60 dark:border-[#2C3246]">
+                  <span className="text-gray-500 dark:text-gray-400">No. Pesanan</span>
+                  <span className="font-mono font-bold text-gray-900 dark:text-white text-xs tracking-tight">
+                    #{currentOrderId}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between items-start gap-2 pb-2 border-b border-gray-200/60 dark:border-[#2C3246]">
+                <span className="text-gray-500 dark:text-gray-400 shrink-0">Produk</span>
+                <span className="font-bold text-gray-900 dark:text-white text-right line-clamp-1">
+                  {itemName || "Produk Digital"}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-gray-200/60 dark:border-[#2C3246]">
+                <span className="text-gray-500 dark:text-gray-400">Metode Bayar</span>
+                <span className="font-medium text-gray-800 dark:text-gray-200">
+                  {PAYMENT_METHODS[selectedMethod]?.name || selectedMethod}
+                </span>
+              </div>
+              <div className="flex justify-between items-center pb-2 border-b border-gray-200/60 dark:border-[#2C3246]">
+                <span className="text-gray-500 dark:text-gray-400">Status</span>
+                <span className="inline-flex items-center gap-1 font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-0.5 rounded-full text-[11px]">
+                  <CheckCircle2 className="w-3.5 h-3.5" /> LUNAS
+                </span>
+              </div>
+              <div className="flex justify-between items-center pt-1 font-bold">
+                <span className="text-gray-700 dark:text-gray-300">Total Bayar</span>
+                <span className="text-base text-gray-900 dark:text-white font-black text-rn-accent">
+                  Rp {formatRupiah(grossAmount)}
+                </span>
+              </div>
+            </div>
+
             {(() => {
               const upperType = (type || "").toUpperCase();
               let targetUrl = "/ruang-belajar";
               let targetName = "Ruang Belajar";
               let loadingMessage = "Menyiapkan Akses E-Book...";
 
-              if (upperType.includes("RISET")) {
+              if (upperType === "EBOOK") {
+                if (productSlug) {
+                  targetUrl = `/ruang-belajar/${productSlug}`;
+                  targetName = "Akses Buku Sekarang";
+                } else {
+                  targetUrl = "/ruang-belajar";
+                  targetName = "Ruang Belajar";
+                }
+                loadingMessage = "Membuka Halaman Buku...";
+              } else if (upperType.includes("RISET")) {
                 targetUrl = "/ruang-riset";
                 targetName = "Ruang Riset";
                 loadingMessage = "Menyiapkan Akses Ruang Riset...";
@@ -259,12 +331,117 @@ export default function CheckoutModals({
                   loadingText={loadingMessage}
                   variant="primary"
                   size="lg"
-                  className="w-full py-3.5 h-auto text-base"
+                  className="w-full py-3.5 h-auto text-base font-bold shadow-md shadow-orange-500/20"
                 >
                   Lanjut ke {targetName}
                 </Button>
               );
             })()}
+
+            <div className="mt-4">
+              <Link
+                href="/dashboard?tab=orders"
+                className="text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 font-medium underline transition-colors"
+              >
+                Lihat Riwayat & Invoice di Dashboard
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {paymentState === "error" && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-[#141B31] p-6 sm:p-8 rounded-3xl shadow-2xl border border-gray-200 dark:border-[#2C3246] max-w-md w-full mx-auto text-center relative animate-in zoom-in-95 duration-300">
+            {onCloseErrorModal && (
+              <button
+                onClick={onCloseErrorModal}
+                className="absolute top-4 right-4 p-2 hover:bg-gray-100 dark:hover:bg-[#1f2947] rounded-full transition-colors text-gray-400 hover:text-gray-700 dark:hover:text-white"
+                aria-label="Tutup"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            )}
+
+            <div className="flex justify-center mb-2">
+              <ClawdErrorVisual />
+            </div>
+
+            <h2 className="text-2xl font-black mb-1 text-gray-900 dark:text-white">Pembayaran Belum Berhasil</h2>
+            <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mb-5">
+              {errorMessage || "Waktu pembayaran telah habis atau transaksi tidak dapat diproses."}
+            </p>
+
+            {/* Detail Ringkas */}
+            <div className="bg-red-50/50 dark:bg-red-950/20 border border-red-100 dark:border-red-900/40 rounded-2xl p-4 mb-6 text-left text-xs sm:text-sm space-y-2">
+              <div className="flex justify-between items-start gap-2 pb-2 border-b border-red-100/80 dark:border-red-900/30">
+                <span className="text-gray-500 dark:text-gray-400 shrink-0">Produk</span>
+                <span className="font-bold text-gray-900 dark:text-white text-right line-clamp-1">
+                  {itemName || "Produk Digital"}
+                </span>
+              </div>
+              {currentOrderId && (
+                <div className="flex justify-between items-center pb-2 border-b border-red-100/80 dark:border-red-900/30">
+                  <span className="text-gray-500 dark:text-gray-400">No. Pesanan</span>
+                  <span className="font-mono font-medium text-gray-800 dark:text-gray-200 text-xs">
+                    #{currentOrderId}
+                  </span>
+                </div>
+              )}
+              <div className="flex justify-between items-center pt-0.5">
+                <span className="text-gray-500 dark:text-gray-400">Status</span>
+                <span className="inline-flex items-center gap-1 font-bold text-red-600 dark:text-red-400 text-xs">
+                  <AlertCircle className="w-3.5 h-3.5" /> Gagal / Expired
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {onRetryPayment && (
+                <Button
+                  onClick={onRetryPayment}
+                  variant="primary"
+                  size="lg"
+                  className="w-full py-3.5 h-auto text-base font-bold shadow-md shadow-orange-500/20 flex items-center justify-center gap-2"
+                >
+                  <RefreshCw className="w-4 h-4" /> Coba Bayar Ulang
+                </Button>
+              )}
+
+              {(() => {
+                const waText = `Halo Admin Ruang Creative Muslim, saya mengalami kendala pembayaran di website:
+
+- No. Pesanan : ${currentOrderId || "-"}
+- Produk      : ${itemName || "-"}
+- Email Akun  : ${customerEmail || "-"}
+- Kendala     : ${errorMessage || "Pembayaran gagal atau waktu habis"}
+
+Mohon bantuannya ya min. Terima kasih!`;
+                const waUrl = `https://wa.me/6285156339329?text=${encodeURIComponent(waText)}`;
+
+                return (
+                  <a
+                    href={waUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full py-3 px-4 rounded-xl text-sm font-bold bg-green-50 hover:bg-green-100 dark:bg-green-950/30 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/50 flex items-center justify-center gap-2 transition-all"
+                  >
+                    <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400" />
+                    Hubungi Bantuan via WhatsApp
+                  </a>
+                );
+              })()}
+
+              {onCloseErrorModal && (
+                <button
+                  type="button"
+                  onClick={onCloseErrorModal}
+                  className="text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 font-medium underline transition-colors pt-1 block mx-auto"
+                >
+                  Ganti Metode Pembayaran / Ubah Pesanan
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}

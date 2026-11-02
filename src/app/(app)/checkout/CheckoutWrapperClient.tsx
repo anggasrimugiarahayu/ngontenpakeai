@@ -40,6 +40,7 @@ export default function CheckoutWrapperClient() {
         <CheckoutClient 
           type={data.type as any} 
           productId={data.productId} 
+          productSlug={data.productSlug}
           itemName={data.itemName || ""}
           itemDescription={data.itemDescription || ""}
           baseAmount={data.baseAmount || 0}

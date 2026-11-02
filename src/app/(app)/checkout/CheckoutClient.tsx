@@ -19,6 +19,7 @@ const CheckoutModals = dynamic(() => import("./CheckoutModals"), { ssr: false })
 interface CheckoutClientProps {
   type: string;
   productId?: string;
+  productSlug?: string;
   itemName: string;
   itemDescription: string;
   baseAmount: number;
@@ -37,6 +38,7 @@ interface CheckoutClientProps {
 export default function CheckoutClient({
   type,
   productId,
+  productSlug,
   itemName,
   itemDescription,
   baseAmount,
@@ -703,9 +705,29 @@ export default function CheckoutClient({
         </div>
       </div>
 
-      {(showAddonModal || showVoucherModal || showPaymentModal || isIncludedModalOpen || paymentState === "success") && (
+      {(showAddonModal || showVoucherModal || showPaymentModal || isIncludedModalOpen || paymentState === "success" || paymentState === "error") && (
         <CheckoutModals
           type={type}
+          productId={productId}
+          productSlug={productSlug}
+          currentOrderId={currentOrderId}
+          itemName={itemName}
+          grossAmount={grossAmount}
+          errorMessage={errorMessage}
+          customerEmail={customerEmail}
+          customerName={customerName}
+          customerPhone={customerPhone}
+          onRetryPayment={() => {
+            setCurrentToken("");
+            setCurrentOrderId("");
+            setErrorMessage("");
+            setPaymentState("idle");
+            handlePay();
+          }}
+          onCloseErrorModal={() => {
+            setPaymentState("idle");
+            setErrorMessage("");
+          }}
           showAddonModal={showAddonModal}
           setShowAddonModal={setShowAddonModal}
           availableAddons={availableAddons}
