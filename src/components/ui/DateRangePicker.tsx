@@ -4,8 +4,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { DayPicker, DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 import { format } from "date-fns";
-import { id as localeId } from "date-fns/locale";
-import { Calendar as CalendarIcon, X, Check } from "lucide-react";
+import { Calendar as CalendarIcon, X } from "lucide-react";
 
 export interface DateRangePickerProps {
   value?: DateRange | undefined;
@@ -19,7 +18,7 @@ export interface DateRangePickerProps {
 export function DateRangePicker({
   value,
   onChange,
-  placeholder = "Choose Date",
+  placeholder = "Select Date..",
   className = "",
   align = "left",
   disabled = false,
@@ -50,11 +49,9 @@ export function DateRangePicker({
     if (onChange) {
       onChange(newRange);
     }
-    // Auto-close if full range is selected and start != end
-    if (newRange?.from && newRange?.to && newRange.from.getTime() !== newRange.to.getTime()) {
-      setTimeout(() => {
-        setIsOpen(false);
-      }, 250);
+    // Auto-close when both from and to are selected
+    if (newRange?.from && newRange?.to) {
+      setIsOpen(false);
     }
   };
 
@@ -68,13 +65,12 @@ export function DateRangePicker({
   const formattedLabel = () => {
     if (!value?.from) return placeholder;
     if (value.from && value.to) {
-      return `${format(value.from, "dd MMM yyyy", { locale: localeId })} - ${format(
+      return `${format(value.from, "LLL dd, y")} - ${format(
         value.to,
-        "dd MMM yyyy",
-        { locale: localeId }
+        "LLL dd, y"
       )}`;
     }
-    return format(value.from, "dd MMM yyyy", { locale: localeId });
+    return format(value.from, "LLL dd, y");
   };
 
   return (
@@ -84,9 +80,9 @@ export function DateRangePicker({
         type="button"
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl px-4 py-2 hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-200 transition-colors shadow-2xs cursor-pointer disabled:opacity-50 text-sm font-medium"
+        className="flex items-center gap-2 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl px-4 py-2 hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-200 transition-colors shadow-2xs cursor-pointer disabled:opacity-50 text-sm font-medium"
       >
-        <CalendarIcon size={16} className="text-gray-400 shrink-0" />
+        <CalendarIcon size={16} className="text-gray-500 shrink-0" />
         <span className="truncate">{formattedLabel()}</span>
         {value?.from && (
           <span
@@ -102,93 +98,87 @@ export function DateRangePicker({
       {/* Popover */}
       {isOpen && (
         <div
-          className={`absolute top-full mt-2 z-50 bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] p-4 animate-in fade-in zoom-in-95 duration-150 ${
+          className={`absolute top-full mt-2 z-50 bg-white dark:bg-[#141B31] rounded-xl shadow-xl border border-gray-200 dark:border-[#2C3246] p-3 animate-in fade-in zoom-in-95 duration-150 ${
             align === "right" ? "right-0" : "left-0"
           }`}
         >
-          {/* Header Status */}
-          <div className="flex items-center justify-between pb-3 mb-2 border-b border-gray-100 dark:border-[#2C3246] text-xs">
-            <span className="font-semibold text-gray-700 dark:text-gray-300">
-              {value?.from && value?.to
-                ? "Rentang Tanggal Terpilih:"
-                : value?.from
-                ? "Pilih Tanggal Selesai:"
-                : "Klik tanggal awal dan tanggal akhir:"}
-            </span>
-            <span className="font-bold text-orange-600 dark:text-orange-400">
-              {value?.from ? formattedLabel() : "Belum dipilih"}
-            </span>
-          </div>
-
-          {/* Scoped CSS for Continuous Highlight Strip */}
+          {/* Scoped CSS: Solid Orange on Start/End, Reduced Opacity Orange Strip in Middle */}
           <style>{`
-            .custom-date-picker {
-              --rdp-cell-size: 36px !important;
+            .compact-date-picker {
+              --rdp-cell-size: 32px !important;
               --rdp-accent-color: #f97316 !important;
               --rdp-background-color: #f97316 !important;
+              --rdp-accent-color-dark: #f97316 !important;
+              --rdp-background-color-dark: #ea580c !important;
+              --rdp-outline: 2px solid var(--rdp-accent-color);
+              --rdp-outline-selected: 2px solid var(--rdp-accent-color);
               margin: 0;
             }
-            .custom-date-picker .rdp-day {
-              border-radius: 8px;
+            .compact-date-picker .rdp-day {
+              border-radius: 6px;
               font-size: 13px;
               font-weight: 500;
               transition: background-color 0.15s ease, color 0.15s ease;
             }
-            .custom-date-picker .rdp-day:hover:not(.rdp-day_selected):not(.rdp-day_range_middle) {
-              background-color: rgba(249, 115, 22, 0.12) !important;
+            .compact-date-picker .rdp-day:hover:not(.rdp-day_selected):not(.rdp-day_range_middle) {
+              background-color: rgba(249, 115, 22, 0.1) !important;
               color: #f97316 !important;
             }
 
-            /* Range Start */
-            .custom-date-picker .rdp-day_range_start {
+            /* Range Start: Solid Orange Penuh + White Text */
+            .compact-date-picker .rdp-day_range_start {
               background-color: #f97316 !important;
               color: #ffffff !important;
-              border-top-left-radius: 10px !important;
-              border-bottom-left-radius: 10px !important;
+              border-top-left-radius: 8px !important;
+              border-bottom-left-radius: 8px !important;
               border-top-right-radius: 0px !important;
               border-bottom-right-radius: 0px !important;
               font-weight: 700 !important;
             }
 
-            /* Range End */
-            .custom-date-picker .rdp-day_range_end {
+            /* Range End: Solid Orange Penuh + White Text */
+            .compact-date-picker .rdp-day_range_end {
               background-color: #f97316 !important;
               color: #ffffff !important;
-              border-top-right-radius: 10px !important;
-              border-bottom-right-radius: 10px !important;
+              border-top-right-radius: 8px !important;
+              border-bottom-right-radius: 8px !important;
               border-top-left-radius: 0px !important;
               border-bottom-left-radius: 0px !important;
               font-weight: 700 !important;
             }
 
-            /* Single Day Selected */
-            .custom-date-picker .rdp-day_range_start.rdp-day_range_end {
-              border-radius: 10px !important;
+            /* Single Day Selected (Start & End on same day) */
+            .compact-date-picker .rdp-day_range_start.rdp-day_range_end {
+              border-radius: 8px !important;
             }
 
-            /* Range Middle - The Continuous Connected Block */
-            .custom-date-picker .rdp-day_range_middle {
-              background-color: rgba(249, 115, 22, 0.18) !important;
+            /* Range Middle: Opasitas Diturunkan (Soft Orange Transparent Strip) */
+            .compact-date-picker .rdp-day_range_middle {
+              background-color: rgba(249, 115, 22, 0.2) !important;
               color: #ea580c !important;
               border-radius: 0px !important;
               font-weight: 600 !important;
             }
-            .dark .custom-date-picker .rdp-day_range_middle {
+            .dark .compact-date-picker .rdp-day_range_middle {
               background-color: rgba(249, 115, 22, 0.3) !important;
               color: #fdba74 !important;
             }
 
-            /* Default Selected Fallback */
-            .custom-date-picker .rdp-day_selected:not(.rdp-day_range_middle) {
+            /* Standalone Selected Fallback */
+            .compact-date-picker .rdp-day_selected:not(.rdp-day_range_middle) {
               background-color: #f97316 !important;
               color: #ffffff !important;
               font-weight: 700 !important;
             }
+            .dark .compact-date-picker .rdp-day_selected:not(.rdp-day_range_middle) {
+              background-color: #ea580c !important;
+              color: #ffffff !important;
+            }
           `}</style>
 
-          {/* Calendar Picker */}
+          {/* Calendar DayPicker */}
           <DayPicker
-            className="custom-date-picker"
+            className="compact-date-picker"
             mode="range"
             defaultMonth={value?.from || new Date()}
             selected={value}
@@ -196,27 +186,6 @@ export function DateRangePicker({
             numberOfMonths={1}
             disabled={(d) => d > new Date()}
           />
-
-          {/* Footer Actions */}
-          <div className="flex items-center justify-between pt-3 mt-2 border-t border-gray-100 dark:border-[#2C3246]">
-            <button
-              type="button"
-              onClick={() => {
-                if (onChange) onChange(undefined);
-              }}
-              className="text-xs font-semibold text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors cursor-pointer"
-            >
-              Reset
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsOpen(false)}
-              className="flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg text-xs font-bold transition-colors cursor-pointer shadow-sm shadow-orange-500/20"
-            >
-              <Check size={13} />
-              Selesai
-            </button>
-          </div>
         </div>
       )}
     </div>
