@@ -477,11 +477,11 @@ export default function AppShellLayout({
                     if (!isLoggedIn) router.push(`/login?redirect=${tool.href}`);
                     else if (isProLocked) {
                       if (activePath === "/" || activePath === "") {
-                        window.history.pushState(null, "", "/?pricing=true");
+                        window.history.pushState(null, "", "/?pricing=true&cat=tools");
                         window.dispatchEvent(new CustomEvent("pricing-change", { detail: true }));
                         window.dispatchEvent(new Event("app-shallow-navigate"));
                       } else {
-                        router.push("/?pricing=true");
+                        router.push("/?pricing=true&cat=tools");
                       }
                     } else if (isBlueprintLocked) {
                       setBlueprintModal({ isOpen: true, toolName: tool.label });
@@ -613,11 +613,11 @@ export default function AppShellLayout({
                       } else if (isProLocked) {
                         setIsOpen(false);
                         if (activePath === "/" || activePath === "") {
-                          window.history.pushState(null, "", "/?pricing=true");
+                          window.history.pushState(null, "", "/?pricing=true&cat=tools");
                           window.dispatchEvent(new CustomEvent("pricing-change", { detail: true }));
                           window.dispatchEvent(new Event("app-shallow-navigate"));
                         } else {
-                          router.push("/?pricing=true");
+                          router.push("/?pricing=true&cat=tools");
                         }
                       } else if (isBlueprintLocked) {
                         setIsOpen(false);

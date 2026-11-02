@@ -169,14 +169,31 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
                       }
                     }
 
+                    const addonCount = Array.isArray(order.addonIds) ? order.addonIds.length : 0;
                     return (
-                      <div key={order.id} className="flex justify-between items-center pb-4 border-b border-gray-100 dark:border-[#2C3246]/50 last:border-0 last:pb-0">
-                        <div>
-                          <div className="font-bold text-gray-900 dark:text-white flex items-center gap-2">
-                            {title}
+                      <div key={order.id} className="flex justify-between items-start sm:items-center pb-4 border-b border-gray-100 dark:border-[#2C3246]/50 last:border-0 last:pb-0 gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-bold text-gray-900 dark:text-white flex items-center gap-2 flex-wrap">
+                            <span>{title}</span>
+                            {addonCount > 0 && (
+                              <span className="text-[10px] font-bold text-orange-600 bg-orange-100 dark:bg-orange-950/40 px-2 py-0.5 rounded-full">
+                                +{addonCount} Add-on
+                              </span>
+                            )}
                           </div>
-                          <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
-                            {dateInfo}
+                          <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-2 flex-wrap">
+                            <span>{dateInfo}</span>
+                            {order.amount ? (
+                              <>
+                                <span>•</span>
+                                <span className="font-semibold text-gray-800 dark:text-gray-200">
+                                  Rp {Number(order.amount).toLocaleString("id-ID")}
+                                </span>
+                              </>
+                            ) : null}
+                            <span className="font-mono text-[11px] text-gray-400 dark:text-gray-500">
+                              #{order.id.slice(0, 8)}
+                            </span>
                           </div>
                         </div>
                         {isActive ? (

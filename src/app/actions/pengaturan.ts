@@ -47,11 +47,19 @@ export async function getPengaturanDataAction() {
 
   const isAdmin = isAdminEmail(session?.user?.email);
   
-  const [features, usages, dbUser, userOrders, adminData, pricingConfig, quotaConfig] = await Promise.all([
+  const [features, usages, dbUser, userOrders, userOwned, adminData, pricingConfig, quotaConfig] = await Promise.all([
     getCachedFeatures(),
     getCachedUserUsages(session.user.id),
     getCachedAppUser(session.user.id),
     getCachedUserOrders(session.user.id),
+    prisma.userOwnedProduct.findMany({
+      where: { userId: session.user.id },
+      include: {
+        product: {
+          select: { id: true, title: true, productType: true, slug: true, accessLevel: true },
+        },
+      },
+    }).catch(() => []),
     isAdmin ? getCachedAdminConfig() : Promise.resolve(null),
     getCachedPricingPackages().catch(() => null),
     getCachedQuotaConfig().catch(() => ({ ngontenFreeLimit: 3, risetFreeLimit: 3, automationFreeTrialDays: 3 })),
@@ -68,9 +76,11 @@ export async function getPengaturanDataAction() {
     badgeName,
   } = subStatus;
   
-  const ownedEbooks = userOrders
-    .filter((o: any) => o.product && o.orderType === "EBOOK")
-    .map((o: any) => o.product.title);
+  const ownedProducts = (userOwned || [])
+    .map((uo: any) => uo.product)
+    .filter(Boolean);
+
+  const ownedEbooks = ownedProducts.map((p: any) => p.title);
 
   const userData = { 
     features, 
@@ -84,6 +94,7 @@ export async function getPengaturanDataAction() {
     proToolsExpiredAt: subStatus.proToolsExpiredAt,
     proAutomationExpiredAt: subStatus.proAutomationExpiredAt,
     proRisetExpiredAt: subStatus.proRisetExpiredAt,
+    ownedProducts,
     ownedEbooks,
     pricingConfig,
     quotaConfig,
