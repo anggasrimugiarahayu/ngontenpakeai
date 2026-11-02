@@ -139,12 +139,12 @@ async function calculateDashboardStats() {
     }).catch(() => ({ _sum: { views: 0, clicks: 0 } })),
     
     prisma.order.findMany({
-      where: { status: 'SUCCESS', createdAt: { gte: thirtyDaysAgo } },
+      where: { status: 'SUCCESS', createdAt: { gte: sixtyDaysAgo } },
       select: { createdAt: true, amount: true }
     }).catch(() => []),
     
     prisma.productAnalytics.findMany({
-      where: { date: { gte: thirtyDaysAgo } },
+      where: { date: { gte: sixtyDaysAgo } },
       select: { date: true, views: true, clicks: true }
     }).catch(() => []),
 
@@ -292,7 +292,7 @@ async function calculateDashboardStats() {
 
   let salesChartData: any[] = [];
   let viewsChartData: any[] = [];
-  for (let i = 29; i >= 0; i--) {
+  for (let i = 59; i >= 0; i--) {
     const d = new Date();
     d.setDate(d.getDate() - i);
     const dateStr = d.toLocaleDateString('en-US', { month: 'short', day: '2-digit' });

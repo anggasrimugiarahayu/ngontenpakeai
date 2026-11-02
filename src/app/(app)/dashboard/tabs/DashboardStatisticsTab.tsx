@@ -7,7 +7,6 @@ import {
   ArrowDown,
   Search,
   X,
-  Calendar as CalendarIcon,
   Info,
 } from "lucide-react";
 import {
@@ -22,8 +21,9 @@ import {
   Pie,
   Cell,
 } from "recharts";
-import { DayPicker, DateRange } from "react-day-picker";
-import { format, subDays, startOfDay, endOfDay } from "date-fns";
+import { DateRange } from "react-day-picker";
+import { subDays, startOfDay, endOfDay } from "date-fns";
+import { DateRangePicker } from "@/components/ui/DateRangePicker";
 
 const TOP_PRODUCT_COLORS = [
   "#10b981", // Emerald
@@ -64,12 +64,11 @@ export function DashboardStatisticsTab({
   isPackageModalOpen,
   setIsPackageModalOpen,
 }: DashboardStatisticsTabProps) {
-  // Local date picker state
+  // Local fallback date picker state
   const [internalDate, setInternalDate] = useState<DateRange | undefined>({
     from: subDays(new Date(), 6),
     to: new Date(),
   });
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [salesMetricView, setSalesMetricView] = useState<"amount" | "value">("amount");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -79,9 +78,6 @@ export function DashboardStatisticsTab({
       propSetDate(newDate);
     } else {
       setInternalDate(newDate);
-    }
-    if (newDate?.from && newDate?.to) {
-      setShowDatePicker(false);
     }
   };
 
@@ -250,77 +246,20 @@ export function DashboardStatisticsTab({
   return (
     <>
       <div className="space-y-6 animate-in fade-in duration-300">
-        {/* TOP BAR: Choose Date Filter */}
+        {/* TOP BAR: Reusable Global DateRangePicker */}
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="relative">
-            <button
-              onClick={() => setShowDatePicker(!showDatePicker)}
-              className="flex items-center gap-2.5 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl px-4 py-2 hover:bg-gray-50 dark:hover:bg-[#1f2947] text-gray-700 dark:text-gray-200 transition-colors shadow-2xs cursor-pointer"
-            >
-              <CalendarIcon size={16} className="text-gray-500" />
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                {activeDate?.from ? (
-                  activeDate.to ? (
-                    <>
-                      {format(activeDate.from, "LLL dd, y")} -{" "}
-                      {format(activeDate.to, "LLL dd, y")}
-                    </>
-                  ) : (
-                    format(activeDate.from, "LLL dd, y")
-                  )
-                ) : (
-                  <span>Choose Date</span>
-                )}
-              </span>
-            </button>
-
-            {showDatePicker && (
-              <>
-                <div
-                  className="fixed inset-0 z-40"
-                  onClick={() => setShowDatePicker(false)}
-                ></div>
-                <div className="absolute left-0 top-full mt-2 z-50 bg-white dark:bg-[#141B31] rounded-xl shadow-xl border border-gray-200 dark:border-[#2C3246] p-3">
-                  <style>{`
-                    .rdp {
-                      --rdp-cell-size: 32px !important;
-                      --rdp-accent-color: #f97316 !important;
-                      --rdp-background-color: #f97316 !important;
-                      --rdp-accent-color-dark: #f97316 !important;
-                      --rdp-background-color-dark: #ea580c !important;
-                      --rdp-outline: 2px solid var(--rdp-accent-color);
-                      --rdp-outline-selected: 2px solid var(--rdp-accent-color);
-                      margin: 0;
-                    }
-                    .dark .rdp-day_selected, .dark .rdp-day_selected:focus-visible, .dark .rdp-day_selected:hover {
-                       color: white;
-                       background-color: #ea580c;
-                    }
-                    .rdp-day_selected, .rdp-day_selected:focus-visible, .rdp-day_selected:hover {
-                       color: white;
-                       background-color: #f97316;
-                    }
-                  `}</style>
-                  <DayPicker
-                    mode="range"
-                    defaultMonth={activeDate?.from}
-                    selected={activeDate}
-                    onSelect={handleSelectDate}
-                    numberOfMonths={1}
-                    disabled={(d) => d > new Date()}
-                  />
-                </div>
-              </>
-            )}
-          </div>
+          <DateRangePicker
+            value={activeDate}
+            onChange={handleSelectDate}
+            placeholder="Choose Date"
+          />
         </div>
 
-        {/* 2-COLUMN MAIN METRICS GRID (2/3 Left, 1/3 Right) */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* ================= LEFT COLUMN (2/3): BAR CHARTS ================= */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* CARD 1: TOTAL VIEWS & CLICKS */}
-            <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246]">
+        {/* ================= ROW 1 (Auto-Equal Height): Total Views & Clicks (2/3) + Sales Distribution (1/3) ================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+          {/* CARD 1: TOTAL VIEWS & CLICKS */}
+          <div className="lg:col-span-2 bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-between h-full">
+            <div>
               <h3 className="text-base font-bold text-gray-900 dark:text-white mb-4">
                 Total Views & Clicks
               </h3>
@@ -381,70 +320,146 @@ export function DashboardStatisticsTab({
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Stacked Bar Chart Views & Clicks */}
-              <div className="h-[240px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={filteredViewsData}
-                    margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
-                    barGap={0}
+            {/* Stacked Bar Chart Views & Clicks */}
+            <div className="h-[250px] w-full mt-auto">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={filteredViewsData}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
+                  barGap={0}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#888"
+                    opacity={0.1}
+                  />
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={renderCustomAxisTick}
+                    interval={0}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: "#9ca3af" }}
+                    width={35}
+                  />
+                  <Tooltip
+                    cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "1px solid #e5e7eb",
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      backgroundColor: "#ffffff",
+                      color: "#111827",
+                      fontSize: "12px",
+                    }}
+                    formatter={(value: any, name: any) => [
+                      value,
+                      name === "views" ? "Views" : "Clicks",
+                    ]}
+                  />
+                  <Bar
+                    dataKey="clicks"
+                    stackId="a"
+                    fill="#10b981"
+                    radius={[0, 0, 4, 4]}
+                    barSize={10}
+                  />
+                  <Bar
+                    dataKey="views"
+                    stackId="a"
+                    fill="#f59e0b"
+                    radius={[4, 4, 0, 0]}
+                    barSize={10}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* CARD 2: SALES DISTRIBUTION (Matching Height) */}
+          <div className="lg:col-span-1 bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-between h-full">
+            <div>
+              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2">
+                Sales Distribution
+              </h3>
+            </div>
+
+            {/* Donut Chart with Center Text */}
+            <div className="relative flex-1 min-h-[220px] w-full flex items-center justify-center my-auto">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={salesDistributionData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={68}
+                    outerRadius={90}
+                    paddingAngle={2}
+                    dataKey="value"
+                    stroke="none"
                   >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="#888"
-                      opacity={0.1}
-                    />
-                    <XAxis
-                      dataKey="date"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={renderCustomAxisTick}
-                      interval={0}
-                    />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 10, fill: "#9ca3af" }}
-                      width={35}
-                    />
-                    <Tooltip
-                      cursor={{ fill: "rgba(0,0,0,0.03)" }}
-                      contentStyle={{
-                        borderRadius: "12px",
-                        border: "1px solid #e5e7eb",
-                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                        backgroundColor: "#ffffff",
-                        color: "#111827",
-                        fontSize: "12px",
-                      }}
-                      formatter={(value: any, name: any) => [
-                        value,
-                        name === "views" ? "Views" : "Clicks",
-                      ]}
-                    />
-                    <Bar
-                      dataKey="clicks"
-                      stackId="a"
-                      fill="#10b981"
-                      radius={[0, 0, 4, 4]}
-                      barSize={10}
-                    />
-                    <Bar
-                      dataKey="views"
-                      stackId="a"
-                      fill="#f59e0b"
-                      radius={[4, 4, 0, 0]}
-                      barSize={10}
-                    />
-                  </BarChart>
-                </ResponsiveContainer>
+                    {salesDistributionData.map((entry: any, index: number) => (
+                      <Cell key={`dist-cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "1px solid #e5e7eb",
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      fontSize: "12px",
+                    }}
+                    formatter={(val: any) => [`Rp ${formatIDR(Number(val))}`, ""]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
+                  Total Sales
+                </span>
+                <span className="text-2xl font-black text-gray-900 dark:text-white mt-0.5">
+                  {formatShortIDR(periodSalesIDR)}
+                </span>
               </div>
             </div>
 
-            {/* CARD 2: TOTAL SALES (Sales Amount & Sales Value IDR) */}
-            <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246]">
+            {/* Legend Pinned at Bottom */}
+            <div className="flex items-center justify-around pt-4 mt-auto border-t border-gray-100 dark:border-[#2C3246]">
+              <div className="flex flex-col items-center text-center">
+                <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-0.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#eab308]"></div>
+                  <span>Net Value (IDR)</span>
+                </div>
+                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                  {formatIDR(netValueIDR)}
+                </span>
+              </div>
+
+              <div className="flex flex-col items-center text-center">
+                <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-0.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-[#10b981]"></div>
+                  <span>Affiliate IDR</span>
+                </div>
+                <span className="text-sm font-bold text-gray-900 dark:text-white">
+                  {formatIDR(affiliateIDR)}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* ================= ROW 2 (Auto-Equal Height): Total Sales (2/3) + Top 5 Sales by Product (1/3) ================= */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+          {/* CARD 3: TOTAL SALES (Sales Amount & Sales Value IDR) */}
+          <div className="lg:col-span-2 bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-between h-full">
+            <div>
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4">
                 <h3 className="text-base font-bold text-gray-900 dark:text-white">
                   Total Sales
@@ -454,7 +469,7 @@ export function DashboardStatisticsTab({
                 <div className="flex items-center p-1 bg-gray-100 dark:bg-[#0F172A] rounded-xl border border-gray-200 dark:border-[#2C3246] text-xs">
                   <button
                     onClick={() => setSalesMetricView("amount")}
-                    className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
                       salesMetricView === "amount"
                         ? "bg-white dark:bg-[#141B31] text-amber-600 dark:text-amber-400 shadow-2xs"
                         : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
@@ -464,7 +479,7 @@ export function DashboardStatisticsTab({
                   </button>
                   <button
                     onClick={() => setSalesMetricView("value")}
-                    className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
                       salesMetricView === "value"
                         ? "bg-white dark:bg-[#141B31] text-emerald-600 dark:text-emerald-400 shadow-2xs"
                         : "text-gray-500 hover:text-gray-900 dark:hover:text-white"
@@ -525,145 +540,75 @@ export function DashboardStatisticsTab({
                   </div>
                 </div>
               </div>
+            </div>
 
-              {/* Bar Chart Total Sales */}
-              <div className="h-[240px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    data={filteredSalesData}
-                    margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
-                    barGap={0}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      vertical={false}
-                      stroke="#888"
-                      opacity={0.1}
+            {/* Bar Chart Total Sales */}
+            <div className="h-[250px] w-full mt-auto">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={filteredSalesData}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 20 }}
+                  barGap={0}
+                >
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="#888"
+                    opacity={0.1}
+                  />
+                  <XAxis
+                    dataKey="date"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={renderCustomAxisTick}
+                    interval={0}
+                  />
+                  <YAxis
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 10, fill: "#9ca3af" }}
+                    width={35}
+                  />
+                  <Tooltip
+                    cursor={{ fill: "rgba(0,0,0,0.03)" }}
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "1px solid #e5e7eb",
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      backgroundColor: "#ffffff",
+                      color: "#111827",
+                      fontSize: "12px",
+                    }}
+                    formatter={(value: any, name: any) => [
+                      name === "count"
+                        ? `${value} Order`
+                        : `Rp ${formatIDR(Number(value))}`,
+                      name === "count" ? "Sales Amount" : "Sales Value (IDR)",
+                    ]}
+                  />
+                  {salesMetricView === "amount" ? (
+                    <Bar
+                      dataKey="count"
+                      fill="#f59e0b"
+                      radius={[4, 4, 0, 0]}
+                      barSize={10}
                     />
-                    <XAxis
-                      dataKey="date"
-                      axisLine={false}
-                      tickLine={false}
-                      tick={renderCustomAxisTick}
-                      interval={0}
+                  ) : (
+                    <Bar
+                      dataKey="sales"
+                      fill="#10b981"
+                      radius={[4, 4, 0, 0]}
+                      barSize={10}
                     />
-                    <YAxis
-                      axisLine={false}
-                      tickLine={false}
-                      tick={{ fontSize: 10, fill: "#9ca3af" }}
-                      width={35}
-                    />
-                    <Tooltip
-                      cursor={{ fill: "rgba(0,0,0,0.03)" }}
-                      contentStyle={{
-                        borderRadius: "12px",
-                        border: "1px solid #e5e7eb",
-                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                        backgroundColor: "#ffffff",
-                        color: "#111827",
-                        fontSize: "12px",
-                      }}
-                      formatter={(value: any, name: any) => [
-                        name === "count"
-                          ? `${value} Order`
-                          : `Rp ${formatIDR(Number(value))}`,
-                        name === "count" ? "Sales Amount" : "Sales Value (IDR)",
-                      ]}
-                    />
-                    {salesMetricView === "amount" ? (
-                      <Bar
-                        dataKey="count"
-                        fill="#f59e0b"
-                        radius={[4, 4, 0, 0]}
-                        barSize={10}
-                      />
-                    ) : (
-                      <Bar
-                        dataKey="sales"
-                        fill="#10b981"
-                        radius={[4, 4, 0, 0]}
-                        barSize={10}
-                      />
-                    )}
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
+                  )}
+                </BarChart>
+              </ResponsiveContainer>
             </div>
           </div>
 
-          {/* ================= RIGHT COLUMN (1/3): DONUT CHARTS ================= */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* CARD 1: SALES DISTRIBUTION */}
-            <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-between">
-              <h3 className="text-base font-bold text-gray-900 dark:text-white mb-2">
-                Sales Distribution
-              </h3>
-
-              {/* Donut Chart with Center Text */}
-              <div className="relative h-[220px] w-full flex items-center justify-center my-2">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={salesDistributionData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={68}
-                      outerRadius={90}
-                      paddingAngle={2}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {salesDistributionData.map((entry: any, index: number) => (
-                        <Cell key={`dist-cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: "12px",
-                        border: "1px solid #e5e7eb",
-                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                        fontSize: "12px",
-                      }}
-                      formatter={(val: any) => [`Rp ${formatIDR(Number(val))}`, ""]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
-                    Total Sales
-                  </span>
-                  <span className="text-2xl font-black text-gray-900 dark:text-white mt-0.5">
-                    {formatShortIDR(periodSalesIDR)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Legend */}
-              <div className="flex items-center justify-around pt-3 border-t border-gray-100 dark:border-[#2C3246]">
-                <div className="flex flex-col items-center text-center">
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-0.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#eab308]"></div>
-                    <span>Net Value (IDR)</span>
-                  </div>
-                  <span className="text-sm font-bold text-gray-900 dark:text-white">
-                    {formatIDR(netValueIDR)}
-                  </span>
-                </div>
-
-                <div className="flex flex-col items-center text-center">
-                  <div className="flex items-center gap-1.5 text-xs text-gray-500 mb-0.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-[#10b981]"></div>
-                    <span>Affiliate IDR</span>
-                  </div>
-                  <span className="text-sm font-bold text-gray-900 dark:text-white">
-                    {formatIDR(affiliateIDR)}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* CARD 2: TOP 5 SALES BY PRODUCT */}
-            <div className="bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-between">
+          {/* CARD 4: TOP 5 SALES BY PRODUCT (Matching Height) */}
+          <div className="lg:col-span-1 bg-white dark:bg-[#141B31] rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-[#2C3246] flex flex-col justify-between h-full">
+            <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-1.5">
                   <h3 className="text-base font-bold text-gray-900 dark:text-white">
@@ -672,80 +617,80 @@ export function DashboardStatisticsTab({
                   <Info size={14} className="text-gray-400" />
                 </div>
               </div>
+            </div>
 
-              {/* Donut Chart with Center Text */}
-              <div className="relative h-[200px] w-full flex items-center justify-center my-2">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={top5PieData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={80}
-                      paddingAngle={2}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {top5PieData.map((entry: any, index: number) => (
-                        <Cell key={`top-cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip
-                      contentStyle={{
-                        borderRadius: "12px",
-                        border: "1px solid #e5e7eb",
-                        boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
-                        fontSize: "12px",
-                      }}
-                      formatter={(val: any) => [`${val} terjual`, "Penjualan"]}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                  <span className="text-xs text-gray-400 font-medium">Top 5</span>
-                  <span className="text-lg font-black text-gray-900 dark:text-white">
-                    Products
-                  </span>
-                </div>
+            {/* Donut Chart with Center Text */}
+            <div className="relative flex-1 min-h-[190px] w-full flex items-center justify-center my-auto">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={top5PieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={80}
+                    paddingAngle={2}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {top5PieData.map((entry: any, index: number) => (
+                      <Cell key={`top-cell-${index}`} fill={entry.fill} />
+                    ))}
+                  </Pie>
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "12px",
+                      border: "1px solid #e5e7eb",
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                      fontSize: "12px",
+                    }}
+                    formatter={(val: any) => [`${val} terjual`, "Penjualan"]}
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                <span className="text-xs text-gray-400 font-medium">Top 5</span>
+                <span className="text-lg font-black text-gray-900 dark:text-white">
+                  Products
+                </span>
               </div>
+            </div>
 
-              {/* Top 5 Products List */}
-              <div className="pt-3 border-t border-gray-100 dark:border-[#2C3246] space-y-2">
-                {top5Products.length > 0 ? (
-                  top5Products.map((p: any, idx: number) => (
-                    <div
-                      key={p.id || idx}
-                      className="flex items-center justify-between text-xs"
-                    >
-                      <div className="flex items-center gap-2 truncate max-w-[200px]">
-                        <div
-                          className="w-2.5 h-2.5 rounded-full shrink-0"
-                          style={{
-                            backgroundColor:
-                              TOP_PRODUCT_COLORS[
-                                idx % TOP_PRODUCT_COLORS.length
-                              ],
-                          }}
-                        ></div>
-                        <span
-                          className="truncate text-gray-700 dark:text-gray-300 font-medium"
-                          title={p.title}
-                        >
-                          {p.title}
-                        </span>
-                      </div>
-                      <span className="font-bold text-gray-900 dark:text-white shrink-0 ml-2">
-                        {p.sold} sold
+            {/* Top 5 Products List Pinned at Bottom */}
+            <div className="pt-4 mt-auto border-t border-gray-100 dark:border-[#2C3246] space-y-2.5">
+              {top5Products.length > 0 ? (
+                top5Products.map((p: any, idx: number) => (
+                  <div
+                    key={p.id || idx}
+                    className="flex items-center justify-between text-xs"
+                  >
+                    <div className="flex items-center gap-2 truncate max-w-[200px]">
+                      <div
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{
+                          backgroundColor:
+                            TOP_PRODUCT_COLORS[
+                              idx % TOP_PRODUCT_COLORS.length
+                            ],
+                        }}
+                      ></div>
+                      <span
+                        className="truncate text-gray-700 dark:text-gray-300 font-medium"
+                        title={p.title}
+                      >
+                        {p.title}
                       </span>
                     </div>
-                  ))
-                ) : (
-                  <p className="text-xs text-center text-gray-400 py-2">
-                    Belum ada data transaksi produk
-                  </p>
-                )}
-              </div>
+                    <span className="font-bold text-gray-900 dark:text-white shrink-0 ml-2">
+                      {p.sold} sold
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-center text-gray-400 py-2">
+                  Belum ada data transaksi produk
+                </p>
+              )}
             </div>
           </div>
         </div>
