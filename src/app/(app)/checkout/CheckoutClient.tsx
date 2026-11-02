@@ -350,6 +350,14 @@ export default function CheckoutClient({
         voucherCode: appliedVoucher?.code,
         discountAmount,
       });
+
+      if (!res || res.success === false) {
+        setErrorMessage((res as any)?.error || "Gagal menyiapkan tagihan pembayaran untuk metode ini. Silakan coba metode pembayaran lain atau coba sesaat lagi.");
+        setPaymentState("error");
+        setLoading(false);
+        return;
+      }
+
       if (res?.token && res?.orderId) {
         setCurrentToken(res.token);
         setCurrentOrderId(res.orderId);
@@ -360,7 +368,11 @@ export default function CheckoutClient({
       }
       setLoading(false);
     } catch (error: any) {
-      setErrorMessage(error.message);
+      let msg = error?.message || "Terjadi kesalahan saat memproses pembayaran.";
+      if (msg.includes("Minified React error") || msg.includes("react.dev")) {
+        msg = "Gagal menyiapkan tagihan pembayaran untuk metode ini. Silakan coba metode pembayaran lain atau coba sesaat lagi.";
+      }
+      setErrorMessage(msg);
       setPaymentState("error");
       setLoading(false);
     }

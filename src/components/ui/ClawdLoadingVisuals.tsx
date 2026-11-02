@@ -257,7 +257,7 @@ interface ClawdPose {
   scale?: number;
   lookX?: number;
   lookY?: number;
-  eyes?: "normal" | "happy" | "closed" | "spark" | "wide";
+  eyes?: "normal" | "happy" | "closed" | "spark" | "wide" | "confused";
   brows?: "confident" | "focus" | "worried" | null;
   mouth?: "smile" | "grin" | "o" | "flat" | "wobble";
   blush?: number;
@@ -393,6 +393,15 @@ function drawClawd(
     } else if (eyes === "spark") {
       const tw = (1 + 0.14 * Math.sin(t * 11)) * 1.22 * u;
       inner += `<path d="M ${f1(ex)} ${f1(-tw)} L ${f1(ex + tw * 0.35)} ${f1(-tw * 0.35)} L ${f1(ex + tw)} 0 L ${f1(ex + tw * 0.35)} ${f1(tw * 0.35)} L ${f1(ex)} ${f1(tw)} L ${f1(ex - tw * 0.35)} ${f1(tw * 0.35)} L ${f1(ex - tw)} 0 L ${f1(ex - tw * 0.35)} ${f1(-tw * 0.35)} Z" fill="${PAL.cream}" stroke="${PAL.ink}" stroke-width="${f1(sw * 0.65)}"/>`;
+    } else if (eyes === "confused") {
+      // Emosi resmi 'confused' dari ClaudeAnimationBase (mismatched eyes: narrow + wide)
+      if (s === -1) {
+        inner += `<rect x="${f1(ex - 0.5 * u + lx)}" y="${f1(-0.6 * u + ly)}" width="${f1(1.0 * u)}" height="${f1(1.2 * u)}" rx="${f1(0.35 * u)}" fill="${PAL.ink}"/>`;
+        inner += `<circle cx="${f1(ex - 0.12 * u + lx)}" cy="${f1(-0.25 * u + ly)}" r="${f1(0.24 * u)}" fill="${PAL.cream}"/>`;
+      } else {
+        inner += `<rect x="${f1(ex - 0.75 * u + lx)}" y="${f1(-1.35 * u + ly)}" width="${f1(1.5 * u)}" height="${f1(2.7 * u)}" rx="${f1(0.55 * u)}" fill="${PAL.ink}"/>`;
+        inner += `<circle cx="${f1(ex - 0.22 * u + lx)}" cy="${f1(-0.65 * u + ly)}" r="${f1(0.38 * u)}" fill="${PAL.cream}"/>`;
+      }
     } else {
       const ew = eyes === "wide" ? 1.25 * u : 1.05 * u;
       const eh = eyes === "wide" ? 2.35 * u : 2.0 * u;
@@ -1280,6 +1289,13 @@ function renderErrorScene({ t, dt, isDark, st }: SceneCtx) {
   const sweatOp = 0.5 + 0.4 * Math.sin(t * 4);
   svg += `<path d="M ${X + 13} 20 C ${X + 13} 17 ${X + 16} 15 ${X + 16} 15 C ${X + 16} 15 ${X + 19} 17 ${X + 19} 20 C ${X + 19} 22 ${X + 16} 23 ${X + 13} 20 Z" fill="${PAL.sky}" opacity="${sweatOp.toFixed(2)}"/>`;
 
+  // Emote tanda tanya (?) oranye melayang khas emosi 'confused'
+  const qBounce = Math.sin(t * 3.5) * 2.5;
+  svg += `<g transform="translate(${X + 17}, ${20 + qBounce})">` +
+    `<circle cx="0" cy="-4" r="5.5" fill="${PAL.ochre}" opacity="0.25"/>` +
+    `<text x="0" y="0" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="12" fill="${PAL.orange}">?</text>` +
+    `</g>`;
+
   // Tangan garuk kepala / bingung
   const scratch = Math.sin(t * 6) * 1.5;
   const handL: number[] = [-4, -27 + scratch, -0.8];
@@ -1299,18 +1315,18 @@ function renderErrorScene({ t, dt, isDark, st }: SceneCtx) {
     {
       id: "error-loader-clawd",
       view: "q",
-      lean: -0.05,
-      rot: 0,
-      lookX: 0.4,
-      lookY: 0.2,
-      eyes: "wide",
+      lean: -0.06,
+      rot: Math.sin(t * 2.4) * 3,
+      lookX: 0.35,
+      lookY: 0.15,
+      eyes: "confused",
       brows: "worried",
       mouth: "wobble",
       blush: 0.35,
       handL,
       handR,
       propR: errDoc,
-      forceBlink: faceBlink(st, "error", "wide|wobble", t),
+      forceBlink: faceBlink(st, "error", "confused|wobble", t),
     },
     t,
     isDark

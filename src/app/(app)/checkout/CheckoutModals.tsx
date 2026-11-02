@@ -408,37 +408,14 @@ export default function CheckoutModals({
                 </Button>
               )}
 
-              {(() => {
-                const waText = `Halo Admin Ruang Creative Muslim, saya mengalami kendala pembayaran di website:
-
-- No. Pesanan : ${currentOrderId || "-"}
-- Produk      : ${itemName || "-"}
-- Email Akun  : ${customerEmail || "-"}
-- Kendala     : ${errorMessage || "Pembayaran gagal atau waktu habis"}
-
-Mohon bantuannya ya min. Terima kasih!`;
-                const waUrl = `https://wa.me/6285156339329?text=${encodeURIComponent(waText)}`;
-
-                return (
-                  <a
-                    href={waUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full py-3 px-4 rounded-xl text-sm font-bold bg-green-50 hover:bg-green-100 dark:bg-green-950/30 dark:hover:bg-green-900/40 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800/50 flex items-center justify-center gap-2 transition-all"
-                  >
-                    <MessageSquare className="w-4 h-4 text-green-600 dark:text-green-400" />
-                    Hubungi Bantuan via WhatsApp
-                  </a>
-                );
-              })()}
-
               {onCloseErrorModal && (
                 <button
                   type="button"
                   onClick={onCloseErrorModal}
-                  className="text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 font-medium underline transition-colors pt-1 block mx-auto"
+                  className="w-full py-3 px-4 rounded-xl text-sm font-bold bg-gray-100 hover:bg-gray-200 dark:bg-[#1E293B] dark:hover:bg-[#28354D] text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-[#2C3246] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs"
                 >
-                  Ganti Metode Pembayaran / Ubah Pesanan
+                  <CreditCard className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                  Ganti Metode Pembayaran
                 </button>
               )}
             </div>
