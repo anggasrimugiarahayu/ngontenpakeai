@@ -637,7 +637,7 @@ export default function CheckoutClient({
                   </div>
                   <span className="text-[11px] text-gray-600 dark:text-gray-400 pt-0.5 leading-tight">
                     I agree to the{" "}
-                    <Link href="#" className="text-rn-accent font-medium hover:underline">
+                    <Link href="/syarat-ketentuan" target="_blank" className="text-rn-accent font-medium hover:underline">
                       Terms of Use
                     </Link>
                   </span>

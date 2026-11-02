@@ -38,13 +38,13 @@ export default function QuotaExceededModal({
         </h3>
 
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-6 leading-relaxed">
-          Kamu sudah menggunakan 3x kesempatan coba gratis di {toolName}. Yuk, upgrade ke Paket PRO Tools untuk lanjut generate tanpa batas kuota!
+          Kamu sudah menggunakan kuota kesempatan coba gratis di {toolName}. Yuk, upgrade ke Paket PRO Tools untuk lanjut generate tanpa batas kuota!
         </p>
 
         <div className="space-y-3">
           <Link href="/checkout?type=PRO_TOOLS" className="block w-full">
             <Button variant="primary" size="lg" className="w-full">
-              🚀 Upgrade ke PRO Tools — Rp 99.000 / bln
+              🚀 Upgrade ke Paket PRO Tools Sekarang
             </Button>
           </Link>
           <button

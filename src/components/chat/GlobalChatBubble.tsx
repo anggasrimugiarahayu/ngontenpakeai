@@ -88,14 +88,14 @@ export default function GlobalChatBubble({
                     </h4>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
-                    Kamu sudah menggunakan 3x kesempatan coba gratis di fitur ini. Yuk, upgrade ke Paket PRO Tools untuk lanjut generate tanpa batas kuota!
+                    Kamu sudah menggunakan kuota kesempatan coba gratis di fitur ini. Yuk, upgrade ke Paket PRO Tools untuk lanjut generate tanpa batas kuota!
                   </p>
                   <div className="pt-2">
                     <Link
                       href="/checkout?type=PRO_TOOLS"
                       className="flex items-center justify-center gap-2 w-full px-5 py-3 rounded-xl text-sm font-bold bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white shadow-sm shadow-orange-500/20 transition-all active:scale-95 cursor-pointer"
                     >
-                      🚀 Upgrade ke PRO Tools — Rp 99.000 / bln
+                      🚀 Upgrade ke Paket PRO Tools Sekarang
                     </Link>
                   </div>
                 </div>

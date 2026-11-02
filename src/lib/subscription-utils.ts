@@ -165,8 +165,9 @@ export function calculateSubscriptionFulfillment(params: {
     automationAgentLimit?: number | null;
   } | null;
   rawPricingConfig?: any;
+  isAddingAgentSlot?: boolean;
 }) {
-  const { orderType, currentUser, rawPricingConfig } = params;
+  const { orderType, currentUser, rawPricingConfig, isAddingAgentSlot } = params;
   const meta = resolvePackageMeta(orderType, rawPricingConfig);
   const now = new Date();
   const days = meta.durationDays > 0 ? meta.durationDays : 30;
@@ -189,11 +190,9 @@ export function calculateSubscriptionFulfillment(params: {
       days,
       now
     );
-    // Pertahankan batas agen (tidak otomatis memberikan agen ekstra gratis saat perpanjangan)
-    updateData.automationAgentLimit = Math.max(
-      1,
-      currentUser?.automationAgentLimit || 1
-    );
+    // Tambah slot agen jika user membeli paket saat semua slot aktif sudah terisi penuh
+    const currentLimit = Math.max(1, currentUser?.automationAgentLimit || 1);
+    updateData.automationAgentLimit = isAddingAgentSlot ? currentLimit + 1 : currentLimit;
   } else if (meta.category === "riset") {
     updateData.proRisetExpiredAt = addDurationToExpiry(
       currentUser?.proRisetExpiredAt,

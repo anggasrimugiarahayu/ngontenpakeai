@@ -215,10 +215,32 @@ export async function getEbookDetailAction(slug: string) {
   const isFree = cachedEbook.accessLevel === "FREE" || !cachedEbook.price || cachedEbook.price <= 0;
   const canAccessContent = isAdmin || isOwned || isFree;
 
+  let safeVideoList = null;
+  if (canAccessContent) {
+    safeVideoList = ebook.videoList;
+  } else if (ebook.videoList) {
+    // Jika belum memiliki akses, tetap kirimkan metadata kurikulum silabus (judul & durasi),
+    // namun sensor youtubeUrl khusus video terkunci agar tidak bisa dibypass sebelum beli
+    try {
+      const parsed = typeof ebook.videoList === "string" ? JSON.parse(ebook.videoList) : ebook.videoList;
+      if (Array.isArray(parsed)) {
+        safeVideoList = parsed.map((item: any, idx: number) => ({
+          id: item.id || `v-${idx}`,
+          title: item.title || `Video ${idx + 1}`,
+          duration: item.duration || "",
+          isFreePreview: Boolean(item.isFreePreview),
+          youtubeUrl: item.isFreePreview ? item.youtubeUrl : undefined,
+        }));
+      }
+    } catch {
+      safeVideoList = null;
+    }
+  }
+
   const safeEbook = {
     ...ebook,
     fileUrl: canAccessContent ? ebook.fileUrl : null,
-    videoList: canAccessContent ? ebook.videoList : null,
+    videoList: safeVideoList,
     resourceData: canAccessContent ? ebook.resourceData : null,
   };
 

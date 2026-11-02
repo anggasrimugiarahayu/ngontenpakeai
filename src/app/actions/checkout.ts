@@ -129,8 +129,8 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     }
   }
 
-  const isProduction = process.env.NODE_ENV === "production" && process.env.MIDTRANS_IS_PRODUCTION === "true";
-  const clientKey = isProduction ? process.env.MIDTRANS_CLIENT_KEY : process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "SB-Mid-client-rIaAV5Qv-Ue28a9u";
+  const isProduction = process.env.MIDTRANS_IS_PRODUCTION === "true";
+  const clientKey = process.env.MIDTRANS_CLIENT_KEY || process.env.NEXT_PUBLIC_MIDTRANS_CLIENT_KEY || "SB-Mid-client-rIaAV5Qv-Ue28a9u";
 
   let existingPendingOrder = null;
   const verifyRes = (pendingDbOrder && pendingDbOrder.midtransId) 

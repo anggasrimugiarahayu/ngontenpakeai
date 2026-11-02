@@ -475,5 +475,13 @@ export async function resolveAccountForEntry(igAccountId: string) {
     return null;
   }
 
+  // Verifikasi masa aktif spesifik untuk agen ini
+  if (!isAdmin && account.expiredAt && new Date(account.expiredAt) <= new Date()) {
+    console.warn(
+      `⛔ [Meta Webhook] Automation blocked for @${account.username || account.id}: This agent's active period has expired (expiredAt: ${account.expiredAt}).`
+    );
+    return null;
+  }
+
   return account;
 }
