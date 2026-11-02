@@ -19,6 +19,7 @@ import { useTheme } from "next-themes";
 import { useEffect, useState, useRef } from "react";
 import { useSession, signOut } from "next-auth/react";
 import { usePathname, useSearchParams } from "next/navigation";
+import { NotificationBell } from "./NotificationBell";
 
 interface NavbarProps {
   followerCount?: string;
@@ -172,36 +173,11 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
         {status === "loading" ? (
           <div className="w-20 h-8 bg-gray-700/20 rounded-full animate-pulse" />
         ) : session ? (
-          <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
-            {/* Badge Free / Pro */}
-            <div className={`px-2 py-1 sm:px-4 sm:py-2 rounded-lg sm:rounded-xl text-[10px] sm:text-sm font-bold shrink-0 transition-colors ${
-              isPro 
-                ? "bg-orange-500/10 text-orange-500" 
-                : "bg-gray-100 dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] text-gray-700 dark:text-gray-300"
-            }`}>
-              {badgeName}
-            </div>
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Notification Bell */}
+            <NotificationBell isAdmin={isAdmin} />
 
-            {/* Upgrade Button (hides if Pro or if already on pricing view) */}
-            {!isPro && !isPricing && (
-              <Link
-                href="/?pricing=true"
-                prefetch={true}
-                onClick={(e) => {
-                  if (pathname === "/" || pathname === "") {
-                    e.preventDefault();
-                    window.history.pushState(null, '', '/?pricing=true');
-                    window.dispatchEvent(new CustomEvent('pricing-change', { detail: true }));
-                    window.dispatchEvent(new Event('app-shallow-navigate'));
-                  }
-                }}
-                className="px-2.5 py-1 sm:px-5 sm:py-2 rounded-lg sm:rounded-xl font-bold text-[10px] sm:text-sm shrink-0 transition-all bg-orange-500 text-white hover:bg-orange-600 shadow-sm"
-              >
-                Upgrade
-              </Link>
-            )}
-
-            {/* Profile Picture with Dropdown (simplified) */}
+            {/* Profile Picture with Dropdown */}
             <div className="relative shrink-0" ref={dropdownRef}>
               <div 
                 className="cursor-pointer"
@@ -214,12 +190,20 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
                     width={36}
                     height={36}
                     className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full ring-2 transition-colors ${
-                      isPro ? "ring-orange-500 ring-offset-1 sm:ring-offset-2 ring-offset-gray-50 dark:ring-offset-[#0A1128]" : "ring-gray-300 dark:ring-gray-700/50"
+                      isAdmin 
+                        ? "ring-orange-500 ring-offset-1 sm:ring-offset-2 ring-offset-gray-50 dark:ring-offset-[#0A1128]" 
+                        : isPro 
+                          ? "ring-emerald-500 ring-offset-1 sm:ring-offset-2 ring-offset-gray-50 dark:ring-offset-[#0A1128]" 
+                          : "ring-gray-300 dark:ring-gray-700/50"
                     }`}
                   />
                 ) : (
                   <div className={`w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold text-[10px] sm:text-sm ring-2 transition-colors ${
-                    isPro ? "ring-orange-500 ring-offset-1 sm:ring-offset-2 ring-offset-gray-50 dark:ring-offset-[#0A1128]" : "ring-gray-300 dark:ring-gray-700/50"
+                    isAdmin 
+                      ? "ring-orange-500 ring-offset-1 sm:ring-offset-2 ring-offset-gray-50 dark:ring-offset-[#0A1128]" 
+                      : isPro 
+                        ? "ring-emerald-500 ring-offset-1 sm:ring-offset-2 ring-offset-gray-50 dark:ring-offset-[#0A1128]" 
+                        : "ring-gray-300 dark:ring-gray-700/50"
                   }`}>
                     {session.user?.name?.charAt(0) || "U"}
                   </div>
@@ -227,10 +211,42 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
               </div>
               
               {/* Dropdown Menu */}
-              <div className={`absolute right-0 mt-2 w-56 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-xl transition-all duration-200 overflow-hidden z-50 ${isDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
-                <div className="p-3 border-b border-gray-200 dark:border-[#2C3246]">
-                  <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{session.user?.name}</p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{session.user?.email}</p>
+              <div className={`absolute right-0 mt-2 w-60 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-xl shadow-xl transition-all duration-200 overflow-hidden z-50 ${isDropdownOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible -translate-y-2'}`}>
+                <div className="p-3.5 border-b border-gray-200 dark:border-[#2C3246]">
+                  <p className="text-sm font-bold text-gray-900 dark:text-white truncate">{session.user?.name || "Pengguna"}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate mb-2">{session.user?.email}</p>
+                  
+                  {/* Role / Status Badge */}
+                  <div className="flex items-center gap-2">
+                    <span className={`inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
+                      isAdmin 
+                        ? "bg-orange-500/15 text-orange-600 dark:text-orange-400 border-orange-500/30" 
+                        : isPro 
+                          ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30" 
+                          : "bg-gray-100 dark:bg-[#1a223a] text-gray-600 dark:text-gray-400 border-gray-200 dark:border-gray-700"
+                    }`}>
+                      {isAdmin ? "ADMIN" : badgeName}
+                    </span>
+
+                    {!isPro && !isAdmin && (
+                      <Link
+                        href="/?pricing=true"
+                        prefetch={true}
+                        onClick={(e) => {
+                          setIsDropdownOpen(false);
+                          if (pathname === "/" || pathname === "") {
+                            e.preventDefault();
+                            window.history.pushState(null, '', '/?pricing=true');
+                            window.dispatchEvent(new CustomEvent('pricing-change', { detail: true }));
+                            window.dispatchEvent(new Event('app-shallow-navigate'));
+                          }
+                        }}
+                        className="text-[11px] font-bold text-orange-500 hover:text-orange-600 hover:underline"
+                      >
+                        Upgrade Pro →
+                      </Link>
+                    )}
+                  </div>
                 </div>
                 <div className="py-1">
                   
