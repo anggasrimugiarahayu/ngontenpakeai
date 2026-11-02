@@ -276,6 +276,10 @@ export default function DashboardClient({
     from: subDays(new Date(), 21),
     to: new Date(),
   });
+  const [statsDate, setStatsDate] = useState<DateRange | undefined>({
+    from: subDays(new Date(), 7),
+    to: new Date(),
+  });
 
   const { chartData, dynamicTotalViews, dynamicTotalClicks, salesChartData } =
     React.useMemo(() => {
@@ -401,8 +405,8 @@ export default function DashboardClient({
             dynamicTotalClicks={dynamicTotalClicks}
             salesChartData={salesChartData}
             chartData={chartData}
-            date={date}
-            setDate={setDate}
+            date={statsDate}
+            setDate={setStatsDate}
             formatIDR={formatIDR}
             formatShortIDR={formatShortIDR}
             selectedPackage={selectedPackage}

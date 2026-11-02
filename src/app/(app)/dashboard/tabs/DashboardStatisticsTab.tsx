@@ -64,9 +64,9 @@ export function DashboardStatisticsTab({
   isPackageModalOpen,
   setIsPackageModalOpen,
 }: DashboardStatisticsTabProps) {
-  // Local fallback date picker state
+  // Local fallback date picker state (default 1 week / 7 days)
   const [internalDate, setInternalDate] = useState<DateRange | undefined>({
-    from: subDays(new Date(), 6),
+    from: subDays(new Date(), 7),
     to: new Date(),
   });
   const [salesMetricView, setSalesMetricView] = useState<"amount" | "value">("amount");
