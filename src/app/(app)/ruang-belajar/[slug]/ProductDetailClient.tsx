@@ -52,6 +52,7 @@ export default function ProductDetailClient({ slug, initialData }: { slug: strin
   const isFree = ebook.accessLevel === "FREE";
   const isProEbook = ebook.accessLevel === "PRO";
   const isPremiumEbook = ebook.accessLevel === "PREMIUM";
+  const productTypeName = ebook.productType === "VIDEO" ? "Kelas Video" : ebook.productType === "LINK" ? "Template / Link" : "E-Book";
   
   const isOwned = (ownedProductIds || []).includes(ebook.id) || isAdmin;
   let isLocked = !isOwned;
@@ -204,12 +205,12 @@ export default function ProductDetailClient({ slug, initialData }: { slug: strin
                    <>
                      <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                        <Lock className="w-4 h-4 text-rn-accent" />
-                       Buka Akses E-Book
+                       Buka Akses {productTypeName}
                      </h3>
                      <div className="bg-gray-50 dark:bg-[#141B31] border border-orange-200 dark:border-rn-accent/30 rounded-xl p-5 mb-5 shadow-inner relative overflow-hidden">
                        <div className="absolute top-0 left-0 w-1 h-full bg-rn-accent"></div>
                        <div className="flex items-center justify-between mb-2">
-                         <span className="text-sm font-bold text-gray-900 dark:text-white">{isFree ? "E-Book Gratis" : (isPremiumEbook ? "Eksklusif Premium" : "E-Book PRO")}</span>
+                         <span className="text-sm font-bold text-gray-900 dark:text-white">{isFree ? `${productTypeName} Gratis` : (isPremiumEbook ? "Eksklusif Premium" : `${productTypeName} PRO`)}</span>
                          <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-orange-500 shadow-sm">Akses Selamanya</span>
                        </div>
                        <div className="text-2xl font-black text-gray-900 dark:text-white mb-1">
@@ -217,10 +218,12 @@ export default function ProductDetailClient({ slug, initialData }: { slug: strin
                        </div>
                        <p className="text-xs text-gray-500 mt-2 leading-relaxed">
                          {isFree
-                           ? "Silakan klaim e-book ini secara gratis (Rp 0) untuk memasukkannya ke dalam Brankas Perpustakaan Pribadi Anda seumur hidup."
+                           ? `Silakan klaim ${productTypeName.toLowerCase()} ini secara gratis (Rp 0) untuk memasukkannya ke dalam Perpustakaan Pribadi Anda seumur hidup.`
                            : isPremiumEbook 
-                             ? "E-book ini sangat eksklusif. Beli sekarang dan dapatkan akses penuh untuk membaca dan mendownload selamanya." 
-                             : isPro ? "Sebagai member Paket E-Book, Anda berhak mengklaim e-book ini secara gratis!" : "Beli e-book satuan atau pilih Paket E-Book PRO untuk mendapatkan akses selamanya ke lebih banyak e-book PRO!"}
+                             ? `${productTypeName} ini sangat eksklusif. Beli sekarang dan dapatkan akses penuh selamanya.` 
+                             : isPro 
+                               ? `Sebagai member Paket E-Book / Lengkap, Anda berhak mengklaim ${productTypeName.toLowerCase()} ini secara gratis!` 
+                               : `Beli ${productTypeName.toLowerCase()} satuan atau pilih Paket E-Book PRO untuk mendapatkan akses selamanya ke lebih banyak materi PRO!`}
                        </p>
                      </div>
                      
@@ -249,7 +252,7 @@ export default function ProductDetailClient({ slug, initialData }: { slug: strin
                                setIsSubmitting(false);
                              }} className="w-full flex flex-col gap-3">
                                <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm shadow-orange-500/20 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}">
-                                 Klaim Gratis (Khusus Member Paket E-Book)
+                                 Klaim Gratis (Khusus Member Paket)
                                </button>
                              </form>
                            ) : (

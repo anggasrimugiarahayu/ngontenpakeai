@@ -38,7 +38,19 @@ export default function OnboardingClient() {
         setIsPending(false);
         const res = await saveOnboardingData(newAnswers);
         if (res.success) {
-          router.push("/");
+          let targetUrl = "/";
+          try {
+            const savedDraft = sessionStorage.getItem("guest_checkout_draft");
+            if (savedDraft) {
+              const parsed = JSON.parse(savedDraft);
+              if (parsed.returnUrl) {
+                targetUrl = parsed.returnUrl;
+              }
+            }
+          } catch (e) {
+            console.error("Error reading checkout draft on onboarding completion", e);
+          }
+          router.push(targetUrl);
         } else {
           alert(res.error || "Terjadi kesalahan.");
           setLoading(false);

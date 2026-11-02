@@ -139,7 +139,8 @@ export default function CheckoutClient({
       } else {
         discount = appliedVoucher.value;
       }
-      if (discount > baseAmount) discount = baseAmount;
+      // Batasi diskon maksimal agar menyisakan minimal Rp 1.000 untuk kepatuhan minimum amount Midtrans
+      discount = Math.min(discount, Math.max(0, baseAmount - 1000));
       appliedVoucher.amount = discount;
     }
 
@@ -315,7 +316,9 @@ export default function CheckoutClient({
     // If user is not logged in, save draft to sessionStorage and redirect to login
     if (!userIsLoggedIn) {
       if (typeof window !== "undefined") {
+        const currentPath = window.location.pathname + window.location.search;
         const draft = {
+          returnUrl: currentPath,
           customerName,
           customerEmail,
           customerPhone,
@@ -330,7 +333,6 @@ export default function CheckoutClient({
         } catch (e) {
           console.error("Failed to save checkout draft", e);
         }
-        const currentPath = window.location.pathname + window.location.search;
         window.location.href = `/login?redirect=${encodeURIComponent(currentPath)}`;
       }
       return;
@@ -549,10 +551,12 @@ export default function CheckoutClient({
               <span className="text-gray-600 dark:text-gray-400 font-medium">Subtotal</span>
               <span className="text-gray-900 dark:text-white">Rp {formatRupiah(baseAmount)}</span>
             </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-600 dark:text-gray-400 font-medium">Discount {appliedVoucher && `(${appliedVoucher.code})`}</span>
-              <span className="text-rn-accent">- Rp {formatRupiah(discountAmount)}</span>
-            </div>
+            {type === "EBOOK" && discountAmount > 0 && (
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-600 dark:text-gray-400 font-medium">Discount {appliedVoucher && `(${appliedVoucher.code})`}</span>
+                <span className="text-rn-accent">- Rp {formatRupiah(discountAmount)}</span>
+              </div>
+            )}
             <div className="flex justify-between items-center text-sm">
               <span className="text-gray-600 dark:text-gray-400 font-medium">Convenience fee</span>
               <span className="text-gray-900 dark:text-white">Rp {formatRupiah(adminFee)}</span>
@@ -564,26 +568,28 @@ export default function CheckoutClient({
             <span className="text-lg font-black text-gray-900 dark:text-white">Rp {formatRupiah(grossAmount)}</span>
           </div>
 
-          {appliedVoucher ? (
-            <div className="flex justify-between text-rn-accent text-sm items-center mb-4 p-3 bg-rn-accent/10 rounded-xl border border-rn-accent/20">
-              <div className="flex items-center gap-2 font-bold">
-                <span className="uppercase">{appliedVoucher.code}</span>
+          {type === "EBOOK" && (
+            appliedVoucher ? (
+              <div className="flex justify-between text-rn-accent text-sm items-center mb-4 p-3 bg-rn-accent/10 rounded-xl border border-rn-accent/20">
+                <div className="flex items-center gap-2 font-bold">
+                  <span className="uppercase">{appliedVoucher.code}</span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <span className="font-black">- Rp {formatRupiah(appliedVoucher.amount)}</span>
+                  <button onClick={() => setAppliedVoucher(null)} className="p-1 hover:bg-rn-accent/20 rounded-full transition-colors">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
-              <div className="flex items-center gap-3">
-                <span className="font-black">- Rp {formatRupiah(appliedVoucher.amount)}</span>
-                <button onClick={() => setAppliedVoucher(null)} className="p-1 hover:bg-rn-accent/20 rounded-full transition-colors">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button
-              onClick={() => setShowVoucherModal(true)}
-              disabled={isPending}
-              className="w-full flex items-center justify-center gap-2 py-3 mb-4 rounded-xl border border-dashed border-orange-500/50 text-orange-600 dark:text-orange-400 text-sm font-bold hover:bg-orange-500/5 dark:hover:bg-orange-500/10 transition-colors disabled:opacity-50"
-            >
-              + Add Voucher
-            </button>
+            ) : (
+              <button
+                onClick={() => setShowVoucherModal(true)}
+                disabled={isPending}
+                className="w-full flex items-center justify-center gap-2 py-3 mb-4 rounded-xl border border-dashed border-orange-500/50 text-orange-600 dark:text-orange-400 text-sm font-bold hover:bg-orange-500/5 dark:hover:bg-orange-500/10 transition-colors disabled:opacity-50"
+              >
+                + Add Voucher
+              </button>
+            )
           )}
 
           <div className="border border-rn-accent/50 dark:border-rn-accent/40 rounded-xl overflow-hidden mb-4 relative flex-none">

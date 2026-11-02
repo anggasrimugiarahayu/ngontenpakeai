@@ -340,10 +340,10 @@ export default function CheckoutModals({
 
             <div className="mt-4">
               <Link
-                href="/dashboard?tab=orders"
+                href="/pengaturan?tab=langganan"
                 className="text-xs text-gray-500 hover:text-gray-800 dark:hover:text-gray-300 font-medium underline transition-colors"
               >
-                Lihat Riwayat & Invoice di Dashboard
+                Lihat Riwayat Pembelian & Langganan
               </Link>
             </div>
           </div>

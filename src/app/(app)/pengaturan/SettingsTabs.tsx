@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import LoadingSpinner from "@/components/ui/LoadingSpinner";
 import useSWR from "swr";
 import { getPengaturanDataAction } from "@/app/actions/pengaturan";
@@ -20,6 +20,16 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
     dedupingInterval: 60000
   });
   const [activeTab, setActiveTab] = useState("profil");
+
+  useEffect(() => {
+    try {
+      const search = new URLSearchParams(window.location.search);
+      const tabParam = search.get("tab");
+      if (tabParam) {
+        setActiveTab(tabParam);
+      }
+    } catch {}
+  }, []);
 
   if (!data) return <LoadingSpinner message="Memuat Pengaturan..." />;
   const { userData, adminData, isPro, isAdmin } = data;
