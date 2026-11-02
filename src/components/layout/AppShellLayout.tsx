@@ -445,9 +445,6 @@ export default function AppShellLayout({
     if (!isAdmin && !isAuthOrLegalRoute) {
       return <MaintenanceView config={activeMaintConfig} isAdmin={false} />;
     }
-    if (isAdmin && pathname === "/") {
-      return <MaintenanceView config={activeMaintConfig} isAdmin={true} />;
-    }
   }
 
   return (
@@ -717,25 +714,6 @@ export default function AppShellLayout({
 
       {/* Main Content Area */}
       <div className="flex-1 w-full flex flex-col transition-all duration-300">
-        {activeMaintConfig?.isActive && isAdmin && (
-          <aside
-            aria-label="Maintenance mode active banner"
-            className="w-full bg-amber-500 text-white text-xs py-2 px-4 flex items-center justify-between font-medium z-30 shadow-xs shrink-0"
-          >
-            <div className="flex items-center gap-2 mx-auto text-center flex-wrap justify-center">
-              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-              <span>
-                Mode Pemeliharaan (Under Maintenance) sedang <strong>AKTIF</strong>. Pengunjung umum dialihkan ke halaman pemeliharaan.
-              </span>
-              <Link
-                href="/pengaturan?tab=homepage&sub=maintenance"
-                className="underline font-bold hover:text-amber-100 ml-1 inline-flex items-center gap-1"
-              >
-                Kelola / Matikan di Pengaturan
-              </Link>
-            </div>
-          </aside>
-        )}
         <div className="flex-1 w-full flex flex-col relative">{children}</div>
       </div>
 

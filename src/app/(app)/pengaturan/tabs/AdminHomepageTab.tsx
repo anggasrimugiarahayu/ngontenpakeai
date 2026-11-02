@@ -188,29 +188,13 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
   return (
     <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31] space-y-6 animate-in fade-in duration-300">
       {/* Header Utama Tab Home Page */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
-            Manajemen Homepage
-          </h2>
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Kelola tampilan kartu beranda serta kendalikan mode pemeliharaan sistem (under maintenance).
-          </p>
-        </div>
-
-        {/* Tombol Edit Teks & Badge (khusus sub-tab homepage) */}
-        {activeSubTab === "homepage" && (
-          <div className="flex items-center gap-2 shrink-0">
-            <button
-              type="button"
-              onClick={() => setShowEditModal(true)}
-              className="justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer"
-            >
-              <Edit3 className="w-4 h-4" />
-              <span>Edit Konten &amp; Badge</span>
-            </button>
-          </div>
-        )}
+      <div>
+        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
+          Manajemen Homepage
+        </h2>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Kelola tampilan kartu beranda serta kendalikan mode pemeliharaan sistem (under maintenance).
+        </p>
       </div>
 
       {/* Horizontal Sub-Tabs Navigation (Persis gaya Manajemen Fitur) */}
@@ -387,16 +371,40 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
 
       {/* Sub-Tab 2: MANAJEMEN HOMEPAGE CARDS */}
       {activeSubTab === "homepage" && (
-        <div className="space-y-4">
-          <div className="flex items-center justify-between px-1">
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-6 bg-rn-accent rounded-full"></div>
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Live Preview</h3>
+        <div className="space-y-6">
+          {/* Card Aksi Edit Konten & Badge (Persis gaya Batas Percobaan Gratis Ruang Ngonten) */}
+          <div className="p-4 sm:p-5 rounded-xl bg-orange-50/50 dark:bg-orange-950/10 border border-orange-200/60 dark:border-orange-900/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-orange-500" />
+                Kustomisasi Konten &amp; Badge Homepage
+              </h4>
+              <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                Ubah teks judul, deskripsi penjelasan, dan tag badge untuk setiap kartu beranda.
+              </p>
             </div>
-            <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
-              {cards.filter((c) => c.isActive).length} dari {cards.length} Aktif
-            </span>
+            <div className="flex items-center gap-2.5 w-full sm:w-auto shrink-0">
+              <button
+                type="button"
+                onClick={() => setShowEditModal(true)}
+                className="w-full sm:w-auto justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer"
+              >
+                <Edit3 className="w-4 h-4" />
+                <span>Edit Konten &amp; Badge</span>
+              </button>
+            </div>
           </div>
+
+          <div className="space-y-4">
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-6 bg-rn-accent rounded-full"></div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Live Preview</h3>
+              </div>
+              <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">
+                {cards.filter((c) => c.isActive).length} dari {cards.length} Aktif
+              </span>
+            </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 w-full">
             {cards.map((card, index) => {
@@ -519,6 +527,7 @@ export function AdminHomepageTab({ settings }: { settings: any[] }) {
               );
             })}
           </div>
+        </div>
         </div>
       )}
 
