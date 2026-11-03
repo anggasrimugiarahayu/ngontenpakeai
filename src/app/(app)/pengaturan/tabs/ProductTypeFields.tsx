@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import {
   BookOpen,
   Video,
@@ -125,8 +125,11 @@ export function VideoListEditor({
   const [loadingIndex, setLoadingIndex] = useState<number | null>(null);
   const [autoDetectedIndices, setAutoDetectedIndices] = useState<{ [key: number]: boolean }>({});
 
+  const videosRef = useRef(videos);
+  videosRef.current = videos;
+
   // Fungsi kalkulasi otomatis total durasi seluruh video di playlist
-  const handleAutoCalculateTotal = (vidsToCount = videos) => {
+  const handleAutoCalculateTotal = (vidsToCount = videosRef.current) => {
     const calculated = calculatePlaylistTotalDuration(vidsToCount);
     if (calculated) {
       onTotalDurationChange(calculated);
@@ -142,13 +145,18 @@ export function VideoListEditor({
     try {
       const res = await getYoutubeMetadataAction(url);
       if (res.success && res.duration) {
-        const updated = [...videos];
+        const updated = [...videosRef.current];
+        if (!updated[idx]) return;
+
         const currentVid = { ...updated[idx] };
 
-        // 1. Otomatis isi durasi video
+        // 1. Kunci youtubeUrl agar selalu tersimpan & tidak terhapus closure lama!
+        currentVid.youtubeUrl = url;
+
+        // 2. Otomatis isi durasi video
         currentVid.duration = res.duration;
 
-        // 2. Otomatis isi judul jika masih kosong atau default "Materi X:"
+        // 3. Otomatis isi judul jika masih kosong atau default "Materi X:"
         const isGenericTitle =
           !currentVid.title ||
           currentVid.title.trim() === `Materi ${idx + 1}:` ||
@@ -160,10 +168,11 @@ export function VideoListEditor({
         }
 
         updated[idx] = currentVid;
+        videosRef.current = updated;
         onChange(updated);
         setAutoDetectedIndices((prev) => ({ ...prev, [idx]: true }));
 
-        // 3. Otomatis hitung dan update Total Estimasi Durasi Kursus
+        // 4. Otomatis hitung dan update Total Estimasi Durasi Kursus
         handleAutoCalculateTotal(updated);
 
         toast.success(`Durasi materi #${idx + 1} otomatis terisi: ${res.duration}`, {
@@ -181,9 +190,9 @@ export function VideoListEditor({
 
   const addVideo = () => {
     const newId = `vid-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
-    const newIndex = videos.length + 1;
+    const newIndex = videosRef.current.length + 1;
     const updated = [
-      ...videos,
+      ...videosRef.current,
       {
         id: newId,
         title: `Materi ${newIndex}: `,
@@ -193,12 +202,14 @@ export function VideoListEditor({
         notes: "",
       },
     ];
+    videosRef.current = updated;
     onChange(updated);
   };
 
   const removeVideo = (index: number) => {
-    const updated = [...videos];
+    const updated = [...videosRef.current];
     updated.splice(index, 1);
+    videosRef.current = updated;
     onChange(updated);
     handleAutoCalculateTotal(updated);
   };
@@ -206,19 +217,21 @@ export function VideoListEditor({
   const moveVideo = (index: number, direction: "up" | "down") => {
     if (
       (direction === "up" && index === 0) ||
-      (direction === "down" && index === videos.length - 1)
+      (direction === "down" && index === videosRef.current.length - 1)
     )
       return;
     const targetIdx = direction === "up" ? index - 1 : index + 1;
-    const updated = [...videos];
+    const updated = [...videosRef.current];
     const [moved] = updated.splice(index, 1);
     updated.splice(targetIdx, 0, moved);
+    videosRef.current = updated;
     onChange(updated);
   };
 
   const updateItem = (index: number, field: keyof VideoItem, value: any) => {
-    const updated = [...videos];
+    const updated = [...videosRef.current];
     updated[index] = { ...updated[index], [field]: value };
+    videosRef.current = updated;
     onChange(updated);
 
     // Jika durasi diedit manual, otomatis perbarui total durasi
