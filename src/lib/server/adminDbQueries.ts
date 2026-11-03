@@ -25,6 +25,7 @@ export async function queryProducts() {
         id: true,
         categoryId: true,
         title: true,
+        description: true,
         price: true,
         originalPrice: true,
         pageCount: true,

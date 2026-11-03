@@ -158,7 +158,13 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                         )}
                         
                         <div className="flex flex-wrap gap-1.5 mb-4 mt-auto">
-                          <div className={`font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider ${!isLocked ? 'bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300' : 'bg-rn-accent/10 text-rn-accent dark:bg-rn-accent/20 dark:text-rn-accent'}`}>
+                          <div className={`font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider ${
+                            isFree 
+                              ? 'bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20' 
+                              : isPremiumEbook 
+                              ? 'bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'
+                              : 'bg-orange-50 dark:bg-orange-500/10 text-rn-accent dark:text-orange-400 border border-orange-500/20'
+                          }`}>
                             {isFree ? "Gratis" : (isPremiumEbook ? "Premium" : "Pro Only")}
                           </div>
                           {isOwned && (
@@ -166,16 +172,20 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                                Dimiliki
                              </div>
                           )}
-                          {ebook.productType === "VIDEO" ? (
-                            <div className="font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-400 flex items-center gap-1">
-                              <Video size={10} /> Video
-                            </div>
-                          ) : ebook.productType === "LINK" ? (
-                            <div className="font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider bg-purple-100 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 flex items-center gap-1">
-                              <Link2 size={10} /> Notion / Link
-                            </div>
-                          ) : null}
-                          {ebook.category && (
+                          {/* Format Produk - Tulisan saja tanpa icon */}
+                          <div className={`font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider ${
+                            ebook.productType === "VIDEO"
+                              ? "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 border border-red-500/20"
+                              : ebook.productType === "LINK"
+                              ? "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-500/20"
+                              : "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-500/20"
+                          }`}>
+                            {ebook.productType === "VIDEO" ? "VIDEO COURSE" : ebook.productType === "LINK" ? "NOTION / LINK" : "E-BOOK"}
+                          </div>
+                          {/* Kategori jika bukan generik Produk Digital */}
+                          {ebook.category && 
+                           ebook.category.name.toLowerCase() !== "produk digital" && 
+                           ebook.category.name.toLowerCase() !== "digital produk" && (
                             <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
                               {ebook.category.name}
                             </div>
@@ -187,7 +197,21 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                         {isOwned ? (
                           <span className="text-[17px] font-black text-green-600 dark:text-green-500">Dimiliki</span>
                         ) : isFree ? (
-                          <span className="text-[17px] font-black text-green-600 dark:text-green-500">Rp 0</span>
+                          <div className="flex flex-col">
+                            {ebook.originalPrice && ebook.originalPrice > 0 ? (
+                              <div className="flex items-center gap-1.5 mb-1">
+                                <span className="text-[11px] sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none whitespace-nowrap">
+                                  Rp {ebook.originalPrice.toLocaleString('id-ID')}
+                                </span>
+                                <span className="text-[9px] font-extrabold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-1 py-0.5 rounded border border-emerald-500/20 leading-none whitespace-nowrap">
+                                  100% GRATIS
+                                </span>
+                              </div>
+                            ) : null}
+                            <span className="text-[15px] sm:text-[17px] font-black text-green-600 dark:text-green-500 leading-none whitespace-nowrap">
+                              Rp 0
+                            </span>
+                          </div>
                         ) : (
                           <div className="flex flex-col">
                             {ebook.originalPrice && ebook.originalPrice > ebook.price ? (

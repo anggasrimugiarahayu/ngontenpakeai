@@ -348,11 +348,19 @@ export function AdminRuangBelajarTab({
                         {prod.title}
                       </h3>
 
-                      {/* Menu Titik Tiga Vertikal */}
+                      {/* Quick Edit & Menu Titik Tiga Vertikal */}
                       <div
-                        className="relative shrink-0 ml-1"
+                        className="flex items-center gap-1 shrink-0 ml-1"
                         onMouseDown={(e) => e.stopPropagation()}
                       >
+                        <button
+                          type="button"
+                          onClick={() => setEditingProduct(prod)}
+                          className="p-1 rounded-lg text-gray-400 hover:text-rn-accent hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
+                          title="Edit Produk"
+                        >
+                          <Edit size={15} />
+                        </button>
                         <button
                           type="button"
                           onClick={() =>
@@ -374,8 +382,19 @@ export function AdminRuangBelajarTab({
                             />
                             <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] p-2 z-40 text-xs animate-in fade-in zoom-in-95 duration-150">
                               <div className="px-2.5 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-[#2C3246] mb-1">
-                                Status E-Book
+                                Menu Produk
                               </div>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setOpenMenuProductId(null);
+                                  setEditingProduct(prod);
+                                }}
+                                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg font-medium hover:bg-gray-50 dark:hover:bg-white/10 text-gray-700 dark:text-gray-300 text-left transition-colors"
+                              >
+                                <Edit size={14} className="text-blue-500" />
+                                <span>Edit Produk</span>
+                              </button>
                               <button
                                 type="button"
                                 onClick={async () => {
@@ -427,6 +446,23 @@ export function AdminRuangBelajarTab({
                                   }`}
                                 />
                               </button>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  setOpenMenuProductId(null);
+                                  if (await confirmSwal("Yakin ingin menghapus produk ini?")) {
+                                    setLoading(true);
+                                    await deleteProduct(prod.id);
+                                    mutate("pengaturan");
+                                    router.refresh();
+                                    setLoading(false);
+                                  }
+                                }}
+                                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg font-medium hover:bg-red-50 dark:hover:bg-red-500/10 text-red-600 text-left transition-colors border-t border-gray-100 dark:border-[#2C3246] mt-1 pt-1.5"
+                              >
+                                <Trash2 size={14} />
+                                <span>Hapus Produk</span>
+                              </button>
                             </div>
                           </>
                         )}
@@ -437,7 +473,7 @@ export function AdminRuangBelajarTab({
                       <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
                       <span>{averageRating === "0.0" ? "0" : averageRating}</span>
                       <span className="text-gray-400 font-normal ml-0.5">
-                        ({reviewCount === 0 ? "0 ulasan" : `${reviewCount} ulasan`})
+                        ({reviewCount})
                       </span>
                       <span className="text-gray-300 dark:text-gray-600 mx-1">•</span>
                       <span className="text-gray-500 font-medium">
@@ -466,32 +502,42 @@ export function AdminRuangBelajarTab({
                       <div
                         className={`font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider ${
                           prod.accessLevel === "FREE"
-                            ? "bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300"
-                            : "bg-rn-accent/10 text-rn-accent dark:bg-rn-accent/20 dark:text-rn-accent"
+                            ? "bg-emerald-50 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                            : prod.accessLevel === "PREMIUM"
+                            ? "bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20"
+                            : "bg-orange-50 dark:bg-orange-500/10 text-rn-accent dark:text-orange-400 border border-orange-500/20"
                         }`}
                       >
                         {prod.accessLevel === "FREE"
                           ? "Gratis"
                           : prod.accessLevel === "PREMIUM"
                           ? "Premium"
-                          : "PRO"}
+                          : "Pro Only"}
                       </div>
-                      <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
-                        {prod.category?.name || "PRODUK DIGITAL"}
+                      {/* Format Produk - Tulisan saja tanpa icon */}
+                      <div
+                        className={`font-bold rounded px-1.5 py-0.5 text-[9px] uppercase tracking-wider ${
+                          prod.productType === "VIDEO"
+                            ? "bg-red-50 text-red-600 dark:bg-red-950/40 dark:text-red-400 border border-red-500/20"
+                            : prod.productType === "LINK"
+                            ? "bg-purple-50 text-purple-600 dark:bg-purple-950/40 dark:text-purple-400 border border-purple-500/20"
+                            : "bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-400 border border-blue-500/20"
+                        }`}
+                      >
+                        {prod.productType === "VIDEO"
+                          ? "VIDEO COURSE"
+                          : prod.productType === "LINK"
+                          ? "NOTION / LINK"
+                          : "E-BOOK"}
                       </div>
-                      {prod.productType === "VIDEO" ? (
-                        <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-red-400 uppercase tracking-wider flex items-center gap-1">
-                          <Video size={10} /> Video
-                        </div>
-                      ) : prod.productType === "LINK" ? (
-                        <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-purple-100 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400 uppercase tracking-wider flex items-center gap-1">
-                          <Link2 size={10} /> Link / Notion
-                        </div>
-                      ) : (
-                        <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-blue-100 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 uppercase tracking-wider flex items-center gap-1">
-                          <BookOpen size={10} /> E-Book
-                        </div>
-                      )}
+                      {/* Kategori jika bukan generik Produk Digital */}
+                      {prod.category &&
+                        prod.category.name.toLowerCase() !== "produk digital" &&
+                        prod.category.name.toLowerCase() !== "digital produk" && (
+                          <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-300 uppercase tracking-wider">
+                            {prod.category.name}
+                          </div>
+                        )}
                       {prod.isActive === false && (
                         <div className="font-bold rounded px-1.5 py-0.5 text-[9px] bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 uppercase tracking-wider flex items-center gap-1">
                           <EyeOff size={10} /> Nonaktif
@@ -501,52 +547,55 @@ export function AdminRuangBelajarTab({
                   </div>
 
                   <div className="mt-auto pt-2 flex items-end justify-between gap-x-2">
-                    <div className="flex flex-col">
-                      {(prod.accessLevel === "PREMIUM" ||
-                        prod.accessLevel === "PRO") &&
-                      prod.originalPrice &&
-                      prod.originalPrice > prod.price ? (
-                        <span className="text-[11px] sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none mb-1 whitespace-nowrap">
-                          Rp {prod.originalPrice.toLocaleString("id-ID")}
+                    {prod.accessLevel === "FREE" ? (
+                      <div className="flex flex-col">
+                        {prod.originalPrice && prod.originalPrice > 0 ? (
+                          <div className="flex items-center gap-1.5 mb-1">
+                            <span className="text-[11px] sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none whitespace-nowrap">
+                              Rp {prod.originalPrice.toLocaleString("id-ID")}
+                            </span>
+                            <span className="text-[9px] font-extrabold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-1 py-0.5 rounded border border-emerald-500/20 leading-none whitespace-nowrap">
+                              100% GRATIS
+                            </span>
+                          </div>
+                        ) : null}
+                        <span className="text-[15px] sm:text-[17px] font-black text-green-600 dark:text-green-500 leading-none whitespace-nowrap">
+                          Rp 0
                         </span>
-                      ) : null}
-                      <span className="text-[15px] sm:text-[17px] font-black text-gray-900 dark:text-white leading-none whitespace-nowrap">
-                        {prod.accessLevel === "PREMIUM" || prod.accessLevel === "PRO"
-                          ? `Rp ${(prod.price || 0).toLocaleString("id-ID")}`
-                          : "Rp 0"}
-                      </span>
-                      {prod.accessLevel === "PRO" && (
-                        <span className="text-[9px] sm:text-[10px] text-rn-accent font-bold mt-1.5 whitespace-nowrap">
-                          (Rp 0 khusus PRO)
+                      </div>
+                    ) : (
+                      <div className="flex flex-col">
+                        {prod.originalPrice && prod.originalPrice > prod.price ? (
+                          <span className="text-[11px] sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none mb-1 whitespace-nowrap">
+                            Rp {prod.originalPrice.toLocaleString("id-ID")}
+                          </span>
+                        ) : null}
+                        <span className="text-[15px] sm:text-[17px] font-black text-gray-900 dark:text-white leading-none whitespace-nowrap">
+                          Rp {prod.price ? prod.price.toLocaleString("id-ID") : "0"}
                         </span>
-                      )}
-                    </div>
+                        {prod.accessLevel === "PRO" && (
+                          <span className="text-[9px] sm:text-[10px] text-rn-accent font-bold mt-1.5 whitespace-nowrap">
+                            (Tersedia di Paket)
+                          </span>
+                        )}
+                      </div>
+                    )}
 
                     <div
-                      className="flex items-center gap-1 sm:gap-1.5 shrink-0 ml-auto"
+                      className="shrink-0 ml-auto"
                       onMouseDown={(e) => e.stopPropagation()}
                     >
                       <button
+                        type="button"
                         onClick={() => setEditingProduct(prod)}
-                        className="flex items-center justify-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-white hover:bg-gray-50 border border-gray-200 text-gray-700 dark:bg-[#141B31] dark:hover:bg-[#1f2947] dark:border-[#2C3246] dark:text-gray-200 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
+                        className="whitespace-nowrap shrink-0 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white rounded-lg px-3 py-1.5 sm:px-4 sm:py-2 text-[10px] sm:text-xs font-bold shadow-sm shadow-orange-500/20 transition-all cursor-pointer"
+                        title="Klik untuk Edit Produk"
                       >
-                        <Edit className="w-3 h-3" />{" "}
-                        <span className="hidden sm:inline">Edit</span>
-                      </button>
-                      <button
-                        onClick={async () => {
-                          if (await confirmSwal("Yakin ingin menghapus E-book ini?")) {
-                            setLoading(true);
-                            await deleteProduct(prod.id);
-                            mutate("pengaturan");
-                            router.refresh();
-                            setLoading(false);
-                          }
-                        }}
-                        className="flex items-center justify-center gap-1 px-2 py-1 sm:px-2.5 sm:py-1.5 bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 dark:bg-red-950/30 dark:hover:bg-red-900/40 dark:border-red-900/40 dark:text-red-400 rounded-lg transition-colors text-[9px] sm:text-[10px] font-bold"
-                      >
-                        <Trash2 className="w-3 h-3" />{" "}
-                        <span className="hidden sm:inline">Hapus</span>
+                        {prod.productType === "VIDEO"
+                          ? "Buka Kelas"
+                          : prod.productType === "LINK"
+                          ? "Buka Akses"
+                          : "Buka E-Book"}
                       </button>
                     </div>
                   </div>

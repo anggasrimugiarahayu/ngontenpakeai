@@ -841,35 +841,44 @@ export function AdminRuangBelajarModals({
                 />
               </div>
 
-              {(addAccessLevel === "PREMIUM" || addAccessLevel === "PRO") && (
-                <div className="grid grid-cols-2 gap-4 mt-2">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">
-                      HARGA JUAL (Rp)
-                    </label>
-                    <input
-                      name="price"
-                      type="number"
-                      min="0"
-                      placeholder="Contoh: 49000"
-                      className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">
-                      HARGA CORET (Rp)
-                    </label>
-                    <input
-                      name="originalPrice"
-                      type="number"
-                      min="0"
-                      placeholder="Contoh: 99000"
-                      className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all line-through"
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1">
+                    HARGA JUAL (Rp) {addAccessLevel === "FREE" && <span className="text-green-500 font-semibold">(Gratis)</span>}
+                  </label>
+                  <input
+                    name="price"
+                    type="number"
+                    min="0"
+                    defaultValue={addAccessLevel === "FREE" ? "0" : ""}
+                    value={addAccessLevel === "FREE" ? 0 : undefined}
+                    readOnly={addAccessLevel === "FREE"}
+                    placeholder={addAccessLevel === "FREE" ? "0 (Gratis)" : "Contoh: 49000"}
+                    className={`w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all ${
+                      addAccessLevel === "FREE" ? "bg-gray-100 dark:bg-white/5 cursor-not-allowed opacity-75 font-semibold text-green-600" : ""
+                    }`}
+                    required
+                  />
+                  {addAccessLevel === "FREE" && (
+                    <p className="text-[10px] text-gray-400 mt-1">Otomatis Rp 0 untuk produk Free.</p>
+                  )}
                 </div>
-              )}
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1">
+                    HARGA CORET (Rp) <span className="text-[10px] text-gray-400 font-normal">(Opsional)</span>
+                  </label>
+                  <input
+                    name="originalPrice"
+                    type="number"
+                    min="0"
+                    placeholder="Contoh: 99000"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all line-through"
+                  />
+                  {addAccessLevel === "FREE" && (
+                    <p className="text-[10px] text-gray-400 mt-1">Tampilkan coret Rp 99.000 → Rp 0 (100% GRATIS) di katalog.</p>
+                  )}
+                </div>
+              </div>
 
               <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-[#2C3246]">
                 <button
@@ -1068,6 +1077,7 @@ export function AdminRuangBelajarModals({
             </div>
 
             <form
+              key={editingProduct.id}
               onSubmit={async (e) => {
                 e.preventDefault();
                 setIsSaving(true);
@@ -1467,38 +1477,45 @@ export function AdminRuangBelajarModals({
                 />
               </div>
 
-              {(editingProduct.accessLevel === "PREMIUM" ||
-                editingProduct.accessLevel === "PRO") && (
-                <div className="grid grid-cols-2 gap-4 mt-2">
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">
-                      HARGA JUAL (Rp)
-                    </label>
-                    <input
-                      name="price"
-                      type="number"
-                      min="0"
-                      defaultValue={editingProduct.price || 0}
-                      placeholder="Contoh: 49000"
-                      className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all"
-                      required
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-gray-500 mb-1">
-                      HARGA CORET (Rp)
-                    </label>
-                    <input
-                      name="originalPrice"
-                      type="number"
-                      min="0"
-                      defaultValue={editingProduct.originalPrice || ""}
-                      placeholder="Contoh: 99000"
-                      className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all line-through"
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-4 mt-2">
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1">
+                    HARGA JUAL (Rp) {editingProduct.accessLevel === "FREE" && <span className="text-green-500 font-semibold">(Gratis)</span>}
+                  </label>
+                  <input
+                    name="price"
+                    type="number"
+                    min="0"
+                    defaultValue={editingProduct.accessLevel === "FREE" ? 0 : (editingProduct.price || 0)}
+                    value={editingProduct.accessLevel === "FREE" ? 0 : undefined}
+                    readOnly={editingProduct.accessLevel === "FREE"}
+                    placeholder={editingProduct.accessLevel === "FREE" ? "0 (Gratis)" : "Contoh: 49000"}
+                    className={`w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all ${
+                      editingProduct.accessLevel === "FREE" ? "bg-gray-100 dark:bg-white/5 cursor-not-allowed opacity-75 font-semibold text-green-600" : ""
+                    }`}
+                    required
+                  />
+                  {editingProduct.accessLevel === "FREE" && (
+                    <p className="text-[10px] text-gray-400 mt-1">Otomatis Rp 0 untuk produk Free.</p>
+                  )}
                 </div>
-              )}
+                <div>
+                  <label className="block text-xs font-bold text-gray-500 mb-1">
+                    HARGA CORET (Rp) <span className="text-[10px] text-gray-400 font-normal">(Opsional)</span>
+                  </label>
+                  <input
+                    name="originalPrice"
+                    type="number"
+                    min="0"
+                    defaultValue={editingProduct.originalPrice || ""}
+                    placeholder="Contoh: 99000"
+                    className="w-full bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-rn-accent focus:ring-1 focus:ring-rn-accent transition-all line-through"
+                  />
+                  {editingProduct.accessLevel === "FREE" && (
+                    <p className="text-[10px] text-gray-400 mt-1">Tampilkan coret Rp 99.000 → Rp 0 (100% GRATIS) di katalog.</p>
+                  )}
+                </div>
+              </div>
 
               <div className="flex justify-end gap-3 mt-2 pt-4 border-t border-gray-100 dark:border-[#2C3246]">
                 <button

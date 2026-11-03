@@ -191,7 +191,7 @@ export default function ProductDetailClient({ slug, initialData }: { slug: strin
                       </div>
                       <div className="flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400">
                         <Tag className="w-4 h-4" />
-                        {ebook.category?.name || 'Produk Digital'}
+                        {productTypeName}
                       </div>
                     </div>
                     
@@ -213,8 +213,24 @@ export default function ProductDetailClient({ slug, initialData }: { slug: strin
                          <span className="text-sm font-bold text-gray-900 dark:text-white">{isFree ? `${productTypeName} Gratis` : (isPremiumEbook ? "Eksklusif Premium" : `${productTypeName} PRO`)}</span>
                          <span className="rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-orange-500 shadow-sm">Akses Selamanya</span>
                        </div>
-                       <div className="text-2xl font-black text-gray-900 dark:text-white mb-1">
-                         Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
+                       <div className="flex items-baseline gap-2 mb-1 flex-wrap">
+                         {isFree && ebook.originalPrice && ebook.originalPrice > 0 ? (
+                           <>
+                             <span className="text-sm font-semibold text-gray-400 line-through">
+                               Rp {ebook.originalPrice.toLocaleString('id-ID')}
+                             </span>
+                             <span className="text-2xl font-black text-green-600 dark:text-green-500">
+                               Rp 0
+                             </span>
+                             <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 uppercase tracking-wider">
+                               100% GRATIS
+                             </span>
+                           </>
+                         ) : (
+                           <div className="text-2xl font-black text-gray-900 dark:text-white">
+                             Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
+                           </div>
+                         )}
                        </div>
                         <p className="text-xs text-gray-500 mt-2 leading-relaxed">
                           {isFree
