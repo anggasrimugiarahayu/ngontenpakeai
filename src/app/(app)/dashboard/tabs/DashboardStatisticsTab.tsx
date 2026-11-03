@@ -876,7 +876,7 @@ export function DashboardStatisticsTab({
                       </td>
                       <td className="px-6 py-4 text-center">
                         <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
-                          {formatShortIDR(product.amount)}
+                          {product.amount === 0 ? "0 (Gratis)" : formatShortIDR(product.amount)}
                         </span>
                       </td>
                       <td className="px-6 py-4 text-center">

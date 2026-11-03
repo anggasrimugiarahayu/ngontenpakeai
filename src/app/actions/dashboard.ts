@@ -105,8 +105,11 @@ async function calculateDashboardStats() {
       _sum: { amount: true },
       _count: { id: true },
       where: { status: 'SUCCESS' },
-      orderBy: { _sum: { amount: 'desc' } },
-      take: 5
+      orderBy: [
+        { _sum: { amount: 'desc' } },
+        { _count: { id: 'desc' } }
+      ],
+      take: 100
     }).catch(() => []),
 
     prisma.order.findMany({

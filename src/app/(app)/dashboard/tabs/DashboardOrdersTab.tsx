@@ -220,7 +220,9 @@ export function DashboardOrdersTab({
                 <div className="flex items-center gap-2">
                   <span className="w-20">Payment:</span>
                   <span className="font-semibold text-gray-900 dark:text-gray-200">
-                    {format(paymentDate, "dd MMM yyyy HH:mm")}
+                    {order.paymentMethod === "FREE_CLAIM"
+                      ? "Klaim Gratis (Rp 0)"
+                      : format(paymentDate, "dd MMM yyyy HH:mm")}
                   </span>
                 </div>
               </div>
@@ -586,6 +588,11 @@ export function DashboardOrdersTab({
                               <span className="inline-block text-[10px] font-semibold px-2 py-0.5 border border-gray-200 dark:border-white/20 rounded-full text-gray-500 dark:text-gray-400">
                                 digital
                               </span>
+                              {order.paymentMethod === "FREE_CLAIM" && (
+                                <span className="inline-block text-[10px] font-bold px-2 py-0.5 bg-emerald-50 text-emerald-600 dark:bg-emerald-950/40 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800/40 rounded-full">
+                                  Klaim Gratis
+                                </span>
+                              )}
                               {order.addons && order.addons.length > 0 && (
                                 <span className="inline-block text-[10px] font-bold px-2 py-0.5 bg-orange-50 text-orange-600 dark:bg-orange-950/40 dark:text-orange-400 border border-orange-200 dark:border-orange-800/40 rounded-full">
                                   +{order.addons.length} Add-on

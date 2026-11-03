@@ -345,7 +345,7 @@ export async function claimFreeProduct(productId: string) {
     prisma.user.findUnique({ where: { id: userId } }),
     prisma.digitalProduct.findUnique({
       where: { id: productId },
-      select: { id: true, accessLevel: true },
+      select: { id: true, accessLevel: true, productType: true },
     }),
     prisma.order.findMany({
       where: {
@@ -386,9 +386,36 @@ export async function claimFreeProduct(productId: string) {
     create: { userId, digitalProductId: productId },
   });
 
+  // Rekam transaksi di tabel Order agar terlacak di Orders dan Product Lifetime Sales
+  const existingOrder = await prisma.order.findFirst({
+    where: {
+      userId,
+      digitalProductId: productId,
+      status: "SUCCESS",
+    },
+  });
+
+  if (!existingOrder) {
+    await prisma.order.create({
+      data: {
+        userId,
+        digitalProductId: productId,
+        orderType: product.productType || "EBOOK",
+        amount: 0,
+        status: "SUCCESS",
+        paymentMethod: isFree ? "FREE_CLAIM" : (isAdmin ? "ADMIN_GRANT" : "PACKAGE_INCLUDED"),
+      },
+    });
+  }
+
   safeRevalidateTag("user-ownership");
+  safeRevalidateTag("user-orders");
+  safeRevalidateTag("admin-dashboard-stats");
+  safeRevalidateTag("dashboard-data");
+  safeRevalidateTag("dashboard-orders");
   revalidatePath(`/ruang-belajar`);
   revalidatePath(`/ruang-belajar/[slug]`);
+  revalidatePath(`/dashboard`);
 }
 
 // Aliases for multi-format digital products (E-Book, Video Course, Notion / Link)
