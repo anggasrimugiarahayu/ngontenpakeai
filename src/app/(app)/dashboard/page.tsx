@@ -1,8 +1,9 @@
 import { auth } from "@/auth";
+import prisma from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import DashboardClient from "./DashboardClient";
 import { getDashboardDataAction } from "@/app/actions/dashboard";
-import { isAdminEmail } from "@/lib/admin";
+import { isAdminEmail, isAdminUser } from "@/lib/admin";
 
 export const metadata = {
   title: "Admin Dashboard | ruangcreativemuslim",
@@ -15,7 +16,12 @@ export default async function DashboardPage() {
     redirect("/login");
   }
 
-  const isAdmin = isAdminEmail(session?.user?.email);
+  const dbUser = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { role: true, email: true },
+  });
+
+  const isAdmin = isAdminUser(dbUser) || isAdminEmail(session?.user?.email);
   
   if (!isAdmin) {
     redirect("/");

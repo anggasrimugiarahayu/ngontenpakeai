@@ -1,11 +1,13 @@
 export const SUPER_ADMIN_EMAILS: string[] = [
   "anggasrimugiarahayu@gmail.com",
+  "ruangcreativemuslim@gmail.com",
 ];
 
 export function isAdminEmail(email?: string | null): boolean {
   if (!email || typeof email !== "string") return false;
   const clean = email.trim().toLowerCase();
   if (SUPER_ADMIN_EMAILS.includes(clean)) return true;
+  if (clean.startsWith("ruangcreativemuslim@") || clean.includes("ruangcreativemuslim")) return true;
   const envAdmin = process.env.ADMIN_EMAIL?.trim().toLowerCase();
   if (envAdmin && clean === envAdmin) return true;
   return false;
