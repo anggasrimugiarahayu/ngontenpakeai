@@ -199,17 +199,15 @@ export default function RuangBelajarClient({ initialData }: { initialData?: any 
                         ) : isFree ? (
                           <div className="flex flex-col">
                             {ebook.originalPrice && ebook.originalPrice > 0 ? (
-                              <div className="flex items-center gap-1.5 mb-1">
-                                <span className="text-[11px] sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none whitespace-nowrap">
-                                  Rp {ebook.originalPrice.toLocaleString('id-ID')}
-                                </span>
-                                <span className="text-[9px] font-extrabold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-1 py-0.5 rounded border border-emerald-500/20 leading-none whitespace-nowrap">
-                                  100% GRATIS
-                                </span>
-                              </div>
+                              <span className="text-[11px] sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none mb-1 whitespace-nowrap">
+                                Rp {ebook.originalPrice.toLocaleString('id-ID')}
+                              </span>
                             ) : null}
                             <span className="text-[15px] sm:text-[17px] font-black text-green-600 dark:text-green-500 leading-none whitespace-nowrap">
                               Rp 0
+                            </span>
+                            <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-bold mt-1.5 whitespace-nowrap">
+                              (100% Gratis)
                             </span>
                           </div>
                         ) : (

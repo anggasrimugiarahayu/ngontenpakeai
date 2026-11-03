@@ -303,6 +303,8 @@ export function AdminRuangBelajarTab({
                   setDragOverIdx(null);
                 }}
                 className={`cursor-grab active:cursor-grabbing select-none flex flex-row items-start w-full hover:border-rn-accent dark:hover:border-orange-500/50 hover:shadow-xl hover:-translate-y-1 hover:shadow-gray-200 dark:hover:shadow-black/50 transition-all duration-200 border-2 border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] rounded-[16px] sm:rounded-[20px] relative p-3 sm:p-4 gap-3 sm:gap-4 ${
+                  openMenuProductId === prod.id ? "z-30" : "z-0"
+                } ${
                   draggedIdx === index
                     ? "opacity-30 scale-95 border-dashed border-rn-accent ring-2 ring-rn-accent/30"
                     : ""
@@ -348,19 +350,11 @@ export function AdminRuangBelajarTab({
                         {prod.title}
                       </h3>
 
-                      {/* Quick Edit & Menu Titik Tiga Vertikal */}
+                      {/* Menu Titik Tiga Vertikal */}
                       <div
-                        className="flex items-center gap-1 shrink-0 ml-1"
+                        className="relative shrink-0 ml-1"
                         onMouseDown={(e) => e.stopPropagation()}
                       >
-                        <button
-                          type="button"
-                          onClick={() => setEditingProduct(prod)}
-                          className="p-1 rounded-lg text-gray-400 hover:text-rn-accent hover:bg-gray-100 dark:hover:bg-white/10 transition-colors"
-                          title="Edit Produk"
-                        >
-                          <Edit size={15} />
-                        </button>
                         <button
                           type="button"
                           onClick={() =>
@@ -377,10 +371,15 @@ export function AdminRuangBelajarTab({
                         {openMenuProductId === prod.id && (
                           <>
                             <div
-                              className="fixed inset-0 z-30"
+                              className="fixed inset-0 z-40"
+                              onMouseDown={(e) => e.stopPropagation()}
                               onClick={() => setOpenMenuProductId(null)}
                             />
-                            <div className="absolute right-0 top-full mt-1 w-52 bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] p-2 z-40 text-xs animate-in fade-in zoom-in-95 duration-150">
+                            <div
+                              draggable={false}
+                              onMouseDown={(e) => e.stopPropagation()}
+                              className="absolute right-0 top-full mt-1.5 w-52 bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] p-2 z-50 text-xs animate-in fade-in zoom-in-95 duration-150"
+                            >
                               <div className="px-2.5 py-1.5 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-[#2C3246] mb-1">
                                 Menu Produk
                               </div>
@@ -550,17 +549,15 @@ export function AdminRuangBelajarTab({
                     {prod.accessLevel === "FREE" ? (
                       <div className="flex flex-col">
                         {prod.originalPrice && prod.originalPrice > 0 ? (
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span className="text-[11px] sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none whitespace-nowrap">
-                              Rp {prod.originalPrice.toLocaleString("id-ID")}
-                            </span>
-                            <span className="text-[9px] font-extrabold text-emerald-600 bg-emerald-50 dark:bg-emerald-500/10 px-1 py-0.5 rounded border border-emerald-500/20 leading-none whitespace-nowrap">
-                              100% GRATIS
-                            </span>
-                          </div>
+                          <span className="text-[11px] sm:text-[13px] font-medium text-gray-400 dark:text-gray-500 line-through leading-none mb-1 whitespace-nowrap">
+                            Rp {prod.originalPrice.toLocaleString("id-ID")}
+                          </span>
                         ) : null}
                         <span className="text-[15px] sm:text-[17px] font-black text-green-600 dark:text-green-500 leading-none whitespace-nowrap">
                           Rp 0
+                        </span>
+                        <span className="text-[9px] sm:text-[10px] text-green-600 dark:text-green-400 font-bold mt-1.5 whitespace-nowrap">
+                          (100% Gratis)
                         </span>
                       </div>
                     ) : (

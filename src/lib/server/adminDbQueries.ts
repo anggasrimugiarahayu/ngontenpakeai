@@ -47,7 +47,9 @@ export async function queryProducts() {
         isActive: true,
         createdAt: true,
         category: { select: { id: true, name: true, slug: true } },
-        vouchers: { select: { id: true, code: true, discountType: true, discountValue: true, isActive: true } }
+        vouchers: { select: { id: true, code: true, discountType: true, discountValue: true, isActive: true } },
+        reviews: { select: { rating: true } },
+        _count: { select: { owners: true, favorites: true } }
       },
       orderBy: { createdAt: "desc" }
     }),
