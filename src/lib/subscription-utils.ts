@@ -2,6 +2,7 @@ import {
   INITIAL_PACKAGES,
   mergePricingConfig,
   PricingCategoryKey,
+  BundledRoomsConfig,
 } from "./pricing-packages";
 import { isAdminEmail, isAdminUser, SUPER_ADMIN_EMAILS } from "./admin";
 
@@ -15,6 +16,7 @@ export interface ResolvedPackageMeta {
   periodLabel: string;
   image: string;
   bundledProductIds: string[];
+  bundledRooms?: BundledRoomsConfig;
 }
 
 export function resolvePackageMeta(
@@ -73,6 +75,7 @@ export function resolvePackageMeta(
       bundledProductIds: Array.isArray(pkg.bundledProductIds)
         ? pkg.bundledProductIds
         : [],
+      bundledRooms: pkg.bundledRooms,
     };
   }
 
@@ -136,6 +139,30 @@ export function isBookPackageOrder(
   if (!orderType || orderType === "EBOOK") return false;
   const meta = resolvePackageMeta(orderType, rawPricingConfig);
   return meta.category === "ebook" || meta.category === "plus";
+}
+
+/**
+ * Mengambil seluruh ID produk digital yang di-include ke dalam paket-paket
+ * yang berhasil dibeli oleh user berdasarkan konfigurasi pricing terkini.
+ * Memastikan bila admin menambahkan produk ke-7 ke Paket 99K di kemudian hari,
+ * pembeli lama langsung otomatis memperoleh produk tersebut saat membuka aplikasi.
+ */
+export function resolveUserPackageBundledProductIds(
+  userOrders: any[] = [],
+  rawPricingConfig?: any
+): string[] {
+  const ids = new Set<string>();
+  if (!Array.isArray(userOrders)) return [];
+  for (const o of userOrders) {
+    if (o?.status && o.status !== "SUCCESS") continue;
+    const meta = resolvePackageMeta(o?.orderType || "", rawPricingConfig);
+    if (Array.isArray(meta.bundledProductIds)) {
+      meta.bundledProductIds.forEach((pid) => {
+        if (pid) ids.add(pid);
+      });
+    }
+  }
+  return Array.from(ids);
 }
 
 export function addDurationToExpiry(
@@ -218,6 +245,31 @@ export function calculateSubscriptionFulfillment(params: {
     );
   }
 
+  // Cross-room bundling fulfillment (misal paket E-Book atau Tools meng-include akses ruang lain)
+  if (meta.bundledRooms) {
+    if (meta.bundledRooms.toolsDays && meta.bundledRooms.toolsDays > 0) {
+      updateData.proToolsExpiredAt = addDurationToExpiry(
+        updateData.proToolsExpiredAt || currentUser?.proToolsExpiredAt,
+        meta.bundledRooms.toolsDays,
+        now
+      );
+    }
+    if (meta.bundledRooms.risetDays && meta.bundledRooms.risetDays > 0) {
+      updateData.proRisetExpiredAt = addDurationToExpiry(
+        updateData.proRisetExpiredAt || currentUser?.proRisetExpiredAt,
+        meta.bundledRooms.risetDays,
+        now
+      );
+    }
+    if (meta.bundledRooms.automationDays && meta.bundledRooms.automationDays > 0) {
+      updateData.proAutomationExpiredAt = addDurationToExpiry(
+        updateData.proAutomationExpiredAt || currentUser?.proAutomationExpiredAt,
+        meta.bundledRooms.automationDays,
+        now
+      );
+    }
+  }
+
   return {
     meta,
     updateData,
@@ -254,28 +306,23 @@ export function computeUserSubscriptionStatus(
   const now = new Date();
   const isAdmin = isAdminUser(dbUser);
 
-  const hasTools =
-    isAdmin ||
-    Boolean(
-      dbUser?.proToolsExpiredAt && new Date(dbUser.proToolsExpiredAt) > now
-    );
-
-  const hasAutomation =
-    isAdmin ||
-    Boolean(
-      dbUser?.proAutomationExpiredAt &&
-        new Date(dbUser.proAutomationExpiredAt) > now
-    );
-
-  // Backward-compatible fallback for Riset orders purchased before proRisetExpiredAt column existed
+  let effectiveToolsExpiry: Date | null = dbUser?.proToolsExpiredAt
+    ? new Date(dbUser.proToolsExpiredAt)
+    : null;
+  let effectiveAutoExpiry: Date | null = dbUser?.proAutomationExpiredAt
+    ? new Date(dbUser.proAutomationExpiredAt)
+    : null;
   let effectiveRisetExpiry: Date | null = dbUser?.proRisetExpiredAt
     ? new Date(dbUser.proRisetExpiredAt)
     : null;
 
-  if (!effectiveRisetExpiry && Array.isArray(userOrders)) {
+  if (Array.isArray(userOrders)) {
     for (const o of userOrders) {
       if (o?.status && o.status !== "SUCCESS") continue;
       const meta = resolvePackageMeta(o?.orderType || "", rawPricingConfig);
+      const orderDate = o?.createdAt ? new Date(o.createdAt) : now;
+
+      // Backward-compatible fallback for Riset orders purchased before proRisetExpiredAt column existed
       if (
         (meta.category === "riset" || meta.category === "plus") &&
         o?.createdAt
@@ -283,14 +330,56 @@ export function computeUserSubscriptionStatus(
         const exp = addDurationToExpiry(
           effectiveRisetExpiry,
           meta.durationDays || 30,
-          new Date(o.createdAt)
+          orderDate
         );
         if (!effectiveRisetExpiry || exp > effectiveRisetExpiry) {
           effectiveRisetExpiry = exp;
         }
       }
+
+      // Check bundledRooms dynamic cross-room bonus
+      if (meta.bundledRooms) {
+        if (meta.bundledRooms.toolsDays && meta.bundledRooms.toolsDays > 0) {
+          const exp = addDurationToExpiry(
+            effectiveToolsExpiry,
+            meta.bundledRooms.toolsDays,
+            orderDate
+          );
+          if (!effectiveToolsExpiry || exp > effectiveToolsExpiry) {
+            effectiveToolsExpiry = exp;
+          }
+        }
+        if (meta.bundledRooms.risetDays && meta.bundledRooms.risetDays > 0) {
+          const exp = addDurationToExpiry(
+            effectiveRisetExpiry,
+            meta.bundledRooms.risetDays,
+            orderDate
+          );
+          if (!effectiveRisetExpiry || exp > effectiveRisetExpiry) {
+            effectiveRisetExpiry = exp;
+          }
+        }
+        if (meta.bundledRooms.automationDays && meta.bundledRooms.automationDays > 0) {
+          const exp = addDurationToExpiry(
+            effectiveAutoExpiry,
+            meta.bundledRooms.automationDays,
+            orderDate
+          );
+          if (!effectiveAutoExpiry || exp > effectiveAutoExpiry) {
+            effectiveAutoExpiry = exp;
+          }
+        }
+      }
     }
   }
+
+  const hasTools =
+    isAdmin ||
+    Boolean(effectiveToolsExpiry && effectiveToolsExpiry > now);
+
+  const hasAutomation =
+    isAdmin ||
+    Boolean(effectiveAutoExpiry && effectiveAutoExpiry > now);
 
   const hasRiset =
     isAdmin || Boolean(effectiveRisetExpiry && effectiveRisetExpiry > now);
@@ -341,11 +430,11 @@ export function computeUserSubscriptionStatus(
     isPro,
     isFullyPro,
     badgeName,
-    proToolsExpiredAt: dbUser?.proToolsExpiredAt
-      ? new Date(dbUser.proToolsExpiredAt).toISOString()
+    proToolsExpiredAt: effectiveToolsExpiry
+      ? effectiveToolsExpiry.toISOString()
       : null,
-    proAutomationExpiredAt: dbUser?.proAutomationExpiredAt
-      ? new Date(dbUser.proAutomationExpiredAt).toISOString()
+    proAutomationExpiredAt: effectiveAutoExpiry
+      ? effectiveAutoExpiry.toISOString()
       : null,
     proRisetExpiredAt: effectiveRisetExpiry
       ? effectiveRisetExpiry.toISOString()

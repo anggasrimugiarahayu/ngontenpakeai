@@ -132,6 +132,20 @@ export function PricingEditModal({
     handleUpdateCurrentPkg("bundledProductIds", updated);
   };
 
+  const handleSelectAllPro = () => {
+    if (!currentPkg || !products) return;
+    const proIds = products.filter((p) => p.accessLevel === "PRO").map((p) => p.id);
+    handleUpdateCurrentPkg(
+      "bundledProductIds",
+      Array.from(new Set([...(currentPkg.bundledProductIds || []), ...proIds]))
+    );
+  };
+
+  const handleClearAllBundled = () => {
+    if (!currentPkg) return;
+    handleUpdateCurrentPkg("bundledProductIds", []);
+  };
+
   // Add a new package to the current active category
   const handleAddNewPackage = (category: PricingCategoryKey) => {
     const newId = generatePackageId(category);
@@ -657,13 +671,33 @@ export function PricingEditModal({
 
                   {/* Bundling E-Book Otomatis */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
-                      <Package className="w-4 h-4 text-orange-500" />
-                      <span>E-Book Bundling Otomatis (Database Unlock)</span>
-                    </label>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                      Centang e-book yang akan otomatis dimiliki oleh member setelah pembayaran paket ini berhasil.
-                    </p>
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
+                      <div>
+                        <label className="block text-sm font-bold text-gray-900 dark:text-white mb-0.5 flex items-center gap-2">
+                          <Package className="w-4 h-4 text-orange-500" />
+                          <span>E-Book Bundling Otomatis (Database Unlock)</span>
+                        </label>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Centang materi yang otomatis dimiliki member paket ini ({currentPkg.bundledProductIds?.length || 0} dipilih).
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={handleSelectAllPro}
+                          className="text-[11px] font-bold text-orange-500 hover:text-orange-600 bg-orange-50 dark:bg-orange-500/10 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                        >
+                          + Pilih Semua PRO
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleClearAllBundled}
+                          className="text-[11px] font-bold text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 bg-gray-100 dark:bg-gray-800 px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                        >
+                          Reset
+                        </button>
+                      </div>
+                    </div>
 
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 max-h-52 overflow-y-auto p-1 border border-gray-100 dark:border-[#2C3246] rounded-xl">
                       {products && products.length > 0 ? (
@@ -685,7 +719,7 @@ export function PricingEditModal({
                                 type="checkbox"
                                 checked={isBundled}
                                 onChange={() => handleToggleProduct(p.id)}
-                                className="mt-0.5 rounded text-orange-500 focus:ring-orange-500 border-gray-300 dark:border-gray-700 bg-transparent w-4 h-4"
+                                className="mt-0.5 rounded text-orange-500 focus:ring-orange-500 border-gray-300 dark:border-gray-700 bg-transparent w-4 h-4 cursor-pointer"
                               />
                               <div className="flex flex-col">
                                 <span className="text-xs font-bold text-gray-900 dark:text-white line-clamp-1 leading-tight">
@@ -703,6 +737,141 @@ export function PricingEditModal({
                           Tidak ada produk e-book yang tersedia.
                         </div>
                       )}
+                    </div>
+                  </div>
+
+                  <hr className="border-gray-200 dark:border-[#2C3246]" />
+
+                  {/* Bundling Lintas Ruang (Cross-Platform) */}
+                  <div>
+                    <label className="block text-sm font-bold text-gray-900 dark:text-white mb-1 flex items-center gap-2">
+                      <Sparkles className="w-4 h-4 text-orange-500" />
+                      <span>Bonus Akses Ruang Lain (Cross-Platform Bundling)</span>
+                    </label>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                      Aktifkan akses ke ruang lain sebagai bonus paket ini (misal paket E-Book berbonus 30 hari akses Ruang Ngonten/Riset/Automation).
+                    </p>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                      {/* 1. Ruang Ngonten (Tools) */}
+                      <div className="p-3.5 border border-gray-200 dark:border-[#2C3246] rounded-xl bg-gray-50/50 dark:bg-[#0A1128]/50 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                            <Wrench className="w-3.5 h-3.5 text-orange-500" />
+                            Ruang Ngonten
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(currentPkg.bundledRooms?.toolsDays && currentPkg.bundledRooms.toolsDays > 0)}
+                            onChange={(e) => {
+                              const cur = currentPkg.bundledRooms || {};
+                              handleUpdateCurrentPkg("bundledRooms", {
+                                ...cur,
+                                toolsDays: e.target.checked ? 30 : 0,
+                              });
+                            }}
+                            className="rounded text-orange-500 focus:ring-orange-500 border-gray-300 dark:border-gray-700 bg-transparent w-4 h-4 cursor-pointer"
+                          />
+                        </div>
+                        {Boolean(currentPkg.bundledRooms?.toolsDays && currentPkg.bundledRooms.toolsDays > 0) && (
+                          <div className="flex items-center gap-1.5 pt-1">
+                            <input
+                              type="number"
+                              min="1"
+                              value={currentPkg.bundledRooms?.toolsDays || 30}
+                              onChange={(e) => {
+                                const cur = currentPkg.bundledRooms || {};
+                                handleUpdateCurrentPkg("bundledRooms", {
+                                  ...cur,
+                                  toolsDays: Math.max(1, parseInt(e.target.value) || 0),
+                                });
+                              }}
+                              className="w-20 bg-white dark:bg-[#141B31] border border-gray-300 dark:border-[#2C3246] rounded-lg px-2.5 py-1 text-xs text-gray-900 dark:text-white outline-none focus:border-orange-500"
+                            />
+                            <span className="text-[11px] text-gray-500 font-medium">Hari Aktif</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 2. Ruang Riset */}
+                      <div className="p-3.5 border border-gray-200 dark:border-[#2C3246] rounded-xl bg-gray-50/50 dark:bg-[#0A1128]/50 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                            <Search className="w-3.5 h-3.5 text-orange-500" />
+                            Ruang Riset
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(currentPkg.bundledRooms?.risetDays && currentPkg.bundledRooms.risetDays > 0)}
+                            onChange={(e) => {
+                              const cur = currentPkg.bundledRooms || {};
+                              handleUpdateCurrentPkg("bundledRooms", {
+                                ...cur,
+                                risetDays: e.target.checked ? 30 : 0,
+                              });
+                            }}
+                            className="rounded text-orange-500 focus:ring-orange-500 border-gray-300 dark:border-gray-700 bg-transparent w-4 h-4 cursor-pointer"
+                          />
+                        </div>
+                        {Boolean(currentPkg.bundledRooms?.risetDays && currentPkg.bundledRooms.risetDays > 0) && (
+                          <div className="flex items-center gap-1.5 pt-1">
+                            <input
+                              type="number"
+                              min="1"
+                              value={currentPkg.bundledRooms?.risetDays || 30}
+                              onChange={(e) => {
+                                const cur = currentPkg.bundledRooms || {};
+                                handleUpdateCurrentPkg("bundledRooms", {
+                                  ...cur,
+                                  risetDays: Math.max(1, parseInt(e.target.value) || 0),
+                                });
+                              }}
+                              className="w-20 bg-white dark:bg-[#141B31] border border-gray-300 dark:border-[#2C3246] rounded-lg px-2.5 py-1 text-xs text-gray-900 dark:text-white outline-none focus:border-orange-500"
+                            />
+                            <span className="text-[11px] text-gray-500 font-medium">Hari Aktif</span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 3. Ruang Automation */}
+                      <div className="p-3.5 border border-gray-200 dark:border-[#2C3246] rounded-xl bg-gray-50/50 dark:bg-[#0A1128]/50 space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-gray-900 dark:text-white flex items-center gap-1.5">
+                            <Bot className="w-3.5 h-3.5 text-orange-500" />
+                            Ruang Automation
+                          </span>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(currentPkg.bundledRooms?.automationDays && currentPkg.bundledRooms.automationDays > 0)}
+                            onChange={(e) => {
+                              const cur = currentPkg.bundledRooms || {};
+                              handleUpdateCurrentPkg("bundledRooms", {
+                                ...cur,
+                                automationDays: e.target.checked ? 30 : 0,
+                              });
+                            }}
+                            className="rounded text-orange-500 focus:ring-orange-500 border-gray-300 dark:border-gray-700 bg-transparent w-4 h-4 cursor-pointer"
+                          />
+                        </div>
+                        {Boolean(currentPkg.bundledRooms?.automationDays && currentPkg.bundledRooms.automationDays > 0) && (
+                          <div className="flex items-center gap-1.5 pt-1">
+                            <input
+                              type="number"
+                              min="1"
+                              value={currentPkg.bundledRooms?.automationDays || 30}
+                              onChange={(e) => {
+                                const cur = currentPkg.bundledRooms || {};
+                                handleUpdateCurrentPkg("bundledRooms", {
+                                  ...cur,
+                                  automationDays: Math.max(1, parseInt(e.target.value) || 0),
+                                });
+                              }}
+                              className="w-20 bg-white dark:bg-[#141B31] border border-gray-300 dark:border-[#2C3246] rounded-lg px-2.5 py-1 text-xs text-gray-900 dark:text-white outline-none focus:border-orange-500"
+                            />
+                            <span className="text-[11px] text-gray-500 font-medium">Hari Aktif</span>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>

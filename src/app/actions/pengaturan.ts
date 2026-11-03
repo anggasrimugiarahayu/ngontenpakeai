@@ -12,7 +12,7 @@ import {
   queryCarouselFonts
 } from "@/lib/server/adminDbQueries";
 import { getCachedFeatures, getCachedAppUser, getCachedUserOrders, getCachedUserUsages, getCachedQuotaConfig } from "@/lib/cache";
-import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
+import { computeUserSubscriptionStatus, resolveUserPackageBundledProductIds } from "@/lib/subscription-utils";
 import { isAdminEmail } from "@/lib/admin";
 
 function invalidateUserSessionTag() {
@@ -76,9 +76,24 @@ export async function getPengaturanDataAction() {
     badgeName,
   } = subStatus;
   
-  const ownedProducts = (userOwned || [])
-    .map((uo: any) => uo.product)
-    .filter(Boolean);
+  const bundledIds = resolveUserPackageBundledProductIds(userOrders, pricingConfig);
+  const directOwnedProductIds = new Set((userOwned || []).map((uo: any) => uo.product?.id).filter(Boolean));
+  const missingBundledIds = bundledIds.filter((id) => !directOwnedProductIds.has(id));
+
+  let additionalProducts: any[] = [];
+  if (missingBundledIds.length > 0) {
+    try {
+      additionalProducts = await prisma.digitalProduct.findMany({
+        where: { id: { in: missingBundledIds }, isActive: true },
+        select: { id: true, title: true, productType: true, slug: true, accessLevel: true },
+      });
+    } catch {}
+  }
+
+  const ownedProducts = [
+    ...(userOwned || []).map((uo: any) => uo.product).filter(Boolean),
+    ...additionalProducts,
+  ];
 
   const ownedEbooks = ownedProducts.map((p: any) => p.title);
 

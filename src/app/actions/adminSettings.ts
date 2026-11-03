@@ -138,12 +138,50 @@ export async function saveAppSetting(key: string, value: string) {
     create: { key, value },
   });
   if (key === "PRICING_PACKAGES") {
+    try {
+      const parsed = JSON.parse(value);
+      const packages = parsed.packages || parsed;
+      const grantEntries: { userId: string; digitalProductId: string }[] = [];
+      for (const [pkgId, pkg] of Object.entries<any>(packages)) {
+        if (pkg && Array.isArray(pkg.bundledProductIds) && pkg.bundledProductIds.length > 0) {
+          const matchingOrders = await prisma.order.findMany({
+            where: {
+              status: "SUCCESS",
+              orderType: pkgId,
+            },
+            select: { userId: true },
+          });
+          const uniqueUserIds = Array.from(new Set(matchingOrders.map((o) => o.userId).filter(Boolean)));
+          for (const uid of uniqueUserIds) {
+            for (const pid of pkg.bundledProductIds) {
+              if (pid) {
+                grantEntries.push({ userId: uid, digitalProductId: pid });
+              }
+            }
+          }
+        }
+      }
+      if (grantEntries.length > 0) {
+        await prisma.userOwnedProduct.createMany({
+          data: grantEntries,
+          skipDuplicates: true,
+        });
+      }
+    } catch (e) {
+      console.error("Auto-sync bundled products error:", e);
+    }
+
     safeRevalidateTag("pricing-packages");
+    safeRevalidateTag("user-ownership");
+    safeRevalidateTag("ebook-catalog");
+    safeRevalidateTag("user-orders");
+    safeRevalidateTag("user-session");
     try {
       revalidatePath("/checkout");
-    } catch (e) {}
-    try {
       revalidatePath("/");
+      revalidatePath("/ruang-belajar");
+      revalidatePath("/ruang-belajar/[slug]");
+      revalidatePath("/pengaturan");
     } catch (e) {}
   }
   if (key === "HOMEPAGE_CARDS") {

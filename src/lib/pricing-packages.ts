@@ -8,6 +8,12 @@ export interface PricingCategoryMeta {
   description: string;
 }
 
+export interface BundledRoomsConfig {
+  toolsDays?: number; // Hari tambahan akses Ruang Ngonten (AI Tools)
+  risetDays?: number; // Hari tambahan akses Ruang Riset
+  automationDays?: number; // Hari tambahan akses Ruang Automation
+}
+
 export interface PricingPackageItem {
   id: string;
   category: PricingCategoryKey;
@@ -22,6 +28,7 @@ export interface PricingPackageItem {
   durationDays?: number; // 0 = Lifetime, 30, 90, 365
   features: string[];
   bundledProductIds: string[];
+  bundledRooms?: BundledRoomsConfig;
   isActive?: boolean;
 }
 
@@ -426,6 +433,13 @@ export function mergePricingConfig(rawConfig: any): PricingPackagesConfig {
         durationDays: typeof rawItem.durationDays === "number" ? rawItem.durationDays : defaultItem?.durationDays ?? 30,
         features: Array.isArray(rawItem.features) ? rawItem.features : defaultItem?.features || [],
         bundledProductIds: Array.isArray(rawItem.bundledProductIds) ? rawItem.bundledProductIds : defaultItem?.bundledProductIds || [],
+        bundledRooms: rawItem.bundledRooms && typeof rawItem.bundledRooms === "object"
+          ? {
+              toolsDays: Number(rawItem.bundledRooms.toolsDays) || 0,
+              risetDays: Number(rawItem.bundledRooms.risetDays) || 0,
+              automationDays: Number(rawItem.bundledRooms.automationDays) || 0,
+            }
+          : defaultItem?.bundledRooms,
         isActive: rawItem.isActive !== false,
       };
     }

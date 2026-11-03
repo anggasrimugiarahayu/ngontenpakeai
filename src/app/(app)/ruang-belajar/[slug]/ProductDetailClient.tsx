@@ -216,71 +216,52 @@ export default function ProductDetailClient({ slug, initialData }: { slug: strin
                        <div className="text-2xl font-black text-gray-900 dark:text-white mb-1">
                          Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'}
                        </div>
-                       <p className="text-xs text-gray-500 mt-2 leading-relaxed">
-                         {isFree
-                           ? `Silakan klaim ${productTypeName.toLowerCase()} ini secara gratis (Rp 0) untuk memasukkannya ke dalam Perpustakaan Pribadi Anda seumur hidup.`
-                           : isPremiumEbook 
-                             ? `${productTypeName} ini sangat eksklusif. Beli sekarang dan dapatkan akses penuh selamanya.` 
-                             : isPro 
-                               ? `Sebagai member Paket E-Book / Lengkap, Anda berhak mengklaim ${productTypeName.toLowerCase()} ini secara gratis!` 
-                               : `Beli ${productTypeName.toLowerCase()} satuan atau pilih Paket E-Book PRO untuk mendapatkan akses selamanya ke lebih banyak materi PRO!`}
-                       </p>
-                     </div>
-                     
-                     <div className="flex flex-col sm:flex-row gap-3">
-                       {/* If it's a FREE ebook, show the Klaim (Rp 0) Form */}
-                       {isFree ? (
-                         <form action={async () => {
-                           setIsSubmitting(true);
-                           await claimFreeProduct(ebook.id);
-                           mutate();
-                           setIsSubmitting(false);
-                         }} className="w-full">
-                           <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-green-600/20 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}">
-                             Klaim Gratis (Rp 0)
-                           </button>
-                         </form>
-                       ) : (
-                         /* Otherwise, show standard pricing logic */
-                         <>
-                           {/* For PRO ebook AND user is currently PRO -> Show Klaim Rp 0! */}
-                           {isProEbook && isPro ? (
-                             <form action={async () => {
-                               setIsSubmitting(true);
-                               await claimFreeProduct(ebook.id);
-                               mutate();
-                               setIsSubmitting(false);
-                             }} className="w-full flex flex-col gap-3">
-                               <button type="submit" disabled={isSubmitting} className="w-full flex items-center justify-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm shadow-orange-500/20 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}">
-                                 Klaim Gratis (Khusus Member Paket)
-                               </button>
-                             </form>
-                           ) : (
-                             /* For PRO ebook (User is FREE) or PREMIUM ebook -> Needs actual Checkout! */
-                             <div className="w-full flex flex-col gap-3">
-                               <Link 
-                                 href={`/checkout?type=EBOOK&productId=${ebook.id}`} 
-                                 onMouseEnter={() => preload(["checkout", "EBOOK", ebook.id], () => getCheckoutDetailsAction("EBOOK", ebook.id))}
-                                 onTouchStart={() => preload(["checkout", "EBOOK", ebook.id], () => getCheckoutDetailsAction("EBOOK", ebook.id))}
-                                 onClick={() => trackProductClickAction(ebook.id)}
-                                 className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg">
-                                   Beli Satuan (Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'})
-                               </Link>
-                               {isProEbook && (
-                                 <Link 
-                                   href="/?pricing=true&cat=ebook" 
-                                   className="w-full flex items-center justify-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm shadow-orange-500/20"
-                                 >
-                                   <Crown className="w-5 h-5" /> Beli Paket E-Book PRO
-                                 </Link>
-                               )}
-                             </div>
-                           )}
-                         </>
-                       )}
-                     </div>
-                   </>
-                 ) : (
+                        <p className="text-xs text-gray-500 mt-2 leading-relaxed">
+                          {isFree
+                            ? `Silakan klaim ${productTypeName.toLowerCase()} ini secara gratis (Rp 0) untuk memasukkannya ke dalam Perpustakaan Pribadi Anda seumur hidup.`
+                            : isPremiumEbook 
+                              ? `${productTypeName} ini sangat eksklusif. Beli sekarang dan dapatkan akses penuh selamanya.` 
+                              : `Beli ${productTypeName.toLowerCase()} satuan atau pilih paket yang menyertakan materi ini untuk mendapatkan akses seumur hidup!`}
+                        </p>
+                      </div>
+                      
+                      <div className="flex flex-col sm:flex-row gap-3">
+                        {/* If it's a FREE ebook, show the Klaim (Rp 0) Form */}
+                        {isFree ? (
+                          <form action={async () => {
+                            setIsSubmitting(true);
+                            await claimFreeProduct(ebook.id);
+                            mutate();
+                            setIsSubmitting(false);
+                          }} className="w-full">
+                            <button type="submit" disabled={isSubmitting} className={`w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-green-600/20 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                              Klaim Gratis (Rp 0)
+                            </button>
+                          </form>
+                        ) : (
+                          /* Otherwise, show purchase & upgrade options */
+                          <div className="w-full flex flex-col gap-3">
+                            <Link 
+                              href={`/checkout?type=EBOOK&productId=${ebook.id}`} 
+                              onMouseEnter={() => preload(["checkout", "EBOOK", ebook.id], () => getCheckoutDetailsAction("EBOOK", ebook.id))}
+                              onTouchStart={() => preload(["checkout", "EBOOK", ebook.id], () => getCheckoutDetailsAction("EBOOK", ebook.id))}
+                              onClick={() => trackProductClickAction(ebook.id)}
+                              className="w-full flex items-center justify-center gap-2 bg-gray-900 dark:bg-white text-white dark:text-gray-900 hover:bg-gray-800 dark:hover:bg-gray-200 px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg">
+                                Beli Satuan (Rp {ebook.price ? ebook.price.toLocaleString('id-ID') : '0'})
+                            </Link>
+                            {isProEbook && (
+                              <Link 
+                                href="/?pricing=true&cat=ebook" 
+                                className="w-full flex items-center justify-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-sm shadow-orange-500/20"
+                              >
+                                <Crown className="w-5 h-5" /> Lihat Paket Belajar Lengkap
+                              </Link>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  ) : (
                    <>
                      <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                        <BookOpen className="w-4 h-4 text-green-500" />

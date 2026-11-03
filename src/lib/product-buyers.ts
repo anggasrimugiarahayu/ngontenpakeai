@@ -15,51 +15,57 @@ export async function attachComputedBuyerCounts<T extends {
   if (!products || products.length === 0) return products;
 
   try {
-    const [proUserCount, nonProOwners, pricingSetting] = await Promise.all([
-      prisma.user.count({
-        where: {
-          OR: [
-            { role: "PRO" },
-            { orders: { some: { status: "SUCCESS", orderType: { in: ["PRO_BOOK", "PRO_PLUS"] } } } }
-          ]
-        }
-      }).catch(() => 0),
-      prisma.userOwnedProduct.findMany({
-        where: {
-          user: {
-            role: { not: "PRO" },
-            orders: { none: { status: "SUCCESS", orderType: { in: ["PRO_BOOK", "PRO_PLUS"] } } }
-          }
-        },
-        select: { digitalProductId: true }
-      }).catch(() => []),
-      prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } }).catch(() => null)
-    ]);
+    const pricingSetting = await prisma.appSetting
+      .findUnique({ where: { key: "PRICING_PACKAGES" } })
+      .catch(() => null);
 
-    const nonProCountMap = new Map<string, number>();
-    for (const row of nonProOwners) {
-      if (row.digitalProductId) {
-        nonProCountMap.set(row.digitalProductId, (nonProCountMap.get(row.digitalProductId) || 0) + 1);
-      }
-    }
-
-    const proBundledIds = new Set<string>();
+    const productToPackageMap = new Map<string, string[]>();
     if (pricingSetting?.value) {
       try {
-        const pkg = JSON.parse(pricingSetting.value);
-        ["PRO_BOOK", "PRO_PLUS"].forEach(k => {
-          if (pkg[k]?.bundledProductIds && Array.isArray(pkg[k].bundledProductIds)) {
-            pkg[k].bundledProductIds.forEach((id: string) => proBundledIds.add(id));
+        const parsed = JSON.parse(pricingSetting.value);
+        const pkgs = parsed.packages || parsed;
+        for (const [pkgId, pkg] of Object.entries<any>(pkgs)) {
+          if (pkg && Array.isArray(pkg.bundledProductIds)) {
+            pkg.bundledProductIds.forEach((pid: string) => {
+              if (pid) {
+                if (!productToPackageMap.has(pid)) productToPackageMap.set(pid, []);
+                productToPackageMap.get(pid)!.push(pkgId);
+              }
+            });
           }
-        });
+        }
       } catch (e) {}
     }
 
-    return products.map(p => {
-      const isProProduct = !!(p.isProOnly || p.accessLevel === "PRO" || proBundledIds.has(p.id));
-      const originalCount = p._count?.owners || 0;
-      const nonProCount = nonProCountMap.get(p.id) || 0;
-      const computedOwners = isProProduct ? (proUserCount + nonProCount) : originalCount;
+    const allPackageIds = Array.from(
+      new Set(Array.from(productToPackageMap.values()).flat())
+    );
+
+    const packageOrdersMap = new Map<string, number>();
+    if (allPackageIds.length > 0) {
+      const orderGroups = await prisma.order
+        .groupBy({
+          by: ["orderType"],
+          where: {
+            status: "SUCCESS",
+            orderType: { in: allPackageIds },
+          },
+          _count: { userId: true },
+        })
+        .catch(() => []);
+      orderGroups.forEach((g) => {
+        packageOrdersMap.set(g.orderType, g._count.userId);
+      });
+    }
+
+    return products.map((p) => {
+      const directCount = p._count?.owners || 0;
+      const matchingPkgs = productToPackageMap.get(p.id) || [];
+      const packageBuyers = matchingPkgs.reduce(
+        (sum, pkgId) => sum + (packageOrdersMap.get(pkgId) || 0),
+        0
+      );
+      const computedOwners = Math.max(directCount, packageBuyers);
 
       return {
         ...p,
@@ -67,8 +73,8 @@ export async function attachComputedBuyerCounts<T extends {
         _count: {
           ...(p._count || {}),
           owners: computedOwners,
-          favorites: p._count?.favorites || 0
-        }
+          favorites: p._count?.favorites || 0,
+        },
       };
     });
   } catch (error) {

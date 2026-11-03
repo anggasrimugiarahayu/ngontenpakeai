@@ -118,9 +118,15 @@ export async function POST(req: NextRequest) {
             data: updateData,
           });
 
-          // Update per-agent expiry jika paket adalah automation / plus
-          if (meta.category === "automation" || meta.category === "plus") {
-            const days = meta.durationDays > 0 ? meta.durationDays : 30;
+          // Update per-agent expiry jika paket adalah automation / plus ATAU memiliki bonus bundledRooms.automationDays
+          const autoDays =
+            meta.category === "automation" || meta.category === "plus"
+              ? meta.durationDays > 0
+                ? meta.durationDays
+                : 30
+              : meta.bundledRooms?.automationDays || 0;
+
+          if (autoDays > 0) {
             if (hasExpiredAgent) {
               // Perpanjang agen yang sedang expired
               const expiredTarget = existingAccounts.find(
@@ -130,7 +136,7 @@ export async function POST(req: NextRequest) {
                 const cur = expiredTarget.expiredAt && new Date(expiredTarget.expiredAt) > now
                   ? new Date(expiredTarget.expiredAt)
                   : now;
-                const newAgentExpiry = new Date(cur.getTime() + days * 86400000);
+                const newAgentExpiry = new Date(cur.getTime() + autoDays * 86400000);
                 await tx.instagramAccount.update({
                   where: { id: expiredTarget.id },
                   data: { expiredAt: newAgentExpiry, isActive: true },
@@ -140,7 +146,7 @@ export async function POST(req: NextRequest) {
               // Perpanjang agen aktif pertama jika bukan penambahan slot
               const target = existingAccounts[0];
               const cur = target.expiredAt && new Date(target.expiredAt) > now ? new Date(target.expiredAt) : now;
-              const newAgentExpiry = new Date(cur.getTime() + days * 86400000);
+              const newAgentExpiry = new Date(cur.getTime() + autoDays * 86400000);
               await tx.instagramAccount.update({
                 where: { id: target.id },
                 data: { expiredAt: newAgentExpiry, isActive: true },
@@ -149,25 +155,12 @@ export async function POST(req: NextRequest) {
           }
 
           // Unlock bundled E-books from PRICING_PACKAGES config + any add-on E-books purchased with the package
-          let allGrantIds = Array.from(
+          const allGrantIds = Array.from(
             new Set([
               ...(meta.bundledProductIds || []),
               ...(order.addonIds && Array.isArray(order.addonIds) ? (order.addonIds as string[]) : []),
             ])
           ).filter(Boolean);
-
-          // Jika paket ebook / plus belum dikonfigurasi bundledProductIds-nya secara manual oleh admin,
-          // otomatis berikan seluruh produk PRO yang aktif agar user langsung bisa belajar
-          if (
-            (meta.category === "ebook" || meta.category === "plus") &&
-            (!meta.bundledProductIds || meta.bundledProductIds.length === 0)
-          ) {
-            const proProducts = await tx.digitalProduct.findMany({
-              where: { isActive: true, accessLevel: "PRO" },
-              select: { id: true },
-            });
-            allGrantIds = Array.from(new Set([...allGrantIds, ...proProducts.map((p) => p.id)]));
-          }
 
           if (allGrantIds.length > 0) {
             await tx.userOwnedProduct.createMany({

@@ -7,7 +7,7 @@ import { verifyPayment } from "@/app/actions/payment";
 import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
 import { getCachedUserOrders, getCachedUserOwnedProducts } from "@/lib/cache";
-import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
+import { computeUserSubscriptionStatus, resolveUserPackageBundledProductIds } from "@/lib/subscription-utils";
 
 export async function revalidateAfterPurchaseAction() {
   try {
@@ -93,13 +93,21 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
       select: { id: true, title: true, price: true, updatedAt: true, accessLevel: true, slug: true }
     }).catch(() => []),
 
-    type !== "EBOOK"
-      ? prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } }).catch(() => null)
-      : Promise.resolve(null),
+    prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } }).catch(() => null),
   ]);
 
+  let rawPricingConfig: any = null;
+  if (pricingSetting?.value) {
+    try {
+      rawPricingConfig = JSON.parse(pricingSetting.value);
+    } catch {}
+  }
+
   const ownedProductIds = new Set((userOwned || []).map((up: any) => up.digitalProductId));
-  const subStatus = user ? computeUserSubscriptionStatus(user, userOrders) : { hasBook: false, isAdmin: false };
+  const dynamicPackageProductIds = resolveUserPackageBundledProductIds(userOrders, rawPricingConfig);
+  dynamicPackageProductIds.forEach((pid) => ownedProductIds.add(pid));
+
+  const subStatus = user ? computeUserSubscriptionStatus(user, userOrders, rawPricingConfig) : { hasBook: false, isAdmin: false };
   const userHasBookAccess = Boolean(subStatus.hasBook || subStatus.isAdmin);
 
   if (type === "EBOOK") {
@@ -164,11 +172,6 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
   const includedSet = new Set<string>();
   if (bundledIds.length > 0) {
     bundledIds.forEach((id) => includedSet.add(id));
-  } else if (isPackageEbookOrPlus) {
-    // Jika paket E-book / Plus dan belum ada bundledIds manual, semua produk PRO otomatis included
-    rawDigitalProducts
-      .filter((p) => p.accessLevel === "PRO")
-      .forEach((p) => includedSet.add(p.id));
   }
 
   const isProduction = process.env.MIDTRANS_IS_PRODUCTION === "true";
@@ -179,8 +182,8 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     ? await verifyPayment(pendingDbOrder.id)
     : null;
 
-  // Daftar produk yang termasuk paket gratis (Included)
-  const includedAddons = (type.startsWith("PRO_") && includedSet.size > 0)
+  // Daftar produk yang termasuk paket gratis (Included) - Berlaku untuk semua paket (PRO_ maupun PKG_)
+  const includedAddons = (type !== "EBOOK" && includedSet.size > 0)
     ? combinedWithCovers
         .filter((p) => includedSet.has(p.id))
         .map((p) => ({
@@ -194,18 +197,14 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
   // Daftar Add-on Tambahan Berbayar:
   // 1. Bukan produk utama yang sedang dibeli
   // 2. Bukan produk GRATIS (FREE) dan harga > 0
-  // 3. Belum dimiliki oleh user
-  // 4. Belum termasuk dalam paket yang sedang dibeli (bukan includedSet)
-  // 5. Jika user sedang checkout paket E-book/Plus ATAU sudah punya akses member E-Book,
-  //    sembunyikan produk PRO (karena produk PRO sudah otomatis gratis bagi mereka),
-  //    sehingga tombol Add-on murni fokus meng-upsell produk PREMIUM!
+  // 3. Belum dimiliki oleh user (baik via pembelian satuan maupun paket sebelumnya)
+  // 4. Belum termasuk dalam paket yang sedang di-checkout (bukan includedSet)
   const availableAddons = combinedWithCovers
     .filter((p) => {
       if (p.id === productId) return false;
       if (p.accessLevel === "FREE" || !p.price || p.price <= 0) return false;
       if (ownedProductIds.has(p.id)) return false;
       if (includedSet.has(p.id)) return false;
-      if ((isPackageEbookOrPlus || userHasBookAccess) && p.accessLevel === "PRO") return false;
       return true;
     })
     .map((p) => ({

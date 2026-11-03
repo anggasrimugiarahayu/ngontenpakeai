@@ -5,7 +5,7 @@ import { unstable_cache, revalidatePath, revalidateTag as nextRevalidateTag } fr
 import { attachComputedBuyerCounts } from "@/lib/product-buyers";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
 import { getCachedAppUser, getCachedUserOrders, getCachedUserOwnedProducts } from "@/lib/cache";
-import { computeUserSubscriptionStatus, isBookPackageOrder } from "@/lib/subscription-utils";
+import { computeUserSubscriptionStatus, isBookPackageOrder, resolveUserPackageBundledProductIds } from "@/lib/subscription-utils";
 import { isAdminEmail, isAdminUser } from "@/lib/admin";
 
 function safeRevalidateTag(tag: string) {
@@ -126,11 +126,12 @@ export async function getRuangBelajarDataAction() {
   let ownedProductIds: string[] = [];
   let isAdmin = false;
 
-  const [userObj, userProducts, cachedProducts, userOrders] = await Promise.all([
+  const [userObj, userProducts, cachedProducts, userOrders, pricingSetting] = await Promise.all([
     session?.user?.id ? getCachedAppUser(session.user.id) : Promise.resolve(null),
     session?.user?.id ? getCachedUserOwnedProducts(session.user.id).catch(() => []) : Promise.resolve([]),
     getCachedDigitalProductsList().catch(() => []),
     session?.user?.id ? getCachedUserOrders(session.user.id).catch(() => []) : Promise.resolve([]),
+    prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } }).catch(() => null),
   ]);
 
   let products = cachedProducts;
@@ -151,10 +152,27 @@ export async function getRuangBelajarDataAction() {
   }
 
   if (session?.user?.id && userObj) {
-    const subStatus = computeUserSubscriptionStatus(userObj, userOrders);
+    let rawPricingConfig: any = null;
+    if (pricingSetting?.value) {
+      try {
+        rawPricingConfig = JSON.parse(pricingSetting.value);
+      } catch {}
+    }
+
+    const subStatus = computeUserSubscriptionStatus(userObj, userOrders, rawPricingConfig);
     isAdmin = subStatus.isAdmin || isAdminEmail(session.user.email);
     isPro = subStatus.hasBook || isAdmin;
-    ownedProductIds = userProducts.map((up: any) => up.digitalProductId);
+
+    const ownedSet = new Set<string>();
+    userProducts.forEach((up: any) => {
+      if (up.digitalProductId) ownedSet.add(up.digitalProductId);
+    });
+
+    // Dynamic entitlement: bila ada produk baru yang di-include ke paket lunas user
+    const dynamicPackageProductIds = resolveUserPackageBundledProductIds(userOrders, rawPricingConfig);
+    dynamicPackageProductIds.forEach((pid) => ownedSet.add(pid));
+
+    ownedProductIds = Array.from(ownedSet);
   }
 
   return {
@@ -169,11 +187,12 @@ export async function getEbookDetailAction(slug: string) {
   const session = await auth();
   const userId = session?.user?.id;
 
-  const [userObj, cachedEbook, userProducts, userOrders] = await Promise.all([
+  const [userObj, cachedEbook, userProducts, userOrders, pricingSetting] = await Promise.all([
     userId ? getCachedAppUser(userId) : Promise.resolve(null),
     getCachedEbookBySlug(slug),
     userId ? getCachedUserOwnedProducts(userId).catch(() => []) : Promise.resolve([]),
     userId ? getCachedUserOrders(userId).catch(() => []) : Promise.resolve([]),
+    prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } }).catch(() => null),
   ]);
 
   if (!cachedEbook) {
@@ -207,11 +226,26 @@ export async function getEbookDetailAction(slug: string) {
     favoriteCount,
   };
 
-  const subStatus = computeUserSubscriptionStatus(userObj, userOrders);
+  let rawPricingConfig: any = null;
+  if (pricingSetting?.value) {
+    try {
+      rawPricingConfig = JSON.parse(pricingSetting.value);
+    } catch {}
+  }
+
+  const subStatus = computeUserSubscriptionStatus(userObj, userOrders, rawPricingConfig);
   const isAdmin = subStatus.isAdmin || isAdminEmail(session?.user?.email);
   const isPro = subStatus.hasBook || isAdmin;
-  const ownedProductIds = userProducts.map((up: any) => up.digitalProductId);
-  const isOwned = ownedProductIds.includes(cachedEbook.id);
+
+  const ownedSet = new Set<string>();
+  userProducts.forEach((up: any) => {
+    if (up.digitalProductId) ownedSet.add(up.digitalProductId);
+  });
+  const dynamicPackageProductIds = resolveUserPackageBundledProductIds(userOrders, rawPricingConfig);
+  dynamicPackageProductIds.forEach((pid) => ownedSet.add(pid));
+
+  const ownedProductIds = Array.from(ownedSet);
+  const isOwned = ownedSet.has(cachedEbook.id);
   const isFree = cachedEbook.accessLevel === "FREE" || !cachedEbook.price || cachedEbook.price <= 0;
   const canAccessContent = isAdmin || isOwned || isFree;
 
@@ -307,7 +341,7 @@ export async function claimFreeProduct(productId: string) {
   if (!session?.user?.id) throw new Error("Unauthorized");
 
   const userId = session.user.id;
-  const [user, product, userOrders] = await Promise.all([
+  const [user, product, userOrders, pricingSetting] = await Promise.all([
     prisma.user.findUnique({ where: { id: userId } }),
     prisma.digitalProduct.findUnique({
       where: { id: productId },
@@ -320,22 +354,29 @@ export async function claimFreeProduct(productId: string) {
       },
       select: { orderType: true, status: true },
     }),
+    prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } }).catch(() => null),
   ]);
 
   if (!user) throw new Error("User not found");
   if (!product) throw new Error("Product not found");
 
   const isFree = product.accessLevel === "FREE";
-  const isProEbook = product.accessLevel === "PRO";
-
   const isAdmin = isAdminUser(user);
-  const hasBookPackage = user.hasProBook || userOrders.some((o) => isBookPackageOrder(o.orderType));
 
-  const canClaimProEbook = isAdmin || hasBookPackage;
+  let rawPricingConfig: any = null;
+  if (pricingSetting?.value) {
+    try {
+      rawPricingConfig = JSON.parse(pricingSetting.value);
+    } catch {}
+  }
 
-  if (!isFree && !(isProEbook && canClaimProEbook)) {
+  // Hanya boleh klaim jika produk FREE, user adalah ADMIN, atau produk memang di-include di paket yang telah dibeli user
+  const bundledIds = resolveUserPackageBundledProductIds(userOrders, rawPricingConfig);
+  const isIncludedInUserPackage = bundledIds.includes(productId);
+
+  if (!isFree && !isAdmin && !isIncludedInUserPackage) {
     throw new Error(
-      "Produk ini tidak bisa diklaim gratis. Anda harus berlangganan Paket E-Book atau membelinya secara satuan."
+      "Produk ini tidak termasuk dalam paket yang Anda miliki. Silakan beli satuan atau pilih paket yang menyertakan produk ini."
     );
   }
 
