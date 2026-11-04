@@ -21,15 +21,18 @@ import {
   X,
   Save,
   Loader2,
+  Copy,
 } from "lucide-react";
 import { saveAppSetting, createVoucher, deleteVoucher } from "@/app/actions/adminSettings";
 import CustomSelect from "@/components/ui/CustomSelect";
 import { confirmSwal } from "./tabs/confirmSwal";
 import {
   PricingPackagesConfig,
+  PricingPackageItem,
   PricingCategoryKey,
   PRICING_CATEGORIES,
   mergePricingConfig,
+  generatePackageId,
 } from "@/lib/pricing-packages";
 import { PricingEditModal } from "./PricingEditModal";
 
@@ -133,6 +136,47 @@ export function PricingConfigSection({
           `Paket ${targetPkg.name} dinonaktifkan (disembunyikan dari beranda).`
         );
       }
+    }
+  };
+
+  const handleDuplicatePackage = async (pkgKey: string) => {
+    setOpenMenuId(null);
+    const targetPkg = config.packages?.[pkgKey] || config[pkgKey];
+    if (!targetPkg) return;
+
+    const newId = generatePackageId(targetPkg.category);
+    const clonedPkg: PricingPackageItem = {
+      ...JSON.parse(JSON.stringify(targetPkg)),
+      id: newId,
+      name: `${targetPkg.name} (Copy)`,
+      isActive: true,
+    };
+
+    const currentOrder = [...(config.categoryOrder?.[targetPkg.category] || [])];
+    const originalIdx = currentOrder.indexOf(pkgKey);
+    if (originalIdx !== -1) {
+      currentOrder.splice(originalIdx + 1, 0, newId);
+    } else {
+      currentOrder.push(newId);
+    }
+
+    const updatedConfig: PricingPackagesConfig = {
+      ...config,
+      packages: {
+        ...config.packages,
+        [newId]: clonedPkg,
+      },
+      categoryOrder: {
+        ...config.categoryOrder,
+        [targetPkg.category]: currentOrder,
+      },
+      [newId]: clonedPkg,
+    };
+
+    setConfig(updatedConfig);
+    const ok = await saveConfig(updatedConfig);
+    if (ok) {
+      toast.success(`Paket "${clonedPkg.name}" berhasil diduplikasi!`);
     }
   };
 
@@ -490,13 +534,21 @@ export function PricingConfigSection({
                         />
                         <div className="absolute right-0 top-full mt-1.5 w-48 bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl border border-gray-200 dark:border-[#2C3246] p-2 z-40 text-xs animate-in fade-in zoom-in-95 duration-150">
                           <div className="px-2.5 py-1 text-[10px] font-bold text-gray-400 uppercase tracking-wider border-b border-gray-100 dark:border-[#2C3246] mb-1 flex items-center justify-between">
-                            <span>Status Paket</span>
+                            <span>Menu Paket</span>
                             <span
                               className={`w-2 h-2 rounded-full ${
                                 isActive ? "bg-emerald-500" : "bg-gray-400"
                               }`}
                             />
                           </div>
+                          <button
+                            type="button"
+                            onClick={() => handleDuplicatePackage(pkgKey)}
+                            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl font-bold transition-colors text-left cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-500/10 text-gray-700 dark:text-gray-200 hover:text-purple-600 dark:hover:text-purple-400 mb-0.5"
+                          >
+                            <Copy size={14} className="text-purple-500" />
+                            <span>Duplikat Paket</span>
+                          </button>
                           <button
                             type="button"
                             onClick={() => handleToggleActive(pkgKey)}

@@ -19,9 +19,11 @@ import {
   Heart,
   Video,
   Link2,
+  Copy,
 } from "lucide-react";
 import {
   deleteProduct,
+  duplicateProduct,
   toggleProductStatus,
   reorderProducts,
 } from "@/app/actions/adminSettings";
@@ -393,6 +395,41 @@ export function AdminRuangBelajarTab({
                               >
                                 <Edit size={14} className="text-blue-500" />
                                 <span>Edit Produk</span>
+                              </button>
+                              <button
+                                type="button"
+                                onClick={async () => {
+                                  setOpenMenuProductId(null);
+                                  setLoading(true);
+                                  try {
+                                    const res = await duplicateProduct(prod.id);
+                                    if (res?.success && res.product) {
+                                      setProductList((prev: any) => {
+                                        const current = [...prev];
+                                        const originalIndex = current.findIndex((p: any) => p.id === prod.id);
+                                        if (originalIndex !== -1) {
+                                          current.splice(originalIndex + 1, 0, res.product);
+                                          return current;
+                                        }
+                                        return [res.product, ...current];
+                                      });
+                                      mutate("pengaturan");
+                                      router.refresh();
+                                      toast.success(`Produk "${res.product.title}" berhasil diduplikasi!`);
+                                    } else {
+                                      toast.error(res?.error || "Gagal menduplikasi produk.");
+                                    }
+                                  } catch (err: any) {
+                                    console.error(err);
+                                    toast.error(err?.message || "Gagal menduplikasi produk.");
+                                  } finally {
+                                    setLoading(false);
+                                  }
+                                }}
+                                className="w-full flex items-center gap-2 px-2.5 py-2 rounded-lg font-medium hover:bg-purple-50 dark:hover:bg-purple-500/10 text-gray-700 dark:text-gray-300 hover:text-purple-600 dark:hover:text-purple-400 text-left transition-colors"
+                              >
+                                <Copy size={14} className="text-purple-500" />
+                                <span>Duplikat Produk</span>
                               </button>
                               <button
                                 type="button"

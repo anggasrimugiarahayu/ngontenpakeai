@@ -489,6 +489,24 @@ export async function deleteCategory(id: string) {
   revalidateEbookCatalog();
 }
 
+async function safeDeletePhysicalUploadIfUnused(url: string, excludeProductId?: string) {
+  if (!url || !url.startsWith("/uploads/")) return;
+  try {
+    const isUsedElsewhere = await prisma.digitalProduct.findFirst({
+      where: {
+        id: excludeProductId ? { not: excludeProductId } : undefined,
+        OR: [{ coverUrl: url }, { coverUrl2: url }, { coverUrl3: url }],
+      },
+      select: { id: true },
+    });
+    if (!isUsedElsewhere) {
+      await deletePhysicalUploadFile(url);
+    }
+  } catch (e) {
+    console.error("Error safe-deleting physical upload:", e);
+  }
+}
+
 export async function deleteProduct(id: string) {
   await assertAdmin();
   const prod = await prisma.digitalProduct.findUnique({
@@ -496,12 +514,123 @@ export async function deleteProduct(id: string) {
     select: { coverUrl: true, coverUrl2: true, coverUrl3: true },
   });
   if (prod) {
-    if (prod.coverUrl) await deletePhysicalUploadFile(prod.coverUrl);
-    if (prod.coverUrl2) await deletePhysicalUploadFile(prod.coverUrl2);
-    if (prod.coverUrl3) await deletePhysicalUploadFile(prod.coverUrl3);
+    if (prod.coverUrl) await safeDeletePhysicalUploadIfUnused(prod.coverUrl, id);
+    if (prod.coverUrl2) await safeDeletePhysicalUploadIfUnused(prod.coverUrl2, id);
+    if (prod.coverUrl3) await safeDeletePhysicalUploadIfUnused(prod.coverUrl3, id);
   }
   await prisma.digitalProduct.delete({ where: { id } });
   revalidateEbookCatalog();
+}
+
+export async function duplicateProduct(id: string) {
+  try {
+    await assertAdmin();
+
+    const original = await prisma.digitalProduct.findUnique({
+      where: { id },
+    });
+
+    if (!original) {
+      return { success: false, error: "Produk yang akan diduplikasi tidak ditemukan." };
+    }
+
+    // Buat slug unik otomatis
+    const baseSlug = `${original.slug}-copy`.toLowerCase();
+    let uniqueSlug = baseSlug;
+    let counter = 1;
+
+    while (true) {
+      const exists = await prisma.digitalProduct.findUnique({
+        where: { slug: uniqueSlug },
+        select: { id: true },
+      });
+      if (!exists) break;
+      counter++;
+      uniqueSlug = `${baseSlug}-${counter}`;
+    }
+
+    const { id: _ignoredId, createdAt: _c, updatedAt: _u, ...restOriginal } = original;
+
+    const newProduct = await prisma.digitalProduct.create({
+      data: {
+        ...(restOriginal as any),
+        videoList: (original.videoList as any) ?? undefined,
+        resourceData: (original.resourceData as any) ?? undefined,
+        title: `${original.title} (Copy)`,
+        slug: uniqueSlug,
+        isActive: true,
+      },
+      select: {
+        id: true,
+        categoryId: true,
+        title: true,
+        description: true,
+        price: true,
+        originalPrice: true,
+        pageCount: true,
+        slug: true,
+        coverUrl: true,
+        coverUrl2: true,
+        coverUrl3: true,
+        fileUrl: true,
+        language: true,
+        formatType: true,
+        productType: true,
+        totalDuration: true,
+        videoList: true,
+        resourceData: true,
+        author: true,
+        isProOnly: true,
+        accessLevel: true,
+        isDownloadable: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        category: { select: { id: true, name: true, slug: true } },
+        vouchers: { select: { id: true, code: true, discountType: true, discountValue: true, isActive: true } },
+        reviews: { select: { rating: true } },
+        _count: { select: { owners: true, favorites: true } },
+      },
+    });
+
+    // Update urutan katalog (PRODUCT_SORT_ORDER) agar tepat di sebelah produk asli
+    try {
+      const sortSetting = await prisma.appSetting.findUnique({
+        where: { key: "PRODUCT_SORT_ORDER" },
+      });
+      if (sortSetting?.value) {
+        const orderIds: string[] = JSON.parse(sortSetting.value);
+        const originalIndex = orderIds.indexOf(id);
+        if (originalIndex !== -1) {
+          orderIds.splice(originalIndex + 1, 0, newProduct.id);
+        } else {
+          orderIds.unshift(newProduct.id);
+        }
+        await prisma.appSetting.update({
+          where: { key: "PRODUCT_SORT_ORDER" },
+          data: { value: JSON.stringify(orderIds) },
+        });
+      }
+    } catch (e) {
+      console.error("Gagal update PRODUCT_SORT_ORDER saat duplikat:", e);
+    }
+
+    revalidateEbookCatalog(uniqueSlug);
+    safeRevalidateTag("admin-config");
+    safeRevalidateTag("ebook-catalog");
+    try {
+      revalidatePath("/pengaturan");
+      revalidatePath("/ruang-belajar");
+      revalidatePath("/", "layout");
+    } catch {}
+
+    const [formatted] = await attachLightweightCovers([newProduct], false);
+
+    return { success: true, product: formatted || newProduct };
+  } catch (err: any) {
+    console.error("Gagal menduplikasi produk:", err);
+    return { success: false, error: err?.message || "Gagal menduplikasi produk." };
+  }
 }
 
 export async function updateProduct(id: string, data: any) {
@@ -576,13 +705,13 @@ export async function updateProduct(id: string, data: any) {
     if (oldProduct) {
       const cleanupPromises: Promise<any>[] = [];
       if (restData.coverUrl !== undefined && oldProduct.coverUrl && oldProduct.coverUrl !== restData.coverUrl && oldProduct.coverUrl.startsWith("/uploads/")) {
-        cleanupPromises.push(deletePhysicalUploadFile(oldProduct.coverUrl));
+        cleanupPromises.push(safeDeletePhysicalUploadIfUnused(oldProduct.coverUrl, id));
       }
       if (restData.coverUrl2 !== undefined && oldProduct.coverUrl2 && oldProduct.coverUrl2 !== restData.coverUrl2 && oldProduct.coverUrl2.startsWith("/uploads/")) {
-        cleanupPromises.push(deletePhysicalUploadFile(oldProduct.coverUrl2));
+        cleanupPromises.push(safeDeletePhysicalUploadIfUnused(oldProduct.coverUrl2, id));
       }
       if (restData.coverUrl3 !== undefined && oldProduct.coverUrl3 && oldProduct.coverUrl3 !== restData.coverUrl3 && oldProduct.coverUrl3.startsWith("/uploads/")) {
-        cleanupPromises.push(deletePhysicalUploadFile(oldProduct.coverUrl3));
+        cleanupPromises.push(safeDeletePhysicalUploadIfUnused(oldProduct.coverUrl3, id));
       }
       if (cleanupPromises.length > 0) {
         Promise.all(cleanupPromises).catch(console.error);

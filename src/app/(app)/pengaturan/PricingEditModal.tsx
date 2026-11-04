@@ -19,6 +19,7 @@ import {
   Sparkles,
   Tag,
   Gift,
+  Copy,
 } from "lucide-react";
 import {
   PricingPackagesConfig,
@@ -216,6 +217,45 @@ export function PricingEditModal({
       );
       setSelectedPkgId(remaining[0] || "");
     }
+  };
+
+  // Duplicate a package
+  const handleDuplicatePackage = (pkgId: string, category: PricingCategoryKey) => {
+    const targetPkg = formData.packages?.[pkgId] || formData[pkgId];
+    if (!targetPkg) return;
+
+    const newId = generatePackageId(category);
+    const clonedPkg: PricingPackageItem = {
+      ...JSON.parse(JSON.stringify(targetPkg)),
+      id: newId,
+      name: `${targetPkg.name} (Copy)`,
+      isActive: true,
+    };
+
+    setFormData((prev) => {
+      const currentCatList = [...(prev.categoryOrder?.[category] || [])];
+      const origIdx = currentCatList.indexOf(pkgId);
+      if (origIdx !== -1) {
+        currentCatList.splice(origIdx + 1, 0, newId);
+      } else {
+        currentCatList.push(newId);
+      }
+
+      return {
+        ...prev,
+        packages: {
+          ...prev.packages,
+          [newId]: clonedPkg,
+        },
+        categoryOrder: {
+          ...prev.categoryOrder,
+          [category]: currentCatList,
+        },
+        [newId]: clonedPkg,
+      };
+    });
+
+    setSelectedPkgId(newId);
   };
 
   const handleSave = async () => {
@@ -464,16 +504,29 @@ export function PricingEditModal({
                       </span>
                     </div>
 
-                    {/* Tombol Hapus Paket */}
-                    <button
-                      type="button"
-                      onClick={() => handleDeletePackage(currentPkg.id, activeTab)}
-                      className="inline-flex items-center gap-1.5 text-xs font-bold text-red-500 hover:text-red-600 px-2.5 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
-                      title="Hapus paket ini"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                      <span>Hapus Paket</span>
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {/* Tombol Duplikat Paket */}
+                      <button
+                        type="button"
+                        onClick={() => handleDuplicatePackage(currentPkg.id, activeTab)}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-purple-600 dark:text-purple-400 hover:text-purple-700 px-2.5 py-1 rounded-lg hover:bg-purple-50 dark:hover:bg-purple-500/10 transition-colors cursor-pointer"
+                        title="Duplikat paket ini"
+                      >
+                        <Copy className="w-3.5 h-3.5" />
+                        <span>Duplikat Paket</span>
+                      </button>
+
+                      {/* Tombol Hapus Paket */}
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePackage(currentPkg.id, activeTab)}
+                        className="inline-flex items-center gap-1.5 text-xs font-bold text-red-500 hover:text-red-600 px-2.5 py-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+                        title="Hapus paket ini"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Hapus Paket</span>
+                      </button>
+                    </div>
                   </div>
 
                   {/* Informasi Utama */}
