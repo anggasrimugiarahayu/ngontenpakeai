@@ -44,11 +44,16 @@ export async function GET(
       const base64Data = match[2];
       const buffer = Buffer.from(base64Data, "base64");
 
+      const hasVersion = req.nextUrl.searchParams.has("v") && req.nextUrl.searchParams.get("v") !== "1";
+      const cacheHeader = hasVersion
+        ? "public, max-age=31536000, immutable"
+        : "public, max-age=60, stale-while-revalidate=600";
+
       return new NextResponse(buffer, {
         status: 200,
         headers: {
           "Content-Type": mimeType,
-          "Cache-Control": "public, max-age=31536000, immutable",
+          "Cache-Control": cacheHeader,
         },
       });
     }
@@ -58,10 +63,15 @@ export async function GET(
       ? rawCover
       : new URL(rawCover, req.url).toString();
 
+    const hasVersion = req.nextUrl.searchParams.has("v") && req.nextUrl.searchParams.get("v") !== "1";
+    const cacheHeader = hasVersion
+      ? "public, max-age=31536000, immutable"
+      : "public, max-age=60, stale-while-revalidate=600";
+
     return NextResponse.redirect(targetUrl, {
       status: 302,
       headers: {
-        "Cache-Control": "public, max-age=31536000, immutable",
+        "Cache-Control": cacheHeader,
       },
     });
   } catch (error) {

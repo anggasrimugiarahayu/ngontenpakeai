@@ -597,6 +597,12 @@ export async function updateProduct(id: string, data: any) {
       },
     });
     revalidateEbookCatalog(data.slug);
+    safeRevalidateTag("admin-config");
+    safeRevalidateTag("ebook-catalog");
+    try {
+      revalidatePath("/pengaturan");
+      revalidatePath("/", "layout");
+    } catch {}
     return { success: true };
   } catch (err: any) {
     console.error("Gagal update e-book:", err);

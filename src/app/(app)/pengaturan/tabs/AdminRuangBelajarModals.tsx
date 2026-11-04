@@ -3,6 +3,7 @@
 import React from "react";
 import toast from "react-hot-toast";
 import { mutate } from "swr";
+import { useRouter } from "next/navigation";
 import { BookOpen, Tag, Ticket, X, Trash2, ChevronDown, Save, Loader2, Video, Link2 } from "lucide-react";
 import {
   createCategory,
@@ -26,11 +27,13 @@ import {
 interface AdminRuangBelajarModalsProps {
   categories: any[];
   products: any[];
+  productList?: any[];
+  setProductList?: React.Dispatch<React.SetStateAction<any[]>>;
   loading: boolean;
   setLoading: (val: boolean) => void;
   uploadedUrls: Record<string, string>;
   setUploadedUrls: React.Dispatch<React.SetStateAction<Record<string, string>>>;
-  handleCoverUpload: (e: React.ChangeEvent<HTMLInputElement>, targetInputId: string) => Promise<void>;
+  handleCoverUpload: (e: React.ChangeEvent<HTMLInputElement>, targetInputId: string, fieldKey?: string) => Promise<void>;
   handleCoverDelete: (targetInputId: string, defaultLabel: string, fieldKey?: string) => Promise<void>;
   showAddCategory: boolean;
   setShowAddCategory: (val: boolean) => void;
@@ -53,6 +56,8 @@ interface AdminRuangBelajarModalsProps {
 export function AdminRuangBelajarModals({
   categories,
   products,
+  productList,
+  setProductList,
   loading,
   setLoading,
   uploadedUrls,
@@ -74,6 +79,7 @@ export function AdminRuangBelajarModals({
   editingProduct,
   setEditingProduct,
 }: AdminRuangBelajarModalsProps) {
+  const router = useRouter();
   const allVouchers =
     products?.flatMap((p: any) =>
       (p.vouchers || []).map((v: any) => ({ ...v, productTitle: p.title }))
@@ -990,7 +996,22 @@ export function AdminRuangBelajarModals({
                     toast.error("Gagal menyimpan perubahan produk.");
                     return;
                   }
+                  if (setProductList) {
+                    setProductList((prev) =>
+                      prev.map((item) =>
+                        item.id === prodId
+                          ? {
+                              ...item,
+                              ...updatePayload,
+                              category: categories.find((c) => c.id === updatePayload.categoryId) || item.category,
+                              updatedAt: new Date().toISOString(),
+                            }
+                          : item
+                      )
+                    );
+                  }
                   mutate("pengaturan");
+                  router.refresh();
                   setEditingProduct(null);
                   setUploadedUrls({});
                   toast.success("Perubahan produk berhasil disimpan!");
@@ -1134,7 +1155,7 @@ export function AdminRuangBelajarModals({
                             id={`file-${item.id}`}
                             type="file"
                             accept="image/*"
-                            onChange={(e) => handleCoverUpload(e, item.id)}
+                            onChange={(e) => handleCoverUpload(e, item.id, item.field)}
                             className="block w-full text-[10px] text-transparent file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:font-bold file:bg-rn-accent/10 file:text-rn-accent hover:file:bg-rn-accent/20 cursor-pointer"
                           />
                           <input

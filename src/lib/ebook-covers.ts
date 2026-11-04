@@ -39,7 +39,7 @@ export async function attachLightweightCovers<
       ? await prisma.$queryRaw<CoverRow[]>`
           SELECT
             id,
-            created_at AS "updatedAt",
+            COALESCE(updated_at, created_at) AS "updatedAt",
             CASE
               WHEN "coverUrl" IS NULL OR "coverUrl" = '' THEN NULL
               WHEN LEFT("coverUrl", 5) = 'data:' THEN 'DATA_URI'
@@ -60,7 +60,7 @@ export async function attachLightweightCovers<
       : await prisma.$queryRaw<CoverRow[]>`
           SELECT
             id,
-            created_at AS "updatedAt",
+            COALESCE(updated_at, created_at) AS "updatedAt",
             CASE
               WHEN "coverUrl" IS NULL OR "coverUrl" = '' THEN NULL
               WHEN LEFT("coverUrl", 5) = 'data:' THEN 'DATA_URI'
@@ -78,7 +78,7 @@ export async function attachLightweightCovers<
 
     return products.map((p) => {
       const c = coverMap.get(p.id);
-      const ver = p.updatedAt || c?.updatedAt || null;
+      const ver = c?.updatedAt || p.updatedAt || null;
       const result: any = {
         ...p,
         coverUrl: c

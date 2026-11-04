@@ -46,6 +46,7 @@ export async function queryProducts() {
         isDownloadable: true,
         isActive: true,
         createdAt: true,
+        updatedAt: true,
         category: { select: { id: true, name: true, slug: true } },
         vouchers: { select: { id: true, code: true, discountType: true, discountValue: true, isActive: true } },
         reviews: { select: { rating: true } },

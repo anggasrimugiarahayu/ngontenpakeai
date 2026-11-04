@@ -64,7 +64,8 @@ export function AdminRuangBelajarTab({
 
   const handleCoverUpload = async (
     e: React.ChangeEvent<HTMLInputElement>,
-    targetInputId: string
+    targetInputId: string,
+    fieldKey?: string
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -101,6 +102,11 @@ export function AdminRuangBelajarTab({
           input.value = data.url;
         }
         setUploadedUrls((prev) => ({ ...prev, [targetInputId]: data.url }));
+
+        if (editingProduct && fieldKey) {
+          setEditingProduct((prev: any) => ({ ...prev, [fieldKey]: data.url }));
+        }
+
         const img = document.getElementById(
           "preview-" + targetInputId
         ) as HTMLImageElement;
@@ -619,6 +625,8 @@ export function AdminRuangBelajarTab({
       <AdminRuangBelajarModals
         categories={categories}
         products={products}
+        productList={productList}
+        setProductList={setProductList}
         loading={loading}
         setLoading={setLoading}
         uploadedUrls={uploadedUrls}
