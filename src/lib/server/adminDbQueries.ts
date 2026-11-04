@@ -97,3 +97,17 @@ export async function queryCarouselFonts() {
     return [];
   }
 }
+
+export async function queryVouchers() {
+  try {
+    return await prisma.voucher.findMany({
+      orderBy: { createdAt: "desc" },
+      include: {
+        product: { select: { id: true, title: true } }
+      }
+    });
+  } catch (e) {
+    console.error("Error queryVouchers:", e);
+    return [];
+  }
+}

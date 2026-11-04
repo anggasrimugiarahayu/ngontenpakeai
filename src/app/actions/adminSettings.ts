@@ -604,15 +604,59 @@ export async function updateProduct(id: string, data: any) {
   }
 }
 
-export async function createVoucher(data: { code: string; discountType: string; discountValue: number; digitalProductId: string }) {
+export async function createVoucher(data: {
+  code: string;
+  discountType: string;
+  discountValue: number;
+  targetType?: string;
+  targetId?: string | null;
+  targetTitle?: string | null;
+  digitalProductId?: string | null;
+}) {
   await assertAdmin();
-  await prisma.voucher.create({ data });
+  const cleanCode = (data.code || "").trim().toUpperCase();
+  if (!cleanCode) {
+    throw new Error("Kode promo tidak boleh kosong.");
+  }
+  if (!data.discountValue || data.discountValue <= 0) {
+    throw new Error("Nilai diskon harus lebih besar dari 0.");
+  }
+
+  const existing = await prisma.voucher.findUnique({
+    where: { code: cleanCode },
+  });
+  if (existing) {
+    throw new Error(`Kode voucher "${cleanCode}" sudah ada. Silakan gunakan kode promo lain.`);
+  }
+
+  await prisma.voucher.create({
+    data: {
+      code: cleanCode,
+      discountType: data.discountType || "PERCENTAGE",
+      discountValue: data.discountValue,
+      targetType: data.targetType || "ALL",
+      targetId: data.targetId || null,
+      targetTitle: data.targetTitle || null,
+      digitalProductId: data.digitalProductId || null,
+      isActive: true,
+    },
+  });
+
   revalidateEbookCatalog();
+  try {
+    (revalidateTag as any)("admin-config");
+    (revalidateTag as any)("pricing-packages");
+  } catch {}
 }
+
 export async function deleteVoucher(id: string) {
   await assertAdmin();
   await prisma.voucher.delete({ where: { id } });
   revalidateEbookCatalog();
+  try {
+    (revalidateTag as any)("admin-config");
+    (revalidateTag as any)("pricing-packages");
+  } catch {}
 }
 
 /**

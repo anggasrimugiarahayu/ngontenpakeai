@@ -7,7 +7,7 @@ import { verifyPayment } from "@/app/actions/payment";
 import { revalidatePath, revalidateTag, updateTag } from "next/cache";
 import { attachLightweightCovers } from "@/lib/ebook-covers";
 import { getCachedUserOrders, getCachedUserOwnedProducts } from "@/lib/cache";
-import { computeUserSubscriptionStatus, resolveUserPackageBundledProductIds } from "@/lib/subscription-utils";
+import { computeUserSubscriptionStatus, resolveUserPackageBundledProductIds, isVoucherApplicable } from "@/lib/subscription-utils";
 
 export async function revalidateAfterPurchaseAction() {
   try {
@@ -244,24 +244,61 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
 }
 
 
-export async function validatePromoCodeAction(code: string, productId: string) {
-  if (!code) return { success: false, message: "Kode promo tidak boleh kosong" };
+export async function validatePromoCodeAction(
+  code: string,
+  typeOrProductId?: string,
+  optionalProductId?: string
+) {
+  if (!code || !code.trim()) {
+    return { success: false, message: "Kode promo tidak boleh kosong." };
+  }
 
+  const cleanCode = code.trim().toUpperCase();
   const voucher = await prisma.voucher.findFirst({
     where: {
-      code: code.toUpperCase(),
-      digitalProductId: productId,
-      isActive: true
-    }
+      code: cleanCode,
+      isActive: true,
+    },
   });
 
   if (!voucher) {
-    return { success: false, message: "Kode promo tidak valid atau sudah kadaluarsa." };
+    return { success: false, message: "Kode promo tidak valid atau sudah tidak aktif." };
+  }
+
+  // Ambil pricing package setting untuk resolusi kategori
+  const setting = await prisma.appSetting.findUnique({
+    where: { key: "PRICING_PACKAGES" },
+  });
+  let rawPricingConfig: any = null;
+  if (setting?.value) {
+    try {
+      rawPricingConfig = JSON.parse(setting.value);
+    } catch {}
+  }
+
+  // Resolusi argumen: mendukung pemanggilan (code, type, productId) atau (code, productId)
+  let orderType = typeOrProductId || "EBOOK";
+  let productId = optionalProductId || null;
+
+  if (typeOrProductId && !typeOrProductId.startsWith("PRO_") && typeOrProductId !== "EBOOK") {
+    productId = typeOrProductId;
+    orderType = "EBOOK";
+  }
+
+  const applicable = isVoucherApplicable(voucher, orderType, productId, rawPricingConfig);
+  if (!applicable) {
+    const targetDesc = voucher.targetTitle || "produk / paket tertentu";
+    return {
+      success: false,
+      message: `Kode promo "${cleanCode}" tidak berlaku untuk transaksi ini. Voucher hanya berlaku untuk: ${targetDesc}.`,
+    };
   }
 
   return {
     success: true,
     discountType: voucher.discountType,
-    discountValue: voucher.discountValue
+    discountValue: voucher.discountValue,
+    voucherCode: voucher.code,
+    targetTitle: voucher.targetTitle,
   };
 }

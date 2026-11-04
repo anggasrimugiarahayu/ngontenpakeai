@@ -342,17 +342,21 @@ model UserOwnedProduct {
 
 
 model Voucher {
-  id               String         @id @default(cuid())
-  code             String
-  discountType     String         @default("PERCENTAGE")
+  id               String          @id @default(cuid())
+  code             String          @unique
+  discountType     String          @default("PERCENTAGE")
   discountValue    Int            
-  isActive         Boolean        @default(true)
-  digitalProductId String         @map("digital_product_id")
-  createdAt        DateTime       @default(now()) @map("created_at")
+  isActive         Boolean         @default(true)
+  targetType       String          @default("DIGITAL_PRODUCT") @map("target_type") // ALL, CATEGORY, PACKAGE, DIGITAL_PRODUCT
+  targetId         String?         @map("target_id")
+  targetTitle      String?         @map("target_title")
+  digitalProductId String?         @map("digital_product_id")
+  createdAt        DateTime        @default(now()) @map("created_at")
 
-  product          DigitalProduct @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
+  product          DigitalProduct? @relation(fields: [digitalProductId], references: [id], onDelete: Cascade)
 
-  @@unique([code, digitalProductId])
+  @@index([code])
+  @@index([targetType])
   @@map("vouchers")
 }
 

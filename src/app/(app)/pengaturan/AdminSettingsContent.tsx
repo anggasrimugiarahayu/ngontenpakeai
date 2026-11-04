@@ -14,7 +14,7 @@ export function AdminSettingsContent({
   activeTab: string;
   adminData: any;
 }) {
-  const { models, settings, features, categories, products, carouselStyles, carouselFonts } = adminData || {};
+  const { models, settings, features, categories, products, carouselStyles, carouselFonts, vouchers } = adminData || {};
 
   return (
     <>
@@ -29,7 +29,7 @@ export function AdminSettingsContent({
         />
       )}
       {activeTab === "pricing" && (
-        <PricingConfigSection products={products} settings={settings} />
+        <PricingConfigSection products={products} settings={settings} vouchers={vouchers || []} />
       )}
       {activeTab === "belajar" && (
         <AdminRuangBelajarTab categories={categories} products={products} />

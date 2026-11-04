@@ -211,22 +211,16 @@ export function AdminRuangBelajarTab({
               Kelola kategori dan produk digital yang tersedia untuk member.
             </p>
           </div>
-          <div className="grid grid-cols-2 md:flex md:items-center gap-2 mt-3 md:mt-0 w-full md:w-auto">
+          <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 mt-3 md:mt-0 w-full md:w-auto">
             <button
               onClick={() => setShowAddCategory(true)}
-              className="justify-center bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 px-3 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap"
+              className="justify-center bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 text-orange-600 dark:text-orange-400 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
             >
               <Tag className="w-4 h-4" /> Kategori
             </button>
             <button
-              onClick={() => setShowGlobalVoucherModal(true)}
-              className="justify-center border border-orange-500/30 hover:border-orange-500/60 bg-white dark:bg-[#141B31] text-orange-600 dark:text-orange-400 px-3 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition-colors flex items-center gap-1.5 whitespace-nowrap"
-            >
-              <Ticket className="w-4 h-4" /> Voucher
-            </button>
-            <button
               onClick={() => setShowAddProduct(true)}
-              className="col-span-2 md:col-span-1 justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-1.5 whitespace-nowrap"
+              className="justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-1.5 whitespace-nowrap cursor-pointer"
             >
               <Plus className="w-4 h-4" /> Tambah Produk
             </button>

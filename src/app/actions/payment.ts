@@ -6,7 +6,7 @@ import { snap, coreApi, isProduction } from "@/lib/midtrans";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { calculatePaymentFees, PAYMENT_METHODS, PaymentMethodKey } from "@/lib/payment-calc";
 import { mergePricingConfig } from "@/lib/pricing-packages";
-import { calculateSubscriptionFulfillment } from "@/lib/subscription-utils";
+import { calculateSubscriptionFulfillment, isVoucherApplicable } from "@/lib/subscription-utils";
 import { isAdminEmail } from "@/lib/admin";
 
 export async function createCheckoutToken(data: { 
@@ -42,7 +42,9 @@ export async function createCheckoutToken(data: {
 
     let baseAmount = 0;
     let productPrice = 0;
+    let targetPkgPrice = 0;
     let orderName = "";
+    let resolvedPricingConfig: any = null;
     
     if (data.type === "EBOOK") {
       if (!data.productId) {
@@ -63,12 +65,14 @@ export async function createCheckoutToken(data: {
     } else {
       const setting = await prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
       const pricingConfig = mergePricingConfig(setting?.value ? JSON.parse(setting.value) : null);
+      resolvedPricingConfig = pricingConfig;
       const targetPkg = pricingConfig[data.type] || pricingConfig.packages?.[data.type];
       
       if (targetPkg) {
         if (targetPkg.isActive === false) {
           return { success: false, error: "Paket langganan ini sedang dinonaktifkan." };
         }
+        targetPkgPrice = targetPkg.price;
         baseAmount = targetPkg.price;
         orderName = targetPkg.name;
       } else {
@@ -89,20 +93,32 @@ export async function createCheckoutToken(data: {
     let verifiedDiscountAmount = 0;
     let verifiedVoucherCode: string | undefined = undefined;
 
-    // Voucher is strictly allowed ONLY for digital products (EBOOK), not subscription packages
-    if (data.type === "EBOOK" && data.productId && data.voucherCode && data.voucherCode.trim()) {
+    // Voucher berlaku untuk paket langganan, produk digital, maupun All Products
+    if (data.voucherCode && data.voucherCode.trim()) {
+      if (!resolvedPricingConfig && data.type === "EBOOK") {
+        const setting = await prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } });
+        if (setting?.value) {
+          try {
+            resolvedPricingConfig = JSON.parse(setting.value);
+          } catch {}
+        }
+      }
+
+      const cleanCode = data.voucherCode.trim().toUpperCase();
       const voucher = await prisma.voucher.findFirst({
         where: {
-          code: data.voucherCode.trim().toUpperCase(),
-          digitalProductId: data.productId,
+          code: cleanCode,
           isActive: true,
         }
       });
-      if (voucher) {
+
+      if (voucher && isVoucherApplicable(voucher, data.type, data.productId, resolvedPricingConfig)) {
         verifiedVoucherCode = voucher.code;
+        const mainItemPrice = data.type === "EBOOK" ? productPrice : targetPkgPrice;
+
         // Discount applies to the main product base price only (not addon upsells)
         if (voucher.discountType === "PERCENTAGE") {
-          verifiedDiscountAmount = Math.floor((productPrice * voucher.discountValue) / 100);
+          verifiedDiscountAmount = Math.floor((mainItemPrice * voucher.discountValue) / 100);
         } else {
           verifiedDiscountAmount = voucher.discountValue;
         }

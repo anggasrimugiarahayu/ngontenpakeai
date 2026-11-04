@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { mutate } from "swr";
@@ -16,8 +16,15 @@ import {
   Bot,
   Search,
   Gem,
+  Ticket,
+  Trash2,
+  X,
+  Save,
+  Loader2,
 } from "lucide-react";
-import { saveAppSetting } from "@/app/actions/adminSettings";
+import { saveAppSetting, createVoucher, deleteVoucher } from "@/app/actions/adminSettings";
+import CustomSelect from "@/components/ui/CustomSelect";
+import { confirmSwal } from "./tabs/confirmSwal";
 import {
   PricingPackagesConfig,
   PricingCategoryKey,
@@ -29,12 +36,31 @@ import { PricingEditModal } from "./PricingEditModal";
 export function PricingConfigSection({
   products,
   settings,
+  vouchers,
 }: {
   products: any[];
   settings: any[];
+  vouchers?: any[];
 }) {
   const router = useRouter();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [showVoucherModal, setShowVoucherModal] = useState(false);
+  const [voucherList, setVoucherList] = useState<any[]>(vouchers || []);
+  const [newVoucher, setNewVoucher] = useState({
+    code: "",
+    discountType: "PERCENTAGE",
+    discountValue: 0,
+    targetSelection: "ALL",
+  });
+  const [isSavingVoucher, setIsSavingVoucher] = useState(false);
+  const [isDeletingVoucherId, setIsDeletingVoucherId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (vouchers) {
+      setVoucherList(vouchers);
+    }
+  }, [vouchers]);
+
   const [selectedCategory, setSelectedCategory] =
     useState<PricingCategoryKey>("ebook");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
@@ -160,6 +186,147 @@ export function PricingConfigSection({
     (id) => (config.packages?.[id] || config[id])?.isActive !== false
   ).length;
 
+  // Bangun opsi target voucher (All, Kategori, Paket, Digital Product)
+  const voucherTargetOptions = useMemo(() => {
+    const opts: { value: string; label: string }[] = [
+      { value: "ALL", label: "🌟 Semua Produk & Paket (All Products)" },
+    ];
+
+    // Opsi Kategori Paket
+    PRICING_CATEGORIES.forEach((cat) => {
+      opts.push({
+        value: `CATEGORY:${cat.id}`,
+        label: `📂 Semua Paket Kategori ${cat.label}`,
+      });
+    });
+
+    // Opsi Paket Spesifik
+    const allPkgKeys = Object.keys(config.packages || {});
+    if (allPkgKeys.length > 0) {
+      allPkgKeys.forEach((key) => {
+        const pkg = config.packages[key];
+        if (pkg) {
+          opts.push({
+            value: `PACKAGE:${pkg.id}`,
+            label: `📦 Paket: ${pkg.name} (Rp ${(pkg.price / 1000).toFixed(0)}k)`,
+          });
+        }
+      });
+    }
+
+    // Opsi Produk Digital Satuan (Ruang Belajar)
+    if (products && products.length > 0) {
+      products.forEach((p) => {
+        const fmt =
+          p.productType === "VIDEO"
+            ? "Video"
+            : p.productType === "NOTION"
+            ? "Notion"
+            : "E-Book";
+        opts.push({
+          value: `PRODUCT:${p.id}`,
+          label: `📖 [${fmt}] ${p.title} (Rp ${(p.price || 0).toLocaleString("id-ID")})`,
+        });
+      });
+    }
+
+    return opts;
+  }, [config.packages, products]);
+
+  const handleSaveVoucher = async () => {
+    const cleanCode = newVoucher.code.replace(/\s/g, "").toUpperCase();
+    if (!cleanCode) return toast.error("Masukkan kode promo!");
+    if (!newVoucher.discountValue || newVoucher.discountValue <= 0) {
+      return toast.error("Nilai diskon harus lebih besar dari 0!");
+    }
+
+    let targetType = "ALL";
+    let targetId: string | null = null;
+    let targetTitle = "Semua Produk & Paket";
+    let digitalProductId: string | null = null;
+
+    if (newVoucher.targetSelection === "ALL") {
+      targetType = "ALL";
+      targetTitle = "Semua Produk & Paket";
+    } else if (newVoucher.targetSelection.startsWith("CATEGORY:")) {
+      const catKey = newVoucher.targetSelection.replace("CATEGORY:", "");
+      const catObj = PRICING_CATEGORIES.find((c) => c.id === catKey);
+      targetType = "CATEGORY";
+      targetId = catKey;
+      targetTitle = `Semua Paket ${catObj?.label || catKey}`;
+    } else if (newVoucher.targetSelection.startsWith("PACKAGE:")) {
+      const pkgId = newVoucher.targetSelection.replace("PACKAGE:", "");
+      const pkg = config.packages?.[pkgId] || config[pkgId];
+      targetType = "PACKAGE";
+      targetId = pkgId;
+      targetTitle = pkg?.name || pkgId;
+    } else if (newVoucher.targetSelection.startsWith("PRODUCT:")) {
+      const prodId = newVoucher.targetSelection.replace("PRODUCT:", "");
+      const prod = products.find((p) => p.id === prodId);
+      targetType = "DIGITAL_PRODUCT";
+      targetId = prodId;
+      digitalProductId = prodId;
+      targetTitle = prod?.title || "Produk Digital";
+    }
+
+    setIsSavingVoucher(true);
+    try {
+      await createVoucher({
+        code: cleanCode,
+        discountType: newVoucher.discountType,
+        discountValue: Number(newVoucher.discountValue),
+        targetType,
+        targetId,
+        targetTitle,
+        digitalProductId,
+      });
+
+      const createdItem = {
+        id: "v-" + Date.now(),
+        code: cleanCode,
+        discountType: newVoucher.discountType,
+        discountValue: Number(newVoucher.discountValue),
+        targetType,
+        targetId,
+        targetTitle,
+        digitalProductId,
+        isActive: true,
+      };
+      setVoucherList((prev) => [createdItem, ...prev]);
+
+      setNewVoucher({
+        code: "",
+        discountType: "PERCENTAGE",
+        discountValue: 0,
+        targetSelection: "ALL",
+      });
+
+      mutate("pengaturan");
+      router.refresh();
+      toast.success(`Voucher "${cleanCode}" berhasil disimpan!`);
+    } catch (e: any) {
+      toast.error(e?.message || "Gagal menyimpan voucher.");
+    } finally {
+      setIsSavingVoucher(false);
+    }
+  };
+
+  const handleDeleteVoucher = async (id: string, code: string) => {
+    if (!(await confirmSwal(`Hapus voucher "${code}"?`))) return;
+    setIsDeletingVoucherId(id);
+    try {
+      await deleteVoucher(id);
+      setVoucherList((prev) => prev.filter((v) => v.id !== id));
+      mutate("pengaturan");
+      router.refresh();
+      toast.success(`Voucher "${code}" berhasil dihapus.`);
+    } catch (e: any) {
+      toast.error(e?.message || "Gagal menghapus voucher.");
+    } finally {
+      setIsDeletingVoucherId(null);
+    }
+  };
+
   return (
     <div className="space-y-6 animate-in fade-in duration-300">
       {/* 1. HEADER CARD MANAJEMEN */}
@@ -173,12 +340,20 @@ export function PricingConfigSection({
           </p>
         </div>
 
-        {/* 1 Tombol Utama di Kanan Header */}
-        <div className="flex items-center gap-2 shrink-0">
+        {/* Tombol Aksi di Kanan Header: Voucher & Edit Paket (Desktop: flex, Mobile: 2 kolom seragam) */}
+        <div className="grid grid-cols-2 sm:flex sm:items-center gap-2.5 w-full sm:w-auto shrink-0">
+          <button
+            type="button"
+            onClick={() => setShowVoucherModal(true)}
+            className="w-full sm:w-auto justify-center border border-orange-500/30 hover:border-orange-500/60 bg-white dark:bg-[#141B31] text-orange-600 dark:text-orange-400 px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer shadow-xs"
+          >
+            <Ticket className="w-4 h-4" />
+            <span>Voucher</span>
+          </button>
           <button
             type="button"
             onClick={() => setIsEditModalOpen(true)}
-            className="justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer"
+            className="w-full sm:w-auto justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-2 whitespace-nowrap cursor-pointer"
           >
             <Edit3 className="w-4 h-4" />
             <span>Edit Paket &amp; Promo</span>
@@ -446,6 +621,198 @@ export function PricingConfigSection({
         initialCategory={selectedCategory}
         onSave={handleSaveModal}
       />
+
+      {/* 4. MODAL BANK VOUCHER GLOBAL */}
+      {showVoucherModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-3 sm:p-4 animate-in fade-in duration-200">
+          <div className="bg-white dark:bg-[#141B31] rounded-2xl border border-gray-200 dark:border-[#2C3246] w-full max-w-xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+            {/* Header Modal */}
+            <div className="p-4 sm:p-5 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between shrink-0 bg-white dark:bg-[#141B31]">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 dark:bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0 border border-orange-500/20">
+                  <Ticket className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white">
+                    Bank Voucher &amp; Promo
+                  </h3>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
+                    Kelola voucher diskon untuk seluruh paket atau produk spesifik.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowVoucherModal(false)}
+                className="p-2 rounded-xl text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-[#1e2746] transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-4 sm:p-5 overflow-y-auto space-y-5 custom-scrollbar">
+              {/* Form Input Voucher Baru */}
+              <div className="p-4 bg-gray-50/80 dark:bg-[#0A1128]/70 border border-gray-200 dark:border-[#2C3246] rounded-2xl space-y-3.5">
+                <h4 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                  Buat Voucher Baru
+                </h4>
+
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block mb-1">
+                      Kode Promo
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="CONTOH: PROMO50 / HEMAT99"
+                      value={newVoucher.code}
+                      onChange={(e) =>
+                        setNewVoucher({
+                          ...newVoucher,
+                          code: e.target.value.replace(/\s/g, "").toUpperCase(),
+                        })
+                      }
+                      className="w-full bg-white dark:bg-[#141B31] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm uppercase font-mono font-bold text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div>
+                      <CustomSelect
+                        label="Tipe Diskon"
+                        value={newVoucher.discountType}
+                        onChange={(val) =>
+                          setNewVoucher({ ...newVoucher, discountType: val })
+                        }
+                        options={[
+                          { value: "PERCENTAGE", label: "Persen (%)" },
+                          { value: "NOMINAL", label: "Nominal (Rp)" },
+                        ]}
+                      />
+                    </div>
+                    <div>
+                      <label className="text-[11px] font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider block mb-1">
+                        Nilai Diskon
+                      </label>
+                      <input
+                        type="number"
+                        placeholder={
+                          newVoucher.discountType === "PERCENTAGE"
+                            ? "Misal: 50 (untuk 50%)"
+                            : "Misal: 10000 (untuk Rp 10.000)"
+                        }
+                        value={newVoucher.discountValue || ""}
+                        onChange={(e) =>
+                          setNewVoucher({
+                            ...newVoucher,
+                            discountValue: Math.max(
+                              0,
+                              parseInt(e.target.value) || 0
+                            ),
+                          })
+                        }
+                        className="w-full bg-white dark:bg-[#141B31] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3.5 py-2 text-sm text-gray-900 dark:text-white focus:outline-none focus:border-orange-500 focus:ring-1 focus:ring-orange-500"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <CustomSelect
+                      label="Berlaku Untuk (Target Voucher)"
+                      placeholder="Pilih target voucher..."
+                      value={newVoucher.targetSelection}
+                      onChange={(val) =>
+                        setNewVoucher({ ...newVoucher, targetSelection: val })
+                      }
+                      options={voucherTargetOptions}
+                    />
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleSaveVoucher}
+                    disabled={isSavingVoucher}
+                    className="w-full mt-2 flex items-center justify-center gap-2 bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white font-bold py-2.5 rounded-xl shadow-sm shadow-orange-500/20 disabled:opacity-50 transition-all cursor-pointer text-xs sm:text-sm"
+                  >
+                    {isSavingVoucher ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span>Menyimpan...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-4 h-4" />
+                        <span>Simpan Voucher</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* Daftar Voucher Tersimpan */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-wider">
+                    Daftar Voucher Tersimpan ({voucherList.length})
+                  </h4>
+                </div>
+
+                <div className="space-y-2.5 max-h-64 overflow-y-auto custom-scrollbar pr-1">
+                  {voucherList.length > 0 ? (
+                    voucherList.map((v: any) => (
+                      <div
+                        key={v.id}
+                        className="flex items-center justify-between p-3.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#0A1128] transition-all hover:border-gray-300"
+                      >
+                        <div className="flex-1 min-w-0 pr-3">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
+                            <span className="font-mono font-black text-gray-900 dark:text-white uppercase text-sm tracking-wide">
+                              {v.code}
+                            </span>
+                            <span className="bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-500/20 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                              {v.discountType === "PERCENTAGE"
+                                ? `${v.discountValue}% OFF`
+                                : `Potongan Rp ${(v.discountValue || 0).toLocaleString("id-ID")}`}
+                            </span>
+                          </div>
+                          <div className="text-[11px] text-gray-500 dark:text-gray-400 truncate">
+                            Berlaku untuk:{" "}
+                            <span className="font-semibold text-gray-700 dark:text-gray-300">
+                              {v.targetTitle || v.product?.title || (v.targetType === "ALL" ? "Semua Produk & Paket" : "Produk Tertentu")}
+                            </span>
+                          </div>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteVoucher(v.id, v.code)}
+                          disabled={isDeletingVoucherId === v.id}
+                          className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 rounded-lg transition-colors shrink-0 cursor-pointer disabled:opacity-50"
+                          title="Hapus voucher"
+                        >
+                          {isDeletingVoucherId === v.id ? (
+                            <Loader2 className="w-4 h-4 animate-spin text-red-500" />
+                          ) : (
+                            <Trash2 className="w-4 h-4" />
+                          )}
+                        </button>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8 border border-dashed border-gray-200 dark:border-[#2C3246] rounded-xl">
+                      <Ticket className="w-8 h-8 mx-auto text-gray-300 dark:text-gray-600 mb-2 opacity-40" />
+                      <p className="text-xs text-gray-400">
+                        Belum ada voucher aktif yang tersimpan.
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

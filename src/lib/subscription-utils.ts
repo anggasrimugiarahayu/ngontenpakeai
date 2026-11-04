@@ -132,6 +132,50 @@ export function resolvePackageMeta(
   };
 }
 
+export function isVoucherApplicable(
+  voucher: {
+    targetType?: string | null;
+    targetId?: string | null;
+    digitalProductId?: string | null;
+    isActive?: boolean | null;
+  },
+  type: string,
+  productId?: string | null,
+  rawPricingConfig?: any
+): boolean {
+  if (!voucher || voucher.isActive === false) return false;
+
+  const targetType = voucher.targetType || "DIGITAL_PRODUCT";
+
+  // 1. ALL: Berlaku untuk semua paket dan produk digital
+  if (targetType === "ALL") return true;
+
+  // 2. CATEGORY: Berlaku untuk semua paket dalam kategori tertentu
+  if (targetType === "CATEGORY") {
+    if (type === "EBOOK" && voucher.targetId === "ebook") return true;
+    const cleanType = (type || "").trim();
+    if (!cleanType || cleanType === "EBOOK") return false;
+
+    const meta = resolvePackageMeta(cleanType, rawPricingConfig);
+    return meta?.category === voucher.targetId;
+  }
+
+  // 3. PACKAGE: Berlaku untuk paket tertentu (misal: PRO_TOOLS, PRO_AUTO_3M)
+  if (targetType === "PACKAGE") {
+    return (type || "").trim() === voucher.targetId;
+  }
+
+  // 4. DIGITAL_PRODUCT: Berlaku untuk e-book / produk digital spesifik
+  if (targetType === "DIGITAL_PRODUCT") {
+    return Boolean(
+      (productId && productId === voucher.digitalProductId) ||
+      (productId && productId === voucher.targetId)
+    );
+  }
+
+  return false;
+}
+
 export function isBookPackageOrder(
   orderType?: string | null,
   rawPricingConfig?: any
