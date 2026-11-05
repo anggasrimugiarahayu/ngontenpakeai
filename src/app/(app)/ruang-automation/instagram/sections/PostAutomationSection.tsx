@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Bot,
   Sparkles,
@@ -69,68 +69,85 @@ export function PostRuleCard({
     (rule.buttonUrl.startsWith("/images/") ||
       Boolean(rule.buttonUrl.match(/\.(jpeg|jpg|gif|png|webp|svg)($|\?)/i)));
 
-  // Prioritaskan URL yang sudah tersimpan di DB (postCoverUrl) atau cache lokal
-  // agar tampil instan 0ms dan TIDAK reload saat feedPosts selesai di-fetch di background.
-  const immediateCover =
-    ruleConfig.postCoverUrl ||
-    getCachedCoverUrl(rule.specificPostId) ||
-    matchedPost?.thumb ||
-    matchedPost?.image ||
-    (isDirectImg ? rule.buttonUrl : null);
+  // Set untuk mengingat URL gambar yang gagal / expired agar tidak dicoba ulang (mencegah loop flicker di Safari)
+  const failedUrlsRef = useRef<Set<string>>(new Set());
 
-  const [stableCoverSrc, setStableCoverSrc] = useState<string | null>(immediateCover);
+  const freshMediaCover = matchedPost?.thumb || matchedPost?.image || null;
+  const cachedCover = getCachedCoverUrl(rule.specificPostId);
+  const savedCover = ruleConfig.postCoverUrl || cachedCover || null;
+
+  const getBestCandidate = () => {
+    // Prioritaskan matchedPost karena URL-nya selalu segar langsung dari Instagram API
+    if (freshMediaCover && !failedUrlsRef.current.has(freshMediaCover)) {
+      return freshMediaCover;
+    }
+    if (savedCover && !failedUrlsRef.current.has(savedCover)) {
+      return savedCover;
+    }
+    if (isDirectImg && rule.buttonUrl && !failedUrlsRef.current.has(rule.buttonUrl)) {
+      return rule.buttonUrl;
+    }
+    return null;
+  };
+
+  const [stableCoverSrc, setStableCoverSrc] = useState<string | null>(() => getBestCandidate());
   const [imgFailed, setImgFailed] = useState(false);
 
   useEffect(() => {
-    const freshMediaCover = matchedPost?.thumb || matchedPost?.image || null;
-    const savedCover = ruleConfig.postCoverUrl || getCachedCoverUrl(rule.specificPostId) || null;
-    const candidate = savedCover || freshMediaCover || (isDirectImg ? rule.buttonUrl : null);
-
     if (rule.specificPostId && (freshMediaCover || savedCover)) {
       setCachedCoverUrl(rule.specificPostId, freshMediaCover || savedCover);
     }
 
-    // Hanya update state gambar jika sebelumnya kosong, atau jika user baru mengganti post di Edit Modal
-    if (!stableCoverSrc && candidate) {
+    const candidate = getBestCandidate();
+    if (!candidate) {
+      if (stableCoverSrc && failedUrlsRef.current.has(stableCoverSrc)) {
+        setStableCoverSrc(null);
+        setImgFailed(true);
+      }
+      return;
+    }
+
+    if (candidate !== stableCoverSrc && !failedUrlsRef.current.has(candidate)) {
       setStableCoverSrc(candidate);
       setImgFailed(false);
-    } else if (
-      ruleConfig.postCoverUrl &&
-      ruleConfig.postCoverUrl !== stableCoverSrc &&
-      !imgFailed
-    ) {
-      setStableCoverSrc(ruleConfig.postCoverUrl);
     }
   }, [
     rule.specificPostId,
     ruleConfig.postCoverUrl,
-    matchedPost?.thumb,
-    matchedPost?.image,
+    freshMediaCover,
+    savedCover,
     rule.buttonUrl,
     isDirectImg,
-    stableCoverSrc,
-    imgFailed,
   ]);
 
   // Real metrics dari log rule ini (Lifetime / All-time Total per-rule)
   const ruleLogs = (logs || []).filter((l: any) => l.ruleId === rule.id);
   const sentLogsCount = ruleLogs.filter((l: any) => l.dmStatus === "SENT").length;
-  const sentCount =
-    typeof rule.totalSentCount === "number"
-      ? rule.totalSentCount
-      : (sentLogsCount > 0 ? sentLogsCount : (rule._count?.logs || 0));
 
-  let clickCount = 0;
-  let followerCount = 0;
-  for (const l of ruleLogs) {
-    const m = parseClientLogMeta(l.errorMessage);
-    if (m.clicked) clickCount += 1;
-    if (m.newFollower) followerCount += 1;
+  const sentCount =
+    typeof rule.lifetimeStats?.send === "number"
+      ? rule.lifetimeStats.send
+      : (typeof rule.totalSentCount === "number"
+        ? rule.totalSentCount
+        : (sentLogsCount > 0 ? sentLogsCount : (rule._count?.logs || 0)));
+
+  let clickCount = typeof rule.lifetimeStats?.clicked === "number" ? rule.lifetimeStats.clicked : 0;
+  let followerCount = typeof rule.lifetimeStats?.newFollower === "number" ? rule.lifetimeStats.newFollower : 0;
+
+  if (!rule.lifetimeStats) {
+    for (const l of ruleLogs) {
+      const m = parseClientLogMeta(l.errorMessage);
+      if (m.clicked) clickCount += 1;
+      if (m.newFollower) followerCount += 1;
+    }
   }
+
   const ctrRate =
-    sentCount > 0
+    rule.lifetimeStats?.ctr ||
+    rule.totalCtr ||
+    (sentCount > 0
       ? ((clickCount / sentCount) * 100).toFixed(1).replace(/\.0$/, "") + "%"
-      : "0%";
+      : "0%");
 
   const postPermalink =
     matchedPost?.permalink ||
@@ -158,11 +175,20 @@ export function PostRuleCard({
                 referrerPolicy="no-referrer"
                 className="absolute inset-0 w-full h-full object-cover"
                 onError={() => {
-                  const fallback = matchedPost?.thumb || matchedPost?.image || null;
+                  if (stableCoverSrc) {
+                    failedUrlsRef.current.add(stableCoverSrc);
+                  }
+                  const fallback =
+                    (freshMediaCover && !failedUrlsRef.current.has(freshMediaCover) && freshMediaCover) ||
+                    (savedCover && !failedUrlsRef.current.has(savedCover) && savedCover) ||
+                    (isDirectImg && rule.buttonUrl && !failedUrlsRef.current.has(rule.buttonUrl) && rule.buttonUrl) ||
+                    null;
+
                   if (fallback && fallback !== stableCoverSrc) {
                     setStableCoverSrc(fallback);
                   } else {
                     setImgFailed(true);
+                    setStableCoverSrc(null);
                   }
                 }}
               />

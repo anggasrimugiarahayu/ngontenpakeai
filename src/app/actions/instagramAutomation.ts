@@ -136,7 +136,7 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
 
     // 3. Hitung statistik dan ambil seluruh rules & log untuk semua agen milik user sekaligus
     // Termasuk agregasi riil seumur hidup (Lifetime All-Time Total) per-rule agar tidak terpotong limit 500
-    const [rules, totalComments, totalDms, recentLogs, sentCountsByRule] = await Promise.all([
+    const [rules, totalComments, totalDms, recentLogs, sentCountsByRule, failedCountsByRule, interactionLogs] = await Promise.all([
       (db as any).instagramAutomationRule.findMany({
         where: { accountId: { in: allAccountIds } },
         orderBy: { createdAt: "desc" },
@@ -154,7 +154,7 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
       }).catch(() => 0),
       (db as any).instagramAutomationLog.findMany({
         where: { accountId: { in: allAccountIds } },
-        take: 500,
+        take: 1000,
         orderBy: { createdAt: "desc" },
         include: { rule: { select: { name: true } } }
       }).catch(() => []),
@@ -166,6 +166,31 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
           ruleId: { not: null }
         },
         _count: { id: true }
+      }).catch(() => []),
+      (db as any).instagramAutomationLog.groupBy({
+        by: ["ruleId"],
+        where: {
+          accountId: { in: allAccountIds },
+          OR: [
+            { dmStatus: "FAILED" },
+            { replyCommentStatus: "FAILED" }
+          ],
+          ruleId: { not: null }
+        },
+        _count: { id: true }
+      }).catch(() => []),
+      (db as any).instagramAutomationLog.findMany({
+        where: {
+          accountId: { in: allAccountIds },
+          ruleId: { not: null },
+          errorMessage: { startsWith: "__META__:" }
+        },
+        select: {
+          id: true,
+          ruleId: true,
+          errorMessage: true,
+          dmStatus: true
+        }
       }).catch(() => [])
     ]);
 
@@ -179,13 +204,123 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
       }
     }
 
+    // Map agregasi pengiriman gagal murni per-rule (Lifetime All-Time Total)
+    const failedCountMap: Record<string, number> = {};
+    if (Array.isArray(failedCountsByRule)) {
+      for (const item of failedCountsByRule) {
+        if (item && item.ruleId) {
+          failedCountMap[item.ruleId] = item._count?.id || 0;
+        }
+      }
+    }
+
+    // Kelompokkan log interaksi seumur hidup per ruleId
+    const interactionLogsByRule: Record<string, any[]> = {};
+    if (Array.isArray(interactionLogs)) {
+      for (const log of interactionLogs) {
+        if (log && log.ruleId) {
+          if (!interactionLogsByRule[log.ruleId]) {
+            interactionLogsByRule[log.ruleId] = [];
+          }
+          interactionLogsByRule[log.ruleId].push(log);
+        }
+      }
+    }
+
     if (Array.isArray(rules)) {
       for (const rule of rules) {
         // totalSentCount murni untuk otomatisasi ini (per-rule), bukan total gabungan semua rule
         const dbSentCount = sentCountMap[rule.id];
-        rule.totalSentCount = typeof dbSentCount === "number"
+        const send = typeof dbSentCount === "number"
           ? dbSentCount
           : (rule._count?.logs || 0);
+        const failed = failedCountMap[rule.id] || 0;
+
+        const ruleInteractions = interactionLogsByRule[rule.id] || [];
+        let read = 0;
+        let clicked = 0;
+        let newFollower = 0;
+        let paid = 0;
+        let earning = 0;
+        let pembukaClicks = 0;
+        let askFollowClicks = 0;
+        let mainButtonClicks = 0;
+        let followUpClicks = 0;
+
+        for (const l of ruleInteractions) {
+          let m: any = {};
+          if (typeof l.errorMessage === "string" && l.errorMessage.startsWith("__META__:")) {
+            try {
+              m = JSON.parse(l.errorMessage.slice(9));
+            } catch {}
+          }
+          if (m.read || m.clicked || m.newFollower || m.contact) read += 1;
+          if (m.clicked) clicked += 1;
+          if (m.newFollower) newFollower += 1;
+          if (m.paid) paid += 1;
+          if (typeof m.earning === "number") earning += m.earning;
+
+          if (Array.isArray(m.buttonClicks) && m.buttonClicks.length > 0) {
+            for (const clk of m.buttonClicks) {
+              const act = (clk.action || "").toLowerCase();
+              const lbl = (clk.label || "").toLowerCase();
+              if (
+                act.includes("pembuka") ||
+                act.includes("welcome") ||
+                lbl.includes("mau") ||
+                lbl.includes("ya")
+              ) {
+                pembukaClicks += 1;
+              } else if (
+                act.includes("follow") ||
+                lbl.includes("mengikuti") ||
+                lbl.includes("follow")
+              ) {
+                askFollowClicks += 1;
+              } else if (
+                act.includes("follow up") ||
+                act.includes("pengingat") ||
+                lbl.includes("pengingat") ||
+                lbl.includes("follow up")
+              ) {
+                followUpClicks += 1;
+              } else {
+                mainButtonClicks += 1;
+              }
+            }
+          } else {
+            // Retroaktif fallback
+            if (m.lastPostbackPayload?.startsWith("WELCOME_AGREE")) pembukaClicks += 1;
+            if (m.lastPostbackPayload?.startsWith("CHECK_FOLLOW") || m.newFollower) askFollowClicks += 1;
+            if (m.followUpSent && m.clicked) followUpClicks += 1;
+            else if (m.clicked) mainButtonClicks += Number(m.clickCount) || 1;
+          }
+        }
+
+        const ctr =
+          send > 0
+            ? ((clicked / send) * 100).toFixed(1).replace(/\.0$/, "") + "%"
+            : "0%";
+
+        rule.lifetimeStats = {
+          send,
+          failed,
+          read,
+          clicked,
+          newFollower,
+          paid,
+          earning,
+          pembukaClicks,
+          askFollowClicks,
+          mainButtonClicks,
+          followUpClicks,
+          ctr,
+        };
+
+        rule.totalSentCount = send;
+        rule.totalClickCount = clicked;
+        rule.totalFollowerCount = newFollower;
+        rule.totalCtr = ctr;
       }
     }
 

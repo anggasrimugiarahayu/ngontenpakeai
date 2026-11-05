@@ -16,7 +16,11 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { parseClientRuleConfig, parseClientLogMeta } from "../utils/automationHelpers";
+import {
+  parseClientRuleConfig,
+  parseClientLogMeta,
+  formatFunnelPercentage,
+} from "../utils/automationHelpers";
 
 interface InstagramRuleDetailModalProps {
   detailRuleId: string | null;
@@ -89,30 +93,37 @@ export function InstagramRuleDetailModal({
   }, [detailRuleId]);
 
   // Hitung 7 KPI Metrics secara akurat dari database log (Lifetime / All-time Total per-rule)
+  const lifetime = detailRule?.lifetimeStats;
   const sentLogs = allRuleLogs.filter((l: any) => l.dmStatus === "SENT");
   const kpiSend =
-    typeof detailRule?.totalSentCount === "number"
-      ? detailRule.totalSentCount
-      : (sentLogs.length > 0 ? sentLogs.length : (detailRule?._count?.logs || 0));
-  let kpiRead = 0;
-  let kpiClicked = 0;
-  let kpiNewFollower = 0;
-  let kpiPaid = 0;
-  let kpiTotalEarning = 0;
+    typeof lifetime?.send === "number"
+      ? lifetime.send
+      : (typeof detailRule?.totalSentCount === "number"
+        ? detailRule.totalSentCount
+        : (sentLogs.length > 0 ? sentLogs.length : (detailRule?._count?.logs || 0)));
 
-  for (const l of allRuleLogs) {
-    const m = parseClientLogMeta(l.errorMessage);
-    if (m.read || m.clicked || m.newFollower || m.contact) kpiRead += 1;
-    if (m.clicked) kpiClicked += 1;
-    if (m.newFollower) kpiNewFollower += 1;
-    if (m.paid) kpiPaid += 1;
-    if (typeof m.earning === "number") kpiTotalEarning += m.earning;
+  let kpiRead = typeof lifetime?.read === "number" ? lifetime.read : 0;
+  let kpiClicked = typeof lifetime?.clicked === "number" ? lifetime.clicked : 0;
+  let kpiNewFollower = typeof lifetime?.newFollower === "number" ? lifetime.newFollower : 0;
+  let kpiPaid = typeof lifetime?.paid === "number" ? lifetime.paid : 0;
+  let kpiTotalEarning = typeof lifetime?.earning === "number" ? lifetime.earning : 0;
+
+  if (!lifetime) {
+    for (const l of allRuleLogs) {
+      const m = parseClientLogMeta(l.errorMessage);
+      if (m.read || m.clicked || m.newFollower || m.contact) kpiRead += 1;
+      if (m.clicked) kpiClicked += 1;
+      if (m.newFollower) kpiNewFollower += 1;
+      if (m.paid) kpiPaid += 1;
+      if (typeof m.earning === "number") kpiTotalEarning += m.earning;
+    }
   }
 
   const kpiCtr =
-    kpiSend > 0
+    lifetime?.ctr ||
+    (kpiSend > 0
       ? ((kpiClicked / kpiSend) * 100).toFixed(1).replace(/\.0$/, "") + "%"
-      : "0%";
+      : "0%");
 
   // Bangun data grafik 14 hari terakhir (harian)
   const dailyBuckets: {
@@ -176,64 +187,68 @@ export function InstagramRuleDetailModal({
     { label: "Ask For Payment", active: hasAskPayment },
   ];
 
-  // Perhitungan statistik 4 Tombol Interaksi Utama (Waffle Grid 10x10)
-  let pembukaClicks = 0;
-  let askFollowClicks = 0;
-  let mainButtonClicks = 0;
-  let followUpClicks = 0;
+  // Perhitungan statistik 4 Tombol Interaksi Utama (Lifetime / All-time Total)
+  let pembukaClicks = typeof lifetime?.pembukaClicks === "number" ? lifetime.pembukaClicks : 0;
+  let askFollowClicks = typeof lifetime?.askFollowClicks === "number" ? lifetime.askFollowClicks : 0;
+  let mainButtonClicks = typeof lifetime?.mainButtonClicks === "number" ? lifetime.mainButtonClicks : 0;
+  let followUpClicks = typeof lifetime?.followUpClicks === "number" ? lifetime.followUpClicks : 0;
 
-  for (const l of allRuleLogs) {
-    const m = parseClientLogMeta(l.errorMessage);
+  if (!lifetime) {
+    for (const l of allRuleLogs) {
+      const m = parseClientLogMeta(l.errorMessage);
 
-    if (Array.isArray(m.buttonClicks) && m.buttonClicks.length > 0) {
-      for (const clk of m.buttonClicks) {
-        const act = (clk.action || "").toLowerCase();
-        const lbl = (clk.label || "").toLowerCase();
-        if (
-          act.includes("pembuka") ||
-          act.includes("welcome") ||
-          lbl.includes("mau") ||
-          lbl.includes("ya")
-        ) {
-          pembukaClicks += 1;
-        } else if (
-          act.includes("follow") ||
-          lbl.includes("mengikuti") ||
-          lbl.includes("follow")
-        ) {
-          askFollowClicks += 1;
-        } else if (
-          act.includes("follow up") ||
-          act.includes("pengingat") ||
-          lbl.includes("pengingat") ||
-          lbl.includes("follow up")
-        ) {
-          followUpClicks += 1;
-        } else {
-          mainButtonClicks += 1;
+      if (Array.isArray(m.buttonClicks) && m.buttonClicks.length > 0) {
+        for (const clk of m.buttonClicks) {
+          const act = (clk.action || "").toLowerCase();
+          const lbl = (clk.label || "").toLowerCase();
+          if (
+            act.includes("pembuka") ||
+            act.includes("welcome") ||
+            lbl.includes("mau") ||
+            lbl.includes("ya")
+          ) {
+            pembukaClicks += 1;
+          } else if (
+            act.includes("follow") ||
+            lbl.includes("mengikuti") ||
+            lbl.includes("follow")
+          ) {
+            askFollowClicks += 1;
+          } else if (
+            act.includes("follow up") ||
+            act.includes("pengingat") ||
+            lbl.includes("pengingat") ||
+            lbl.includes("follow up")
+          ) {
+            followUpClicks += 1;
+          } else {
+            mainButtonClicks += 1;
+          }
         }
+      } else {
+        // Fallback retroaktif untuk data log lawas sebelum multi-button tracking
+        if (m.lastPostbackPayload?.startsWith("WELCOME_AGREE")) pembukaClicks += 1;
+        if (m.lastPostbackPayload?.startsWith("CHECK_FOLLOW") || m.newFollower) askFollowClicks += 1;
+        if (m.followUpSent && m.clicked) followUpClicks += 1;
+        else if (m.clicked) mainButtonClicks += Number(m.clickCount) || 1;
       }
-    } else {
-      // Fallback retroaktif untuk data log lawas sebelum multi-button tracking
-      if (m.lastPostbackPayload?.startsWith("WELCOME_AGREE")) pembukaClicks += 1;
-      if (m.lastPostbackPayload?.startsWith("CHECK_FOLLOW") || m.newFollower) askFollowClicks += 1;
-      if (m.followUpSent && m.clicked) followUpClicks += 1;
-      else if (m.clicked) mainButtonClicks += Number(m.clickCount) || 1;
     }
   }
 
-  const pembukaPct = kpiSend > 0 ? Math.min(100, Math.round((pembukaClicks / kpiSend) * 100)) : 0;
-  const askFollowPct = kpiSend > 0 ? Math.min(100, Math.round((askFollowClicks / kpiSend) * 100)) : 0;
-  const mainButtonPct = kpiSend > 0 ? Math.min(100, Math.round((mainButtonClicks / kpiSend) * 100)) : 0;
-  const followUpPct = kpiSend > 0 ? Math.min(100, Math.round((followUpClicks / kpiSend) * 100)) : 0;
-  const totalTrackedClicks = pembukaClicks + askFollowClicks + mainButtonClicks + followUpClicks || kpiClicked;
+  const pembukaStat = formatFunnelPercentage(pembukaClicks, kpiSend);
+  const askFollowStat = formatFunnelPercentage(askFollowClicks, kpiSend);
+  const mainButtonStat = formatFunnelPercentage(mainButtonClicks, kpiSend);
+  const followUpStat = formatFunnelPercentage(followUpClicks, kpiSend);
+  const totalTrackedClicks =
+    pembukaClicks + askFollowClicks + mainButtonClicks + followUpClicks || kpiClicked;
 
   const buttonWaffleItems = [
     {
       id: "btn_pembuka",
       title: "Tombol Pembuka",
       description: "Konfirmasi awal pembuka pesan audiens",
-      percentage: pembukaPct,
+      pctLabel: pembukaStat.pctLabel,
+      blocksFilled: pembukaStat.blocksFilled,
       countLabel: `${pembukaClicks} Klik`,
       solidBg: "bg-[#7C3AED]",
       pastelBg: "bg-[#EDE9FE] dark:bg-[#7C3AED]/25",
@@ -243,7 +258,8 @@ export function InstagramRuleDetailModal({
       id: "btn_ask_follow",
       title: "Tombol Ask Follow",
       description: "Verifikasi audiens sudah follow akun",
-      percentage: askFollowPct,
+      pctLabel: askFollowStat.pctLabel,
+      blocksFilled: askFollowStat.blocksFilled,
       countLabel: `${askFollowClicks} Klik`,
       solidBg: "bg-[#D97706]",
       pastelBg: "bg-[#FEF3C7] dark:bg-[#D97706]/25",
@@ -253,7 +269,8 @@ export function InstagramRuleDetailModal({
       id: "btn_main",
       title: "Tombol Utama (Link Web)",
       description: "Akses link penawaran / checkout / web",
-      percentage: mainButtonPct,
+      pctLabel: mainButtonStat.pctLabel,
+      blocksFilled: mainButtonStat.blocksFilled,
       countLabel: `${mainButtonClicks} Klik`,
       solidBg: "bg-[#1D4ED8]",
       pastelBg: "bg-[#DBEAFE] dark:bg-[#1D4ED8]/25",
@@ -263,7 +280,8 @@ export function InstagramRuleDetailModal({
       id: "btn_followup",
       title: "Tombol Follow-Up",
       description: "Pengingat audiens yang belum klik link",
-      percentage: followUpPct,
+      pctLabel: followUpStat.pctLabel,
+      blocksFilled: followUpStat.blocksFilled,
       countLabel: `${followUpClicks} Klik`,
       solidBg: "bg-[#059669]",
       pastelBg: "bg-[#D1FAE5] dark:bg-[#059669]/25",
@@ -282,9 +300,67 @@ export function InstagramRuleDetailModal({
     : [];
 
   const mainDmContent = detailConfig.mainMessage || detailRule.dmMessage || "-";
-  const failedLogsCount = recent14dLogs.filter(
-    (l: any) => l.dmStatus === "FAILED" || l.replyCommentStatus === "FAILED"
-  ).length;
+  const failedLogsCount =
+    typeof lifetime?.failed === "number"
+      ? lifetime.failed
+      : recent14dLogs.filter(
+          (l: any) => l.dmStatus === "FAILED" || l.replyCommentStatus === "FAILED"
+        ).length;
+
+  const sendTotal = kpiSend + failedLogsCount;
+  const sendPct = sendTotal > 0 ? Math.round((kpiSend / sendTotal) * 100) : (kpiSend > 0 ? 100 : 0);
+  const sendBlocks = Math.min(100, Math.max(kpiSend > 0 ? 1 : 0, sendPct));
+
+  const readStat = formatFunnelPercentage(kpiRead, kpiSend);
+  const clickedStat = formatFunnelPercentage(kpiClicked, kpiSend);
+  const followerStat = formatFunnelPercentage(kpiNewFollower, kpiSend);
+
+  const funnelItems = [
+    {
+      id: "send",
+      title: "Pesan Terkirim",
+      description: "Pesan otomasi berhasil dikirim ke DM audiens",
+      pctLabel: `${sendPct}%`,
+      blocksFilled: sendBlocks,
+      countLabel: `${kpiSend} Pesan`,
+      solidBg: "bg-[#3D5A27]",
+      pastelBg: "bg-[#EAF2E4] dark:bg-[#3D5A27]/25",
+      textColor: "text-[#3D5A27] dark:text-[#84cc16]",
+    },
+    {
+      id: "read",
+      title: "Direspon / Dibaca",
+      description: "Audiens aktif membuka atau merespon pesan",
+      pctLabel: readStat.pctLabel,
+      blocksFilled: readStat.blocksFilled,
+      countLabel: `${kpiRead} Direspon`,
+      solidBg: "bg-[#C91D1D]",
+      pastelBg: "bg-[#FCEAEA] dark:bg-[#C91D1D]/25",
+      textColor: "text-[#C91D1D] dark:text-[#f87171]",
+    },
+    {
+      id: "clicked",
+      title: "Tautan Diklik (CTR)",
+      description: "Audiens menekan tombol link yang dibagikan",
+      pctLabel: clickedStat.pctLabel,
+      blocksFilled: clickedStat.blocksFilled,
+      countLabel: `${kpiClicked} Klik`,
+      solidBg: "bg-[#1E88E5]",
+      pastelBg: "bg-[#E3F2FD] dark:bg-[#1E88E5]/25",
+      textColor: "text-[#1E88E5] dark:text-[#60a5fa]",
+    },
+    {
+      id: "follower",
+      title: "Follower Baru",
+      description: "Audiens terverifikasi follow dari Ask Follow",
+      pctLabel: followerStat.pctLabel,
+      blocksFilled: followerStat.blocksFilled,
+      countLabel: `${kpiNewFollower} Follower`,
+      solidBg: "bg-[#E69100]",
+      pastelBg: "bg-[#FEF5E1] dark:bg-[#E69100]/25",
+      textColor: "text-[#E69100] dark:text-[#fbbf24]",
+    },
+  ];
 
   const formatDateTimeId = (isoStr?: string | null) => {
     if (!isoStr) return "-";
@@ -387,7 +463,7 @@ export function InstagramRuleDetailModal({
 
           {/* Baris 2: Teks Penjelasan Membentang Penuh (Full Width) */}
           <p className="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
-            Analitik performa realtime, status konfigurasi funnel, dan riwayat log komentar 14 hari terakhir.
+            Analitik performa keseluruhan (All-Time), status konfigurasi funnel, dan riwayat log 14 hari terakhir.
           </p>
         </div>
 
@@ -481,53 +557,7 @@ export function InstagramRuleDetailModal({
 
             {/* 4 Kolom Matriks Waffle 10x10 */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 pt-2">
-              {[
-                {
-                  id: "send",
-                  title: "Pesan Terkirim",
-                  description: "Pesan otomasi berhasil dikirim ke DM audiens",
-                  percentage:
-                    kpiSend > 0
-                      ? failedLogsCount > 0
-                        ? Math.round((kpiSend / (kpiSend + failedLogsCount)) * 100)
-                        : 100
-                      : 0,
-                  countLabel: `${kpiSend} Pesan`,
-                  solidBg: "bg-[#3D5A27]",
-                  pastelBg: "bg-[#EAF2E4] dark:bg-[#3D5A27]/25",
-                  textColor: "text-[#3D5A27] dark:text-[#84cc16]",
-                },
-                {
-                  id: "read",
-                  title: "Direspon / Dibaca",
-                  description: "Audiens aktif membuka atau merespon pesan",
-                  percentage: kpiSend > 0 ? Math.min(100, Math.round((kpiRead / kpiSend) * 100)) : 0,
-                  countLabel: `${kpiRead} Direspon`,
-                  solidBg: "bg-[#C91D1D]",
-                  pastelBg: "bg-[#FCEAEA] dark:bg-[#C91D1D]/25",
-                  textColor: "text-[#C91D1D] dark:text-[#f87171]",
-                },
-                {
-                  id: "clicked",
-                  title: "Tautan Diklik (CTR)",
-                  description: "Audiens menekan tombol link yang dibagikan",
-                  percentage: kpiSend > 0 ? Math.min(100, Math.round((kpiClicked / kpiSend) * 100)) : 0,
-                  countLabel: `${kpiClicked} Klik`,
-                  solidBg: "bg-[#1E88E5]",
-                  pastelBg: "bg-[#E3F2FD] dark:bg-[#1E88E5]/25",
-                  textColor: "text-[#1E88E5] dark:text-[#60a5fa]",
-                },
-                {
-                  id: "follower",
-                  title: "Follower Baru",
-                  description: "Audiens terverifikasi follow dari Ask Follow",
-                  percentage: kpiSend > 0 ? Math.min(100, Math.round((kpiNewFollower / kpiSend) * 100)) : 0,
-                  countLabel: `${kpiNewFollower} Follower`,
-                  solidBg: "bg-[#E69100]",
-                  pastelBg: "bg-[#FEF5E1] dark:bg-[#E69100]/25",
-                  textColor: "text-[#E69100] dark:text-[#fbbf24]",
-                },
-              ].map((item) => (
+              {funnelItems.map((item) => (
                 <div
                   key={item.id}
                   className="p-4 sm:p-5 rounded-2xl bg-gray-50/70 dark:bg-[#0A1128] border border-gray-200/80 dark:border-[#2C3246] flex flex-col justify-between"
@@ -539,7 +569,7 @@ export function InstagramRuleDetailModal({
                       const col = idx % 10;
                       const fromBottom = 9 - row;
                       const blockIndex = fromBottom * 10 + col;
-                      const isFilled = blockIndex < item.percentage;
+                      const isFilled = blockIndex < item.blocksFilled;
 
                       return (
                         <div
@@ -555,7 +585,7 @@ export function InstagramRuleDetailModal({
                   {/* Keterangan & Angka Persentase */}
                   <div className="space-y-1">
                     <div className={`text-2xl sm:text-3xl font-black ${item.textColor}`}>
-                      {item.percentage}%
+                      {item.pctLabel}
                     </div>
                     <div className="font-bold text-xs sm:text-sm text-gray-900 dark:text-white">
                       {item.title}
@@ -604,7 +634,7 @@ export function InstagramRuleDetailModal({
                       const col = idx % 10;
                       const fromBottom = 9 - row;
                       const blockIndex = fromBottom * 10 + col;
-                      const isFilled = blockIndex < item.percentage;
+                      const isFilled = blockIndex < item.blocksFilled;
 
                       return (
                         <div
@@ -620,7 +650,7 @@ export function InstagramRuleDetailModal({
                   {/* Keterangan & Angka Persentase */}
                   <div className="space-y-1">
                     <div className={`text-2xl sm:text-3xl font-black ${item.textColor}`}>
-                      {item.percentage}%
+                      {item.pctLabel}
                     </div>
                     <div className="font-bold text-xs sm:text-sm text-gray-900 dark:text-white">
                       {item.title}

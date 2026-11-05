@@ -76,22 +76,31 @@ export function LiveRuleCard({
   // Real metrics dari log rule ini (Lifetime / All-time Total per-rule)
   const ruleLogs = (logs || []).filter((l: any) => l.ruleId === rule.id);
   const sentLogsCount = ruleLogs.filter((l: any) => l.dmStatus === "SENT").length;
-  const sentCount =
-    typeof rule.totalSentCount === "number"
-      ? rule.totalSentCount
-      : (sentLogsCount > 0 ? sentLogsCount : (rule._count?.logs || 0));
 
-  let clickCount = 0;
-  let followerCount = 0;
-  for (const l of ruleLogs) {
-    const m = parseClientLogMeta(l.errorMessage);
-    if (m.clicked) clickCount += 1;
-    if (m.newFollower) followerCount += 1;
+  const sentCount =
+    typeof rule.lifetimeStats?.send === "number"
+      ? rule.lifetimeStats.send
+      : (typeof rule.totalSentCount === "number"
+        ? rule.totalSentCount
+        : (sentLogsCount > 0 ? sentLogsCount : (rule._count?.logs || 0)));
+
+  let clickCount = typeof rule.lifetimeStats?.clicked === "number" ? rule.lifetimeStats.clicked : 0;
+  let followerCount = typeof rule.lifetimeStats?.newFollower === "number" ? rule.lifetimeStats.newFollower : 0;
+
+  if (!rule.lifetimeStats) {
+    for (const l of ruleLogs) {
+      const m = parseClientLogMeta(l.errorMessage);
+      if (m.clicked) clickCount += 1;
+      if (m.newFollower) followerCount += 1;
+    }
   }
+
   const ctrRate =
-    sentCount > 0
+    rule.lifetimeStats?.ctr ||
+    rule.totalCtr ||
+    (sentCount > 0
       ? ((clickCount / sentCount) * 100).toFixed(1).replace(/\.0$/, "") + "%"
-      : "0%";
+      : "0%");
 
   return (
     <div

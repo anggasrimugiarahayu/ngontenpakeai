@@ -138,6 +138,31 @@ export function formatDateTimeId(isoStr?: string | null): string {
   }
 }
 
+// Helper format persentase funnel & perhitungan waffle chart 10x10
+export function formatFunnelPercentage(count: number, total: number): {
+  pctLabel: string;
+  blocksFilled: number;
+} {
+  if (!total || total <= 0 || !count || count <= 0) {
+    return { pctLabel: "0%", blocksFilled: 0 };
+  }
+
+  const rawPct = (count / total) * 100;
+
+  let pctLabel: string;
+  if (rawPct >= 1) {
+    pctLabel = rawPct % 1 === 0 ? `${rawPct}%` : `${rawPct.toFixed(1)}%`;
+  } else {
+    const formatted = rawPct.toFixed(1);
+    pctLabel = formatted === "0.0" ? "<0.1%" : `${formatted}%`;
+  }
+
+  // Pada waffle chart 100 kotak, jika ada interaksi/klik (>0), nyalakan minimal 1 kotak agar tidak terlihat 0% kosong
+  const blocksFilled = Math.min(100, Math.max(1, Math.round(rawPct)));
+
+  return { pctLabel, blocksFilled };
+}
+
 // Sample Instagram Posts for feed selection & preview
 export const SAMPLE_INSTAGRAM_POSTS = [
   {
