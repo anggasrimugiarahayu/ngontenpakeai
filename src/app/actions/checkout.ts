@@ -44,7 +44,10 @@ export async function revalidateAfterPurchaseAction() {
 }
 
 export async function getCheckoutDetailsAction(type: string, productId?: string) {
-  const session = await auth();
+  let session: any = null;
+  try {
+    session = await auth();
+  } catch {}
   const userId = session?.user?.id;
   if (!type) return { badRequest: true };
 
@@ -130,6 +133,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
 
   let baseAmount = 0;
   let bundledIds: string[] = [];
+  let targetPkgBundledRooms: any = null;
   let itemName = "";
   let itemDescription = "";
   let productImage = "";
@@ -153,6 +157,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
       itemName = targetPkg.name;
       itemDescription = targetPkg.desc || "Akses paket langganan ruangcreativemuslim.";
       bundledIds = targetPkg.bundledProductIds || [];
+      targetPkgBundledRooms = targetPkg.bundledRooms || null;
       const cat = targetPkg.category;
       if (type.includes("BOOK") || cat === "ebook") productImage = "/img_paket/paket_ebook.png";
       else if (type.includes("TOOLS") || cat === "tools") productImage = "/img_paket/paket_tools.png";
@@ -182,8 +187,46 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
     ? await verifyPayment(pendingDbOrder.id)
     : null;
 
-  // Daftar produk yang termasuk paket gratis (Included) - Berlaku untuk semua paket (PRO_ maupun PKG_)
-  const includedAddons = (type !== "EBOOK" && includedSet.size > 0)
+  // Bangun daftar akses ruangan yang di-bundle dalam paket
+  const roomAddons: any[] = [];
+  if (targetPkgBundledRooms) {
+    if (targetPkgBundledRooms.toolsDays && Number(targetPkgBundledRooms.toolsDays) > 0) {
+      roomAddons.push({
+        id: "ROOM_TOOLS",
+        title: `Akses Tools Ruang Ngonten (${targetPkgBundledRooms.toolsDays} Hari)`,
+        coverUrl: "/img_paket/paket_tools.png",
+        price: 0,
+        itemType: "room",
+        roomKey: "tools",
+        days: Number(targetPkgBundledRooms.toolsDays),
+      });
+    }
+    if (targetPkgBundledRooms.risetDays && Number(targetPkgBundledRooms.risetDays) > 0) {
+      roomAddons.push({
+        id: "ROOM_RISET",
+        title: `Akses Tools Ruang Riset (${targetPkgBundledRooms.risetDays} Hari)`,
+        coverUrl: "/img_paket/paket_tools.png",
+        price: 0,
+        itemType: "room",
+        roomKey: "riset",
+        days: Number(targetPkgBundledRooms.risetDays),
+      });
+    }
+    if (targetPkgBundledRooms.automationDays && Number(targetPkgBundledRooms.automationDays) > 0) {
+      roomAddons.push({
+        id: "ROOM_AUTOMATION",
+        title: `Akses Instagram Automation (${targetPkgBundledRooms.automationDays} Hari)`,
+        coverUrl: "/img_paket/paket_tools.png",
+        price: 0,
+        itemType: "room",
+        roomKey: "automation",
+        days: Number(targetPkgBundledRooms.automationDays),
+      });
+    }
+  }
+
+  // Daftar produk yang termasuk paket gratis (Included E-Book)
+  const ebookIncluded = (type !== "EBOOK" && includedSet.size > 0)
     ? combinedWithCovers
         .filter((p) => includedSet.has(p.id))
         .map((p) => ({
@@ -191,8 +234,12 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
           title: p.title,
           coverUrl: p.coverUrl,
           price: p.price,
+          itemType: "ebook",
         }))
     : [];
+
+  // Gabungkan seluruh bonus ruangan dan e-book yang termasuk dalam paket
+  const includedAddons = type !== "EBOOK" ? [...roomAddons, ...ebookIncluded] : [];
 
   // Daftar Add-on Tambahan Berbayar:
   // 1. Bukan produk utama yang sedang dibeli

@@ -3,7 +3,7 @@
 import React from "react";
 import Button from "@/components/ui/Button";
 import Link from "next/link";
-import { Loader2, CheckCircle2, X, CreditCard, AlertCircle, MessageSquare, RefreshCw } from "lucide-react";
+import { Loader2, CheckCircle2, X, CreditCard, AlertCircle, MessageSquare, RefreshCw, Sparkles, Search, Bot } from "lucide-react";
 import { PAYMENT_METHODS, PaymentMethodKey } from "@/lib/payment-calc";
 import { revalidateAfterPurchaseAction } from "@/app/actions/checkout";
 import { ClawdSuccessVisual, ClawdErrorVisual } from "@/components/ui/ClawdLoadingVisuals";
@@ -13,6 +13,9 @@ export interface CheckoutAddonItem {
   title: string;
   coverUrl: string | null;
   price: number;
+  itemType?: "room" | "ebook";
+  roomKey?: "tools" | "riset" | "automation";
+  days?: number;
 }
 
 interface CheckoutModalsProps {
@@ -428,7 +431,12 @@ export default function CheckoutModals({
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <div className="bg-white dark:bg-[#141B31] rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden flex flex-col max-h-[85vh] animate-in fade-in zoom-in-95 duration-200 border border-gray-200 dark:border-[#2C3246]">
             <div className="p-4 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between shrink-0">
-              <h3 className="font-bold text-gray-900 dark:text-white">Produk Included (Gratis)</h3>
+              <div>
+                <h3 className="font-bold text-gray-900 dark:text-white">Produk & Akses Included (Gratis)</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                  Total {includedAddons.length} materi & benefit langsung aktif otomatis saat pembayaran berhasil
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={(e) => {
@@ -442,20 +450,56 @@ export default function CheckoutModals({
             </div>
 
             <div className="p-5 overflow-y-auto space-y-3">
-              {includedAddons.map((addon) => (
-                <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#2C3246] bg-gray-50/50 dark:bg-black/10">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-white dark:bg-[#141B31] rounded-lg p-0.5 border border-gray-100 dark:border-[#2C3246] shrink-0 flex items-center justify-center overflow-hidden">
-                      {addon.coverUrl ? <img src={addon.coverUrl} className="w-full h-full object-contain" alt="" /> : <CreditCard className="w-5 h-5 text-gray-300" />}
+              {includedAddons.map((addon) => {
+                const isRoom = addon.id.startsWith("ROOM_") || addon.itemType === "room";
+                const isTools = addon.id === "ROOM_TOOLS" || addon.roomKey === "tools";
+                const isRiset = addon.id === "ROOM_RISET" || addon.roomKey === "riset";
+                const isAuto = addon.id === "ROOM_AUTOMATION" || addon.roomKey === "automation";
+
+                return (
+                  <div key={addon.id} className="flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#2C3246] bg-gray-50/50 dark:bg-black/10">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-white dark:bg-[#141B31] rounded-lg p-0.5 border border-gray-100 dark:border-[#2C3246] shrink-0 flex items-center justify-center overflow-hidden">
+                        {isTools ? (
+                          <div className="w-full h-full bg-orange-50 dark:bg-orange-950/40 rounded flex items-center justify-center">
+                            <Sparkles className="w-6 h-6 text-orange-500" />
+                          </div>
+                        ) : isRiset ? (
+                          <div className="w-full h-full bg-sky-50 dark:bg-sky-950/40 rounded flex items-center justify-center">
+                            <Search className="w-6 h-6 text-sky-500" />
+                          </div>
+                        ) : isAuto ? (
+                          <div className="w-full h-full bg-pink-50 dark:bg-pink-950/40 rounded flex items-center justify-center">
+                            <Bot className="w-6 h-6 text-pink-500" />
+                          </div>
+                        ) : addon.coverUrl ? (
+                          <img src={addon.coverUrl} className="w-full h-full object-contain" alt="" />
+                        ) : (
+                          <CreditCard className="w-5 h-5 text-gray-300" />
+                        )}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <p className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">{addon.title}</p>
+                          {isRoom ? (
+                            <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 px-1.5 py-0.5 rounded border border-orange-200 dark:border-orange-500/30 shrink-0 uppercase">
+                              Bonus Tools
+                            </span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-200 dark:border-emerald-500/30 shrink-0 uppercase">
+                              E-Book
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs font-medium text-green-500">
+                          {isRoom ? "Langsung Aktif Saat Pembayaran (Rp 0)" : "Termasuk Paket (Rp 0)"}
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900 dark:text-white line-clamp-1">{addon.title}</p>
-                      <p className="text-xs font-medium text-green-500">Termasuk Paket (Rp 0)</p>
-                    </div>
+                    <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
                   </div>
-                  <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         </div>

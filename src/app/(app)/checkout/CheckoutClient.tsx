@@ -431,7 +431,7 @@ export default function CheckoutClient({
               <div className="mt-5 pt-4 border-t border-gray-100 dark:border-[#2C3246]">
                 <h3 className="text-[11px] font-bold text-gray-400 dark:text-gray-500 tracking-wider mb-3 uppercase">
                   {includedAddons.length > 0 && (!availableAddons || availableAddons.length === 0)
-                    ? "PRODUK INCLUDED DALAM PAKET"
+                    ? "PRODUK & BENEFIT INCLUDED DALAM PAKET"
                     : "ADD-ON & BUNDLE PRODUK"}
                 </h3>
                 <div className="space-y-3">
@@ -443,11 +443,13 @@ export default function CheckoutClient({
                           e.preventDefault();
                           setIsIncludedModalOpen(true);
                         }}
-                        className="w-full flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#2C3246] bg-green-50/50 dark:bg-green-900/10 hover:bg-green-100/50 dark:hover:bg-green-900/20 transition-colors"
+                        className="w-full flex items-center justify-between p-3 rounded-xl border border-gray-100 dark:border-[#2C3246] bg-green-50/50 dark:bg-green-900/10 hover:bg-green-100/50 dark:hover:bg-green-900/20 transition-colors cursor-pointer"
                       >
                         <div className="flex items-center gap-2">
                           <CheckCircle2 className="w-4 h-4 text-green-500" />
-                          <span className="text-xs font-bold text-gray-700 dark:text-gray-300">Lihat {includedAddons.length} Produk Included (Gratis)</span>
+                          <span className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                            Lihat {includedAddons.length} Produk & Akses Included (Gratis)
+                          </span>
                         </div>
                         <span className="text-xs text-green-600 dark:text-green-400 font-semibold cursor-pointer">Buka</span>
                       </button>
