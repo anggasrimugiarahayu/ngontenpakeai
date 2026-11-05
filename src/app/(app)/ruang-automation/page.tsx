@@ -5,6 +5,7 @@ import { getCachedAppUser, getCachedFeatures, getCachedQuotaConfig, getCachedHom
 import prisma from "@/lib/prisma";
 import RuangAutomationClient from "./RuangAutomationClient";
 import { isAdminEmail } from "@/lib/admin";
+import { verifyPayment } from "@/app/actions/payment";
 
 export const metadata = {
   title: "Ruang Automation | ruangcreativemuslim",
@@ -16,6 +17,15 @@ export default async function RuangAutomationPage({
 }: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const resolvedParams = searchParams ? await searchParams : {};
+  if (resolvedParams?.order_id && typeof resolvedParams.order_id === "string") {
+    try {
+      await verifyPayment(resolvedParams.order_id);
+    } catch (e) {
+      console.error("Failed to verify payment on Ruang Automation:", e);
+    }
+  }
+
   const session = await auth();
   const isLoggedIn = !!session?.user;
   const isAdmin = isAdminEmail(session?.user?.email);
@@ -65,7 +75,6 @@ export default async function RuangAutomationPage({
     }
   }
 
-  const resolvedParams = searchParams ? await searchParams : {};
   const initialAgentId = typeof resolvedParams.agentId === "string" ? resolvedParams.agentId : null;
 
   if (initialAgentId && !isLoggedIn) {

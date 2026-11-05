@@ -4,6 +4,7 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { snap, coreApi, isProduction } from "@/lib/midtrans";
 import { revalidatePath, revalidateTag } from "next/cache";
+import { headers } from "next/headers";
 import { calculatePaymentFees, PAYMENT_METHODS, PaymentMethodKey } from "@/lib/payment-calc";
 import { mergePricingConfig } from "@/lib/pricing-packages";
 import { calculateSubscriptionFulfillment, isVoucherApplicable } from "@/lib/subscription-utils";
@@ -18,7 +19,8 @@ export async function createCheckoutToken(data: {
   customerPhone: string,
   addonIds?: string[],
   voucherCode?: string,
-  discountAmount?: number
+  discountAmount?: number,
+  origin?: string
 }) {
   try {
     const session = await auth();
@@ -171,6 +173,41 @@ export async function createCheckoutToken(data: {
     const expiryDurationMinutes = isShortExpiry ? 15 : 24 * 60;
     const calculatedExpiryTime = new Date(order.createdAt.getTime() + expiryDurationMinutes * 60 * 1000).toISOString();
 
+    let baseUrl = data.origin;
+    if (!baseUrl) {
+      try {
+        const h = await headers();
+        const host = h.get("x-forwarded-host") || h.get("host");
+        const proto = h.get("x-forwarded-proto") || "https";
+        if (host) {
+          baseUrl = `${proto}://${host}`;
+        }
+      } catch {}
+    }
+    if (!baseUrl) {
+      baseUrl = process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "https://ruangcreativemuslim.com";
+    }
+    baseUrl = baseUrl.replace(/\/$/, "");
+
+    let finishRedirectUrl = `${baseUrl}/ruang-belajar?order_id=${order.id}`;
+    if (data.type === "EBOOK") {
+      if (data.productId) {
+        const prod = await prisma.digitalProduct.findUnique({
+          where: { id: data.productId },
+          select: { slug: true }
+        });
+        if (prod?.slug) {
+          finishRedirectUrl = `${baseUrl}/ruang-belajar/${prod.slug}?order_id=${order.id}`;
+        }
+      }
+    } else if (data.type.toUpperCase().includes("RISET")) {
+      finishRedirectUrl = `${baseUrl}/ruang-riset?order_id=${order.id}`;
+    } else if (data.type.toUpperCase().includes("AUTO")) {
+      finishRedirectUrl = `${baseUrl}/ruang-automation?order_id=${order.id}`;
+    } else if (data.type.toUpperCase().includes("TOOLS") || data.type.toUpperCase().includes("PLUS")) {
+      finishRedirectUrl = `${baseUrl}/ruang-ngonten?order_id=${order.id}`;
+    }
+
     const parameter: any = {
       transaction_details: {
         order_id: order.id,
@@ -199,6 +236,11 @@ export async function createCheckoutToken(data: {
       expiry: {
         unit: isShortExpiry ? "minute" : "hour",
         duration: isShortExpiry ? 15 : 24
+      },
+      callbacks: {
+        finish: finishRedirectUrl,
+        error: finishRedirectUrl,
+        pending: finishRedirectUrl
       }
     };
 
@@ -283,7 +325,11 @@ function normalizeMidtransExpiry(dateStr: string | null | undefined): string | n
 
 export async function verifyPayment(orderId: string) {
   try {
-    const session = await auth();
+    let session: any = null;
+    try {
+      session = await auth();
+    } catch {}
+
     const order = await prisma.order.findUnique({ where: { id: orderId } });
     if (!order) return { success: false };
 
@@ -334,7 +380,7 @@ export async function verifyPayment(orderId: string) {
       finalStatus = "PENDING";
     }
 
-    // Check expiry time from Snap Token endpoint if available
+    // Check status or expiry time from Snap Token endpoint if available
     if (finalStatus === "PENDING" && order.midtransId) {
       try {
         const snapBaseUrl = isProduction ? "https://app.midtrans.com" : "https://app.sandbox.midtrans.com";
@@ -342,7 +388,12 @@ export async function verifyPayment(orderId: string) {
           headers: { "Accept": "application/json" },
           cache: "no-store"
         });
-        if (snapRes.status === 200) {
+        if (snapRes.status === 409) {
+          const snapText = await snapRes.text();
+          if (snapText.includes("succeed")) {
+            finalStatus = "SUCCESS";
+          }
+        } else if (snapRes.status === 200) {
           const snapJson = await snapRes.json();
           if (snapJson.expiry_time) {
             const norm = normalizeMidtransExpiry(snapJson.expiry_time);
@@ -481,13 +532,15 @@ export async function verifyPayment(orderId: string) {
           }
         }
       });
-      revalidatePath("/");
-      revalidatePath("/ruang-belajar");
-      revalidatePath("/ruang-ngonten");
-      revalidatePath("/ruang-riset");
-      revalidatePath("/ruang-automation");
-      revalidatePath("/pengaturan");
-      revalidatePath("/dashboard");
+      try {
+        revalidatePath("/");
+        revalidatePath("/ruang-belajar");
+        revalidatePath("/ruang-ngonten");
+        revalidatePath("/ruang-riset");
+        revalidatePath("/ruang-automation");
+        revalidatePath("/pengaturan");
+        revalidatePath("/dashboard");
+      } catch (e) {}
       try {
         revalidateTag("admin-dashboard-stats", "default");
         revalidateTag("global-stats", "default");

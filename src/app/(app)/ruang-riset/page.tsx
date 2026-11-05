@@ -11,6 +11,7 @@ import {
 import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
 import RuangRisetClient from "./RuangRisetClient";
 import { isAdminEmail } from "@/lib/admin";
+import { verifyPayment } from "@/app/actions/payment";
 
 export const metadata = {
   title: "Ruang Riset | ruangcreativemuslim",
@@ -22,6 +23,15 @@ export default async function RuangRisetPage({
 }: {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
+  const resolvedParams = searchParams ? await searchParams : {};
+  if (resolvedParams?.order_id && typeof resolvedParams.order_id === "string") {
+    try {
+      await verifyPayment(resolvedParams.order_id);
+    } catch (e) {
+      console.error("Failed to verify payment on Ruang Riset:", e);
+    }
+  }
+
   const session = await auth();
   const isLoggedIn = !!session?.user;
   const isAdmin = isAdminEmail(session?.user?.email);
@@ -58,7 +68,6 @@ export default async function RuangRisetPage({
     (f: any) => f.category === "riset" || f.name.toLowerCase().startsWith("riset ")
   );
 
-  const resolvedParams = searchParams ? await searchParams : {};
   const plat = resolvedParams.platform;
   const matchedFeature = plat
     ? risetFeatures.find(

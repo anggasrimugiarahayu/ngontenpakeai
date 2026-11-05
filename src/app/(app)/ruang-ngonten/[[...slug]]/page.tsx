@@ -3,13 +3,29 @@ import { redirect } from "next/navigation";
 import { getCachedFeatures, getCachedHasBlueprint, getCachedNicheReferences, getCachedAppUser, getCachedHomepageCards } from "@/lib/cache";
 import WorkspaceApp from "../WorkspaceApp";
 import { isAdminEmail } from "@/lib/admin";
+import { verifyPayment } from "@/app/actions/payment";
 
 export const metadata = {
   title: "Ruang Ngonten Workspace - ruangcreativemuslim",
 };
 
-export default async function RuangNgontenCatchAllPage(props: { params: Promise<{ slug?: string[] }> }) {
-  const [params, session] = await Promise.all([props.params, auth()]);
+export default async function RuangNgontenCatchAllPage(props: {
+  params: Promise<{ slug?: string[] }>;
+  searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const [params, resolvedSearchParams, session] = await Promise.all([
+    props.params,
+    props.searchParams ? props.searchParams : Promise.resolve({} as any),
+    auth(),
+  ]);
+
+  if (resolvedSearchParams?.order_id && typeof resolvedSearchParams.order_id === "string") {
+    try {
+      await verifyPayment(resolvedSearchParams.order_id);
+    } catch (e) {
+      console.error("Failed to verify payment on Ruang Ngonten:", e);
+    }
+  }
   const isLoggedIn = !!session?.user;
   const isAdmin = isAdminEmail(session?.user?.email);
 

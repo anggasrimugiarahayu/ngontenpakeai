@@ -3,13 +3,27 @@ import { revalidateTag, revalidatePath } from "next/cache";
 import { coreApi } from "@/lib/midtrans";
 import prisma from "@/lib/prisma";
 import { calculateSubscriptionFulfillment } from "@/lib/subscription-utils";
+import crypto from "crypto";
 
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
     
-    // Validate signature & status using midtrans-client
-    const statusResponse = await coreApi.transaction.notification(body);
+    // Validate signature & status using midtrans-client or direct SHA-512 fallback
+    let statusResponse: any;
+    try {
+      statusResponse = await coreApi.transaction.notification(body);
+    } catch (coreApiErr) {
+      console.warn("coreApi.transaction.notification threw, checking signature directly:", coreApiErr);
+      const serverKey = process.env.MIDTRANS_SERVER_KEY || "";
+      const rawSignature = `${body.order_id}${body.status_code}${body.gross_amount}${serverKey}`;
+      const hash = crypto.createHash("sha512").update(rawSignature).digest("hex");
+      if (body.signature_key && body.signature_key === hash) {
+        statusResponse = body;
+      } else {
+        throw coreApiErr;
+      }
+    }
     
     const orderId = statusResponse.order_id;
     const transactionStatus = statusResponse.transaction_status;

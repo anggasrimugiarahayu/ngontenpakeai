@@ -343,6 +343,7 @@ export default function CheckoutClient({
         addonIds: selectedAddons,
         voucherCode: appliedVoucher?.code,
         discountAmount,
+        origin: typeof window !== "undefined" ? window.location.origin : undefined,
       });
 
       if (!res || res.success === false) {
