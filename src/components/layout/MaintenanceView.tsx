@@ -24,7 +24,7 @@ export default function MaintenanceView({
       : CLEAN_DEFAULT_MESSAGE;
 
   return (
-    <div className="w-full flex-1 flex flex-col items-center justify-center p-4 sm:p-6 text-gray-900 dark:text-gray-100 select-none animate-in fade-in duration-300">
+    <div className="w-full flex-1 flex flex-col items-center justify-center px-4 py-2 sm:py-4 -mt-2 sm:-mt-4 text-gray-900 dark:text-gray-100 select-none animate-in fade-in duration-300">
       {/* Floating Admin Control Bar */}
       {isAdmin && (
         <aside
@@ -67,26 +67,26 @@ export default function MaintenanceView({
       )}
 
       {/* Main Maintenance Content */}
-      <main className="w-full max-w-xl mx-auto flex flex-col items-center text-center py-4 px-2">
+      <main className="w-full max-w-xl mx-auto flex flex-col items-center text-center py-1 sm:py-3 px-2">
         {/* Animated Clawd the Mechanic */}
-        <div className="w-full flex justify-center mb-3">
-          <ClawdMaintenanceVisual className="drop-shadow-sm" />
+        <div className="w-full flex justify-center mb-1.5 sm:mb-2.5">
+          <ClawdMaintenanceVisual className="drop-shadow-sm scale-85 sm:scale-100 origin-center" />
         </div>
 
         {/* Title */}
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight font-heading text-gray-900 dark:text-white mb-3 leading-snug">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold tracking-tight font-heading text-gray-900 dark:text-white mb-2 sm:mb-3 leading-snug">
           {config.title || "Sistem Sedang Dalam Pemeliharaan"}
         </h1>
 
         {/* Message */}
-        <p className="text-sm sm:text-base text-gray-600 dark:text-gray-300 max-w-md mx-auto leading-relaxed mb-4">
+        <p className="text-xs sm:text-sm md:text-base text-gray-600 dark:text-gray-300 max-w-sm sm:max-w-md mx-auto leading-relaxed mb-3 sm:mb-4">
           {displayMessage}
         </p>
 
         {/* Estimated Time Badge (if provided) */}
         {config.estimatedTime && (
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-xs sm:text-sm font-medium">
-            <Clock size={15} />
+          <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-3.5 py-1 sm:py-1.5 rounded-full bg-orange-500/10 border border-orange-500/20 text-orange-600 dark:text-orange-400 text-xs sm:text-sm font-medium">
+            <Clock size={14} className="sm:w-[15px] sm:h-[15px]" />
             <span>{config.estimatedTime}</span>
           </div>
         )}

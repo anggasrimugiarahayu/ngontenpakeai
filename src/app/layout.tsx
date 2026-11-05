@@ -85,7 +85,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`bg-gray-50 text-gray-800 dark:bg-rn-dark-bg dark:text-gray-200 font-sans selection:bg-rn-accent selection:text-black antialiased relative min-h-screen overscroll-none`}
+        className={`bg-gray-50 text-gray-800 dark:bg-rn-dark-bg dark:text-gray-200 font-sans selection:bg-rn-accent selection:text-black antialiased relative min-h-screen min-h-dvh overscroll-none`}
         suppressHydrationWarning
       >
         <AuthProvider>
@@ -99,7 +99,7 @@ export default async function RootLayout({
               <Suspense>
                 <NavigationProgressBar />
               </Suspense>
-              <div className="w-full min-h-screen flex flex-col relative overscroll-none">
+              <div className="w-full min-h-screen min-h-dvh flex flex-col relative overscroll-none">
                 <Suspense>
                   <Navbar memberCount={memberCount.toString()} userRole={userRole} badgeName={badgeName} />
                 </Suspense>
