@@ -370,10 +370,10 @@ export default function AppShellLayout({
 
   let GLOBAL_NAV_ITEMS = [];
 
-  const isBelajarDisabled = homepageCards.find((c: any) => c.id === "ruang-belajar")?.isActive === false;
-  const isNgontenDisabled = homepageCards.find((c: any) => c.id === "ruang-ngonten")?.isActive === false;
-  const isAutomationDisabled = homepageCards.find((c: any) => c.id === "ruang-automation")?.isActive === false;
-  const isRisetDisabled = homepageCards.find((c: any) => c.id === "ruang-riset")?.isActive === false;
+  const isBelajarDisabled = !isAdmin && homepageCards.find((c: any) => c.id === "ruang-belajar")?.isActive === false;
+  const isNgontenDisabled = !isAdmin && homepageCards.find((c: any) => c.id === "ruang-ngonten")?.isActive === false;
+  const isAutomationDisabled = !isAdmin && homepageCards.find((c: any) => c.id === "ruang-automation")?.isActive === false;
+  const isRisetDisabled = !isAdmin && homepageCards.find((c: any) => c.id === "ruang-riset")?.isActive === false;
 
   if (!isLoggedIn) {
     GLOBAL_NAV_ITEMS = [

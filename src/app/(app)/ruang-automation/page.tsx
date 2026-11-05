@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getInstagramAutomationDataAction } from "@/app/actions/instagramAutomation";
-import { getCachedAppUser, getCachedFeatures, getCachedQuotaConfig } from "@/lib/cache";
+import { getCachedAppUser, getCachedFeatures, getCachedQuotaConfig, getCachedHomepageCards } from "@/lib/cache";
 import prisma from "@/lib/prisma";
 import RuangAutomationClient from "./RuangAutomationClient";
 import { isAdminEmail } from "@/lib/admin";
@@ -20,10 +20,16 @@ export default async function RuangAutomationPage({
   const isLoggedIn = !!session?.user;
   const isAdmin = isAdminEmail(session?.user?.email);
 
-  const [allFeatures, quotaConfig] = await Promise.all([
+  const [allFeatures, quotaConfig, homepageCards] = await Promise.all([
     getCachedFeatures(),
     getCachedQuotaConfig(),
+    getCachedHomepageCards(),
   ]);
+
+  const isAutomationDisabled = homepageCards.find((c: any) => c.id === "ruang-automation")?.isActive === false;
+  if (!isAdmin && isAutomationDisabled) {
+    redirect("/");
+  }
 
   const igFeature = allFeatures.find((f) => f.name === "Instagram Automation");
   const isAutoProOnly = igFeature ? igFeature.isProOnly : true;

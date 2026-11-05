@@ -20,6 +20,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useSession } from "next-auth/react";
 import { Suspense } from "react";
+import { isAdminUser } from "@/lib/admin";
 import { HomeCardVisual } from "@/components/home/HomeCardVisuals";
 import { HomepageCardConfig, DEFAULT_HOMEPAGE_CARDS } from "@/lib/homepage-cards";
 import {
@@ -31,13 +32,16 @@ import {
 function HomeContent({
   initialPricingConfig,
   initialCards,
+  initialIsAdmin = false,
 }: {
   initialPricingConfig: any;
   initialCards?: HomepageCardConfig[];
+  initialIsAdmin?: boolean;
 }) {
   const router = useRouter();
   const { data: session } = useSession();
   const isLoggedIn = !!session?.user;
+  const isAdmin = Boolean(initialIsAdmin || isAdminUser(session?.user));
   const searchParams = useSearchParams();
   const showPricingParam = searchParams.get("pricing") === "true";
   const [showPricing, setShowPricing] = useState(showPricingParam);
@@ -141,7 +145,7 @@ function HomeContent({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl">
             {cards.map((card) => {
-              const isCardDisabled = card.isActive === false;
+              const isCardDisabled = !isAdmin && card.isActive === false;
 
               if (isCardDisabled) {
                 return (
@@ -190,6 +194,11 @@ function HomeContent({
                   href={card.href}
                   className="group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] cursor-pointer z-0 overflow-hidden bg-white border-gray-200 hover:border-gray-300 dark:bg-[#141B31] dark:border-[#2C3246] dark:hover:border-[#3E4766] select-none"
                 >
+                  {!card.isActive && isAdmin && (
+                    <span className="absolute top-3 left-3 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/60 dark:border-amber-700/60 z-10 shadow-xs">
+                      Nonaktif (Akses Admin)
+                    </span>
+                  )}
                   {card.showBadge && card.badgeText && (
                     <span className="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-orange-500 shadow-sm z-10">
                       {card.badgeText}
@@ -390,13 +399,19 @@ function HomeContent({
 export default function HomePageClient({
   initialPricingConfig,
   initialCards,
+  initialIsAdmin = false,
 }: {
   initialPricingConfig: any;
   initialCards?: HomepageCardConfig[];
+  initialIsAdmin?: boolean;
 }) {
   return (
     <Suspense fallback={<div className="min-h-screen bg-gray-50 dark:bg-rn-dark-bg" />}>
-      <HomeContent initialPricingConfig={initialPricingConfig} initialCards={initialCards} />
+      <HomeContent
+        initialPricingConfig={initialPricingConfig}
+        initialCards={initialCards}
+        initialIsAdmin={initialIsAdmin}
+      />
     </Suspense>
   );
 }

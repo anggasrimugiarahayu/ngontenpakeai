@@ -1,5 +1,7 @@
 import { verifyPayment } from "@/app/actions/payment";
 import { getRuangBelajarDataAction } from "@/app/actions/ruangBelajar";
+import { getCachedHomepageCards } from "@/lib/cache";
+import { redirect } from "next/navigation";
 import RuangBelajarClient from "./RuangBelajarClient";
 
 export const metadata = {
@@ -14,6 +16,15 @@ export default async function RuangBelajarPage({ searchParams }: { searchParams:
     await verifyPayment(resolvedSearchParams.order_id);
   }
   
-  const initialData = await getRuangBelajarDataAction();
+  const [initialData, homepageCards] = await Promise.all([
+    getRuangBelajarDataAction(),
+    getCachedHomepageCards(),
+  ]);
+
+  const isBelajarDisabled = homepageCards.find((c: any) => c.id === "ruang-belajar")?.isActive === false;
+  if (!initialData?.isAdmin && isBelajarDisabled) {
+    redirect("/");
+  }
+
   return <RuangBelajarClient initialData={initialData} />;
 }

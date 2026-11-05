@@ -6,6 +6,7 @@ import {
   getCachedFeatures,
   getCachedQuotaConfig,
   getCachedUserUsages,
+  getCachedHomepageCards,
 } from "@/lib/cache";
 import { computeUserSubscriptionStatus } from "@/lib/subscription-utils";
 import RuangRisetClient from "./RuangRisetClient";
@@ -39,13 +40,19 @@ export default async function RuangRisetPage({
     }
   }
 
-  const [allFeatures, quotaConfig, userUsages] = await Promise.all([
+  const [allFeatures, quotaConfig, userUsages, homepageCards] = await Promise.all([
     getCachedFeatures(),
     getCachedQuotaConfig(),
     session?.user?.id
       ? getCachedUserUsages(session.user.id).catch(() => [])
       : Promise.resolve([]),
+    getCachedHomepageCards(),
   ]);
+
+  const isRisetDisabled = homepageCards.find((c: any) => c.id === "ruang-riset")?.isActive === false;
+  if (!isAdmin && isRisetDisabled) {
+    redirect("/");
+  }
 
   const risetFeatures = allFeatures.filter(
     (f: any) => f.category === "riset" || f.name.toLowerCase().startsWith("riset ")

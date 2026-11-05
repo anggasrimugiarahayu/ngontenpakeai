@@ -2,11 +2,20 @@ import ProductDetailClient from "./ProductDetailClient";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { getProductDetailAction } from "@/app/actions/ruangBelajar";
+import { getCachedHomepageCards } from "@/lib/cache";
 
 export default async function ProductDetailPage(props: { params: Promise<{ slug: string }> }) {
   const session = await auth();
   const { slug } = await props.params;
-  const initialData = await getProductDetailAction(slug);
+  const [initialData, homepageCards] = await Promise.all([
+    getProductDetailAction(slug),
+    getCachedHomepageCards(),
+  ]);
+
+  const isBelajarDisabled = homepageCards.find((c: any) => c.id === "ruang-belajar")?.isActive === false;
+  if (!initialData?.isAdmin && isBelajarDisabled) {
+    redirect("/");
+  }
 
   if (initialData?.notFound) {
     redirect("/ruang-belajar");

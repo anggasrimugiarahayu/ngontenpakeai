@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { getCachedFeatures, getCachedHasBlueprint, getCachedNicheReferences, getCachedAppUser } from "@/lib/cache";
+import { getCachedFeatures, getCachedHasBlueprint, getCachedNicheReferences, getCachedAppUser, getCachedHomepageCards } from "@/lib/cache";
 import WorkspaceApp from "../WorkspaceApp";
 import { isAdminEmail } from "@/lib/admin";
 
@@ -13,12 +13,18 @@ export default async function RuangNgontenCatchAllPage(props: { params: Promise<
   const isLoggedIn = !!session?.user;
   const isAdmin = isAdminEmail(session?.user?.email);
 
-  const [hasBlueprint, dbFeatures, nicheReferences, dbUser] = await Promise.all([
+  const [hasBlueprint, dbFeatures, nicheReferences, dbUser, homepageCards] = await Promise.all([
     session?.user?.id ? getCachedHasBlueprint(session.user.id) : Promise.resolve(false),
     getCachedFeatures(),
     getCachedNicheReferences(),
     !isAdmin && session?.user?.id ? getCachedAppUser(session.user.id) : Promise.resolve(null),
+    getCachedHomepageCards(),
   ]);
+
+  const isNgontenDisabled = homepageCards.find((c: any) => c.id === "ruang-ngonten")?.isActive === false;
+  if (!isAdmin && isNgontenDisabled) {
+    redirect("/");
+  }
 
   let isPro = isAdmin;
   if (!isAdmin && dbUser) {
