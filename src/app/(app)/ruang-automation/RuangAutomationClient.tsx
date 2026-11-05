@@ -134,7 +134,8 @@ export default function RuangAutomationClient({
     agents: [],
     account: null,
     rules: [],
-    stats: { totalComments: 0, totalDms: 0 },
+    stats: { totalComments: 0, totalDms: 0, totalFailed: 0, successRate: "100%" },
+    statsByAccount: {},
     logs: [],
   };
 
@@ -1686,16 +1687,11 @@ export default function RuangAutomationClient({
     return allLogs.filter((l: any) => !l.accountId || l.accountId === activeAccountId);
   }, [data?.logs, activeAccountId]);
   const stats = useMemo(() => {
-    if (!activeAccountId || !Array.isArray(data?.logs)) {
-      return data?.stats || { totalComments: 0, totalDms: 0 };
+    if (activeAccountId && data?.statsByAccount?.[activeAccountId]) {
+      return data.statsByAccount[activeAccountId];
     }
-    const sentComments = logs.filter((l: any) => l.replyCommentStatus === "SENT").length;
-    const sentDms = logs.filter((l: any) => l.dmStatus === "SENT").length;
-    return {
-      totalComments: Math.max(sentComments, (!selectedAgentId || selectedAgentId === account?.id) ? (data?.stats?.totalComments || 0) : sentComments),
-      totalDms: Math.max(sentDms, (!selectedAgentId || selectedAgentId === account?.id) ? (data?.stats?.totalDms || 0) : sentDms),
-    };
-  }, [data?.stats, data?.logs, logs, activeAccountId, selectedAgentId, account?.id]);
+    return data?.stats || { totalComments: 0, totalDms: 0, totalFailed: 0, successRate: "100%" };
+  }, [data?.stats, data?.statsByAccount, activeAccountId]);
 
   const isStoryRule = (r: any) =>
     ["ALL_STORIES", "SPECIFIC_STORY", "STORY_MENTION"].includes(r.triggerType) ||

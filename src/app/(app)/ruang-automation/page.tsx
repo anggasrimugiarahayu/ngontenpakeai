@@ -70,7 +70,7 @@ export default async function RuangAutomationPage({
     }
   }
 
-  let initialData = { agents: [], account: null, rules: [], stats: { totalComments: 0, totalDms: 0 }, logs: [] };
+  let initialData = { agents: [], account: null, rules: [], stats: { totalComments: 0, totalDms: 0, totalFailed: 0, successRate: "100%" }, statsByAccount: {}, logs: [] };
   if (isLoggedIn) {
     try {
       initialData = await getInstagramAutomationDataAction(initialAgentId || undefined);

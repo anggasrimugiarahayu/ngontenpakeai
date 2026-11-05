@@ -14,7 +14,12 @@ import {
 import { parseClientLogMeta, formatDateTimeId } from "../utils/automationHelpers";
 
 interface InstagramDashboardTabProps {
-  stats: { totalComments: number; totalDms: number };
+  stats: {
+    totalComments: number;
+    totalDms: number;
+    totalFailed?: number;
+    successRate?: string;
+  };
   rules: any[];
   logs: any[];
 }
@@ -55,10 +60,13 @@ export function InstagramDashboardTab({
     <div className="space-y-6 animate-in fade-in duration-200">
       {/* Summary Metric Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {/* Card 1: Komentar Terjawab (1 Line) */}
-        <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-5 bg-white dark:bg-[#141B31] space-y-2">
-          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 gap-2">
-            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider whitespace-nowrap truncate">
+        {/* Card 1: Komentar Terjawab */}
+        <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-4 sm:p-5 bg-white dark:bg-[#141B31] space-y-2">
+          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 gap-1.5 sm:gap-2">
+            <span
+              className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider line-clamp-1"
+              title="Komentar Terjawab"
+            >
               Komentar Terjawab
             </span>
             <div className="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
@@ -66,15 +74,18 @@ export function InstagramDashboardTab({
             </div>
           </div>
           <div className="text-2xl sm:text-3xl font-black font-heading text-gray-900 dark:text-white">
-            {stats.totalComments || 0}
+            {(stats.totalComments || 0).toLocaleString("id-ID")}
           </div>
           <p className="text-[11px] text-gray-400">Total balasan komentar otomatis</p>
         </div>
 
         {/* Card 2: DM Terkirim */}
-        <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-5 bg-white dark:bg-[#141B31] space-y-2">
-          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 gap-2">
-            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider whitespace-nowrap truncate">
+        <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-4 sm:p-5 bg-white dark:bg-[#141B31] space-y-2">
+          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 gap-1.5 sm:gap-2">
+            <span
+              className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider line-clamp-1"
+              title="DM Terkirim"
+            >
               DM Terkirim
             </span>
             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-500 flex items-center justify-center shrink-0">
@@ -82,15 +93,18 @@ export function InstagramDashboardTab({
             </div>
           </div>
           <div className="text-2xl sm:text-3xl font-black font-heading text-gray-900 dark:text-white">
-            {stats.totalDms || 0}
+            {(stats.totalDms || 0).toLocaleString("id-ID")}
           </div>
           <p className="text-[11px] text-gray-400">Total pesan privat terkirim</p>
         </div>
 
         {/* Card 3: Instagram Automation */}
-        <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-5 bg-white dark:bg-[#141B31] space-y-2">
-          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 gap-2">
-            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider whitespace-nowrap truncate">
+        <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-4 sm:p-5 bg-white dark:bg-[#141B31] space-y-2">
+          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 gap-1.5 sm:gap-2">
+            <span
+              className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider line-clamp-1"
+              title="Instagram Automation"
+            >
               Instagram Automation
             </span>
             <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-500 flex items-center justify-center shrink-0">
@@ -106,9 +120,12 @@ export function InstagramDashboardTab({
         </div>
 
         {/* Card 4: Tingkat Sukses */}
-        <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-5 bg-white dark:bg-[#141B31] space-y-2">
-          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 gap-2">
-            <span className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider whitespace-nowrap truncate">
+        <div className="rounded-2xl border-2 border-gray-200 dark:border-[#2C3246] p-4 sm:p-5 bg-white dark:bg-[#141B31] space-y-2">
+          <div className="flex items-center justify-between text-gray-500 dark:text-gray-400 gap-1.5 sm:gap-2">
+            <span
+              className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider line-clamp-1"
+              title="Tingkat Sukses"
+            >
               Tingkat Sukses
             </span>
             <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-500 flex items-center justify-center shrink-0">
@@ -116,7 +133,7 @@ export function InstagramDashboardTab({
             </div>
           </div>
           <div className="text-2xl sm:text-3xl font-black font-heading text-gray-900 dark:text-white">
-            100%
+            {stats.successRate || "100%"}
           </div>
           <p className="text-[11px] text-gray-400">Eksekusi webhook realtime</p>
         </div>

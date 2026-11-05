@@ -267,7 +267,7 @@ export function InstagramRuleDetailModal({
     },
     {
       id: "btn_main",
-      title: "Tombol Utama (Link Web)",
+      title: "Tombol Utama",
       description: "Akses link penawaran / checkout / web",
       pctLabel: mainButtonStat.pctLabel,
       blocksFilled: mainButtonStat.blocksFilled,

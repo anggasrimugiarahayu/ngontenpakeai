@@ -127,7 +127,8 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
         agentLimit,
         account: null,
         rules: [],
-        stats: { totalComments: 0, totalDms: 0 },
+        stats: { totalComments: 0, totalDms: 0, totalFailed: 0, successRate: "100%" },
+        statsByAccount: {},
         logs: []
       };
     }
@@ -135,8 +136,17 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
     const allAccountIds = allAccounts.map((a: any) => a.id);
 
     // 3. Hitung statistik dan ambil seluruh rules & log untuk semua agen milik user sekaligus
-    // Termasuk agregasi riil seumur hidup (Lifetime All-Time Total) per-rule agar tidak terpotong limit 500
-    const [rules, totalComments, totalDms, recentLogs, sentCountsByRule, failedCountsByRule, interactionLogs] = await Promise.all([
+    // Termasuk agregasi riil seumur hidup (Lifetime All-Time Total) per-rule dan per-account
+    const [
+      rules,
+      recentLogs,
+      sentCountsByRule,
+      failedCountsByRule,
+      interactionLogs,
+      accountSentComments,
+      accountSentDms,
+      accountFailedLogs
+    ] = await Promise.all([
       (db as any).instagramAutomationRule.findMany({
         where: { accountId: { in: allAccountIds } },
         orderBy: { createdAt: "desc" },
@@ -146,12 +156,6 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
           }
         }
       }).catch(() => []),
-      (db as any).instagramAutomationLog.count({
-        where: { accountId: activeAccount.id, replyCommentStatus: "SENT" }
-      }).catch(() => 0),
-      (db as any).instagramAutomationLog.count({
-        where: { accountId: activeAccount.id, dmStatus: "SENT" }
-      }).catch(() => 0),
       (db as any).instagramAutomationLog.findMany({
         where: { accountId: { in: allAccountIds } },
         take: 1000,
@@ -191,8 +195,78 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
           errorMessage: true,
           dmStatus: true
         }
+      }).catch(() => []),
+      // Group by accountId for sent comments All-Time
+      (db as any).instagramAutomationLog.groupBy({
+        by: ["accountId"],
+        where: {
+          accountId: { in: allAccountIds },
+          replyCommentStatus: "SENT"
+        },
+        _count: { id: true }
+      }).catch(() => []),
+      // Group by accountId for sent DMs All-Time
+      (db as any).instagramAutomationLog.groupBy({
+        by: ["accountId"],
+        where: {
+          accountId: { in: allAccountIds },
+          dmStatus: "SENT"
+        },
+        _count: { id: true }
+      }).catch(() => []),
+      // Group by accountId for failed logs All-Time
+      (db as any).instagramAutomationLog.groupBy({
+        by: ["accountId"],
+        where: {
+          accountId: { in: allAccountIds },
+          OR: [
+            { dmStatus: "FAILED" },
+            { replyCommentStatus: "FAILED" }
+          ]
+        },
+        _count: { id: true }
       }).catch(() => [])
     ]);
+
+    // Map agregasi statistik per akun (All-Time Lifetime per Account)
+    const statsByAccount: Record<string, { totalComments: number; totalDms: number; totalFailed: number; successRate: string }> = {};
+
+    if (Array.isArray(allAccountIds)) {
+      for (const accId of allAccountIds) {
+        const cItem = Array.isArray(accountSentComments) ? accountSentComments.find((item: any) => item.accountId === accId) : null;
+        const dItem = Array.isArray(accountSentDms) ? accountSentDms.find((item: any) => item.accountId === accId) : null;
+        const fItem = Array.isArray(accountFailedLogs) ? accountFailedLogs.find((item: any) => item.accountId === accId) : null;
+
+        const comments = cItem?._count?.id || 0;
+        const dms = dItem?._count?.id || 0;
+        const failed = fItem?._count?.id || 0;
+
+        const totalExecs = dms + comments + failed;
+        const successRate = totalExecs > 0
+          ? `${Math.min(100, Math.max(0, Math.round(((dms + comments) / totalExecs) * 100)))}%`
+          : "100%";
+
+        statsByAccount[accId] = {
+          totalComments: comments,
+          totalDms: dms,
+          totalFailed: failed,
+          successRate
+        };
+      }
+    }
+
+    const activeStats = statsByAccount[activeAccount.id] || {
+      totalComments: 0,
+      totalDms: 0,
+      totalFailed: 0,
+      successRate: "100%"
+    };
+
+    if (Array.isArray(agents)) {
+      for (const ag of agents) {
+        ag.stats = statsByAccount[ag.id] || { totalComments: 0, totalDms: 0, totalFailed: 0, successRate: "100%" };
+      }
+    }
 
     // Map agregasi pengiriman DM sukses murni per-rule (Lifetime All-Time Total)
     const sentCountMap: Record<string, number> = {};
@@ -392,10 +466,8 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
         updatedAt: activeAccount.updatedAt,
       },
       rules: rules || [],
-      stats: {
-        totalComments,
-        totalDms
-      },
+      stats: activeStats,
+      statsByAccount,
       logs: recentLogs || []
     };
   } catch (err) {
@@ -404,7 +476,8 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
       agents: [],
       account: null,
       rules: [],
-      stats: { totalComments: 0, totalDms: 0 },
+      stats: { totalComments: 0, totalDms: 0, totalFailed: 0, successRate: "100%" },
+      statsByAccount: {},
       logs: []
     };
   }
@@ -416,7 +489,7 @@ async function fetchFreshInstagramData(userId: string, isAdmin: boolean, targetA
 export async function getInstagramAutomationDataAction(targetAgentId?: string) {
   const session = await auth();
   if (!session?.user?.id) {
-    return { error: "Unauthorized", agents: [], account: null, rules: [], stats: { totalComments: 0, totalDms: 0 }, logs: [] };
+    return { error: "Unauthorized", agents: [], account: null, rules: [], stats: { totalComments: 0, totalDms: 0, totalFailed: 0, successRate: "100%" }, statsByAccount: {}, logs: [] };
   }
 
   const userId = session.user.id;
@@ -431,7 +504,8 @@ export async function getInstagramAutomationDataAction(targetAgentId?: string) {
       agents: [],
       account: null,
       rules: [],
-      stats: { totalComments: 0, totalDms: 0 },
+      stats: { totalComments: 0, totalDms: 0, totalFailed: 0, successRate: "100%" },
+      statsByAccount: {},
       logs: []
     };
   }
