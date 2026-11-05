@@ -416,6 +416,7 @@ export async function claimFreeProduct(productId: string) {
   revalidatePath(`/ruang-belajar`);
   revalidatePath(`/ruang-belajar/[slug]`);
   revalidatePath(`/dashboard`);
+  return { success: true };
 }
 
 // Aliases for multi-format digital products (E-Book, Video Course, Notion / Link)

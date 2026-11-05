@@ -9,7 +9,7 @@ import { trackProductViewAction, trackProductClickAction } from "@/app/actions/a
 import { useRouter } from "next/navigation";
 import { notFound, redirect } from "next/navigation";
 import Link from "next/link";
-import { Lock, Crown, Star, BookOpen, Tag, Video, Play, X, ExternalLink, Sparkles } from "lucide-react";
+import { Lock, Crown, Star, BookOpen, Tag, Video, Play, X, ExternalLink, Sparkles, Loader2 } from "lucide-react";
 import { BackButton } from "@/components/ui/BackButton";
 import { createCheckoutToken } from "@/app/actions/payment";
 import ProductActions from "./ProductActions";
@@ -31,6 +31,40 @@ export default function ProductDetailClient({ slug, initialData }: { slug: strin
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [trailerUrl, setTrailerUrl] = useState<string | null>(null);
+
+  const handleClaimFree = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    if (isSubmitting || !data?.ebook?.id) return;
+
+    setIsSubmitting(true);
+
+    const previousData = data;
+    const currentOwned = Array.isArray(data?.ownedProductIds) ? data.ownedProductIds : [];
+    const updatedOwned = Array.from(new Set([...currentOwned, data.ebook.id]));
+
+    // 1. Optimistic Update: langsung buka akses di sisi client secara instan (<50ms)
+    mutate(
+      {
+        ...data,
+        ownedProductIds: updatedOwned,
+      } as any,
+      false
+    );
+
+    // 2. Simpan di background ke database
+    try {
+      await claimFreeProduct(data.ebook.id);
+      // Revalidasi halus di background untuk memastikan sinkronisasi server
+      mutate();
+    } catch (err: any) {
+      console.error("Gagal klaim gratis:", err);
+      // Rollback jika terjadi kesalahan server
+      mutate(previousData, false);
+      alert(err?.message || "Gagal mengklaim produk. Silakan coba beberapa saat lagi.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useEffect(() => {
     if (data && !data.notFound && data.ebook?.id) {
@@ -244,16 +278,25 @@ export default function ProductDetailClient({ slug, initialData }: { slug: strin
                       <div className="flex flex-col sm:flex-row gap-3">
                         {/* If it's a FREE ebook, show the Klaim (Rp 0) Form */}
                         {isFree ? (
-                          <form action={async () => {
-                            setIsSubmitting(true);
-                            await claimFreeProduct(ebook.id);
-                            mutate();
-                            setIsSubmitting(false);
-                          }} className="w-full">
-                            <button type="submit" disabled={isSubmitting} className={`w-full flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-green-600/20 ${isSubmitting ? 'opacity-50 cursor-not-allowed' : ''}`}>
-                              Klaim Gratis (Rp 0)
+                          <div className="w-full">
+                            <button
+                              type="button"
+                              onClick={handleClaimFree}
+                              disabled={isSubmitting}
+                              className={`w-full flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white px-6 py-3.5 rounded-xl font-bold transition-all shadow-lg shadow-emerald-600/20 cursor-pointer ${
+                                isSubmitting ? 'opacity-80 cursor-wait' : ''
+                              }`}
+                            >
+                              {isSubmitting ? (
+                                <>
+                                  <Loader2 className="w-5 h-5 animate-spin" />
+                                  <span>Membuka Akses {productTypeName}...</span>
+                                </>
+                              ) : (
+                                <span>Klaim Gratis (Rp 0)</span>
+                              )}
                             </button>
-                          </form>
+                          </div>
                         ) : (
                           /* Otherwise, show purchase & upgrade options */
                           <div className="w-full flex flex-col gap-3">
