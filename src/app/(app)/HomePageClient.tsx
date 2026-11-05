@@ -145,9 +145,10 @@ function HomeContent({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 w-full max-w-6xl">
             {cards.map((card) => {
-              const isCardDisabled = !isAdmin && card.isActive === false;
+              const isCardDisabledForPublic = card.isActive === false;
 
-              if (isCardDisabled) {
+              // 1. NON-ADMIN & KARTU DINONAKTIFKAN: Tampilan redup dan tidak bisa diklik sama sekali
+              if (isCardDisabledForPublic && !isAdmin) {
                 return (
                   <div
                     key={card.id}
@@ -174,6 +175,36 @@ function HomeContent({
                 );
               }
 
+              // 2. ADMIN & KARTU DINONAKTIFKAN: Tampilan diredupkan seperti publik, ada badge "NONAKTIF (AKSES ADMIN)", tapi BISA DIKLIK
+              if (isCardDisabledForPublic && isAdmin) {
+                return (
+                  <Link
+                    key={card.id}
+                    prefetch={true}
+                    draggable={false}
+                    href={card.href}
+                    title={`${card.title} (Nonaktif untuk publik - Akses Admin aktif)`}
+                    className="group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] cursor-pointer z-0 overflow-hidden bg-white/70 border-gray-200 hover:border-amber-400/60 dark:bg-[#141B31]/60 dark:border-[#2C3246] dark:hover:border-amber-500/50 opacity-70 hover:opacity-100 select-none"
+                  >
+                    <span className="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 dark:bg-amber-950/80 dark:text-amber-300 border border-amber-300/70 dark:border-amber-700/70 shadow-sm z-10">
+                      NONAKTIF (AKSES ADMIN)
+                    </span>
+                    <div className="pointer-events-none grayscale opacity-80 group-hover:grayscale-0 group-hover:opacity-100 transition-all duration-200">
+                      <HomeCardVisual id={card.id} />
+                    </div>
+                    <div className="relative mt-4 space-y-1">
+                      <h2 className="font-heading text-lg font-bold leading-snug transition-colors duration-200 text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-white">
+                        {card.title}
+                      </h2>
+                      <p className="text-sm leading-relaxed transition-colors duration-200 text-gray-400 dark:text-gray-500 line-clamp-3">
+                        {card.description}
+                      </p>
+                    </div>
+                  </Link>
+                );
+              }
+
+              // 3. KARTU AKTIF NORMAL (Untuk semua pengguna)
               return (
                 <Link
                   key={card.id}
@@ -194,11 +225,6 @@ function HomeContent({
                   href={card.href}
                   className="group relative flex flex-col justify-start rounded-xl border-2 p-6 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.25)] cursor-pointer z-0 overflow-hidden bg-white border-gray-200 hover:border-gray-300 dark:bg-[#141B31] dark:border-[#2C3246] dark:hover:border-[#3E4766] select-none"
                 >
-                  {!card.isActive && isAdmin && (
-                    <span className="absolute top-3 left-3 rounded-full px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-amber-700 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300/60 dark:border-amber-700/60 z-10 shadow-xs">
-                      Nonaktif (Akses Admin)
-                    </span>
-                  )}
                   {card.showBadge && card.badgeText && (
                     <span className="absolute top-3 right-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-white bg-orange-500 shadow-sm z-10">
                       {card.badgeText}
