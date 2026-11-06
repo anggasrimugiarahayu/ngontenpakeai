@@ -10,6 +10,7 @@ export interface FlowNodeData {
   id: string;
   type:
     | "TRIGGER"
+    | "PUBLIC_COMMENT_REPLY"
     | "WELCOME_DM"
     | "ASK_FOLLOW"
     | "ASK_CONTACT"
@@ -212,6 +213,42 @@ export function buildFlowGraphFromRule(
           : 'Trigger pemicu: User memberikan komentar di postingan Feed atau Reels Anda.',
     },
   });
+
+  // 1.5. PUBLIC COMMENT AUTO-REPLY NODE (if post target)
+  const isPostTarget =
+    targetOtomasi === "Postingan Tertentu" ||
+    targetOtomasi === "Postingan Berikutnya" ||
+    targetOtomasi === "Semua Postingan";
+
+  const featureReplyComment =
+    parsedConfig.featureReplyComment !== undefined
+      ? Boolean(parsedConfig.featureReplyComment)
+      : rule?.isReplyComment !== undefined
+      ? Boolean(rule.isReplyComment)
+      : true;
+
+  if (isPostTarget && featureReplyComment) {
+    nodes.push({
+      id: "node_public_comment",
+      type: "PUBLIC_COMMENT_REPLY",
+      title: "Balasan Komentar Publik",
+      position: savedPositions.node_public_comment || { x: 440, y: 380 },
+      data: {
+        commentReplies: commentRepliesArray,
+        replyCommentTemplates: commentRepliesArray[0] || "Pesan terkirim! 🚀 Cek DM ya! 📬",
+        likeComment: parsedConfig.likeComment ?? true,
+        commentLimit: parsedConfig.commentLimit || "1x per akun",
+      },
+    });
+
+    edges.push({
+      id: "edge_trigger_to_public_comment",
+      source: "node_trigger",
+      sourceHandle: "then",
+      target: "node_public_comment",
+      targetHandle: "input",
+    });
+  }
 
   // 2. WELCOME DM NODE (Opening DM)
   if (featureWelcomeMessage) {
@@ -554,6 +591,13 @@ export function compileFlowGraphToRulePayload(
     ? triggerData.commentReplies
     : [triggerData.replyCommentTemplates || "Pesan terkirim! 🚀"];
 
+  const publicCommentNode = graphState.nodes.find((n) => n.type === "PUBLIC_COMMENT_REPLY");
+  const hasDmNodes = graphState.nodes.some((n) => n.type === "MAIN_DM" || n.type === "WELCOME_DM");
+
+  const hasPublicComment = Boolean(publicCommentNode) || Boolean(triggerData.featureReplyComment);
+  const activeCommentReplies = publicCommentNode?.data?.commentReplies || cleanCommentReplies;
+  const isSendDm = hasDmNodes;
+
   return {
     id: options.ruleId,
     ruleId: options.ruleId,
@@ -578,10 +622,10 @@ export function compileFlowGraphToRulePayload(
         ? "DM"
         : "ALL_POSTS",
     keywords: cleanKeywords,
-    isReplyComment: Boolean(triggerData.featureReplyComment),
-    replyCommentTemplates: cleanCommentReplies,
-    commentReplies: cleanCommentReplies,
-    isSendDm: true,
+    isReplyComment: hasPublicComment,
+    replyCommentTemplates: activeCommentReplies,
+    commentReplies: activeCommentReplies,
+    isSendDm: isSendDm,
     dmMessage: JSON.stringify(extendedConfig),
     buttonText: buttonText || undefined,
     buttonUrl: buttonUrl || undefined,

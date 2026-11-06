@@ -10,6 +10,7 @@ import { FlowTriggerNode } from "./flow-nodes/FlowTriggerNode";
 import { FlowWelcomeDmNode } from "./flow-nodes/FlowWelcomeDmNode";
 import { FlowGatekeeperNode } from "./flow-nodes/FlowGatekeeperNode";
 import { FlowMainMessageNode } from "./flow-nodes/FlowMainMessageNode";
+import { FlowPublicCommentNode } from "./flow-nodes/FlowPublicCommentNode";
 import { FlowHelperNoteNode } from "./flow-nodes/FlowHelperNoteNode";
 import { FlowLogicNode } from "./flow-nodes/FlowLogicNode";
 import {
@@ -467,8 +468,41 @@ export function InstagramFlowRuleStudio({
           return prev;
         }
 
-        // 2. INSTAGRAM / WELCOME DM
-        if (stepType === "INSTAGRAM" || stepType === "WELCOME_DM") {
+        // 1.5. BALASAN KOMENTAR PUBLIK
+        else if (stepType === "PUBLIC_COMMENT_REPLY") {
+          const hasPublicComment = nodes.some((n) => n.type === "PUBLIC_COMMENT_REPLY");
+          if (!hasPublicComment) {
+            const newNodeId = "node_public_comment";
+            nodes.push({
+              id: newNodeId,
+              type: "PUBLIC_COMMENT_REPLY",
+              title: "Balasan Komentar Publik",
+              position: { x: 440, y: 380 },
+              data: {
+                commentReplies: ["Pesan terkirim! 🚀 Cek DM ya! 📬"],
+                replyCommentTemplates: "Pesan terkirim! 🚀 Cek DM ya! 📬",
+                likeComment: true,
+                commentLimit: "1x per akun",
+              },
+            });
+            edges.push({
+              id: "edge_trigger_to_public_comment",
+              source: "node_trigger",
+              sourceHandle: "then",
+              target: newNodeId,
+              targetHandle: "input",
+            });
+            setSelectedNodeId(newNodeId);
+            showToast("success", "Kotak Balasan Komentar Publik berhasil ditambahkan!");
+          } else {
+            setSelectedNodeId("node_public_comment");
+            showToast("info", "Kotak Balasan Komentar Publik sudah ada di kanvas.");
+            return prev;
+          }
+        }
+
+        // 2. PESAN PEMBUKA (WELCOME DM)
+        else if (stepType === "INSTAGRAM" || stepType === "WELCOME_DM") {
           const hasWelcome = nodes.some((n) => n.type === "WELCOME_DM");
           if (!hasWelcome) {
             nodes.push({
@@ -497,6 +531,56 @@ export function InstagramFlowRuleStudio({
               setSelectedNodeId("node_main_dm");
               showToast("info", "Pesan Utama Instagram sudah ada di alur.");
             }
+            return prev;
+          }
+        }
+
+        // 2.5. PESAN UTAMA (MAIN DM / OFFER & LINK)
+        else if (stepType === "MAIN_DM") {
+          const hasMain = nodes.some((n) => n.type === "MAIN_DM");
+          if (!hasMain) {
+            const newNodeId = "node_main_dm";
+            nodes.push({
+              id: newNodeId,
+              type: "MAIN_DM",
+              title: "Pesan Utama (Offer & Link)",
+              position: { x: 820, y: 180 },
+              data: {
+                dmMessage: "Halo {first_name}! Terima kasih sudah tertarik. Ini link akses yang kamu minta:\nhttps://ruangcreativemuslim.com",
+                messageType: "BUTTON_TEMPLATE",
+                buttons: [
+                  {
+                    id: "btn_1",
+                    label: "Buka Link Akses",
+                    action: "Buka Website",
+                    url: "https://ruangcreativemuslim.com",
+                  },
+                ],
+              },
+            });
+
+            // Connect edge from previous node if available
+            const sourceNodeId = nodes.some((n) => n.type === "ASK_CONTACT")
+              ? "node_ask_contact"
+              : nodes.some((n) => n.type === "ASK_FOLLOW")
+              ? "node_ask_follow"
+              : nodes.some((n) => n.type === "WELCOME_DM")
+              ? "node_welcome_dm"
+              : "node_trigger";
+
+            edges.push({
+              id: `edge_${sourceNodeId}_to_main_dm`,
+              source: sourceNodeId,
+              sourceHandle: "then",
+              target: newNodeId,
+              targetHandle: "input",
+            });
+
+            setSelectedNodeId(newNodeId);
+            showToast("success", "Kotak Pesan Utama berhasil ditambahkan!");
+          } else {
+            setSelectedNodeId("node_main_dm");
+            showToast("info", "Pesan Utama sudah ada di alur.");
             return prev;
           }
         }
@@ -734,10 +818,11 @@ export function InstagramFlowRuleStudio({
         const isWelcome = sourceNode.type === "WELCOME_DM";
         const isGate = sourceNode.type === "ASK_FOLLOW" || sourceNode.type === "ASK_CONTACT";
         const isLogic = ["ACTIONS", "START_AUTOMATION", "CONDITION", "SMART_DELAY", "RANDOMIZER"].includes(sourceNode.type);
+        const isPublicComment = sourceNode.type === "PUBLIC_COMMENT_REPLY";
 
-        const sourceWidth = isTrigger ? 320 : isWelcome ? 288 : isGate ? 288 : isLogic ? 280 : 320;
+        const sourceWidth = isTrigger ? 320 : isWelcome ? 288 : isGate ? 288 : isLogic ? 280 : isPublicComment ? 320 : 320;
         const sourceX = sourceNode.position.x + sourceWidth;
-        let sourceY = sourceNode.position.y + (isTrigger ? 190 : isWelcome ? 130 : isGate ? 120 : isLogic ? 100 : 120);
+        let sourceY = sourceNode.position.y + (isTrigger ? 190 : isWelcome ? 130 : isGate ? 120 : isLogic ? 100 : isPublicComment ? 80 : 120);
 
         if (sourceNode.type === "RANDOMIZER") {
           sourceY = sourceNode.position.y + (edge.sourceHandle === "split_b" ? 95 : 60);
@@ -745,8 +830,9 @@ export function InstagramFlowRuleStudio({
 
         // Target handle coordinates
         const isTargetLogic = ["ACTIONS", "START_AUTOMATION", "CONDITION", "SMART_DELAY", "RANDOMIZER"].includes(targetNode.type);
+        const isTargetPublicComment = targetNode.type === "PUBLIC_COMMENT_REPLY";
         const targetX = targetNode.position.x;
-        const targetY = targetNode.position.y + (isTargetLogic ? 65 : 110);
+        const targetY = targetNode.position.y + (isTargetLogic ? 65 : isTargetPublicComment ? 60 : 110);
 
         const dx = Math.max(Math.abs(targetX - sourceX) * 0.5, 40);
         const pathData = `M ${sourceX} ${sourceY} C ${sourceX + dx} ${sourceY}, ${targetX - dx} ${targetY}, ${targetX} ${targetY}`;
@@ -949,12 +1035,24 @@ export function InstagramFlowRuleStudio({
                     />
                   )}
 
+                  {node.type === "PUBLIC_COMMENT_REPLY" && (
+                    <FlowPublicCommentNode
+                      id={node.id}
+                      data={node.data as any}
+                      isSelected={isSelected}
+                      onSelect={() => setSelectedNodeId(node.id)}
+                      onDelete={() => handleDeleteNode(node.id)}
+                      onMouseDownDrag={(e) => handleNodeMouseDownDrag(e, node.id)}
+                    />
+                  )}
+
                   {node.type === "MAIN_DM" && (
                     <FlowMainMessageNode
                       id={node.id}
                       data={node.data as any}
                       isSelected={isSelected}
                       onSelect={() => setSelectedNodeId(node.id)}
+                      onDelete={() => handleDeleteNode(node.id)}
                       onMouseDownDrag={(e) => handleNodeMouseDownDrag(e, node.id)}
                       onPortMouseDown={(e, port) => handlePortMouseDown(e, node.id, port)}
                     />

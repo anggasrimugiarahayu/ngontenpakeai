@@ -2,7 +2,7 @@
 "use client";
 
 import React from "react";
-import { ExternalLink, Clock, MessageSquare, LayoutTemplate, Plus } from "lucide-react";
+import { ExternalLink, Clock, MessageSquare, LayoutTemplate, Plus, Trash2 } from "lucide-react";
 import { InstagramIcon } from "../../components/AutomationIcons";
 
 interface FlowMainMessageNodeProps {
@@ -20,6 +20,7 @@ interface FlowMainMessageNodeProps {
   };
   isSelected?: boolean;
   onSelect?: () => void;
+  onDelete?: () => void;
   onMouseDownDrag?: (e: React.MouseEvent) => void;
   onPortMouseDown?: (e: React.MouseEvent, portId: string) => void;
 }
@@ -29,6 +30,7 @@ export function FlowMainMessageNode({
   data,
   isSelected,
   onSelect,
+  onDelete,
   onMouseDownDrag,
   onPortMouseDown,
 }: FlowMainMessageNodeProps) {
@@ -74,7 +76,22 @@ export function FlowMainMessageNode({
           </div>
         </div>
 
-        <MessageSquare className="w-4 h-4 text-orange-500" />
+        <div className="flex items-center gap-1.5">
+          {onDelete && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete();
+              }}
+              className="w-6 h-6 rounded-md flex items-center justify-center text-gray-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 transition-colors cursor-pointer"
+              title="Hapus Pesan Utama"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+          <MessageSquare className="w-4 h-4 text-orange-500" />
+        </div>
       </div>
 
       {/* Node Body */}
