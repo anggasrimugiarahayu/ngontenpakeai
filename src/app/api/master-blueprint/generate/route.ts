@@ -1,11 +1,9 @@
-import { getDefaultAiModel, getFallbackAiModel } from "@/lib/get-ai-model";
-import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
-import { GoogleGenAI } from "@google/genai";
 import prisma from "@/lib/prisma";
 import { revalidateTag, revalidatePath } from "next/cache";
+import { generateStructuredAiContent } from "@/lib/ai/geminiClient";
 
 export async function POST(req: Request) {
   try {
@@ -19,7 +17,7 @@ export async function POST(req: Request) {
       req.json(),
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { googleApiKey: true }
+        select: { googleApiKey: true, groqApiKey: true }
       })
     ]);
 
@@ -30,13 +28,6 @@ export async function POST(req: Request) {
         message: accessCheck.reason
       }, { status: 403 });
     }
-
-    const apiKey = await getApiKey(dbUser?.googleApiKey);
-    if (!apiKey) {
-      return NextResponse.json({ error: "API Key tidak ditemukan. Silakan tambahkan di Pengaturan." }, { status: 400 });
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
 
     const systemInstruction = `
 [ROLE]
@@ -136,39 +127,15 @@ Platform Dipilih: ${formData.platform ? (Array.isArray(formData.platform) ? form
 [INSTRUKSI]: Evaluasi data di atas. Hasilkan Master Blueprint yang presisi, mendalam, membongkar celah pasar, dan memberikan narasi ICP (Persona) yang terasa hidup.
 `;
 
-    let response;
-    try {
-      response = await ai.models.generateContent({
-        model: await getDefaultAiModel("gemini-2.5-flash"),
-        contents: userPrompt,
-        config: {
-          systemInstruction,
-          responseMimeType: 'application/json',
-        }
-      });
-    } catch (error: any) {
-      const errStr = String(error?.message || "");
-      if (error?.status === 503 || error?.status >= 500 || errStr.toLowerCase().includes('high demand') || errStr.toLowerCase().includes('overloaded') || errStr.toLowerCase().includes('internal')) {
-        console.warn("[Fallback] Master Blueprint server overloaded. Retrying with fallback model...");
-        response = await ai.models.generateContent({
-          model: await getFallbackAiModel(),
-          contents: userPrompt,
-          config: {
-            systemInstruction,
-            responseMimeType: 'application/json',
-          }
-        });
-      } else {
-        throw error;
-      }
-    }
-
-    const aiText = response.text;
-    if (!aiText) throw new Error("Kosong dari AI");
-    
-    // Bersihkan output dari markdown jika model masih ngeyel
-    const cleanedText = aiText.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const result = JSON.parse(cleanedText);
+    const result = await generateStructuredAiContent({
+      apiKey: dbUser?.googleApiKey || undefined,
+      groqApiKey: dbUser?.groqApiKey || undefined,
+      model: formData.model,
+      userPrompt,
+      systemPrompt: systemInstruction,
+      responseMimeType: 'application/json',
+      temperature: 0.7,
+    });
 
     let blueprintId = formData.id;
     

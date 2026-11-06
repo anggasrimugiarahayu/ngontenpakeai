@@ -17,7 +17,7 @@ export async function POST(req: Request) {
       req.json(),
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { googleApiKey: true }
+        select: { googleApiKey: true, groqApiKey: true }
       })
     ]);
     if (!accessCheck.authorized) {
@@ -281,16 +281,13 @@ ${blueprintContext}
     }
 
     
-    const apiKey = await getApiKey(dbUser?.googleApiKey);
-    if (!apiKey) {
-      return NextResponse.json({ error: "API Key tidak ditemukan. Silakan tambahkan di Pengaturan." }, { status: 400 });
-    }
-
     const result = await generateStructuredAiContent({
-      apiKey,
+      apiKey: dbUser?.googleApiKey || undefined,
+      groqApiKey: dbUser?.groqApiKey || undefined,
+      model: body.model,
       userPrompt,
       systemPrompt,
-      fallbackModelDefault: "gemini-2.5-flash",
+      fallbackModelDefault: "llama-3.3-70b-versatile",
     });
 
     if (action === 'generate-bios' && accessCheck.featureId) {

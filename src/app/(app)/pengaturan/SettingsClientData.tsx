@@ -279,16 +279,18 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
 }
 
 export function ApiKeySection() {
-  const [apiKey, setApiKey] = useState<string | null>(null);
+  const [googleApiKey, setGoogleApiKey] = useState<string | null>(null);
+  const [groqApiKey, setGroqApiKey] = useState<string | null>(null);
 
   useEffect(() => {
     fetch("/api/settings")
       .then(res => res.json())
       .then(data => {
-        if (data.googleApiKey !== undefined) setApiKey(data.googleApiKey);
+        if (data.googleApiKey !== undefined) setGoogleApiKey(data.googleApiKey);
+        if (data.groqApiKey !== undefined) setGroqApiKey(data.groqApiKey);
       })
       .catch(console.error);
   }, []);
 
-  return <ApiKeyForm apiKey={apiKey} />;
+  return <ApiKeyForm apiKey={googleApiKey} groqApiKey={groqApiKey} />;
 }

@@ -29,10 +29,20 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
     if (!newModel.name || !newModel.modelId) return;
     setLoading(true);
     try {
-      await createAiModel(newModel);
+      const lowerId = newModel.modelId.toLowerCase();
+      const detectedProvider =
+        newModel.provider === "groq" ||
+        lowerId.startsWith("llama") ||
+        lowerId.startsWith("qwen") ||
+        lowerId.startsWith("allam") ||
+        lowerId.includes("oss")
+          ? "groq"
+          : "google";
+
+      await createAiModel({ ...newModel, provider: detectedProvider });
       mutate("pengaturan");
       router.refresh();
-      setNewModel({ name: "", modelId: "", provider: "google" });
+      setNewModel({ name: "", modelId: "", provider: "groq" });
       toast.success("Model AI berhasil ditambahkan");
     } catch {
       toast.error("Gagal menambahkan model AI");

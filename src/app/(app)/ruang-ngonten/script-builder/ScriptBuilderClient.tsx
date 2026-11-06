@@ -43,7 +43,7 @@ export default function ScriptBuilderClient() {
   const { fetchAI, isLoading, abort } = useAIChat();
   const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_script_builder", []);
   const [scriptPromptText, setScriptPromptText] = useState("");
-  const [selectedModel, setSelectedModel] = useState("gemini-3.7-flash");
+  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
   
   const [scriptFormat, setScriptFormat] = useState("");
   const [scriptTone, setScriptTone] = useState("");

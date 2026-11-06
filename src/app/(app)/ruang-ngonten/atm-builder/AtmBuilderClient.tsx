@@ -32,7 +32,7 @@ export default function AtmBuilderClient() {
   const { fetchAI, isLoading, setIsLoading, abort } = useAIChat();
   const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_atm_builder", []);
   const [atmInputText, setAtmInputText] = useState("");
-  const [selectedModel, setSelectedModel] = useState("gemini-3.7-flash");
+  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
   
   // ATM Attachment State
   const atmFileInputRef = useRef<HTMLInputElement>(null);

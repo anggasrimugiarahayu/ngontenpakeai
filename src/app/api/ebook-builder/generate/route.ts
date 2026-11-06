@@ -1,10 +1,8 @@
-import { getApiKey } from "@/lib/get-api-key";
-import { getDefaultAiModel } from "@/lib/get-ai-model";
 import { NextRequest, NextResponse } from "next/server";
-import { GoogleGenAI, Type, Schema } from "@google/genai";
 import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import prisma from "@/lib/prisma";
+import { generateStructuredAiContent } from "@/lib/ai/geminiClient";
 
 export async function POST(req: NextRequest) {
   try {
@@ -18,7 +16,7 @@ export async function POST(req: NextRequest) {
       req.json(),
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { googleApiKey: true }
+        select: { googleApiKey: true, groqApiKey: true }
       })
     ]);
 
@@ -35,21 +33,9 @@ export async function POST(req: NextRequest) {
       history = [],
       blueprint = {},
       model,
-      apiKey
+      apiKey,
+      groqApiKey
     } = body;
-
-    const [selectedModel, currentKey] = await Promise.all([
-      model ? Promise.resolve(model) : getDefaultAiModel("gemini-2.5-flash"),
-      getApiKey(apiKey || userRecord?.googleApiKey)
-    ]);
-    if (!currentKey) {
-      return NextResponse.json({ 
-        is_error: true, 
-        error_message: "API Key tidak ditemukan" 
-      }, { status: 400 });
-    }
-
-    const ai = new GoogleGenAI({ apiKey: currentKey });
     
     // Construct System Prompt
     const systemPrompt = `[MASTER PROMPT – EBOOK PROMPT BUILDER AI]
@@ -110,93 +96,59 @@ Anda beroperasi dalam 3 Mode:
      - Blok 2: [CETAK SELURUH Teks GLOBAL INSTRUCTION secara utuh di sini] + Instruksi spesifik meminta AI menulis HANYA BAB 1 (Sertakan daftar Sub-bab & Inti Pembahasannya secara detail beserta nomor urutnya 1.1, 1.1.1. Perintahkan AI untuk menulis 800-1000 kata per sub-bab).
      - Blok 3: [CETAK SELURUH Teks GLOBAL INSTRUCTION secara utuh di sini] + Instruksi spesifik meminta AI menulis HANYA BAB 2 (beserta sub-bab & intinya).
      - Blok 4, 5, dst: Lanjutkan pola "1 Blok untuk 1 Bab" ini secara terpisah untuk seluruh bab yang ada di Outline. Pastikan GLOBAL INSTRUCTION dicetak utuh kata per kata di setiap blok.
-     - Blok Terakhir: [CETAK SELURUH Teks GLOBAL INSTRUCTION secara utuh di sini] + Instruksi spesifik meminta AI merangkum Kesimpulan & merapikan Daftar Pustaka.`;
+     - Blok Terakhir: [CETAK SELURUH Teks GLOBAL INSTRUCTION secara utuh di sini] + Instruksi spesifik meminta AI merangkum Kesimpulan & merapikan Daftar Pustaka.
 
-    const responseSchema: Schema = {
-      type: Type.OBJECT,
-      properties: {
-        is_error: { type: Type.BOOLEAN },
-        error_message: { type: Type.STRING },
-        response_type: { 
-          type: Type.STRING,
-          description: "Wajib salah satu dari: 'chat', 'review_outline', atau 'ebook_result'"
-        },
-        message: { 
-          type: Type.STRING,
-          description: "Pesan sapaan atau penjelasan. WAJIB gunakan format poin-poin (bullet points), paragraf pendek, dan bahasa awam to-the-point."
-        },
-        ideas_table: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              topic: { type: Type.STRING, description: "Judul Ebook Spesifik" },
-              masalah_audiens: { type: Type.STRING, description: "Masalah utama yang diselesaikan" },
-              unique_angle: { type: Type.STRING, description: "Sudut pandang unik" },
-              dream_outcome: { type: Type.STRING, description: "Hasil akhir / solusi yang dijanjikan" }
-            },
-            required: ["topic", "masalah_audiens", "unique_angle", "dream_outcome"]
-          }
-        },
-        outlineText: {
-          type: Type.STRING,
-          description: "Diisi HANYA JIKA response_type adalah 'review_outline'. Berisi seluruh teks kerangka/outline yang komprehensif."
-        },
-        prompt_blocks: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              label: { type: Type.STRING, description: "Contoh: 'Blok Prompt 1: Penulisan Bab 1'" },
-              content: { type: Type.STRING, description: "Teks instruksi prompt aktual" }
-            }
-          },
-          description: "Diisi HANYA JIKA response_type adalah 'ebook_result'. Berisi array instruksi blok-blok."
-        }
-      },
-      required: ["is_error", "response_type", "message"]
-    };
+[FORMAT OUTPUT JSON WAJIB]
+Format output WAJIB HANYA berupa JSON valid dengan skema berikut:
+{
+  "is_error": false,
+  "error_message": "",
+  "response_type": "chat" | "review_outline" | "ebook_result",
+  "message": "Pesan sapaan atau penjelasan. WAJIB gunakan format poin-poin (bullet points), paragraf pendek, dan bahasa awam to-the-point.",
+  "ideas_table": [
+    {
+      "topic": "Judul Ebook Spesifik",
+      "masalah_audiens": "Masalah utama yang diselesaikan",
+      "unique_angle": "Sudut pandang unik",
+      "dream_outcome": "Hasil akhir / solusi yang dijanjikan"
+    }
+  ],
+  "outlineText": "Diisi HANYA JIKA response_type adalah 'review_outline'. Teks kerangka/outline.",
+  "prompt_blocks": [
+    {
+      "label": "Blok Prompt 1: Penulisan Bab 1",
+      "content": "Teks instruksi prompt aktual"
+    }
+  ]
+}
+`;
 
-    let contents = [];
-    
-    for (const msg of history) {
+    const chatContext = history.map((msg: any) => {
       if (msg.role === 'user') {
-        let text = `User: ${msg.content}`;
-        if(msg.content.includes('[SYSTEM_OUTLINE]')) text = `User: [Memilih Ide Ebook dan Meminta Dibuatkan Outline Detail]`;
-        if(msg.content.includes('[SYSTEM AUTO-SUBMIT]')) text = `User: [Menyetujui Outline dan Meminta Pencetakan Master Prompt]`;
-        contents.push({ role: 'user', parts: [{ text }] });
+        let text = msg.content;
+        if (msg.content?.includes('[SYSTEM_OUTLINE]')) text = '[Memilih Ide Ebook dan Meminta Dibuatkan Outline Detail]';
+        if (msg.content?.includes('[SYSTEM AUTO-SUBMIT]')) text = '[Menyetujui Outline dan Meminta Pencetakan Master Prompt]';
+        return `User: ${text}`;
       } else if (msg.role === 'assistant' && msg.data) {
-        let text = '';
-        if(msg.type === 'welcome') text = `AI: Menyapa pengguna.`;
-        if(msg.type === 'chat' && msg.data.ideas_table) text = `AI: [Menyajikan tabel ide Ebook]`;
-        if(msg.type === 'review_outline' && msg.data.outlineText) text = `AI: [Menyajikan draft outline Ebook untuk direview]`;
-        if(msg.type === 'ebook_result') text = `AI: [Menyajikan master prompt block]`;
-        if (text) contents.push({ role: 'model', parts: [{ text }] });
+        if (msg.type === 'welcome') return `AI: Menyapa pengguna.`;
+        if (msg.type === 'chat' && msg.data.ideas_table) return `AI: [Menyajikan tabel ide Ebook]`;
+        if (msg.type === 'review_outline' && msg.data.outlineText) return `AI: [Menyajikan draft outline Ebook untuk direview]`;
+        if (msg.type === 'ebook_result') return `AI: [Menyajikan master prompt block]`;
       }
-    }
+      return '';
+    }).filter(Boolean).join('\n\n');
 
-    contents.push({ role: 'user', parts: [{ text: prompt }] });
+    const userPrompt = `${chatContext ? `[HISTORI DISKUSI SEBELUMNYA]\n${chatContext}\n\n` : ''}[PERINTAH PENGGUNA TERBARU]\n${prompt}`;
 
-    const response = await ai.models.generateContent({
-      model: selectedModel,
-      contents: contents,
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: "application/json",
-        responseSchema: responseSchema,
-        temperature: 0.7,
-      }
+    const parsedData = await generateStructuredAiContent({
+      apiKey: apiKey || userRecord?.googleApiKey || undefined,
+      groqApiKey: groqApiKey || userRecord?.groqApiKey || undefined,
+      model,
+      userPrompt,
+      systemPrompt,
+      responseMimeType: "application/json",
+      temperature: 0.7,
     });
-
-    const responseText = response.text;
-    if (!responseText) throw new Error("Kosong dari AI");
-    
-    let parsedData;
-    try {
-      parsedData = JSON.parse(responseText);
-    } catch (e) {
-      parsedData = { is_error: true, error_message: "Format JSON tidak valid dari AI." };
-    }
 
     if (parsedData?.response_type === "ebook_result" && accessCheck.featureId && !parsedData.is_error) {
       await incrementFeatureUsage(session.user.id, accessCheck.featureId);

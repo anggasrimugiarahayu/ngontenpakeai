@@ -226,3 +226,59 @@ export async function deleteApiKey() {
   }
 }
 
+export async function updateGroqApiKey(formData: FormData) {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const apiKey = formData.get("groqApiKey") as string;
+
+  if (!apiKey || apiKey.trim() === "") {
+    return { success: false, error: "Groq API Key tidak boleh kosong." };
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        groqApiKey: apiKey.trim(),
+      },
+    });
+
+    invalidateUserSessionTag();
+    revalidatePath("/pengaturan");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to update Groq API Key:", error);
+    return { success: false, error: "Gagal menyimpan Groq API Key." };
+  }
+}
+
+export async function deleteGroqApiKey() {
+  const session = await auth();
+
+  if (!session?.user?.id) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: {
+        groqApiKey: null,
+      },
+    });
+
+    invalidateUserSessionTag();
+    revalidatePath("/pengaturan");
+
+    return { success: true };
+  } catch (error) {
+    console.error("Failed to delete Groq API Key:", error);
+    return { success: false, error: "Gagal menghapus Groq API Key." };
+  }
+}
+

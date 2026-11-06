@@ -12,7 +12,7 @@ export async function GET() {
     const [dbUser, features, usages] = await Promise.all([
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { googleApiKey: true }
+        select: { googleApiKey: true, groqApiKey: true }
       }),
       prisma.feature.findMany({
         where: { isActive: true },
@@ -25,6 +25,7 @@ export async function GET() {
 
     return NextResponse.json({
       googleApiKey: dbUser?.googleApiKey || null,
+      groqApiKey: dbUser?.groqApiKey || null,
       features,
       usages
     });

@@ -33,7 +33,7 @@ const getCachedFallbackModelId = unstable_cache(
   { revalidate: 3600, tags: ["admin-config"] }
 );
 
-export async function getDefaultAiModel(fallbackModel = "gemini-2.5-flash") {
+export async function getDefaultAiModel(fallbackModel = "llama-3.3-70b-versatile") {
   const modelId = await getCachedDefaultModelId();
   return modelId || fallbackModel;
 }

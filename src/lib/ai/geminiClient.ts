@@ -1,12 +1,130 @@
 import { GoogleGenAI } from "@google/genai";
 import { getDefaultAiModel, getFallbackAiModel } from "@/lib/get-ai-model";
+import { getApiKey, getGroqApiKey } from "@/lib/get-api-key";
 
 export interface GenerateStructuredAiOptions {
-  apiKey: string;
+  apiKey?: string;
+  groqApiKey?: string;
   userPrompt: string;
   systemPrompt?: string;
+  model?: string;
   fallbackModelDefault?: string;
   responseMimeType?: "application/json" | "text/plain";
+  temperature?: number;
+}
+
+export function isGroqModel(modelId?: string | null): boolean {
+  if (!modelId) return false;
+  const lower = modelId.toLowerCase();
+  return (
+    lower.startsWith("llama") ||
+    lower.startsWith("qwen") ||
+    lower.startsWith("allam") ||
+    lower.startsWith("openai/gpt-oss") ||
+    lower.startsWith("canopylabs") ||
+    lower.includes("groq")
+  );
+}
+
+export function resolveGroqModel(modelId: string): string {
+  const lower = modelId.toLowerCase();
+  if (lower.includes("llama-3.3") || lower.includes("70b")) {
+    return "openai/gpt-oss-120b";
+  }
+  if (lower.includes("llama-3.1") || lower.includes("8b")) {
+    return "openai/gpt-oss-20b";
+  }
+  return modelId;
+}
+
+export async function callGroqChatCompletion(options: {
+  apiKey: string;
+  model: string;
+  userPrompt: string;
+  systemPrompt?: string;
+  responseMimeType?: "application/json" | "text/plain";
+  temperature?: number;
+}): Promise<string> {
+  const { apiKey, model, userPrompt, systemPrompt, responseMimeType, temperature = 0.7 } = options;
+  const messages: Array<{ role: string; content: string }> = [];
+  if (systemPrompt && systemPrompt.trim()) {
+    messages.push({ role: "system", content: systemPrompt.trim() });
+  }
+  messages.push({ role: "user", content: userPrompt });
+
+  const resolvedModel = resolveGroqModel(model || "qwen/qwen3.8-27b");
+  const body: any = {
+    model: resolvedModel,
+    messages,
+    temperature,
+  };
+
+  if (responseMimeType === "application/json") {
+    body.response_format = { type: "json_object" };
+  }
+
+  let res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!res.ok && res.status === 404 && resolvedModel !== "qwen/qwen3.8-27b") {
+    body.model = "qwen/qwen3.8-27b";
+    res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
+  }
+
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    const message = errorData?.error?.message || `Groq API error (${res.status})`;
+    const err = new Error(message) as any;
+    err.status = res.status;
+    throw err;
+  }
+
+  const data = await res.json();
+  const content = data.choices?.[0]?.message?.content;
+  if (!content) {
+    throw new Error("Respon kosong diterima dari layanan Groq AI.");
+  }
+  return content;
+}
+
+export async function callGoogleGeminiContent(options: {
+  apiKey: string;
+  model: string;
+  userPrompt: string;
+  systemPrompt?: string;
+  responseMimeType?: "application/json" | "text/plain";
+}): Promise<string> {
+  const { apiKey, model, userPrompt, systemPrompt, responseMimeType } = options;
+  const ai = new GoogleGenAI({ apiKey });
+  const requestConfig: any = {
+    responseMimeType: responseMimeType || "application/json",
+  };
+  if (systemPrompt && systemPrompt.trim()) {
+    requestConfig.systemInstruction = systemPrompt;
+  }
+  const response = await ai.models.generateContent({
+    model,
+    contents: userPrompt,
+    config: requestConfig,
+  });
+  const text = response?.text;
+  if (!text) {
+    throw new Error("Respon kosong diterima dari layanan Google AI.");
+  }
+  return text;
 }
 
 /**
@@ -31,7 +149,6 @@ export function extractJsonFromResponse<T = any>(rawText: string): T {
 
   let targetJsonStr = cleaned;
   if (objectMatch && arrayMatch) {
-    // Pick whichever appears first
     targetJsonStr =
       cleaned.indexOf(objectMatch[0]) <= cleaned.indexOf(arrayMatch[0])
         ? objectMatch[0]
@@ -51,68 +168,101 @@ export function extractJsonFromResponse<T = any>(rawText: string): T {
 }
 
 /**
- * Standardized AI Content Generator with Automatic Model Fallback on Server Overload
+ * Standardized AI Content Generator with Automatic Model Routing and Fallback
  */
 export async function generateStructuredAiContent<T = any>(
   options: GenerateStructuredAiOptions
 ): Promise<T> {
   const {
     apiKey,
+    groqApiKey,
     userPrompt,
     systemPrompt,
-    fallbackModelDefault = "gemini-2.5-flash",
+    model,
+    fallbackModelDefault,
     responseMimeType = "application/json",
+    temperature = 0.7,
   } = options;
 
-  if (!apiKey) {
-    throw new Error("API Key Google Gemini tidak ditemukan.");
-  }
+  const defaultModelFromDb = await getDefaultAiModel("llama-3.3-70b-versatile");
+  const targetModel = model || defaultModelFromDb || fallbackModelDefault || "llama-3.3-70b-versatile";
 
-  const ai = new GoogleGenAI({ apiKey });
-  const defaultModel = await getDefaultAiModel(fallbackModelDefault);
+  let rawText: string | null = null;
+  const targetIsGroq = isGroqModel(targetModel);
 
-  const requestConfig: any = {
-    responseMimeType,
-  };
-  if (systemPrompt && systemPrompt.trim()) {
-    requestConfig.systemInstruction = systemPrompt;
-  }
-
-  let response: any;
-  try {
-    response = await ai.models.generateContent({
-      model: defaultModel,
-      contents: userPrompt,
-      config: requestConfig,
-    });
-  } catch (error: any) {
-    const errStr = String(error?.message || "");
-    const isOverloaded =
-      error?.status === 503 ||
-      error?.status >= 500 ||
-      errStr.toLowerCase().includes("high demand") ||
-      errStr.toLowerCase().includes("overloaded") ||
-      errStr.toLowerCase().includes("resource exhausted") ||
-      errStr.toLowerCase().includes("internal");
-
-    if (isOverloaded) {
-      console.warn(
-        `[Fallback AI] Model ${defaultModel} sedang overloaded/limit. Mengalihkan ke fallback model...`
-      );
-      const fallbackModel = await getFallbackAiModel();
-      response = await ai.models.generateContent({
-        model: fallbackModel,
-        contents: userPrompt,
-        config: requestConfig,
-      });
-    } else {
-      throw error;
+  // 1. Attempt Primary Path
+  if (targetIsGroq) {
+    const activeGroqKey = await getGroqApiKey(groqApiKey);
+    if (activeGroqKey) {
+      try {
+        rawText = await callGroqChatCompletion({
+          apiKey: activeGroqKey,
+          model: targetModel,
+          userPrompt,
+          systemPrompt,
+          responseMimeType,
+          temperature,
+        });
+      } catch (groqErr: any) {
+        console.warn(
+          `[Universal AI] Groq model ${targetModel} gagal: ${groqErr?.message || groqErr}. Mengalihkan ke fallback model...`
+        );
+      }
+    }
+  } else {
+    const activeGeminiKey = await getApiKey(apiKey);
+    if (activeGeminiKey) {
+      try {
+        rawText = await callGoogleGeminiContent({
+          apiKey: activeGeminiKey,
+          model: targetModel,
+          userPrompt,
+          systemPrompt,
+          responseMimeType,
+        });
+      } catch (geminiErr: any) {
+        console.warn(
+          `[Universal AI] Gemini model ${targetModel} gagal: ${geminiErr?.message || geminiErr}. Mengalihkan ke fallback model...`
+        );
+      }
     }
   }
 
-  const rawText = response?.text;
+  // 2. Attempt Fallback Path if Primary Failed or was Unavailable
   if (!rawText) {
-    throw new Error("Respon kosong diterima dari layanan Google AI.");
+    const fallbackModel = await getFallbackAiModel("gemini-3.5-flash-lite");
+    const fallbackIsGroq = isGroqModel(fallbackModel);
+
+    if (fallbackIsGroq) {
+      const activeGroqKey = await getGroqApiKey(groqApiKey);
+      if (!activeGroqKey) {
+        throw new Error("Kunci Groq API tidak ditemukan untuk fallback model.");
+      }
+      rawText = await callGroqChatCompletion({
+        apiKey: activeGroqKey,
+        model: fallbackModel,
+        userPrompt,
+        systemPrompt,
+        responseMimeType,
+        temperature,
+      });
+    } else {
+      const activeGeminiKey = await getApiKey(apiKey);
+      if (!activeGeminiKey) {
+        throw new Error("Kunci Google API tidak ditemukan untuk fallback model.");
+      }
+      rawText = await callGoogleGeminiContent({
+        apiKey: activeGeminiKey,
+        model: fallbackModel,
+        userPrompt,
+        systemPrompt,
+        responseMimeType,
+      });
+    }
+  }
+
+  if (!rawText) {
+    throw new Error("Respon kosong diterima dari layanan AI.");
   }
 
   if (responseMimeType === "application/json") {

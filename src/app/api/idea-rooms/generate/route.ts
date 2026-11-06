@@ -1,12 +1,10 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { getDefaultAiModel } from "@/lib/get-ai-model";
-import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import prisma from "@/lib/prisma";
-import { GoogleGenAI } from "@google/genai";
+import { generateStructuredAiContent } from "@/lib/ai/geminiClient";
 
 // Cache knowledge base files
 async function fetchKnowledgeBase() {
@@ -39,7 +37,7 @@ export async function POST(req: Request) {
       req.json(),
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { googleApiKey: true }
+        select: { googleApiKey: true, groqApiKey: true }
       }),
       fetchKnowledgeBase()
     ]);
@@ -53,14 +51,6 @@ export async function POST(req: Request) {
     }
 
     const { promptText, isFunneling, blueprintData, chatHistory, model } = body;
-
-    const apiKey = await getApiKey(userRecord?.googleApiKey);
-
-    if (!apiKey) {
-      return NextResponse.json({ error: "Gemini API Key tidak ditemukan baik dari pengguna maupun sistem." }, { status: 400 });
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
 
     const ideaCountRule = isFunneling 
       ? "JIKA Anda memutuskan untuk membuahkan ide, Anda WAJIB MENGHASILKAN TEPAT 30 IDE KONTEN (10 TOFU, 10 MOFU, 10 BOFU). Tulis setiap field secara sangat singkat dan padat (maksimal 1 kalimat) agar JSON tidak terpotong."
@@ -146,21 +136,15 @@ ${chatHistory}
 ${actualPrompt}
 `;
 
-    const response = await ai.models.generateContent({
-      model: model || await getDefaultAiModel("gemini-2.5-flash"),
-      contents: userPrompt,
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: "application/json",
-        temperature: 0.7,
-      },
+    const aiResult = await generateStructuredAiContent({
+      apiKey: userRecord?.googleApiKey || undefined,
+      groqApiKey: userRecord?.groqApiKey || undefined,
+      model,
+      userPrompt,
+      systemPrompt,
+      temperature: 0.7,
+      responseMimeType: "application/json",
     });
-
-    if (!response.text) {
-      throw new Error("AI returned empty response");
-    }
-
-    const aiResult = JSON.parse(response.text);
 
     if (accessCheck.featureId) {
       await incrementFeatureUsage(session.user.id, accessCheck.featureId);

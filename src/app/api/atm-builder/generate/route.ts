@@ -5,6 +5,7 @@ import { GoogleGenAI } from '@google/genai';
 import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import prisma from "@/lib/prisma";
+import { generateStructuredAiContent, isGroqModel } from "@/lib/ai/geminiClient";
 
 export async function POST(req: Request) {
   try {
@@ -18,7 +19,7 @@ export async function POST(req: Request) {
       req.json(),
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { googleApiKey: true }
+        select: { googleApiKey: true, groqApiKey: true }
       })
     ]);
 
@@ -30,12 +31,6 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
 
-    const apiKey = await getApiKey(userRecord?.googleApiKey);
-    if (!apiKey) {
-      return NextResponse.json({ error: "Gemini API Key tidak ditemukan baik dari pengguna maupun sistem." }, { status: 400 });
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
     const { chatHistory, currentInput, fileData, fileType, blueprint, model } = body;
 
     const systemPrompt = `[MASTER PROMPT – ATM CONTENT BUILDER]
@@ -118,7 +113,14 @@ PENTING: Format output WAJIB berupa JSON yang valid.
       userParts.push({ text: currentInput });
     }
     
+    let googleAiClient: GoogleGenAI | null = null;
     if (fileData) {
+      const apiKey = await getApiKey(userRecord?.googleApiKey);
+      if (!apiKey) {
+        return NextResponse.json({ error: "Google Gemini API Key diperlukan untuk menganalisis file gambar/video/audio." }, { status: 400 });
+      }
+      googleAiClient = new GoogleGenAI({ apiKey });
+
       const base64Data = fileData.split(',')[1];
       
       if (fileType.startsWith('video/') || fileType.startsWith('audio/')) {
@@ -133,7 +135,7 @@ PENTING: Format output WAJIB berupa JSON yang valid.
         
         try {
           // Upload to Gemini File API
-          const uploadResult = await (ai.files.upload as any)({
+          const uploadResult = await (googleAiClient.files.upload as any)({
              file: tempFilePath,
              mimeType: fileType,
           });
@@ -141,10 +143,10 @@ PENTING: Format output WAJIB berupa JSON yang valid.
           
           // If video, we must wait for processing to complete
           if (fileType.startsWith('video/') && uploadedFileName) {
-             let fileInfo = await ai.files.get({ name: uploadedFileName });
+             let fileInfo = await googleAiClient.files.get({ name: uploadedFileName });
              while (fileInfo.state === 'PROCESSING') {
                 await new Promise(r => setTimeout(r, 2000));
-                fileInfo = await ai.files.get({ name: uploadedFileName });
+                fileInfo = await googleAiClient.files.get({ name: uploadedFileName });
              }
              if (fileInfo.state === 'FAILED') {
                 throw new Error("Video processing failed on Google Gemini servers.");
@@ -176,27 +178,41 @@ PENTING: Format output WAJIB berupa JSON yang valid.
       }
     }
 
-    const response = await ai.models.generateContent({
-      model: model || await getDefaultAiModel("gemini-2.5-flash"),
-      contents: [{ role: 'user', parts: userParts }],
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: 'application/json'
+    let data: any;
+
+    if (fileData && googleAiClient) {
+      const targetModel = model && !isGroqModel(model) ? model : "gemini-2.5-flash";
+      const response = await googleAiClient.models.generateContent({
+        model: targetModel,
+        contents: [{ role: 'user', parts: userParts }],
+        config: {
+          systemInstruction: systemPrompt,
+          responseMimeType: 'application/json'
+        }
+      });
+
+      const textResult = response.text;
+      if (!textResult) {
+        return NextResponse.json({ error: 'Empty response from AI' });
       }
-    });
 
-    const textResult = response.text;
-    if (!textResult) {
-      return NextResponse.json({ error: 'Empty response from AI' });
+      let aiText = textResult.replace(/\s*·\s*/g, ', ');
+      const jsonMatch = aiText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        return NextResponse.json({ error: 'Invalid JSON format from AI' });
+      }
+      data = JSON.parse(jsonMatch[0]);
+    } else {
+      const userPrompt = userParts.map(p => p.text).filter(Boolean).join('\n\n');
+      data = await generateStructuredAiContent({
+        apiKey: userRecord?.googleApiKey || undefined,
+        groqApiKey: userRecord?.groqApiKey || undefined,
+        model,
+        userPrompt,
+        systemPrompt,
+        responseMimeType: 'application/json',
+      });
     }
-
-    let aiText = textResult.replace(/\s*·\s*/g, ', ');
-    const jsonMatch = aiText.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return NextResponse.json({ error: 'Invalid JSON format from AI' });
-    }
-
-    const data = JSON.parse(jsonMatch[0]);
 
     if (accessCheck.featureId) {
       await incrementFeatureUsage(session.user.id, accessCheck.featureId);

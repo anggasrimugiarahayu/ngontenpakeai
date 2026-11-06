@@ -180,7 +180,7 @@ export default function GlobalChatbox({
               <span className="text-gray-900 dark:text-white whitespace-nowrap">
                 {models.find(m => (m.modelId || m.value || m.id) === selectedModel)?.name || 
                  models.find(m => (m.modelId || m.value || m.id) === selectedModel)?.label || 
-                 'Gemini 2.5 Flash'}
+                 'Llama 3.3'}
               </span>
               <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform text-gray-400 dark:text-gray-400 ml-0.5 ${isModelMenuOpen ? 'rotate-180' : ''}`}/>
             </button>

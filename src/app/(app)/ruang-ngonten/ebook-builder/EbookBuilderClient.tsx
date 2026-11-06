@@ -16,7 +16,7 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
   
   const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_ebook_builder", []);
   const [inputText, setInputText] = useState("");
-  const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash");
+  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
   
   const [actionState, setActionState] = useState<string | null>(null);
   const [isPlusMenuOpen, setIsPlusMenuOpen] = useState(false);

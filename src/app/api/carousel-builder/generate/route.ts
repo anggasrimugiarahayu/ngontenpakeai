@@ -1,12 +1,10 @@
 import { promises as fs } from 'fs';
 import path from 'path';
-import { getDefaultAiModel } from "@/lib/get-ai-model";
-import { getApiKey } from "@/lib/get-api-key";
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
-import { GoogleGenAI } from '@google/genai';
 import prisma from '@/lib/prisma';
+import { generateStructuredAiContent } from '@/lib/ai/geminiClient';
 
 // Initialize the Google Gen AI SDK
 // The same style art mapping from the old app
@@ -36,7 +34,7 @@ export async function POST(req: Request) {
       req.json(),
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { googleApiKey: true }
+        select: { googleApiKey: true, groqApiKey: true }
       }),
       fetchKnowledgeBase()
     ]);
@@ -50,14 +48,6 @@ export async function POST(req: Request) {
     }
 
     const { chatHistory, cpMode, currentInput, blueprint, model } = body;
-
-    const apiKey = await getApiKey(userRecord?.googleApiKey);
-
-    if (!apiKey) {
-      return NextResponse.json({ error: "Gemini API Key tidak ditemukan baik dari pengguna maupun sistem." }, { status: 400 });
-    }
-
-    const ai = new GoogleGenAI({ apiKey });
 
     const chatContext = chatHistory.map((m: any) => {
       if(m.role === 'user') {
@@ -229,27 +219,14 @@ Untuk menjaga komposisi adegan agar logis dan tidak aneh:
 
     const userPrompt = `[HISTORI CHAT]\n${chatContext}\n\n[MODE SAAT INI: ${cpMode === 'custom_script' ? 'CUSTOM SCRIPT - Naskah sudah jadi. Dilarang merubah naskah asli, langsung ke request_config untuk set visual.' : 'BRAINSTORMING'}]\n\n[INPUT USER SAAT INI]\n${currentInput}`;
 
-    // Call the model
-    const response = await ai.models.generateContent({
-      model: model || await getDefaultAiModel("gemini-2.5-flash"),
-      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-      config: {
-        systemInstruction: systemPrompt,
-        responseMimeType: 'application/json'
-      }
+    const data = await generateStructuredAiContent({
+      apiKey: userRecord?.googleApiKey || undefined,
+      groqApiKey: userRecord?.groqApiKey || undefined,
+      model,
+      userPrompt,
+      systemPrompt,
+      responseMimeType: 'application/json',
     });
-
-    const textResult = response.text;
-    if (!textResult) {
-      return NextResponse.json({ error: 'Empty response from AI' });
-    }
-
-    const jsonMatch = textResult.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return NextResponse.json({ error: 'Invalid JSON format from AI' });
-    }
-
-    const data = JSON.parse(jsonMatch[0]);
 
     if (data?.response_type === "cp_result" && accessCheck.featureId) {
       await incrementFeatureUsage(session.user.id, accessCheck.featureId);

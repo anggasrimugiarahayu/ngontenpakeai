@@ -63,7 +63,7 @@ export default function CarouselBuilderClient() {
   
   const [isScriptMenuOpen, setIsScriptMenuOpen] = useState(false);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('gemini-2.5-flash');
+  const [selectedModel, setSelectedModel] = useState('llama-3.3-70b-versatile');
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   

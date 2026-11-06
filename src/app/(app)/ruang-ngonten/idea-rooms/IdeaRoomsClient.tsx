@@ -16,7 +16,7 @@ export default function IdeaRoomsClient() {
   const { fetchAI, isLoading, abort } = useAIChat();
   const [promptText, setPromptText] = useState("");
   const [chatHistory, setChatHistory] = useSessionState<any[]>("chat_idea_rooms", []);
-  const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash");
+  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
 
   const [isActionsMenuOpen, setIsActionsMenuOpen] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);

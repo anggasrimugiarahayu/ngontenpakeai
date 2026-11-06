@@ -77,12 +77,10 @@ export default function GlobalChatLayout({
           if (data && data.length > 0) {
             setDbModels(data);
             
-            // If current selectedModel is not in the fetched models, select the default one
-            if (!data.find((m: any) => (m.modelId || m.value || m.id) === selectedModel)) {
-               const defaultModel = data.find((m: any) => m.isDefault) || data[0];
-               if (defaultModel) {
-                 onModelChange(defaultModel.modelId || defaultModel.value || defaultModel.id);
-               }
+            // Select default model if available
+            const defaultModel = data.find((m: any) => m.isDefault) || data[0];
+            if (defaultModel) {
+              onModelChange(defaultModel.modelId || defaultModel.value || defaultModel.id);
             }
           }
         }

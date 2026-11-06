@@ -51,6 +51,7 @@ model User {
   automationAgentLimit   Int                @default(1) @map("automation_agent_limit")
   image                  String?
   googleApiKey     String?           @map("google_api_key")
+  groqApiKey       String?           @map("groq_api_key")
   onboardingCompleted Boolean           @default(false) @map("onboarding_completed")
   preferences         Json?
   accounts         Account[]

@@ -31,7 +31,7 @@ export async function POST(req: Request) {
       req.json(),
       prisma.user.findUnique({
         where: { id: session.user.id },
-        select: { googleApiKey: true }
+        select: { googleApiKey: true, groqApiKey: true }
       }),
       fetchKnowledgeBase()
     ]);
@@ -45,12 +45,6 @@ export async function POST(req: Request) {
     }
 
     const { promptText, configContext, blueprintData, model } = body;
-
-    const apiKey = await getApiKey(userRecord?.googleApiKey);
-
-    if (!apiKey) {
-      return NextResponse.json({ error: "Gemini API Key tidak ditemukan baik dari pengguna maupun sistem." }, { status: 400 });
-    }
 
     // 100% IDENTIK DENGAN REFERENSI LAMA
     const systemPrompt = `[MASTER PROMPT – RUANG NGONTEN AI]
@@ -138,10 +132,12 @@ PASTIKAN naskah padat, *punchy*, dan tidak terlalu panjang (bertele-tele) agar r
     const userPrompt = `Ide Konten: ${promptText}`;
 
     let parsedData = await generateStructuredAiContent({
-      apiKey,
+      apiKey: userRecord?.googleApiKey || undefined,
+      groqApiKey: userRecord?.groqApiKey || undefined,
+      model,
       userPrompt,
       systemPrompt,
-      fallbackModelDefault: model || "gemini-2.5-flash",
+      fallbackModelDefault: "gemini-3.5-flash-lite",
     });
 
     if (!parsedData.is_error) {
