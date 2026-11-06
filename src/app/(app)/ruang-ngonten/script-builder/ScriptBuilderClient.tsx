@@ -128,11 +128,15 @@ export default function ScriptBuilderClient() {
     if (scriptFormat) requestContext += `Format: ${scriptFormat === 'Carousel' ? `Carousel (${scriptCarouselSlides} Slide)` : scriptFormat === 'Reels' ? `Reels (${scriptReelsDuration}s)` : scriptFormat}\n`;
     if (scriptTone) requestContext += `Tone: ${scriptTone}\n`;
 
-    // To match backend logic, we send prompt text, and the server reads configContext
-    // The backend uses configContext in the system prompt.
+    // Send prompt text, configContext, blueprintData, and explicit parameters
     const { data, error } = await fetchAI('/api/script-builder/generate', {
       promptText: currentInput,
       configContext: requestContext,
+      blueprintData: blueprintData || undefined,
+      format: scriptFormat || undefined,
+      slides: scriptFormat === 'Carousel' ? scriptCarouselSlides : undefined,
+      duration: scriptFormat === 'Reels' ? scriptReelsDuration : undefined,
+      tone: scriptTone || undefined,
       model: selectedModel
     });
 

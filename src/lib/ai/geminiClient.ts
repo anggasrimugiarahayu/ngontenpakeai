@@ -29,7 +29,7 @@ export function isGroqModel(modelId?: string | null): boolean {
 export function resolveGroqModel(modelId: string): string {
   const lower = modelId.toLowerCase();
   if (lower.includes("llama-3.3") || lower.includes("70b")) {
-    return "openai/gpt-oss-120b";
+    return "qwen/qwen3.8-27b";
   }
   if (lower.includes("llama-3.1") || lower.includes("8b")) {
     return "openai/gpt-oss-20b";
@@ -61,6 +61,10 @@ export async function callGroqChatCompletion(options: {
 
   if (responseMimeType === "application/json") {
     body.response_format = { type: "json_object" };
+    const hasJsonWord = messages.some((m) => m.content.toLowerCase().includes("json"));
+    if (!hasJsonWord) {
+      messages[messages.length - 1].content += "\n\nRespond with a valid JSON object.";
+    }
   }
 
   let res = await fetch("https://api.groq.com/openai/v1/chat/completions", {

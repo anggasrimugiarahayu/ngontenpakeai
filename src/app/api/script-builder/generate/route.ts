@@ -44,92 +44,213 @@ export async function POST(req: Request) {
       }, { status: 403 });
     }
 
-    const { promptText, configContext, blueprintData, model } = body;
+    const { promptText, configContext, blueprintData, model, format, slides, duration, tone } = body;
 
-    // 100% IDENTIK DENGAN REFERENSI LAMA
-    const systemPrompt = `[MASTER PROMPT – RUANG NGONTEN AI]
-[KONDISI WAKTU SEKARANG]
-Saat ini adalah tahun ${new Date().getFullYear()}. JIKA ADA CONTOH DI DATABASE YANG MENGGUNAKAN TAHUN MASA LALU (seperti 2024 atau 2025), WAJIB SESUAIKAN DENGAN TAHUN SAAT INI (${new Date().getFullYear()}) AGAR RELATE DENGAN KONDISI SEKARANG!
+    // Safety fallback: If blueprintData is not provided in body, load the user's latest blueprint from DB
+    let activeBlueprint = blueprintData;
+    if (!activeBlueprint) {
+      const dbBlueprint = await prisma.masterBlueprint.findFirst({
+        where: { userId: session.user.id },
+        orderBy: { updatedAt: "desc" }
+      });
+      activeBlueprint = dbBlueprint?.aiResult || null;
+    }
 
-[SOURCE OF TRUTH: MASTER BLUEPRINT]
-${JSON.stringify(blueprintData, null, 2)}
+    // Determine target format, slides, duration, and tone
+    let targetFormat = format || (configContext?.includes("Carousel") ? "Carousel" : configContext?.includes("Reels") ? "Reels" : "Carousel");
+    let targetSlides = slides || 5;
+    let targetDuration = duration || 60;
+    
+    if (configContext) {
+      const slideMatch = configContext.match(/(\d+)\s*Slide/i);
+      if (slideMatch) targetSlides = parseInt(slideMatch[1], 10);
+      const durMatch = configContext.match(/(\d+)s/i);
+      if (durMatch) targetDuration = parseInt(durMatch[1], 10);
+    }
 
-[DATABASE KNOWLEDGE WAJIB BACA & TERAPKAN]
-PERHATIAN SANGAT KRITIKAL: Dokumen di bawah ini berisi ATURAN INTERNAL dan TEMPLATE BAKU. Kamu DILARANG KERAS mengarang struktur, format, atau rumus sendiri. Kamu WAJIB 100% MENGGUNAKAN TEMPLATE dari database ini.
+    let targetTone = tone || "";
+    if (!targetTone && configContext) {
+      const toneMatch = configContext.match(/Tone:\s*([^\n\r]+)/i);
+      if (toneMatch) targetTone = toneMatch[1].trim();
+    }
 
-1. Hooks Database:
+    // Dynamic Tone Engine
+    let toneInstruction = "";
+    const lowerTone = targetTone.toLowerCase();
+    if (lowerTone.includes("blak-blakan") || lowerTone.includes("kritis")) {
+      toneInstruction = `GAYA BAHASA: BLAK-BLAKAN, TEGAS & MENUSUK (BRUTAL HONESTY).
+- Nada bicara seorang mentor blak-blakan yang anti-sugarcoating dan benci basa-basi.
+- Bongkar realita pahit, kebiasaan keliru, dan alasan kenapa audiens masih stuck/gagal.
+- Gunakan diksi menampar kesadaran ("Sadar nggak?", "Stop bohongin diri sendiri", "Ini alasan kenapa kamu boncos", "Jangan heran kalau...").
+- Berikan solusi nyata tanpa retorika manis, langsung pada inti tindakan konkret.`;
+    } else if (lowerTone.includes("storytelling")) {
+      toneInstruction = `GAYA BAHASA: STORYTELLING & PERSONAL NARRATIVE (INTIM & MENYENTUH).
+- Buka langsung di tengah momen kejadian (in media res) dengan kerentanan personal ("Waktu awal coba...", "Tabunganku pernah nol besar gara-gara...").
+- Bangun tensi: ceritakan rasa frustrasi/kesalahan masa lalu yang sangat manusiawi.
+- Hadirkan titik balik (the epiphany / turning point) saat menemukan sistem/metode baru.
+- Tutup dengan transformasi nyata yang membuat pembaca merasa: "Kalau dia bisa, aku juga pasti bisa."`;
+    } else if (lowerTone.includes("santai")) {
+      toneInstruction = `GAYA BAHASA: SANTAI, LUWES & NONGKRONG (WARKOP VIBES).
+- Gaya bicara seperti teman akrab lagi ngobrol santai di coffee shop.
+- Gunakan partikel dan transisi kasual khas percakapan natural ("Nah...", "Terus...", "Padahal ya...", "Kebayang nggak?", "Gini lho...").
+- Hindari bahasa kaku atau ilmiah, buat mengalir ringan dan sangat mudah dipahami bahkan oleh orang awam.`;
+    } else if (lowerTone.includes("edukatif")) {
+      toneInstruction = `GAYA BAHASA: EDUKATIF PRAKTIS & LOGICAL REASONING.
+- Berbasis logika sebab-akibat yang kuat dan analogi dunia nyata yang langsung "klik" di kepala.
+- Sederhanakan konsep rumit menjadi 1 kalimat analogi yang gamblang.
+- Paparkan langkah-langkah implementasi 1-2-3 yang sistematis, runtut, dan langsung bisa dieksekusi hari ini juga.`;
+    } else if (lowerTone.includes("humor")) {
+      toneInstruction = `GAYA BAHASA: HUMOR, WITTY & RELATABLE SATIRE.
+- Selipkan sindiran jenaka dan observasi lucu tentang kelakuan absurd sehari-hari audiens.
+- Gunakan ironi dan analogi kocak yang bikin audiens tertawa sekaligus meringis karena merasa tersindir telak ("Siapa yang relate?").
+- Pembahasan tetap berbobot dan berisi solusi cerdas di balik kemasan humor yang segar.`;
+    } else if (lowerTone.includes("inspiratif")) {
+      toneInstruction = `GAYA BAHASA: INSPIRATIF, EMPOWERING & MEMBUKA PIKIRAN.
+- Ubah sudut pandang audiens (reframing mindset) dari rasa tidak berdaya menjadi penuh harapan dan keyakinan.
+- Gunakan nada bicara hangat, berempati tinggi, dan memvalidasi perjuangan mereka sebelum memberikan wawasan pencerahan.`;
+    } else if (lowerTone.includes("motivasi")) {
+      toneInstruction = `GAYA BAHASA: HIGH ENERGY & URGENT MOTIVASI.
+- Bakar semangat juang audiens untuk bergerak SEKARANG JUGA (sense of urgency tinggi).
+- Pukul telak alasan-alasan klise ("nanti aja", "nggak ada waktu") dengan bantahan logis dan tegas. Fokus pada disiplin dan aksi nyata.`;
+    } else if (lowerTone.includes("profesional")) {
+      toneInstruction = `GAYA BAHASA: PROFESIONAL, OTORITATIF & KREDIBEL.
+- Nada bicara praktisi/konsultan senior yang matang dan berpengalaman.
+- Lugas, berwibawa, berorientasi pada hasil (ROI/efisiensi), menggunakan struktur pemikiran strategis tanpa kata-kata berlebihan.`;
+    } else {
+      toneInstruction = `GAYA BAHASA: NATURAL CONVERSATIONAL, PUNCHY & HUMAN.
+- Lugas, to-the-point, bersahabat, bertenaga, dan sangat mengalir enak dibaca.
+- Seimbangkan antara empati yang hangat dan dorongan aksi yang tegas.`;
+    }
+
+    // Dynamic Format Instruction
+    let formatInstruction = "";
+    if (targetFormat === "Reels" || targetFormat === "TikTok") {
+      formatInstruction = `[PANDUAN STRUKTUR FORMAT: REELS / SHORT VIDEO (${targetDuration} DETIK)]
+Setiap variasi naskah WAJIB dipecah menjadi segmen waktu video yang dinamis, lengkap dengan arahan aksi visual dan teks di layar:
+
+WAJIB FORMAT script_sections untuk Reels:
+- Segmen 1 (00:00 - 00:03) [Label: "00:00 - 00:03 | The Hook"]
+  Content WAJIB berisi:
+  Naskah Ucap: [1 kalimat pembuka tajam yang memancing rasa penasaran / menghentikan scroll]
+  [Visual Action]: [Arahan kamera / ekspresi / gestur tubuh kreator yang dinamis]
+  [On-Screen Text]: [Teks singkat 3-5 kata yang menempel di layar untuk penonton mode bisu]
+
+- Segmen 2 (00:03 - ${Math.round(targetDuration * 0.35)}s) [Label: "00:03 - ${Math.round(targetDuration * 0.35)}s | The Conflict & Reality"]
+  Content WAJIB berisi:
+  Naskah Ucap: [Bahas masalah/keresahan utama dengan ritme cepat dan detail sensorik konkret]
+  [Visual Action]: [Arahan transisi / b-roll / ekspresi kreator]
+
+- Segmen 3 (${Math.round(targetDuration * 0.35)}s - ${Math.round(targetDuration * 0.85)}s) [Label: "${Math.round(targetDuration * 0.35)}s - ${Math.round(targetDuration * 0.85)}s | The Core Solution"]
+  Content WAJIB berisi:
+  Naskah Ucap: [Daging materi: langkah konkret 1-2-3 / hacks sistematis yang padat tanpa basa-basi]
+  [Visual Action]: [Arahan peragaan / demonstrasi visual di layar]
+
+- Segmen 4 (${Math.round(targetDuration * 0.85)}s - ${targetDuration}s) [Label: "${Math.round(targetDuration * 0.85)}s - ${targetDuration}s | The Punchline CTA"]
+  Content WAJIB berisi:
+  Naskah Ucap: [Call to action verbal yang mengalir natural mengajak audiens berinteraksi]
+  [On-Screen Text]: [Teks CTA tebal di layar]`;
+    } else {
+      formatInstruction = `[PANDUAN STRUKTUR FORMAT: CAROUSEL (${targetSlides} SLIDE)]
+Setiap variasi naskah WAJIB dipecah menjadi TEPAT ${targetSlides} Slide:
+
+WAJIB FORMAT script_sections untuk Carousel:
+- Slide 1 [Label: "Slide 1 | The Hook"]
+  Content: 1-2 baris kalimat pembuka ultra-mematikan (maksimal 15 kata). Ciptakan 'Pattern Interrupt' yang menghentikan jempol pembaca seketika. DILARANG bertele-tele!
+- Slide 2 [Label: "Slide 2 | Realita & Agitasi"]
+  Content: Buka realita nyata dengan detail sensorik konkret (sebutkan situasi sehari-hari, nominal, atau kebiasaan nyata audiens). Bikin audiens merasa "Ini gue banget!".
+${Array.from({ length: Math.max(1, targetSlides - 3) }, (_, i) => {
+  const slideNum = i + 3;
+  return `- Slide ${slideNum} [Label: "Slide ${slideNum} | Daging & Sistem Solusi"]
+  Content: Poin daging materi konkret. Berikan hacks sistematis, cara pandang baru yang mematahkan mitos, atau panduan langkah-demi-langkah praktis.`;
+}).join('\n')}
+- Slide ${targetSlides} [Label: "Slide ${targetSlides} | Call to Action"]
+  Content: CTA yang sangat relevan dan beralasan kuat (contoh: ajak Save sekarang sebelum gajian, atau Share ke teman yang gajinya numpang lewat).`;
+    }
+
+    const systemPrompt = `[MASTER PROMPT – ELITE VIRAL SCRIPT ARCHITECT]
+Saat ini adalah tahun ${new Date().getFullYear()}. Anda adalah Direktur Copywriting & Storyteller Viral Kelas Dunia.
+Tugas Anda adalah memproduksi 3 (TIGA) variasi naskah konten berdaya ledak tinggi (High-Converting & Highly Shareable) yang siap viral ketika diposting.
+
+[SOURCE OF TRUTH: MASTER BLUEPRINT PENGGUNA]
+${JSON.stringify(activeBlueprint, null, 2)}
+Gunakan data target audiens, pain point, bahasa percakapan, dan positioning di atas sebagai nyawa naskah Anda!
+
+[DATABASE KNOWLEDGE UNTUK INSPIRASI (HOOK & CTA)]
+1. Inspirasi Hook:
 ${dbKnowledge.hooks}
-2. CTA / CTV Database:
+2. Inspirasi CTA / CTV:
 ${dbKnowledge.cta}
 
 # ==========================================================
-# WRITING STYLE: HUMAN & AUTHENTIC VOICE
+# ATURAN EMAS COPYWRITING VIRAL (ANTI-ROBOT & ANTI-KLISE)
 # ==========================================================
 
-1. CORE PRINCIPLES:
-* Use a casual, natural, and conversational tone (like talking to a friend).
-* Vary sentence length: Mix short sentences (2-3 words) with longer, context-rich sentences. This creates a more natural, human reading rhythm.
-* Imperfect by design: Don't make the writing feel overly polished or too structured. Occasionally start sentences with Indonesian conversational words such as "Dan," "Tapi," or "Terus."
+1. BLACKLIST TOTAL KLISE MEDSOS (HARGA MATI):
+   - DILARANG KERAS menggunakan frasa pembuka usang seperti:
+     * "Unpopular opinion:"
+     * "Tahukah kamu?"
+     * "Di era digital saat ini..."
+     * "Kenapa? Karena..."
+     * "Nggak seefektif yang kamu kira"
+     * "Penting untuk dipahami bahwa..."
+     * "Pada akhirnya..."
+     * "Semoga bermanfaat"
+   - Sebagai gantinya, buka dengan PERNYATAAN POLARISASI yang berani, PENGAKUAN KEGAGALAN NYATA, ATAU KONFRONTASI REALITA yang langsung menusuk rasa ingin tahu audiens dalam 0.5 detik pertama!
 
-2. PROHIBITED WRITING RULES (MANDATORY):
-* Do not use overly formal punctuation: Avoid semicolons (;), em dashes (--), and colons (:) in the middle of sentences. Use a period or a regular hyphen (-) instead.
-* NEVER use the middle dot character ("·") inside sentences. If you need a pause, use a comma (",") or a period (".").
-* Do not use AI-style template phrases: Avoid generic expressions such as "Di era digital ini...", "Pada akhirnya...", "Yang perlu kamu lakukan adalah...", "Penting untuk dicatat...", "Sebagai tambahan...", "Kesimpulannya adalah...", or similar formulaic phrases.
-* Do not use overly formal or stiff language: Prefer simple, everyday wording. For example, use "bikin lebih bagus" instead of "mengoptimalkan", "jalankan" instead of "implementasi", and "penting" instead of "esensial".
+2. ATURAN DETAIL MIKRO SENSORIK (ANTI-ABSTRAK):
+   - DILARANG menggunakan kata-kata abstrak umum seperti "beli ini itu", "banyak belanja", "kebutuhan harian", "masalah hidup", "keuangan kacau".
+   - WAJIB gunakan detail spesifik yang bisa divisualisasikan panca indra:
+     * BUKAN: "Sering boros belanja" -> TAPI: "Kopi susu 25 ribu tiap siang, checkout keranjang oranye jam 12 malem, sama biaya admin transfer 2.500".
+     * BUKAN: "Gaji cepat habis" -> TAPI: "Baru tanggal 5 notif m-banking udah sisa 87 ribu".
+     * BUKAN: "Nabung di rekening lain" -> TAPI: "Bikin Rekening Mati (bank tanpa kartu ATM & jangan install m-bankingnya di HP)".
 
-3. NATURAL WRITING ELEMENTS (MANDATORY):
-* Use the pronouns "Aku" and "Kamu". Do not use "Gue" or "Lu" to maintain the polite tone of the Feynman Muslim persona.
-* Include rhetorical questions to keep the reader engaged, such as "Kenapa? Karena...".
-* Use natural conversational transitions like "Nah...", "Terus...", "Oh iya...", or "Btw...".
-* Keep the closing simple. Avoid phrases like "Semoga bermanfaat." Instead, use casual endings such as "Itu aja sih.", "Gitu.", or "Simple."
+3. KETENTUAN GAYA BAHASA:
+${toneInstruction}
 
-4. GLOBAL OUTPUT, CONTENT FLOW & STRUCTURE
-* JANGKAR BLUEPRINT: Pahami target audiens & pain point. Naskah WAJIB berada di koridor Niche Master Blueprint ini.
-* ONE POST = ONE IDEA: Focus on a single clear message.
-* RANDOMISASI DATABASE (HARGA MATI): JANGAN MALAS DAN HANYA MEMILIH DARI URUTAN ATAS DATABASE! Kamu WAJIB mengacak (randomize) pencarian dan menyeleksi Hook, Framework Copywriting, dan CTA yang paling BERBEDA-BEDA untuk setiap variasi naskah.
-* HOOK: Pilih Hook paling mematikan dari Hooks Database secara ACAK (salin template aslinya, ganti teks dalam kurung siku).
-* TEXT LIMITATION (MANDATORY & ANTI-TRUNCATE): Body text must be concise. Max 2-3 short sentences or short bullet points per slide. NEVER generate dense paragraphs. INI PENTING AGAR OUTPUT JSON TIDAK TERPOTONG!
-* COPYWRITING FRAMEWORK: Auto-select framework yang BERBEDA untuk setiap variasi (contoh: Var 1 pakai PAS, Var 2 pakai THE BRIDGE, Var 3 pakai STORYTELLING). Deklarasikan di spesifikasi.
-* CTA/CTV: Pilih CTA/CTV yang relevan dari CTA Database (acak & bedakan tiap variasi).
-* CAPTION LIMIT: Max 500 characters.
+4. KETENTUAN FORMAT KONTEN:
+${formatInstruction}
 
-5. PRE-PUBLISH CHECKLIST:
-[ ] Does the opening sound like a rigid template? Replace it with a more spontaneous hook.
-[ ] Are all the long sentences the same length? Add more variety.
-[ ] Does the writing feel too perfect? Add a slight touch of natural imperfection.
-[ ] Does the closing sound too formal? Keep it simple.
+5. RUMUS CAPTION (DWELL TIME BOOSTER & SEO):
+   Caption BUKAN hanya 1 baris kalimat malas. Rancang caption yang kaya dengan format:
+   - Baris 1: Hook caption pembuka (pemancing klik '...selengkapnya').
+   - Baris 2-4: Micro-story atau elaborasi ringkas yang memberi insight ekstra.
+   - Baris 5: Call to Conversation (pertanyaan memancing debat / curhat di kolom komentar).
+   - Baris 6: 3-5 hashtag tertarget yang relevan dengan niche (BUKAN hashtag umum seperti #viral #fyp).
 
-[TASK SPESIFIK: SCRIPT BUILDER & ATURAN FORMAT]
-${configContext}
-Jika format yang diminta adalah "Carousel", pecah naskah menjadi tepat slide yang diminta. DILARANG MENGGABUNGKAN SLIDE!
-Hasilkan TEPAT 3 (TIGA) variasi naskah final dengan kombinasi Hook, Framework, dan Angle yang BERBEDA-BEDA.
-PASTIKAN naskah padat, *punchy*, dan tidak terlalu panjang (bertele-tele) agar response JSON utuh dan tidak menyebabkan Error/Terpotong!
+6. TIGA VARIASI NASKAH DENGAN FRAMEWORK BERBEDA:
+   Hasilkan TEPAT 3 variasi naskah dengan kombinasi angle dan framework yang BERBEDA-BEDA:
+   - Variasi 1: Framework PAS (Problem - Agitate - Solution) atau THE BRIDGE (Before - After - Bridge).
+   - Variasi 2: Framework CONTRARIAN (Bongkar Mitos - Fakta Keras - Solusi Baru) atau OPEN LOOP.
+   - Variasi 3: Framework STORYTELLING (Personal Failure - Epiphany - New Habit).
 
 [OUTPUT WAJIB MURNI JSON - FORMAT HARGA MATI]
 {
   "is_error": false,
   "tahap_funnel": "TOFU/MOFU/BOFU",
-  "analisis_strategi": "Awali dengan sapaan hangat yang natural (contoh: 'Halo! Aku sudah menganalisis permintaanmu untuk ide konten.'). Setelah itu, jelaskan logikamu kenapa Framework ini dipilih. Buat simpel, to the point, dan tidak bertele-tele. Jika ada beberapa alasan, gunakan poin-poin (bullet points) yang singkat dan mudah dimengerti. Yang terpenting bahasanya tetap luwes layaknya obrolan santai dan tidak kaku seperti robot AI.",
+  "analisis_strategi": "Analisis singkat & hangat (2-3 kalimat) mengenai strategi kenapa 3 variasi ini dirancang dengan sudut pandang tersebut.",
   "variations": [
     {
       "judul": "Judul/Angle Singkat Konten",
-      "framework_digunakan": "Nama Framework (Acak dari list, TANPA NOMOR URUT)",
-      "hook_digunakan": "Nama Struktur Hook (Acak dari database, TANPA NOMOR URUT)",
-      "cta_digunakan": "Nama Struktur CTA (Acak dari database, TANPA NOMOR URUT) -> INI WAJIB DIISI!",
+      "framework_digunakan": "Nama Framework (contoh: 'Problem - Agitate - Solution')",
+      "hook_digunakan": "Nama Tipe Hook yang dipakai",
+      "cta_digunakan": "Tipe CTA yang dipakai",
       "script_sections": [
         {
-          "label": "Slide/Detik [Nomor] - [Tahap Framework]",
-          "content": "Isi naskah aktual... (Slide 1 WAJIB sangat singkat!)"
+          "label": "Slide/Detik [Nomor] - [Tahap]",
+          "content": "Isi naskah aktual sesuai instruksi format..."
         }
       ],
-      "caption": "Teks caption final lengkap dengan hashtag..."
+      "caption": "Teks caption lengkap berbobot dengan hashtag..."
     }
   ]
 }
 `;
 
-    // 100% IDENTIK DENGAN REFERENSI LAMA (Tanpa Histori Chat)
-    const userPrompt = `Ide Konten: ${promptText}`;
+    const userPrompt = `[PERMINTAAN KONTEN]
+Topik/Ide Konten: ${promptText}
+Format: ${targetFormat === 'Reels' || targetFormat === 'TikTok' ? `Reels / Short Video (${targetDuration} Detik)` : `Carousel (${targetSlides} Slide)`}${targetTone ? `\nGaya Bahasa (Tone): ${targetTone}` : ''}
+
+Tolong racik 3 (tiga) variasi naskah konten viral berbobot tinggi sesuai aturan emas di atas sekarang.`;
 
     let parsedData = await generateStructuredAiContent({
       apiKey: userRecord?.googleApiKey || undefined,
