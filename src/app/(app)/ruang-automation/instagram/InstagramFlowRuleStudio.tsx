@@ -532,7 +532,7 @@ export function InstagramFlowRuleStudio({
   const existingNodeTypes = graphState.nodes.map((n) => n.type);
 
   return (
-    <div className="relative w-full h-[calc(100vh-130px)] min-h-[680px] rounded-2xl border border-gray-200 dark:border-[#2C3246] shadow-md flex flex-col bg-[#F8FAFC] dark:bg-[#0E1528] overflow-hidden select-none">
+    <div className="relative w-full flex-1 h-full min-h-0 rounded-2xl border border-gray-200 dark:border-[#2C3246] shadow-sm flex flex-col bg-[#F8FAFC] dark:bg-[#0E1528] overflow-hidden select-none">
       {/* 1. TOP BAR */}
       <FlowTopBar
         ruleName={graphState.ruleName}

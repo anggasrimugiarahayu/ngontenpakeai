@@ -184,6 +184,19 @@ export default function RuangAutomationClient({
     }
   }, [data.rules]);
 
+  // Lock outer window scrolling when in Flow Builder mode so footer and navbar are fixed in 1 viewport capture
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (activeStudioMode === "FLOW") {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [activeStudioMode]);
+
   // Synchronize selectedPlatform with URL and dispatch automation-platform-change for ClientLayout
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -1802,7 +1815,7 @@ export default function RuangAutomationClient({
     <div
       className={`flex-1 w-full mx-auto animate-in fade-in duration-300 ${
         activeStudioMode === "FLOW"
-          ? "w-full max-w-[1720px] px-3 sm:px-6 py-4"
+          ? "w-full max-w-[1720px] px-3 sm:px-6 py-0.5 flex flex-col flex-1 h-[calc(100dvh-125px)] max-h-[calc(100dvh-125px)] overflow-hidden"
           : selectedPlatform === null
           ? "max-w-7xl p-4 md:p-8"
           : "max-w-4xl p-6 py-10 md:py-16"
@@ -1937,7 +1950,7 @@ export default function RuangAutomationClient({
         /* LEVEL 3: WORKSPACE AGEN AKTIF (MODULAR PER FITUR INSTAGRAM) */
         /* ========================================================================= */
         activeStudioMode === "FLOW" ? (
-          <div className="w-full animate-in fade-in duration-200">
+          <div className="w-full flex-1 flex flex-col h-full min-h-0 overflow-hidden animate-in fade-in duration-200">
             <InstagramFlowRuleStudio
               initialRule={flowStudioRule}
               agentAccount={account}
