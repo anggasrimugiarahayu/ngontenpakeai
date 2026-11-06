@@ -56,6 +56,8 @@ interface InstagramPhonePreviewProps {
   setSimulatedButtonId: (id: string | null) => void;
   simulatedLiveQrId: string | null;
   setSimulatedLiveQrId: (id: string | null) => void;
+  hideHeader?: boolean;
+  className?: string;
 }
 
 export function InstagramPhonePreview({
@@ -86,6 +88,8 @@ export function InstagramPhonePreview({
   setSimulatedButtonId,
   simulatedLiveQrId,
   setSimulatedLiveQrId,
+  hideHeader = false,
+  className,
 }: InstagramPhonePreviewProps) {
   const activeAccount = currentAgent || account;
   const previewUsername =
@@ -98,41 +102,48 @@ export function InstagramPhonePreview({
     activeAccount?.profilePicUrl || "/images/instagram/rcm-avatar.png";
 
   return (
-    <div className="lg:col-span-7 xl:col-span-7 bg-gray-50/70 dark:bg-black/30 p-5 md:p-6 flex flex-col justify-between overflow-y-auto">
+    <div
+      className={
+        className ||
+        "lg:col-span-7 xl:col-span-7 bg-gray-50/70 dark:bg-black/30 p-5 md:p-6 flex flex-col justify-between overflow-y-auto"
+      }
+    >
       {/* Header Pratinjau */}
-      <div className="flex items-center justify-between pb-4 border-b border-gray-200/60 dark:border-white/5">
-        <h3 className="text-sm font-bold text-gray-900 dark:text-white">
-          Pratinjau
-        </h3>
+      {!hideHeader && (
+        <div className="flex items-center justify-between pb-4 border-b border-gray-200/60 dark:border-white/5">
+          <h3 className="text-sm font-bold text-gray-900 dark:text-white">
+            Pratinjau
+          </h3>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => setIsRuleModalOpen(false)}
-            className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] text-xs font-bold text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
-          >
-            Batal
-          </button>
-          <button
-            type="button"
-            onClick={handleSaveRule}
-            disabled={isPending || !ruleFormData.name.trim()}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white text-xs font-bold shadow-sm shadow-orange-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
-          >
-            {isPending ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                <span>Menyimpan...</span>
-              </>
-            ) : (
-              <>
-                <Save className="w-3.5 h-3.5" />
-                <span>{editingRule ? "Simpan Perubahan" : "Buat Otomasi"}</span>
-              </>
-            )}
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setIsRuleModalOpen(false)}
+              className="px-3 py-1.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white hover:bg-gray-50 dark:bg-[#141B31] dark:hover:bg-[#1f2947] text-xs font-bold text-gray-700 dark:text-gray-200 transition-colors cursor-pointer"
+            >
+              Batal
+            </button>
+            <button
+              type="button"
+              onClick={handleSaveRule}
+              disabled={isPending || !ruleFormData.name.trim()}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white text-xs font-bold shadow-sm shadow-orange-500/20 transition-all hover:scale-[1.01] active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-3.5 h-3.5" />
+                  <span>{editingRule ? "Simpan Perubahan" : "Buat Otomasi"}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Switcher Tab Pratinjau: Postingan & Komentar vs Pesan DM (Disembunyikan untuk Story Mention, Live Instagram & Pesan Instagram) */}
       {!isStoryMentionTarget && !isLiveTarget && !isDmTarget && (

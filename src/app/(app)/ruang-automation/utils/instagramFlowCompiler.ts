@@ -395,7 +395,7 @@ export function buildFlowGraphFromRule(
     nodes,
     edges,
     ruleName: rule?.name || "Otomasi Komentar ke DM",
-    isActive: rule?.isActive !== undefined ? Boolean(rule.isActive) : true,
+    isActive: rule?.isActive !== undefined ? Boolean(rule.isActive) : false,
     targetOtomasi,
     postType,
     postId,

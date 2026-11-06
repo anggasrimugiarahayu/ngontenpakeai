@@ -27,7 +27,6 @@ interface FlowTopBarProps {
   onOpenPreview: () => void;
   onSetLive: () => void;
   onSaveDraft: () => void;
-  onGoToBasicBuilder: () => void;
   onBackToAutomation: () => void;
   selectedStepTitle?: string | null;
 }
@@ -44,7 +43,6 @@ export function FlowTopBar({
   onOpenPreview,
   onSetLive,
   onSaveDraft,
-  onGoToBasicBuilder,
   onBackToAutomation,
   selectedStepTitle,
 }: FlowTopBarProps) {
@@ -97,28 +95,11 @@ export function FlowTopBar({
             className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${
               isActive
                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
-                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400"
+                : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
             }`}
           >
             {isActive ? "LIVE" : "DRAFT"}
           </span>
-        </div>
-      </div>
-
-      {/* CENTER SECTION: Hint Pill */}
-      <div className="hidden xl:flex items-center justify-center shrink-0">
-        <div className="px-3.5 py-1 rounded-full bg-gray-100/80 dark:bg-[#1A233D] border border-gray-200/60 dark:border-white/5 text-[11px] font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5 shadow-2xs">
-          {selectedStepTitle ? (
-            <>
-              <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
-              <span>Mengedit: <strong>{selectedStepTitle}</strong></span>
-            </>
-          ) : (
-            <>
-              <span>👇</span>
-              <span>Klik salah satu kotak alur untuk mengedit</span>
-            </>
-          )}
         </div>
       </div>
 
@@ -130,7 +111,7 @@ export function FlowTopBar({
             <span className="animate-pulse text-orange-500">Menyimpan...</span>
           ) : (
             <>
-              <Check className="w-3.5 h-3.5 text-emerald-500" />
+              <Check className="w-3.5 h-3.5 text-gray-400 dark:text-gray-500" />
               <span>Tersimpan</span>
             </>
           )}
@@ -157,17 +138,6 @@ export function FlowTopBar({
             <Redo2 className="w-3.5 h-3.5" />
           </button>
         </div>
-
-        {/* Go to Basic Builder */}
-        <button
-          type="button"
-          onClick={onGoToBasicBuilder}
-          className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#2C3246] hover:bg-gray-50 dark:hover:bg-white/5 text-xs font-semibold text-gray-700 dark:text-gray-300 transition-colors cursor-pointer"
-          title="Buka alur ini di form Basic Studio"
-        >
-          <Sliders className="w-3.5 h-3.5 text-gray-400" />
-          <span>Ke Basic Builder</span>
-        </button>
 
         {/* Preview Button */}
         <button

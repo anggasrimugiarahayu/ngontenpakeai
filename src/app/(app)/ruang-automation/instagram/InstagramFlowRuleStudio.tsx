@@ -20,7 +20,7 @@ import {
   FlowEdge,
 } from "../utils/instagramFlowCompiler";
 import { InstagramPhonePreview } from "./InstagramPhonePreview";
-import { Modal } from "@/components/ui/Modal";
+import { X, Eye } from "lucide-react";
 
 interface InstagramFlowRuleStudioProps {
   initialRule?: any | null;
@@ -93,6 +93,10 @@ export function InstagramFlowRuleStudio({
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [isAddStepMenuOpen, setIsAddStepMenuOpen] = useState(false);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [previewTab, setPreviewTab] = useState<"COMMENT" | "DM">("DM");
+  const [simulatedFollowStep, setSimulatedFollowStep] = useState<"GATE" | "RETRY" | "VERIFIED">("GATE");
+  const [simulatedButtonId, setSimulatedButtonId] = useState<string | null>(null);
+  const [simulatedLiveQrId, setSimulatedLiveQrId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
 
   // 4. Node Dragging State
@@ -158,6 +162,7 @@ export function InstagramFlowRuleStudio({
     (e: React.MouseEvent, nodeId: string) => {
       e.stopPropagation();
       setSelectedNodeId(nodeId);
+      setIsPreviewOpen(false);
       const node = graphState.nodes.find((n) => n.id === nodeId);
       if (!node) return;
 
@@ -543,16 +548,12 @@ export function InstagramFlowRuleStudio({
         canRedo={historyIndex < history.length - 1}
         onUndo={handleUndo}
         onRedo={handleRedo}
-        onOpenPreview={() => setIsPreviewOpen(true)}
+        onOpenPreview={() => {
+          setSelectedNodeId(null);
+          setIsPreviewOpen(true);
+        }}
         onSetLive={() => handleSave(true)}
         onSaveDraft={() => handleSave(false)}
-        onGoToBasicBuilder={() => {
-          if (onGoToBasicBuilder) {
-            onGoToBasicBuilder(initialRule);
-          } else {
-            onBackToAutomation();
-          }
-        }}
         onBackToAutomation={onBackToAutomation}
         selectedStepTitle={selectedNode?.title || null}
       />
@@ -747,25 +748,45 @@ export function InstagramFlowRuleStudio({
         existingTypes={existingNodeTypes}
       />
 
-      {/* 6. INSTAGRAM PHONE PREVIEW MODAL */}
+      {/* 6. INSTAGRAM PHONE PREVIEW SIDE DRAWER */}
       {isPreviewOpen && (
-        <Modal
-          isOpen={isPreviewOpen}
-          onClose={() => setIsPreviewOpen(false)}
-          title="Pratinjau Simulasi Chat Instagram"
-          description="Uji coba tampilan interaksi respon komentar dan balon DM secara langsung"
-          className="max-w-md p-4"
-        >
-          <div className="flex justify-center py-2">
+        <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] md:w-[460px] bg-white dark:bg-[#141B31] border-l border-gray-200 dark:border-[#2C3246] shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 select-auto">
+          {/* Drawer Header */}
+          <div className="px-5 py-4 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between shrink-0 bg-white/90 dark:bg-[#141B31]/90 backdrop-blur-sm">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
+                <Eye className="w-4 h-4" />
+              </div>
+              <div>
+                <h3 className="font-bold text-sm text-gray-900 dark:text-white">
+                  Simulator Chat Instagram
+                </h3>
+                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                  Pratinjau interaksi balasan komentar & DM
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsPreviewOpen(false)}
+              className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+              title="Tutup simulator"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Drawer Body with interactive simulator */}
+          <div className="flex-1 overflow-y-auto p-4 flex justify-center items-start">
             <InstagramPhonePreview
               ruleFormData={previewFormData as any}
               setRuleFormData={() => {}}
               editingRule={null}
               isPending={false}
-              setIsRuleModalOpen={() => {}}
-              handleSaveRule={() => {}}
-              activePreviewTab="DM"
-              setActivePreviewTab={() => {}}
+              setIsRuleModalOpen={() => setIsPreviewOpen(false)}
+              handleSaveRule={() => handleSave(true)}
+              activePreviewTab={previewTab}
+              setActivePreviewTab={setPreviewTab}
               isStoryTarget={graphState.targetOtomasi.includes("Story")}
               isStoryMentionTarget={graphState.targetOtomasi === "Story Mention"}
               isLiveTarget={graphState.targetOtomasi === "Live Instagram"}
@@ -779,15 +800,17 @@ export function InstagramFlowRuleStudio({
               selectedPost={defaultPost}
               selectedStory={activeStories[0] || null}
               feedPosts={feedPosts}
-              simulatedFollowStep="GATE"
-              setSimulatedFollowStep={() => {}}
-              simulatedButtonId={null}
-              setSimulatedButtonId={() => {}}
-              simulatedLiveQrId={null}
-              setSimulatedLiveQrId={() => {}}
+              simulatedFollowStep={simulatedFollowStep}
+              setSimulatedFollowStep={setSimulatedFollowStep}
+              simulatedButtonId={simulatedButtonId}
+              setSimulatedButtonId={setSimulatedButtonId}
+              simulatedLiveQrId={simulatedLiveQrId}
+              setSimulatedLiveQrId={setSimulatedLiveQrId}
+              hideHeader={true}
+              className="w-full flex flex-col justify-start items-center"
             />
           </div>
-        </Modal>
+        </div>
       )}
     </div>
   );
