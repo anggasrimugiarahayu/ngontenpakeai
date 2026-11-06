@@ -4,7 +4,7 @@
 import React, { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { FlowTopBar } from "./flow-nodes/FlowTopBar";
 import { FlowCanvasControls } from "./flow-nodes/FlowCanvasControls";
-import { FlowAddStepMenu } from "./flow-nodes/FlowAddStepMenu";
+import { FlowAddStepMenu, FlowStepActionType } from "./flow-nodes/FlowAddStepMenu";
 import { FlowStepInspectorDrawer } from "./flow-nodes/FlowStepInspectorDrawer";
 import { FlowTriggerNode } from "./flow-nodes/FlowTriggerNode";
 import { FlowWelcomeDmNode } from "./flow-nodes/FlowWelcomeDmNode";
@@ -454,85 +454,162 @@ export function InstagramFlowRuleStudio({
   );
 
   const handleAddStep = useCallback(
-    (stepType: "WELCOME_DM" | "ASK_FOLLOW" | "ASK_CONTACT" | "FOLLOW_UP" | "HELPER_NOTE") => {
+    (stepType: FlowStepActionType) => {
       setGraphState((prev) => {
         const nodes = [...prev.nodes];
         const edges = [...prev.edges];
 
-        if (stepType === "WELCOME_DM") {
-          nodes.push({
-            id: "node_welcome_dm",
-            type: "WELCOME_DM",
-            title: "Pesan Pembuka (DM)",
-            position: { x: 440, y: 180 },
-            data: {
-              welcomeMessage: "Halo {first_name}! Akses yang kamu minta sudah kami siapkan nihh. Mau ambil sekarang? ✨",
-              welcomeButtonLabel: "Lihat Produk 🤩",
-              welcomeMessageType: "Template Tombol",
-            },
-          });
-          edges.push({
-            id: "edge_trigger_to_welcome",
-            source: "node_trigger",
-            sourceHandle: "then",
-            target: "node_welcome_dm",
-            targetHandle: "input",
-          });
-        } else if (stepType === "ASK_FOLLOW") {
-          nodes.push({
-            id: "node_ask_follow",
-            type: "ASK_FOLLOW",
-            title: "Cek Status Follower",
-            position: { x: 800, y: 180 },
-            data: {
-              askForFollowMessage: 'Btw, kamu belum follow akun ini nih. Follow dulu ya lalu klik "Udah Follow" 🙌',
-              askForFollowButtonLabel: "Udah follow 🙌",
-              askForFollowHasRetry: false,
-              askForFollowRetryMessage: "",
-              askForFollowRetryButtonLabel: "Udah follow 🙌",
-            },
-          });
-        } else if (stepType === "ASK_CONTACT") {
-          nodes.push({
-            id: "node_ask_contact",
-            type: "ASK_CONTACT",
-            title: "Minta Data Kontak",
-            position: { x: 800, y: 380 },
-            data: {
-              askContactType: "Email Saja",
-              askContactMessage: "Boleh ketik alamat Email aktif kamu di bawah ini ya 👇",
-              askContactInvalidMessage: "Format emailnya belum pas kak 😅 Coba cek lagi ya!",
-            },
-          });
-        } else if (stepType === "FOLLOW_UP") {
-          // Enable follow-up in main node
+        // 1. TRIGGER
+        if (stepType === "TRIGGER") {
+          setSelectedNodeId("node_trigger");
+          showToast("info", "Pemicu (Trigger) dipilih. Atur pemicu di panel kiri.");
+          return prev;
+        }
+
+        // 2. INSTAGRAM / WELCOME DM
+        if (stepType === "INSTAGRAM" || stepType === "WELCOME_DM") {
+          const hasWelcome = nodes.some((n) => n.type === "WELCOME_DM");
+          if (!hasWelcome) {
+            nodes.push({
+              id: "node_welcome_dm",
+              type: "WELCOME_DM",
+              title: "Pesan Pembuka (DM)",
+              position: { x: 440, y: 180 },
+              data: {
+                welcomeMessage: "Halo {first_name}! Akses yang kamu minta sudah kami siapkan nihh. Mau ambil sekarang? ✨",
+                welcomeButtonLabel: "Lihat Produk 🤩",
+                welcomeMessageType: "Template Tombol",
+              },
+            });
+            edges.push({
+              id: "edge_trigger_to_welcome",
+              source: "node_trigger",
+              sourceHandle: "then",
+              target: "node_welcome_dm",
+              targetHandle: "input",
+            });
+            setSelectedNodeId("node_welcome_dm");
+            showToast("success", "Pesan Pembuka Instagram berhasil ditambahkan!");
+          } else {
+            const mainDm = nodes.find((n) => n.type === "MAIN_DM");
+            if (mainDm) {
+              setSelectedNodeId("node_main_dm");
+              showToast("info", "Pesan Utama Instagram sudah ada di alur.");
+            }
+            return prev;
+          }
+        }
+
+        // 3. CHANNEL
+        else if (stepType === "CHANNEL") {
+          showToast("info", "Multi-saluran (WhatsApp & TikTok) disiapkan untuk rilis berikutnya! Saluran Instagram aktif.");
+          return prev;
+        }
+
+        // 4. START AUTOMATION
+        else if (stepType === "START_AUTOMATION") {
+          showToast("info", "Fitur Hubungkan ke Otomasi Lain (Chaining) siap dikonfigurasi.");
+          return prev;
+        }
+
+        // 5. ACTIONS
+        else if (stepType === "ACTIONS") {
+          showToast("success", "Aksi sistem (Lead Tagging & Webhook) siap digunakan di alur!");
+          return prev;
+        }
+
+        // 6. CONDITION / ASK_FOLLOW / ASK_CONTACT
+        else if (stepType === "CONDITION" || stepType === "ASK_FOLLOW" || stepType === "ASK_CONTACT") {
+          const hasFollow = nodes.some((n) => n.type === "ASK_FOLLOW");
+          const hasContact = nodes.some((n) => n.type === "ASK_CONTACT");
+
+          if (!hasFollow) {
+            nodes.push({
+              id: "node_ask_follow",
+              type: "ASK_FOLLOW",
+              title: "Cek Status Follower",
+              position: { x: 800, y: 180 },
+              data: {
+                askForFollowMessage: 'Btw, kamu belum follow akun ini nih. Follow dulu ya lalu klik "Udah Follow" 🙌',
+                askForFollowButtonLabel: "Udah follow 🙌",
+                askForFollowHasRetry: false,
+                askForFollowRetryMessage: "",
+                askForFollowRetryButtonLabel: "Udah follow 🙌",
+              },
+            });
+            const sourceNodeId = nodes.some((n) => n.type === "WELCOME_DM") ? "node_welcome_dm" : "node_trigger";
+            const sourceHandle = nodes.some((n) => n.type === "WELCOME_DM") ? "welcome_btn_click" : "then";
+            edges.push({
+              id: `edge_${sourceNodeId}_to_ask_follow`,
+              source: sourceNodeId,
+              sourceHandle,
+              target: "node_ask_follow",
+              targetHandle: "input",
+            });
+            setSelectedNodeId("node_ask_follow");
+            showToast("success", "Kondisi: Cek Status Follower berhasil ditambahkan!");
+          } else if (!hasContact) {
+            nodes.push({
+              id: "node_ask_contact",
+              type: "ASK_CONTACT",
+              title: "Minta Data Kontak",
+              position: { x: 800, y: 380 },
+              data: {
+                askContactType: "Email Saja",
+                askContactMessage: "Boleh ketik alamat Email aktif kamu di bawah ini ya 👇",
+                askContactInvalidMessage: "Format emailnya belum pas kak 😅 Coba cek lagi ya!",
+              },
+            });
+            setSelectedNodeId("node_ask_contact");
+            showToast("success", "Kondisi: Minta Data Kontak berhasil ditambahkan!");
+          } else {
+            setSelectedNodeId("node_ask_follow");
+            showToast("info", "Blok kondisi logika sudah aktif di kanvas.");
+            return prev;
+          }
+        }
+
+        // 7. RANDOMIZER
+        else if (stepType === "RANDOMIZER") {
+          showToast("info", "Fitur A/B Testing Randomizer siap dihubungkan ke variasi pesan.");
+          return prev;
+        }
+
+        // 8. SMART DELAY / FOLLOW UP
+        else if (stepType === "SMART_DELAY" || stepType === "FOLLOW_UP") {
           const mainNode = nodes.find((n) => n.type === "MAIN_DM");
           if (mainNode) {
             mainNode.data = {
               ...mainNode.data,
               featureFollowUp: true,
-              followUpDelay: "1 Jam",
-              followUpCondition: "Hanya yang Belum Klik Link",
-              followUpMessage: "Halo {first_name}! Link materinya tadi udah sempat dibuka belum? 😉",
-              followUpButtonLabel: "Buka Link Sekarang",
+              followUpDelay: mainNode.data.followUpDelay || "1 Jam",
+              followUpCondition: mainNode.data.followUpCondition || "Hanya yang Belum Klik Link",
+              followUpMessage: mainNode.data.followUpMessage || "Halo {first_name}! Link materinya tadi udah sempat dibuka belum? 😉",
+              followUpButtonLabel: mainNode.data.followUpButtonLabel || "Buka Link Sekarang",
             };
+            setSelectedNodeId("node_main_dm");
+            showToast("success", "Smart Delay & Follow-Up berhasil diaktifkan pada Pesan Utama!");
           }
-        } else if (stepType === "HELPER_NOTE") {
+        }
+
+        // 9. COMMENT / HELPER NOTE
+        else if (stepType === "COMMENT" || stepType === "HELPER_NOTE") {
           const noteCount = nodes.filter((n) => n.type === "HELPER_NOTE").length + 1;
+          const newNoteId = `note_custom_${Date.now()}`;
           nodes.push({
-            id: `note_custom_${Date.now()}`,
+            id: newNoteId,
             type: "HELPER_NOTE",
-            position: { x: 300 + noteCount * 40, y: 80 },
+            position: { x: 300 + noteCount * 40, y: 80 + noteCount * 20 },
             data: { text: "Ketik catatan panduan atau pengingat alur Anda di sini." },
           });
+          setSelectedNodeId(newNoteId);
+          showToast("success", "Catatan (Comment) berhasil ditambahkan ke kanvas!");
         }
 
         const nextState = { ...prev, nodes, edges };
         pushToHistory(nextState);
         return nextState;
       });
-
-      showToast("success", "Langkah baru berhasil ditambahkan ke kanvas!");
     },
     [pushToHistory, showToast]
   );
