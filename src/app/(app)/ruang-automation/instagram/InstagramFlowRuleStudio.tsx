@@ -11,6 +11,7 @@ import { FlowWelcomeDmNode } from "./flow-nodes/FlowWelcomeDmNode";
 import { FlowGatekeeperNode } from "./flow-nodes/FlowGatekeeperNode";
 import { FlowMainMessageNode } from "./flow-nodes/FlowMainMessageNode";
 import { FlowHelperNoteNode } from "./flow-nodes/FlowHelperNoteNode";
+import { FlowLogicNode } from "./flow-nodes/FlowLogicNode";
 import {
   buildFlowGraphFromRule,
   compileFlowGraphToRulePayload,
@@ -508,75 +509,127 @@ export function InstagramFlowRuleStudio({
 
         // 4. START AUTOMATION
         else if (stepType === "START_AUTOMATION") {
-          showToast("info", "Fitur Hubungkan ke Otomasi Lain (Chaining) siap dikonfigurasi.");
-          return prev;
+          const maxX = nodes.reduce((max, n) => Math.max(max, n.position.x), 820);
+          const count = nodes.filter((n) => n.type === "START_AUTOMATION").length;
+          const newNodeId = `node_start_auto_${Date.now()}`;
+          nodes.push({
+            id: newNodeId,
+            type: "START_AUTOMATION",
+            title: "Start Automation",
+            position: { x: maxX + 320, y: 180 + count * 40 },
+            data: {
+              automationName: "Pilih Otomasi...",
+            },
+          });
+          setSelectedNodeId(newNodeId);
+          showToast("success", "Kotak Start Automation berhasil ditambahkan ke kanvas!");
         }
 
         // 5. ACTIONS
         else if (stepType === "ACTIONS") {
-          showToast("success", "Aksi sistem (Lead Tagging & Webhook) siap digunakan di alur!");
-          return prev;
+          const maxX = nodes.reduce((max, n) => Math.max(max, n.position.x), 820);
+          const count = nodes.filter((n) => n.type === "ACTIONS").length;
+          const newNodeId = `node_action_${Date.now()}`;
+          nodes.push({
+            id: newNodeId,
+            type: "ACTIONS",
+            title: "Actions",
+            position: { x: maxX + 320, y: 180 + count * 40 },
+            data: {
+              actionType: "Beri Tag Lead",
+              tagName: "Lead Tertarik Promo",
+              actionLabel: "Tag: Lead Tertarik Promo",
+            },
+          });
+          setSelectedNodeId(newNodeId);
+          showToast("success", "Kotak Actions berhasil ditambahkan ke kanvas!");
         }
 
         // 6. CONDITION / ASK_FOLLOW / ASK_CONTACT
-        else if (stepType === "CONDITION" || stepType === "ASK_FOLLOW" || stepType === "ASK_CONTACT") {
-          const hasFollow = nodes.some((n) => n.type === "ASK_FOLLOW");
-          const hasContact = nodes.some((n) => n.type === "ASK_CONTACT");
-
-          if (!hasFollow) {
-            nodes.push({
-              id: "node_ask_follow",
-              type: "ASK_FOLLOW",
-              title: "Cek Status Follower",
-              position: { x: 800, y: 180 },
-              data: {
-                askForFollowMessage: 'Btw, kamu belum follow akun ini nih. Follow dulu ya lalu klik "Udah Follow" 🙌',
-                askForFollowButtonLabel: "Udah follow 🙌",
-                askForFollowHasRetry: false,
-                askForFollowRetryMessage: "",
-                askForFollowRetryButtonLabel: "Udah follow 🙌",
-              },
-            });
-            const sourceNodeId = nodes.some((n) => n.type === "WELCOME_DM") ? "node_welcome_dm" : "node_trigger";
-            const sourceHandle = nodes.some((n) => n.type === "WELCOME_DM") ? "welcome_btn_click" : "then";
-            edges.push({
-              id: `edge_${sourceNodeId}_to_ask_follow`,
-              source: sourceNodeId,
-              sourceHandle,
-              target: "node_ask_follow",
-              targetHandle: "input",
-            });
-            setSelectedNodeId("node_ask_follow");
-            showToast("success", "Kondisi: Cek Status Follower berhasil ditambahkan!");
-          } else if (!hasContact) {
-            nodes.push({
-              id: "node_ask_contact",
-              type: "ASK_CONTACT",
-              title: "Minta Data Kontak",
-              position: { x: 800, y: 380 },
-              data: {
-                askContactType: "Email Saja",
-                askContactMessage: "Boleh ketik alamat Email aktif kamu di bawah ini ya 👇",
-                askContactInvalidMessage: "Format emailnya belum pas kak 😅 Coba cek lagi ya!",
-              },
-            });
-            setSelectedNodeId("node_ask_contact");
-            showToast("success", "Kondisi: Minta Data Kontak berhasil ditambahkan!");
-          } else {
-            setSelectedNodeId("node_ask_follow");
-            showToast("info", "Blok kondisi logika sudah aktif di kanvas.");
-            return prev;
-          }
+        else if (stepType === "CONDITION") {
+          const maxX = nodes.reduce((max, n) => Math.max(max, n.position.x), 820);
+          const count = nodes.filter((n) => n.type === "CONDITION").length;
+          const newNodeId = `node_condition_${Date.now()}`;
+          nodes.push({
+            id: newNodeId,
+            type: "CONDITION",
+            title: "Condition",
+            position: { x: maxX + 320, y: 180 + count * 40 },
+            data: {
+              conditionType: "Cek Status Follower",
+              conditionLabel: "Cek Status Follower",
+            },
+          });
+          setSelectedNodeId(newNodeId);
+          showToast("success", "Kotak Condition berhasil ditambahkan ke kanvas!");
+        } else if (stepType === "ASK_FOLLOW") {
+          nodes.push({
+            id: "node_ask_follow",
+            type: "ASK_FOLLOW",
+            title: "Cek Status Follower",
+            position: { x: 800, y: 180 },
+            data: {
+              askForFollowMessage: 'Btw, kamu belum follow akun ini nih. Follow dulu ya lalu klik "Udah Follow" 🙌',
+              askForFollowButtonLabel: "Udah follow 🙌",
+              askForFollowHasRetry: false,
+              askForFollowRetryMessage: "",
+              askForFollowRetryButtonLabel: "Udah follow 🙌",
+            },
+          });
+          setSelectedNodeId("node_ask_follow");
+          showToast("success", "Kondisi: Cek Status Follower berhasil ditambahkan!");
+        } else if (stepType === "ASK_CONTACT") {
+          nodes.push({
+            id: "node_ask_contact",
+            type: "ASK_CONTACT",
+            title: "Minta Data Kontak",
+            position: { x: 800, y: 380 },
+            data: {
+              askContactType: "Email Saja",
+              askContactMessage: "Boleh ketik alamat Email aktif kamu di bawah ini ya 👇",
+              askContactInvalidMessage: "Format emailnya belum pas kak 😅 Coba cek lagi ya!",
+            },
+          });
+          setSelectedNodeId("node_ask_contact");
+          showToast("success", "Kondisi: Minta Data Kontak berhasil ditambahkan!");
         }
 
         // 7. RANDOMIZER
         else if (stepType === "RANDOMIZER") {
-          showToast("info", "Fitur A/B Testing Randomizer siap dihubungkan ke variasi pesan.");
-          return prev;
+          const maxX = nodes.reduce((max, n) => Math.max(max, n.position.x), 820);
+          const count = nodes.filter((n) => n.type === "RANDOMIZER").length;
+          const newNodeId = `node_randomizer_${Date.now()}`;
+          nodes.push({
+            id: newNodeId,
+            type: "RANDOMIZER",
+            title: "Randomizer",
+            position: { x: maxX + 320, y: 180 + count * 40 },
+            data: {
+              splitA: 50,
+              splitB: 50,
+            },
+          });
+          setSelectedNodeId(newNodeId);
+          showToast("success", "Kotak Randomizer (A/B Test) berhasil ditambahkan ke kanvas!");
         }
 
         // 8. SMART DELAY / FOLLOW UP
-        else if (stepType === "SMART_DELAY" || stepType === "FOLLOW_UP") {
+        else if (stepType === "SMART_DELAY") {
+          const maxX = nodes.reduce((max, n) => Math.max(max, n.position.x), 820);
+          const count = nodes.filter((n) => n.type === "SMART_DELAY").length;
+          const newNodeId = `node_delay_${Date.now()}`;
+          nodes.push({
+            id: newNodeId,
+            type: "SMART_DELAY",
+            title: "Smart Delay",
+            position: { x: maxX + 320, y: 180 + count * 40 },
+            data: {
+              delay: "23 Hours",
+            },
+          });
+          setSelectedNodeId(newNodeId);
+          showToast("success", "Kotak Smart Delay berhasil ditambahkan ke kanvas!");
+        } else if (stepType === "FOLLOW_UP") {
           const mainNode = nodes.find((n) => n.type === "MAIN_DM");
           if (mainNode) {
             mainNode.data = {
@@ -680,14 +733,20 @@ export function InstagramFlowRuleStudio({
         const isTrigger = sourceNode.type === "TRIGGER";
         const isWelcome = sourceNode.type === "WELCOME_DM";
         const isGate = sourceNode.type === "ASK_FOLLOW" || sourceNode.type === "ASK_CONTACT";
+        const isLogic = ["ACTIONS", "START_AUTOMATION", "CONDITION", "SMART_DELAY", "RANDOMIZER"].includes(sourceNode.type);
 
-        const sourceWidth = isTrigger ? 320 : isWelcome ? 288 : isGate ? 288 : 320;
+        const sourceWidth = isTrigger ? 320 : isWelcome ? 288 : isGate ? 288 : isLogic ? 280 : 320;
         const sourceX = sourceNode.position.x + sourceWidth;
-        const sourceY = sourceNode.position.y + (isTrigger ? 190 : isWelcome ? 130 : 120);
+        let sourceY = sourceNode.position.y + (isTrigger ? 190 : isWelcome ? 130 : isGate ? 120 : isLogic ? 100 : 120);
+
+        if (sourceNode.type === "RANDOMIZER") {
+          sourceY = sourceNode.position.y + (edge.sourceHandle === "split_b" ? 95 : 60);
+        }
 
         // Target handle coordinates
+        const isTargetLogic = ["ACTIONS", "START_AUTOMATION", "CONDITION", "SMART_DELAY", "RANDOMIZER"].includes(targetNode.type);
         const targetX = targetNode.position.x;
-        const targetY = targetNode.position.y + 110;
+        const targetY = targetNode.position.y + (isTargetLogic ? 65 : 110);
 
         const dx = Math.max(Math.abs(targetX - sourceX) * 0.5, 40);
         const pathData = `M ${sourceX} ${sourceY} C ${sourceX + dx} ${sourceY}, ${targetX - dx} ${targetY}, ${targetX} ${targetY}`;
@@ -710,9 +769,14 @@ export function InstagramFlowRuleStudio({
     const sourceNode = graphState.nodes.find((n) => n.id === connectingPort.sourceNodeId);
     if (!sourceNode) return null;
 
-    const sourceWidth = sourceNode.type === "TRIGGER" ? 320 : 288;
+    const isTrigger = sourceNode.type === "TRIGGER";
+    const isLogic = ["ACTIONS", "START_AUTOMATION", "CONDITION", "SMART_DELAY", "RANDOMIZER"].includes(sourceNode.type);
+    const sourceWidth = isTrigger ? 320 : isLogic ? 280 : 288;
     const x1 = sourceNode.position.x + sourceWidth;
-    const y1 = sourceNode.position.y + 120;
+    let y1 = sourceNode.position.y + (isLogic ? 100 : 120);
+    if (sourceNode.type === "RANDOMIZER") {
+      y1 = sourceNode.position.y + (connectingPort.sourceHandle === "split_b" ? 95 : 60);
+    }
     const x2 = connectingPort.cursorX;
     const y2 = connectingPort.cursorY;
     const dx = Math.max(Math.abs(x2 - x1) * 0.5, 40);
@@ -891,6 +955,19 @@ export function InstagramFlowRuleStudio({
                       data={node.data as any}
                       isSelected={isSelected}
                       onSelect={() => setSelectedNodeId(node.id)}
+                      onMouseDownDrag={(e) => handleNodeMouseDownDrag(e, node.id)}
+                      onPortMouseDown={(e, port) => handlePortMouseDown(e, node.id, port)}
+                    />
+                  )}
+
+                  {["ACTIONS", "START_AUTOMATION", "CONDITION", "SMART_DELAY", "RANDOMIZER"].includes(node.type) && (
+                    <FlowLogicNode
+                      id={node.id}
+                      type={node.type as any}
+                      data={node.data}
+                      isSelected={isSelected}
+                      onSelect={() => setSelectedNodeId(node.id)}
+                      onDelete={() => handleDeleteNode(node.id)}
                       onMouseDownDrag={(e) => handleNodeMouseDownDrag(e, node.id)}
                       onPortMouseDown={(e, port) => handlePortMouseDown(e, node.id, port)}
                     />

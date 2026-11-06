@@ -63,6 +63,16 @@ export function FlowStepInspectorDrawer({
               ? "📧 Minta Data Kontak"
               : type === "MAIN_DM"
               ? "🚀 Pesan Utama & Follow-Up"
+              : type === "ACTIONS"
+              ? "⚡ Konfigurasi Actions"
+              : type === "START_AUTOMATION"
+              ? "➔ Hubungkan ke Otomasi Lain"
+              : type === "CONDITION"
+              ? "⑂ Percabangan Condition"
+              : type === "SMART_DELAY"
+              ? "🕒 Pengaturan Smart Delay"
+              : type === "RANDOMIZER"
+              ? "🔀 Pengaturan Randomizer (A/B Test)"
               : "📝 Catatan Panduan"}
           </h3>
         </div>
@@ -513,6 +523,180 @@ export function FlowStepInspectorDrawer({
               onChange={(e) => handleChange("text", e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-xl border border-amber-300 dark:border-amber-800/40 bg-amber-50/50 dark:bg-amber-950/20 text-xs text-amber-950 dark:text-amber-100 leading-relaxed focus:outline-none"
             />
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* 7. INSPECTOR: ACTIONS NODE */}
+        {/* ============================================================== */}
+        {type === "ACTIONS" && (
+          <div className="space-y-4 animate-in fade-in duration-150">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                Pilih Jenis Tindakan (Action)
+              </label>
+              <select
+                value={data.actionType || "Beri Tag Lead"}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onUpdateNodeData(id, {
+                    ...data,
+                    actionType: val,
+                    actionLabel: val === "Beri Tag Lead" ? `Tag: ${data.tagName || "Lead Tertarik"}` : val,
+                  });
+                }}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs font-medium text-gray-900 dark:text-white"
+              >
+                <option value="Beri Tag Lead">🏷️ Tambahkan Tag / Label Lead</option>
+                <option value="Simpan ke Kontak">📒 Simpan Data ke Kontak / CRM</option>
+                <option value="Kirim Notifikasi Tim">🔔 Kirim Notifikasi ke Admin/Tim</option>
+                <option value="Tandai Chat Selesai">✅ Tandai Percakapan Selesai</option>
+              </select>
+            </div>
+
+            {(!data.actionType || data.actionType === "Beri Tag Lead") && (
+              <div className="space-y-1.5">
+                <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                  Nama Tag / Label
+                </label>
+                <input
+                  type="text"
+                  value={data.tagName || "Lead Tertarik Promo"}
+                  onChange={(e) => {
+                    const tag = e.target.value;
+                    onUpdateNodeData(id, {
+                      ...data,
+                      tagName: tag,
+                      actionLabel: `Tag: ${tag}`,
+                    });
+                  }}
+                  placeholder="Contoh: Hot Lead, Minat Ebook, dsb."
+                  className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs font-medium text-gray-900 dark:text-white"
+                />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* 8. INSPECTOR: START AUTOMATION NODE */}
+        {/* ============================================================== */}
+        {type === "START_AUTOMATION" && (
+          <div className="space-y-4 animate-in fade-in duration-150">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                Pilih Otomasi Target (Chaining)
+              </label>
+              <input
+                type="text"
+                value={data.automationName || ""}
+                onChange={(e) => handleChange("automationName", e.target.value)}
+                placeholder="Ketik nama alur atau ID otomasi tujuan"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs font-medium text-gray-900 dark:text-white"
+              />
+              <p className="text-[11px] text-gray-500">
+                Alur ini akan melanjutkan eksekusi ke aturan otomasi lain yang ditentukan.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* 9. INSPECTOR: CONDITION NODE */}
+        {/* ============================================================== */}
+        {type === "CONDITION" && (
+          <div className="space-y-4 animate-in fade-in duration-150">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                Kriteria Kondisi Percabangan
+              </label>
+              <select
+                value={data.conditionType || "Cek Status Follower"}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  onUpdateNodeData(id, {
+                    ...data,
+                    conditionType: val,
+                    conditionLabel: val,
+                  });
+                }}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs font-medium text-gray-900 dark:text-white"
+              >
+                <option value="Cek Status Follower">🛡️ Apakah Audiens Sudah Follow Akun?</option>
+                <option value="Cek Data Kontak">📧 Apakah Audiens Sudah Punya Email/WA?</option>
+                <option value="Cek Tag Khusus">🏷️ Apakah Audiens Memiliki Tag Tertentu?</option>
+              </select>
+            </div>
+            <div className="p-3 rounded-xl bg-cyan-50/50 dark:bg-cyan-950/20 border border-cyan-100 dark:border-cyan-900/30 text-[11px] text-cyan-800 dark:text-cyan-200">
+              💡 Cabang alur akan dipisahkan menjadi dua: jalur <strong>YES (Terpenuhi)</strong> dan jalur <strong>NO (Belum Terpenuhi)</strong>.
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* 10. INSPECTOR: SMART DELAY NODE */}
+        {/* ============================================================== */}
+        {type === "SMART_DELAY" && (
+          <div className="space-y-4 animate-in fade-in duration-150">
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                Waktu Tunggu / Jeda (Delay)
+              </label>
+              <select
+                value={data.delay || "23 Hours"}
+                onChange={(e) => handleChange("delay", e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs font-medium text-gray-900 dark:text-white"
+              >
+                <option value="15 Menit">15 Menit</option>
+                <option value="1 Jam">1 Jam</option>
+                <option value="3 Jam">3 Jam</option>
+                <option value="6 Jam">6 Jam</option>
+                <option value="12 Jam">12 Jam</option>
+                <option value="23 Hours">23 Jam (Optimal Meta 24h Window)</option>
+                <option value="1 Hari">1 Hari</option>
+              </select>
+              <p className="text-[11px] text-gray-500">
+                Server akan menahan eksekusi selama durasi di atas sebelum melanjutkan ke langkah berikutnya.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* 11. INSPECTOR: RANDOMIZER NODE */}
+        {/* ============================================================== */}
+        {type === "RANDOMIZER" && (
+          <div className="space-y-4 animate-in fade-in duration-150">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-gray-800 dark:text-gray-200">
+                  Pembagian Trafik A/B Test
+                </label>
+                <span className="text-xs font-bold text-purple-600 dark:text-purple-400">
+                  {data.splitA ?? 50}% / {100 - (data.splitA ?? 50)}%
+                </span>
+              </div>
+              <input
+                type="range"
+                min={10}
+                max={90}
+                step={5}
+                value={data.splitA ?? 50}
+                onChange={(e) => {
+                  const val = Number(e.target.value);
+                  onUpdateNodeData(id, {
+                    ...data,
+                    splitA: val,
+                    splitB: 100 - val,
+                  });
+                }}
+                className="w-full accent-purple-600 cursor-pointer"
+              />
+              <div className="flex justify-between text-[11px] text-gray-400">
+                <span>Jalur A: {data.splitA ?? 50}%</span>
+                <span>Jalur B: {100 - (data.splitA ?? 50)}%</span>
+              </div>
+            </div>
           </div>
         )}
       </div>

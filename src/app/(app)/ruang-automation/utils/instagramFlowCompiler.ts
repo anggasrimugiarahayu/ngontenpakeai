@@ -8,7 +8,18 @@ export interface FlowNodePosition {
 
 export interface FlowNodeData {
   id: string;
-  type: "TRIGGER" | "WELCOME_DM" | "ASK_FOLLOW" | "ASK_CONTACT" | "MAIN_DM" | "HELPER_NOTE";
+  type:
+    | "TRIGGER"
+    | "WELCOME_DM"
+    | "ASK_FOLLOW"
+    | "ASK_CONTACT"
+    | "MAIN_DM"
+    | "HELPER_NOTE"
+    | "ACTIONS"
+    | "START_AUTOMATION"
+    | "CONDITION"
+    | "SMART_DELAY"
+    | "RANDOMIZER";
   title?: string;
   position: FlowNodePosition;
   data: Record<string, any>;
@@ -391,6 +402,24 @@ export function buildFlowGraphFromRule(
     targetHandle: "input",
   });
 
+  // Restore any saved logic nodes (ACTIONS, START_AUTOMATION, CONDITION, SMART_DELAY, RANDOMIZER)
+  if (Array.isArray(parsedConfig.flowMeta?.logicNodes)) {
+    for (const logicNode of parsedConfig.flowMeta.logicNodes) {
+      if (!nodes.some((n) => n.id === logicNode.id)) {
+        nodes.push(logicNode);
+      }
+    }
+  }
+
+  // Restore custom edges if present
+  if (Array.isArray(parsedConfig.flowMeta?.edges) && parsedConfig.flowMeta.edges.length > 0) {
+    for (const savedEdge of parsedConfig.flowMeta.edges) {
+      if (!edges.some((e) => e.id === savedEdge.id)) {
+        edges.push(savedEdge);
+      }
+    }
+  }
+
   return {
     nodes,
     edges,
@@ -444,6 +473,11 @@ export function compileFlowGraphToRulePayload(
   const firstButton = mainData.buttons?.[0];
   const buttonText = firstButton?.label ? String(firstButton.label).trim() : null;
   const buttonUrl = firstButton?.url ? String(firstButton.url).trim() : null;
+
+  // Extract all custom logic nodes (ACTIONS, START_AUTOMATION, CONDITION, SMART_DELAY, RANDOMIZER)
+  const logicNodes = graphState.nodes.filter((n) =>
+    ["ACTIONS", "START_AUTOMATION", "CONDITION", "SMART_DELAY", "RANDOMIZER"].includes(n.type)
+  );
 
   const extendedConfig: Record<string, any> = {
     builderMode: "FLOW",
@@ -504,6 +538,7 @@ export function compileFlowGraphToRulePayload(
       version: 1,
       nodePositions,
       edges: graphState.edges,
+      logicNodes,
       lastSavedAt: new Date().toISOString(),
     },
   };
