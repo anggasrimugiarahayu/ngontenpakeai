@@ -88,6 +88,31 @@ export function InstagramFlowRuleStudio({
   const [zoom, setZoom] = useState(1);
   const [isPanning, setIsPanning] = useState(false);
   const panStartRef = useRef<{ mouseX: number; mouseY: number; startPanX: number; startPanY: number } | null>(null);
+  const touchStateRef = useRef<{
+    mode: "none" | "pan" | "pinch";
+    startX: number;
+    startY: number;
+    startPanX: number;
+    startPanY: number;
+    initialDistance: number;
+    initialZoom: number;
+  }>({
+    mode: "none",
+    startX: 0,
+    startY: 0,
+    startPanX: 0,
+    startPanY: 0,
+    initialDistance: 0,
+    initialZoom: 1,
+  });
+
+  // Responsive initial framing for mobile devices
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth < 640) {
+      setZoom(0.65);
+      setPan({ x: 20, y: 30 });
+    }
+  }, []);
 
   // 3. Selection & Inspector Drawer State
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
@@ -174,6 +199,45 @@ export function InstagramFlowRuleStudio({
       };
     }
   }, [pan]);
+
+  // Touch event handlers for mobile panning & pinch-zoom
+  const handleCanvasTouchStart = useCallback(
+    (e: React.TouchEvent) => {
+      const target = e.target as HTMLElement;
+      if (target && target.closest("[data-flow-node]")) {
+        return;
+      }
+
+      if (e.touches.length === 1) {
+        const touch = e.touches[0];
+        touchStateRef.current = {
+          mode: "pan",
+          startX: touch.clientX,
+          startY: touch.clientY,
+          startPanX: pan.x,
+          startPanY: pan.y,
+          initialDistance: 0,
+          initialZoom: zoom,
+        };
+        setIsPanning(true);
+      } else if (e.touches.length === 2) {
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        touchStateRef.current = {
+          mode: "pinch",
+          startX: (t1.clientX + t2.clientX) / 2,
+          startY: (t1.clientY + t2.clientY) / 2,
+          startPanX: pan.x,
+          startPanY: pan.y,
+          initialDistance: dist,
+          initialZoom: zoom,
+        };
+        setIsPanning(false);
+      }
+    },
+    [pan, zoom]
+  );
 
   const handleNodeMouseDownDrag = useCallback(
     (e: React.MouseEvent, nodeId: string) => {
@@ -266,11 +330,48 @@ export function InstagramFlowRuleStudio({
       }
     };
 
+    const handleWindowTouchMove = (e: TouchEvent) => {
+      if (touchStateRef.current.mode === "pan" && e.touches.length === 1) {
+        const touch = e.touches[0];
+        const dx = touch.clientX - touchStateRef.current.startX;
+        const dy = touch.clientY - touchStateRef.current.startY;
+        setPan({
+          x: Math.round(touchStateRef.current.startPanX + dx),
+          y: Math.round(touchStateRef.current.startPanY + dy),
+        });
+      } else if (touchStateRef.current.mode === "pinch" && e.touches.length === 2) {
+        const t1 = e.touches[0];
+        const t2 = e.touches[1];
+        const dist = Math.hypot(t1.clientX - t2.clientX, t1.clientY - t2.clientY);
+        if (touchStateRef.current.initialDistance > 0) {
+          const scale = dist / touchStateRef.current.initialDistance;
+          const nextZoom = Math.min(
+            Math.max(touchStateRef.current.initialZoom * scale, 0.35),
+            1.8
+          );
+          setZoom(Number(nextZoom.toFixed(2)));
+        }
+      }
+    };
+
+    const handleWindowTouchEnd = () => {
+      if (touchStateRef.current.mode !== "none") {
+        touchStateRef.current.mode = "none";
+        setIsPanning(false);
+      }
+    };
+
     window.addEventListener("mousemove", handleMouseMove);
     window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("touchmove", handleWindowTouchMove, { passive: true });
+    window.addEventListener("touchend", handleWindowTouchEnd);
+    window.addEventListener("touchcancel", handleWindowTouchEnd);
     return () => {
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("touchmove", handleWindowTouchMove);
+      window.removeEventListener("touchend", handleWindowTouchEnd);
+      window.removeEventListener("touchcancel", handleWindowTouchEnd);
     };
   }, [isPanning, draggingNodeId, connectingPort, zoom, pan, graphState, pushToHistory]);
 
@@ -577,7 +678,8 @@ export function InstagramFlowRuleStudio({
         ref={canvasRef}
         onWheel={handleWheel}
         onMouseDown={handleCanvasMouseDown}
-        className={`relative flex-1 w-full h-full overflow-hidden cursor-default ${
+        onTouchStart={handleCanvasTouchStart}
+        className={`relative flex-1 w-full h-full overflow-hidden cursor-default touch-none ${
           isPanning ? "cursor-grabbing" : ""
         }`}
         style={{
@@ -663,6 +765,7 @@ export function InstagramFlowRuleStudio({
               return (
                 <div
                   key={node.id}
+                  data-flow-node="true"
                   style={{
                     position: "absolute",
                     left: `${node.position.x}px`,

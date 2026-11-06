@@ -51,21 +51,21 @@ export function FlowTopBar({
   const [isEditingTitle, setIsEditingTitle] = useState(false);
 
   return (
-    <header className="h-14 px-4 sm:px-6 bg-white dark:bg-[#141B31] border-b border-gray-200 dark:border-[#2C3246] flex items-center justify-between z-40 select-none shadow-xs">
+    <header className="h-14 px-3 sm:px-6 bg-white dark:bg-[#141B31] border-b border-gray-200 dark:border-[#2C3246] flex items-center justify-between z-40 select-none shadow-xs">
       {/* LEFT SECTION: Back & Editable Breadcrumb */}
-      <div className="flex items-center gap-3 min-w-0">
+      <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1 sm:flex-initial">
         <button
           type="button"
           onClick={onBackToAutomation}
-          className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer"
+          className="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/5 transition-colors cursor-pointer shrink-0"
           title="Kembali ke Ruang Automation"
         >
           <ArrowLeft className="w-4 h-4" />
         </button>
 
-        <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
-          <span className="hidden sm:inline font-medium">Automations</span>
-          <ChevronRight className="w-3.5 h-3.5 hidden sm:inline text-gray-400" />
+        <div className="flex items-center gap-1.5 sm:gap-2 text-xs text-gray-500 dark:text-gray-400 min-w-0">
+          <span className="hidden sm:inline font-medium shrink-0">Automations</span>
+          <ChevronRight className="w-3.5 h-3.5 hidden sm:inline text-gray-400 shrink-0" />
 
           {/* Editable Title */}
           {isEditingTitle ? (
@@ -78,13 +78,13 @@ export function FlowTopBar({
               onKeyDown={(e) => {
                 if (e.key === "Enter") setIsEditingTitle(false);
               }}
-              className="px-2 py-0.5 rounded border border-orange-500 text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-[#0A1128] focus:outline-none max-w-[200px] sm:max-w-[260px]"
+              className="px-2 py-0.5 rounded border border-orange-500 text-xs font-bold text-gray-900 dark:text-white bg-white dark:bg-[#0A1128] focus:outline-none max-w-[110px] xs:max-w-[140px] sm:max-w-[220px]"
             />
           ) : (
             <button
               type="button"
               onClick={() => setIsEditingTitle(true)}
-              className="flex items-center gap-1.5 font-bold text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors max-w-[180px] sm:max-w-[240px] md:max-w-[320px] truncate"
+              className="flex items-center gap-1 sm:gap-1.5 font-bold text-gray-900 dark:text-white hover:text-orange-600 dark:hover:text-orange-400 transition-colors max-w-[100px] xs:max-w-[130px] sm:max-w-[220px] md:max-w-[320px] truncate min-w-0"
               title="Klik untuk ubah nama alur"
             >
               <span className="truncate">{ruleName || "Otomasi Tanpa Nama"}</span>
@@ -94,7 +94,7 @@ export function FlowTopBar({
 
           {/* Status Badge */}
           <span
-            className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shrink-0 ${
+            className={`px-1.5 sm:px-2 py-0.5 rounded-full text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shrink-0 ${
               isActive
                 ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
                 : "bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700"
@@ -106,9 +106,9 @@ export function FlowTopBar({
       </div>
 
       {/* RIGHT SECTION: Controls & Actions */}
-      <div className="flex items-center gap-2 sm:gap-2.5">
+      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0">
         {/* Saved Status Indicator */}
-        <div className="hidden sm:flex items-center gap-1 text-[11px] font-semibold text-gray-400 dark:text-gray-500 mr-1">
+        <div className="hidden sm:flex items-center gap-1 text-[11px] font-semibold text-gray-400 dark:text-gray-500 mr-1 shrink-0">
           {isSaving ? (
             <span className="animate-pulse text-orange-500">Menyimpan...</span>
           ) : (
@@ -145,15 +145,15 @@ export function FlowTopBar({
         <button
           type="button"
           onClick={onOpenPreview}
-          className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer ${
+          className={`px-2 sm:px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition-colors shadow-2xs shrink-0 cursor-pointer ${
             isPreviewOpen
               ? "bg-orange-500/10 border-orange-500/40 text-orange-600 dark:text-orange-400"
               : "border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-white/5 text-gray-800 dark:text-gray-200"
           }`}
           title={isPreviewOpen ? "Tutup Simulator Chat Instagram" : "Buka Simulator Chat Instagram"}
         >
-          <Eye className={`w-3.5 h-3.5 ${isPreviewOpen ? "text-orange-500" : "text-gray-500"}`} />
-          <span>Preview</span>
+          <Eye className={`w-4 h-4 sm:w-3.5 sm:h-3.5 shrink-0 ${isPreviewOpen ? "text-orange-500" : "text-gray-500"}`} />
+          <span className="hidden sm:inline">Preview</span>
         </button>
 
         {/* Set Live Primary Action */}
@@ -161,9 +161,9 @@ export function FlowTopBar({
           type="button"
           disabled={isSaving}
           onClick={onSetLive}
-          className="px-4 py-1.5 rounded-lg bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm shadow-orange-500/25 active:scale-95 disabled:opacity-60 cursor-pointer"
+          className="px-3 sm:px-4 py-1.5 rounded-lg bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-sm shadow-orange-500/25 active:scale-95 disabled:opacity-60 shrink-0 whitespace-nowrap cursor-pointer"
         >
-          <Zap className="w-3.5 h-3.5 fill-white" />
+          <Zap className="w-3.5 h-3.5 fill-white shrink-0" />
           <span>{isActive ? "Update Live" : "Set Live"}</span>
         </button>
       </div>
