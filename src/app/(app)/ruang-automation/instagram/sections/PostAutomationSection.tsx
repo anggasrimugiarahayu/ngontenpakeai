@@ -214,12 +214,19 @@ export function PostRuleCard({
         <div className="space-y-2 sm:space-y-2.5">
           {/* Baris 1: Judul & Menu Titik Tiga */}
           <div className="flex items-start justify-between gap-2">
-            <h3
-              className="text-base sm:text-lg font-bold leading-tight tracking-tight text-gray-900 dark:text-white line-clamp-1 flex-1"
-              title={rule.name}
-            >
-              {rule.name}
-            </h3>
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <h3
+                className="text-base sm:text-lg font-bold leading-tight tracking-tight text-gray-900 dark:text-white line-clamp-1 truncate"
+                title={rule.name}
+              >
+                {rule.name}
+              </h3>
+              {(ruleConfig?.builderMode === "FLOW" || ruleConfig?.flowMeta?.builderMode === "FLOW") && (
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0">
+                  FLOW
+                </span>
+              )}
+            </div>
 
             {/* Menu Titik Tiga Vertikal */}
             <div className="relative rule-dropdown-menu shrink-0 ml-1">

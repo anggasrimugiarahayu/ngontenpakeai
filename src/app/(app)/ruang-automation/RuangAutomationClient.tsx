@@ -71,6 +71,7 @@ const InstagramRuleStudioModal = dynamic(
     ),
   { ssr: false }
 );
+import { AutomationBuilderChoiceModal } from "./components/AutomationBuilderChoiceModal";
 import {
   MessageButtonItem,
   MessageCarouselSlideItem,
@@ -354,6 +355,7 @@ export default function RuangAutomationClient({
   const [isEditAgentModalOpen, setIsEditAgentModalOpen] = useState(false);
   const [editingAgent, setEditingAgent] = useState<{ id: string; name: string } | null>(null);
   const [editAgentName, setEditAgentName] = useState("");
+  const [isBuilderChoiceModalOpen, setIsBuilderChoiceModalOpen] = useState(false);
 
   // Create New Agent
   const handleCreateAgent = async (e: React.FormEvent) => {
@@ -859,6 +861,14 @@ export default function RuangAutomationClient({
     }
   };
 
+  const handleOpenAddRuleChoiceModal = () => {
+    if (!isAccountLinked) {
+      showToast("error", "Silakan hubungkan akun Instagram terlebih dahulu untuk membuat aturan automasi.");
+      return;
+    }
+    setIsBuilderChoiceModalOpen(true);
+  };
+
   const handleOpenAddRuleModal = () => {
     if (!isAccountLinked) {
       showToast("error", "Silakan hubungkan akun Instagram terlebih dahulu untuk membuat aturan automasi.");
@@ -978,8 +988,24 @@ export default function RuangAutomationClient({
   };
 
   const handleOpenEditRuleModal = (rule: any) => {
-    setEditingRule(rule);
     const config = parseClientRuleConfig(rule.dmMessage);
+    if (config?.builderMode === "FLOW" || config?.flowMeta?.builderMode === "FLOW") {
+      const agentIdParam = selectedAgentId || account?.id;
+      if (agentIdParam) {
+        router.push(
+          `/ruang-automation/flow-builder?agentId=${encodeURIComponent(
+            agentIdParam
+          )}&ruleId=${encodeURIComponent(rule.id)}`
+        );
+      } else {
+        router.push(
+          `/ruang-automation/flow-builder?ruleId=${encodeURIComponent(rule.id)}`
+        );
+      }
+      return;
+    }
+
+    setEditingRule(rule);
 
     const isDirectImg =
       typeof rule.buttonUrl === "string" &&
@@ -2016,7 +2042,7 @@ export default function RuangAutomationClient({
 
                     {/* Buat Automation Button */}
                     <button
-                      onClick={handleOpenAddRuleModal}
+                      onClick={handleOpenAddRuleChoiceModal}
                       className="justify-center bg-[#f97316] hover:bg-[#ea580c] dark:bg-[#f97316] dark:hover:bg-[#fb923c] text-white px-4 py-2.5 rounded-lg text-xs sm:text-sm font-bold shadow-sm shadow-orange-500/20 transition-all flex items-center gap-1.5 whitespace-nowrap"
                     >
                       <Plus className="w-4 h-4" />
@@ -2083,7 +2109,7 @@ export default function RuangAutomationClient({
                     handleOpenEditRuleModal={handleOpenEditRuleModal}
                     handleDeleteRule={handleDeleteRule}
                     setDetailRuleId={setDetailRuleId}
-                    handleOpenAddRuleModal={handleOpenAddRuleModal}
+                    handleOpenAddRuleModal={handleOpenAddRuleChoiceModal}
                   />
                 )}
 
@@ -2101,7 +2127,7 @@ export default function RuangAutomationClient({
                     handleOpenEditRuleModal={handleOpenEditRuleModal}
                     handleDeleteRule={handleDeleteRule}
                     setDetailRuleId={setDetailRuleId}
-                    handleOpenAddRuleModal={handleOpenAddRuleModal}
+                    handleOpenAddRuleModal={handleOpenAddRuleChoiceModal}
                   />
                 )}
 
@@ -2119,7 +2145,7 @@ export default function RuangAutomationClient({
                     handleOpenEditRuleModal={handleOpenEditRuleModal}
                     handleDeleteRule={handleDeleteRule}
                     setDetailRuleId={setDetailRuleId}
-                    handleOpenAddRuleModal={handleOpenAddRuleModal}
+                    handleOpenAddRuleModal={handleOpenAddRuleChoiceModal}
                   />
                 )}
               </div>
@@ -2334,6 +2360,33 @@ export default function RuangAutomationClient({
           mutateData={mutateData}
         />
       )}
+
+      {/* ========================================================================= */}
+      {/* MODAL POPUP: PILIHAN MODE PEMBUATAN OTOMASI (BASIC VS FLOW BUILDER) */}
+      {/* ========================================================================= */}
+      <AutomationBuilderChoiceModal
+        isOpen={isBuilderChoiceModalOpen}
+        onClose={() => setIsBuilderChoiceModalOpen(false)}
+        onSelectBasicBuilder={() => {
+          setIsBuilderChoiceModalOpen(false);
+          handleOpenAddRuleModal();
+        }}
+        onSelectFlowBuilder={() => {
+          setIsBuilderChoiceModalOpen(false);
+          const agentIdParam = selectedAgentId || account?.id;
+          if (agentIdParam) {
+            router.push(
+              `/ruang-automation/flow-builder?agentId=${encodeURIComponent(
+                agentIdParam
+              )}&tab=${encodeURIComponent(automationTab)}`
+            );
+          } else {
+            router.push(
+              `/ruang-automation/flow-builder?tab=${encodeURIComponent(automationTab)}`
+            );
+          }
+        }}
+      />
     </div>
   );
 }
