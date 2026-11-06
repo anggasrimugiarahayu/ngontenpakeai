@@ -97,6 +97,9 @@ export default function CarouselBuilderClient() {
   const [copiedBlock, setCopiedBlock] = useState<string | null>(null);
   const [configData, setConfigData] = useState({
     selected_idea_name: '',
+    selected_angle: '',
+    selected_problem: '',
+    selected_insight: '',
     style_art: '',
     typography: '',
     color_palette: '',
@@ -262,7 +265,9 @@ export default function CarouselBuilderClient() {
     e.preventDefault();
     setShowConfigModal(false);
     
-    const configString = `[SYSTEM AUTO-SUBMIT] Tolong eksekusi ide berjudul "${configData.selected_idea_name}".
+    const configString = `[SYSTEM AUTO-SUBMIT] Tolong eksekusi ide berikut menjadi naskah Carousel viral & Master Prompt gambar:
+- Judul / Topik: "${configData.selected_idea_name}"
+${configData.selected_angle ? `- Unique Angle: "${configData.selected_angle}"\n` : ''}${configData.selected_problem ? `- Masalah Audiens: "${configData.selected_problem}"\n` : ''}${configData.selected_insight ? `- Insight & Solusi: "${configData.selected_insight}"\n` : ''}
 KONFIGURASI VISUAL:
 - Jumlah Slide: ${configData.jumlah_slide}
 - Watermark Username: ${configData.watermark_username}
@@ -275,7 +280,9 @@ KONFIGURASI VISUAL:
 - Outfit / Pakaian: ${configData.outfit_pakaian || 'Sesuai Style Art'}
 - Aksesoris: ${configData.aksesoris || 'Tanpa Aksesoris'}
 
-TOLONG JALANKAN MASTER PROMPT SEKARANG SESUAI KONFIGURASI INI.`;
+TOLONG JALANKAN MASTER PROMPT SEKARANG DENGAN STANDAR COPYWRITING TINGGI:
+- Header slide wajib deskriptif, provokatif, atau taktis. DILARANG KERAS kata generik buku teks ("Kenali Tandanya", "Pahitnya Kenyataan", "Solusi", "Jangan Pasrah", dll).
+- Body wajib memuat sensory micro-details yang konkret dan membumi, diakhiri pemicu geser di tiap slide, serta solusi taktis yang 100% realistis.`;
 
     // ADD REVIEW STEP INSTEAD OF DIRECT SUBMIT
     setChatHistory(prev => [...prev, {
@@ -421,7 +428,16 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG SESUAI KONFIGURASI INI.`;
                         <button
                           onClick={() => {
                             const autoPrompt = `Saya pilih ide ini:\n- Topic: ${ide.nama_ide || ide.topic}\n- Angle: ${ide.angle || ide.unique_angle}\n- Style: ${ide.recommended_style_art}\n- Colors: ${ide.color_palette}\n- Font: ${ide.typography}\n\n[PERINTAH SISTEM]: Tolong tampilkan form konfigurasi visual sekarang ("response_type": "request_config"). JANGAN proses/cetak prompt sebelum saya kirimkan tag [SYSTEM AUTO-SUBMIT].`;
-                            setConfigData(prev => ({ ...prev, selected_idea_name: ide.nama_ide || ide.topic, style_art: dbStyles[0]?.deskripsiPrompt || ide.recommended_style_art || "", typography: dbFonts[0]?.deskripsiPrompt || ide.typography || "", color_palette: ide.color_palette || "" }));
+                            setConfigData(prev => ({
+                              ...prev,
+                              selected_idea_name: ide.nama_ide || ide.topic,
+                              selected_angle: ide.angle || ide.unique_angle || "",
+                              selected_problem: ide.masalah_audiens || "",
+                              selected_insight: ide.insight_utama || ide.core_idea || "",
+                              style_art: dbStyles[0]?.deskripsiPrompt || ide.recommended_style_art || "",
+                              typography: dbFonts[0]?.deskripsiPrompt || ide.typography || "",
+                              color_palette: ide.color_palette || ""
+                            }));
                             generateCarouselPrompt(autoPrompt);
                           }}
                           className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 text-[11px] font-bold rounded-lg transition-colors flex items-center justify-center gap-1.5 mx-auto w-full cursor-pointer"
@@ -450,7 +466,16 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG SESUAI KONFIGURASI INI.`;
                     <button
                       onClick={() => {
                         const autoPrompt = `Saya pilih ide ini:\n- Topic: ${ide.nama_ide || ide.topic}\n- Angle: ${ide.angle || ide.unique_angle}\n- Style: ${ide.recommended_style_art}\n- Colors: ${ide.color_palette}\n- Font: ${ide.typography}\n\n[PERINTAH SISTEM]: Tolong tampilkan form konfigurasi visual sekarang ("response_type": "request_config"). JANGAN proses/cetak prompt sebelum saya kirimkan tag [SYSTEM AUTO-SUBMIT].`;
-                        setConfigData(prev => ({ ...prev, selected_idea_name: ide.nama_ide || ide.topic, style_art: dbStyles[0]?.deskripsiPrompt || ide.recommended_style_art || "", typography: dbFonts[0]?.deskripsiPrompt || ide.typography || "", color_palette: ide.color_palette || "" }));
+                        setConfigData(prev => ({
+                          ...prev,
+                          selected_idea_name: ide.nama_ide || ide.topic,
+                          selected_angle: ide.angle || ide.unique_angle || "",
+                          selected_problem: ide.masalah_audiens || "",
+                          selected_insight: ide.insight_utama || ide.core_idea || "",
+                          style_art: dbStyles[0]?.deskripsiPrompt || ide.recommended_style_art || "",
+                          typography: dbFonts[0]?.deskripsiPrompt || ide.typography || "",
+                          color_palette: ide.color_palette || ""
+                        }));
                         generateCarouselPrompt(autoPrompt);
                       }}
                       className="px-3 py-1.5 bg-orange-50 hover:bg-orange-100 dark:bg-orange-500/10 dark:hover:bg-orange-500/20 border border-orange-200 dark:border-orange-500/30 text-orange-600 dark:text-orange-400 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 shrink-0 cursor-pointer"
