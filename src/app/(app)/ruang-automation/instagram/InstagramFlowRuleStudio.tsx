@@ -162,7 +162,6 @@ export function InstagramFlowRuleStudio({
     (e: React.MouseEvent, nodeId: string) => {
       e.stopPropagation();
       setSelectedNodeId(nodeId);
-      setIsPreviewOpen(false);
       const node = graphState.nodes.find((n) => n.id === nodeId);
       if (!node) return;
 
@@ -548,10 +547,8 @@ export function InstagramFlowRuleStudio({
         canRedo={historyIndex < history.length - 1}
         onUndo={handleUndo}
         onRedo={handleRedo}
-        onOpenPreview={() => {
-          setSelectedNodeId(null);
-          setIsPreviewOpen(true);
-        }}
+        onOpenPreview={() => setIsPreviewOpen((prev) => !prev)}
+        isPreviewOpen={isPreviewOpen}
         onSetLive={() => handleSave(true)}
         onSaveDraft={() => handleSave(false)}
         onBackToAutomation={onBackToAutomation}
@@ -750,7 +747,7 @@ export function InstagramFlowRuleStudio({
 
       {/* 6. INSTAGRAM PHONE PREVIEW SIDE DRAWER */}
       {isPreviewOpen && (
-        <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] md:w-[460px] bg-white dark:bg-[#141B31] border-l border-gray-200 dark:border-[#2C3246] shadow-2xl flex flex-col animate-in slide-in-from-right duration-200 select-auto">
+        <div className="absolute top-14 bottom-0 right-0 z-40 w-full sm:w-[420px] md:w-[460px] bg-white dark:bg-[#141B31] border-l border-gray-200 dark:border-[#2C3246] shadow-xl flex flex-col animate-in slide-in-from-right duration-200 select-auto">
           {/* Drawer Header */}
           <div className="px-5 py-4 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between shrink-0 bg-white/90 dark:bg-[#141B31]/90 backdrop-blur-sm">
             <div className="flex items-center gap-2.5">

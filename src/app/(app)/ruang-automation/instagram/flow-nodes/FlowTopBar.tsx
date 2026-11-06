@@ -25,6 +25,7 @@ interface FlowTopBarProps {
   onUndo: () => void;
   onRedo: () => void;
   onOpenPreview: () => void;
+  isPreviewOpen?: boolean;
   onSetLive: () => void;
   onSaveDraft: () => void;
   onBackToAutomation: () => void;
@@ -41,6 +42,7 @@ export function FlowTopBar({
   onUndo,
   onRedo,
   onOpenPreview,
+  isPreviewOpen = false,
   onSetLive,
   onSaveDraft,
   onBackToAutomation,
@@ -143,10 +145,14 @@ export function FlowTopBar({
         <button
           type="button"
           onClick={onOpenPreview}
-          className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-white/5 text-xs font-bold text-gray-800 dark:text-gray-200 flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer"
-          title="Buka Simulator Chat Instagram"
+          className={`px-3 py-1.5 rounded-lg border text-xs font-bold flex items-center gap-1.5 transition-colors shadow-2xs cursor-pointer ${
+            isPreviewOpen
+              ? "bg-orange-500/10 border-orange-500/40 text-orange-600 dark:text-orange-400"
+              : "border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] hover:bg-gray-50 dark:hover:bg-white/5 text-gray-800 dark:text-gray-200"
+          }`}
+          title={isPreviewOpen ? "Tutup Simulator Chat Instagram" : "Buka Simulator Chat Instagram"}
         >
-          <Eye className="w-3.5 h-3.5 text-gray-500" />
+          <Eye className={`w-3.5 h-3.5 ${isPreviewOpen ? "text-orange-500" : "text-gray-500"}`} />
           <span>Preview</span>
         </button>
 

@@ -45,7 +45,7 @@ export function FlowStepInspectorDrawer({
   };
 
   return (
-    <div className="fixed inset-y-0 right-0 z-50 w-full sm:w-[420px] bg-white dark:bg-[#141B31] border-l border-gray-200 dark:border-[#2C3246] shadow-2xl flex flex-col animate-in slide-in-from-right duration-200">
+    <div className="absolute top-14 bottom-0 left-0 z-40 w-full sm:w-[400px] md:w-[420px] bg-white dark:bg-[#141B31] border-r border-gray-200 dark:border-[#2C3246] shadow-xl flex flex-col animate-in slide-in-from-left duration-200 select-auto">
       {/* Drawer Header */}
       <div className="px-5 py-4 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between">
         <div>

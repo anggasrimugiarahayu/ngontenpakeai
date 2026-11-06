@@ -34,10 +34,10 @@ export function FlowAddStepMenu({
   const hasContact = existingTypes.includes("ASK_CONTACT");
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-end p-4 sm:p-6 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
+    <div className="absolute top-14 inset-x-0 bottom-0 z-50 flex items-start justify-end p-4 sm:p-6 bg-black/40 backdrop-blur-xs animate-in fade-in duration-150">
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-sm mt-12 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-right duration-200"
+        className="w-full max-w-sm mt-2 bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] rounded-2xl shadow-2xl overflow-hidden animate-in slide-in-from-right duration-200"
       >
         {/* Header */}
         <div className="px-5 py-3.5 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between">
