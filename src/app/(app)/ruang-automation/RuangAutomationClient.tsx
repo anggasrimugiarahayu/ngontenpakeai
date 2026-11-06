@@ -1801,7 +1801,9 @@ export default function RuangAutomationClient({
   return (
     <div
       className={`flex-1 w-full mx-auto animate-in fade-in duration-300 ${
-        selectedPlatform === null
+        activeStudioMode === "FLOW"
+          ? "w-full max-w-[1720px] px-3 sm:px-6 py-4"
+          : selectedPlatform === null
           ? "max-w-7xl p-4 md:p-8"
           : "max-w-4xl p-6 py-10 md:py-16"
       }`}
@@ -1934,24 +1936,64 @@ export default function RuangAutomationClient({
         /* ========================================================================= */
         /* LEVEL 3: WORKSPACE AGEN AKTIF (MODULAR PER FITUR INSTAGRAM) */
         /* ========================================================================= */
-        <div className="animate-in fade-in duration-200">
-          {/* Top Navigation & Active Agent Header */}
-          <div className="mb-6">
-            <BackButton
-              onClick={() => {
-                setSelectedAgentId(null);
-                const newUrl = new URL(window.location.href);
-                newUrl.searchParams.delete("agentId");
-                window.history.pushState({}, "", newUrl.toString());
-                window.dispatchEvent(new Event("app-shallow-navigate"));
+        activeStudioMode === "FLOW" ? (
+          <div className="w-full animate-in fade-in duration-200">
+            <InstagramFlowRuleStudio
+              initialRule={flowStudioRule}
+              agentAccount={account}
+              currentAgent={currentAgent}
+              feedPosts={feedPosts}
+              activeStories={activeStories}
+              isAccountLinked={isAccountLinked}
+              isLoadingFeed={isLoadingFeed}
+              onSaveRule={handleSaveRuleFromFlow}
+              onBackToAutomation={() => {
+                setActiveStudioMode("LIST");
+                setFlowStudioRule(null);
+                if (typeof window !== "undefined") {
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete("mode");
+                  url.searchParams.delete("ruleId");
+                  window.history.replaceState(null, "", url.toString());
+                }
               }}
+              onGoToBasicBuilder={(rule) => {
+                setActiveStudioMode("LIST");
+                setFlowStudioRule(null);
+                if (typeof window !== "undefined") {
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete("mode");
+                  url.searchParams.delete("ruleId");
+                  window.history.replaceState(null, "", url.toString());
+                }
+                if (rule) {
+                  handleOpenEditRuleModal(rule, true);
+                } else {
+                  handleOpenAddRuleModal();
+                }
+              }}
+              showToast={showToast}
             />
           </div>
+        ) : (
+          <div className="animate-in fade-in duration-200">
+            {/* Top Navigation & Active Agent Header */}
+            <div className="mb-6">
+              <BackButton
+                onClick={() => {
+                  setSelectedAgentId(null);
+                  const newUrl = new URL(window.location.href);
+                  newUrl.searchParams.delete("agentId");
+                  window.history.pushState({}, "", newUrl.toString());
+                  window.dispatchEvent(new Event("app-shallow-navigate"));
+                }}
+              />
+            </div>
 
-          {/* Header Title */}
-          <h1 className="text-2xl md:text-3xl font-bold font-heading mb-8 md:mb-10 text-gray-900 dark:text-white">
-            IG Automation
-          </h1>
+            {/* Header Title */}
+            <h1 className="text-2xl md:text-3xl font-bold font-heading mb-8 md:mb-10 text-gray-900 dark:text-white">
+              IG Automation
+            </h1>
 
           <div className="space-y-6">
             {/* Banner Peringatan Masa Aktif Berakhir */}
@@ -2011,49 +2053,9 @@ export default function RuangAutomationClient({
 
             {/* TAB 2: KOMENTAR IG KE DM */}
             {activeIgTab === "komentar" && (
-              activeStudioMode === "FLOW" ? (
-                <div className="w-full flex flex-col gap-4 animate-in fade-in duration-200">
-                  <InstagramFlowRuleStudio
-                    initialRule={flowStudioRule}
-                    agentAccount={account}
-                    currentAgent={currentAgent}
-                    feedPosts={feedPosts}
-                    activeStories={activeStories}
-                    isAccountLinked={isAccountLinked}
-                    isLoadingFeed={isLoadingFeed}
-                    onSaveRule={handleSaveRuleFromFlow}
-                    onBackToAutomation={() => {
-                      setActiveStudioMode("LIST");
-                      setFlowStudioRule(null);
-                      if (typeof window !== "undefined") {
-                        const url = new URL(window.location.href);
-                        url.searchParams.delete("mode");
-                        url.searchParams.delete("ruleId");
-                        window.history.replaceState(null, "", url.toString());
-                      }
-                    }}
-                    onGoToBasicBuilder={(rule) => {
-                      setActiveStudioMode("LIST");
-                      setFlowStudioRule(null);
-                      if (typeof window !== "undefined") {
-                        const url = new URL(window.location.href);
-                        url.searchParams.delete("mode");
-                        url.searchParams.delete("ruleId");
-                        window.history.replaceState(null, "", url.toString());
-                      }
-                      if (rule) {
-                        handleOpenEditRuleModal(rule, true);
-                      } else {
-                        handleOpenAddRuleModal();
-                      }
-                    }}
-                    showToast={showToast}
-                  />
-                </div>
-              ) : (
-                <div className="space-y-6 animate-in fade-in duration-200">
-                  {/* Header & Actions Card */}
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31] shadow-sm">
+              <div className="space-y-6 animate-in fade-in duration-200">
+                {/* Header & Actions Card */}
+                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31] shadow-sm">
                   <div className="mb-2 md:mb-0">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                       Komentar IG ke DM
@@ -2242,7 +2244,6 @@ export default function RuangAutomationClient({
                   />
                 )}
               </div>
-              )
             )}
 
             {/* TAB 3: DASHBOARD */}
@@ -2251,6 +2252,7 @@ export default function RuangAutomationClient({
             )}
           </div>
         </div>
+        )
       )}
 
       {/* ========================================================================= */}

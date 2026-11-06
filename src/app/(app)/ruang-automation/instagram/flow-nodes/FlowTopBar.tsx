@@ -106,7 +106,7 @@ export function FlowTopBar({
       </div>
 
       {/* CENTER SECTION: Hint Pill */}
-      <div className="hidden lg:flex items-center justify-center">
+      <div className="hidden xl:flex items-center justify-center shrink-0">
         <div className="px-3.5 py-1 rounded-full bg-gray-100/80 dark:bg-[#1A233D] border border-gray-200/60 dark:border-white/5 text-[11px] font-medium text-gray-600 dark:text-gray-300 flex items-center gap-1.5 shadow-2xs">
           {selectedStepTitle ? (
             <>
