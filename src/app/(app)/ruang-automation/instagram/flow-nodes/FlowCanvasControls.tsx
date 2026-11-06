@@ -28,7 +28,7 @@ export function FlowCanvasControls({
         <button
           type="button"
           onClick={onOpenAddStepMenu}
-          className="w-12 h-12 rounded-full bg-[#0084FF] hover:bg-[#0073E6] text-white shadow-xl shadow-blue-500/30 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
+          className="w-12 h-12 rounded-full bg-[#f97316] hover:bg-[#ea580c] text-white shadow-xl shadow-orange-500/30 flex items-center justify-center transition-all duration-200 hover:scale-105 active:scale-95 cursor-pointer"
           title="Tambah Langkah Alur Baru (+)"
         >
           <Plus className="w-6 h-6 stroke-[2.5]" />
@@ -42,7 +42,7 @@ export function FlowCanvasControls({
           <button
             type="button"
             onClick={onAutoArrange}
-            className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-blue-50 dark:hover:bg-white/10 hover:text-blue-600 transition-colors cursor-pointer"
+            className="w-9 h-9 rounded-xl flex items-center justify-center text-gray-700 dark:text-gray-200 hover:bg-orange-50 dark:hover:bg-orange-950/20 hover:text-orange-600 dark:hover:text-orange-400 transition-colors cursor-pointer"
             title="Rapikan Alur Otomatis (Magic Wand)"
           >
             <Wand2 className="w-4 h-4" />

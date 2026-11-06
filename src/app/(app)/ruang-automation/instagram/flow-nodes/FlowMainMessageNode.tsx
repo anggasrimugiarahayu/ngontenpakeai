@@ -44,8 +44,8 @@ export function FlowMainMessageNode({
       }}
       className={`relative w-80 bg-white dark:bg-[#141B31] rounded-2xl border transition-all duration-150 shadow-md ${
         isSelected
-          ? "border-blue-500 ring-4 ring-blue-500/20 shadow-xl"
-          : "border-gray-200 dark:border-[#2C3246] hover:border-blue-400"
+          ? "border-orange-500 ring-4 ring-orange-500/20 shadow-xl"
+          : "border-gray-200 dark:border-[#2C3246] hover:border-orange-400"
       }`}
     >
       {/* Input Port (Left Side Target) */}
@@ -74,7 +74,7 @@ export function FlowMainMessageNode({
           </div>
         </div>
 
-        <MessageSquare className="w-4 h-4 text-blue-500" />
+        <MessageSquare className="w-4 h-4 text-orange-500" />
       </div>
 
       {/* Node Body */}
@@ -101,7 +101,7 @@ export function FlowMainMessageNode({
                   {btn.label || "Buka Link Akses"}
                 </span>
                 <div className="flex items-center gap-1.5 text-gray-400 shrink-0">
-                  <ExternalLink className="w-3.5 h-3.5 text-blue-500" />
+                  <ExternalLink className="w-3.5 h-3.5 text-orange-500" />
                   <span className="w-2.5 h-2.5 rounded-full bg-amber-400" />
                 </div>
               </div>
@@ -139,7 +139,7 @@ export function FlowMainMessageNode({
           <div
             id={`${id}_port_next`}
             onMouseDown={(e) => onPortMouseDown?.(e, "next_step")}
-            className="w-4 h-4 rounded-full border-2 border-slate-400 dark:border-gray-500 hover:border-blue-500 hover:bg-blue-500/20 cursor-pointer transition-all hover:scale-125"
+            className="w-4 h-4 rounded-full border-2 border-slate-400 dark:border-gray-500 hover:border-orange-500 hover:bg-orange-500/20 cursor-pointer transition-all hover:scale-125"
             title="Tambah atau sambungkan langkah lanjutan"
           />
         </div>

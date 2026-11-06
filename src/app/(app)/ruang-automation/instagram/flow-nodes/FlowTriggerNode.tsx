@@ -65,8 +65,8 @@ export function FlowTriggerNode({
       }}
       className={`relative w-80 bg-white dark:bg-[#141B31] rounded-2xl border transition-all duration-150 shadow-md ${
         isSelected
-          ? "border-blue-500 ring-4 ring-blue-500/20 shadow-xl"
-          : "border-gray-200 dark:border-[#2C3246] hover:border-blue-400"
+          ? "border-orange-500 ring-4 ring-orange-500/20 shadow-xl"
+          : "border-gray-200 dark:border-[#2C3246] hover:border-orange-400"
       }`}
     >
       {/* Node Header (Drag Handle) */}
@@ -129,7 +129,7 @@ export function FlowTriggerNode({
               {keywordsArray.slice(0, 4).map((kw, i) => (
                 <span
                   key={i}
-                  className="px-2 py-0.5 rounded-md bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-900/40 text-[10px] font-semibold truncate max-w-[90px]"
+                  className="px-2 py-0.5 rounded-md bg-orange-50 dark:bg-orange-950/40 text-orange-600 dark:text-orange-400 border border-orange-200 dark:border-orange-900/40 text-[10px] font-semibold truncate max-w-[90px]"
                 >
                   {kw}
                 </span>
@@ -158,7 +158,7 @@ export function FlowTriggerNode({
             e.stopPropagation();
             onSelect?.();
           }}
-          className="w-full py-2 rounded-xl border border-dashed border-gray-300 dark:border-[#2C3246] hover:border-blue-500 hover:bg-blue-50/50 dark:hover:bg-blue-950/20 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+          className="w-full py-2 rounded-xl border border-dashed border-gray-300 dark:border-[#2C3246] hover:border-orange-500 hover:bg-orange-50/50 dark:hover:bg-orange-950/20 text-gray-600 dark:text-gray-300 hover:text-orange-600 dark:hover:text-orange-400 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Atur Target & Keyword</span>
@@ -174,7 +174,7 @@ export function FlowTriggerNode({
           <div
             id={`${id}_port_then`}
             onMouseDown={(e) => onPortMouseDown?.(e, "then")}
-            className="w-4 h-4 rounded-full bg-slate-500 hover:bg-blue-600 border-2 border-white dark:border-[#141B31] shadow-xs cursor-crosshair transition-all hover:scale-125"
+            className="w-4 h-4 rounded-full bg-slate-500 hover:bg-orange-500 border-2 border-white dark:border-[#141B31] shadow-xs cursor-crosshair transition-all hover:scale-125"
             title="Tarik panah ke langkah berikutnya"
           />
         </div>

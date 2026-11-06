@@ -532,7 +532,7 @@ export function InstagramFlowRuleStudio({
   const existingNodeTypes = graphState.nodes.map((n) => n.type);
 
   return (
-    <div className="fixed inset-0 z-[90] flex flex-col bg-[#F8FAFC] dark:bg-[#0A1128] overflow-hidden select-none">
+    <div className="relative w-full h-[760px] min-h-[600px] max-h-[82vh] rounded-2xl border border-gray-200 dark:border-[#2C3246] shadow-sm flex flex-col bg-[#F8FAFC] dark:bg-[#0E1528] overflow-hidden select-none">
       {/* 1. TOP BAR */}
       <FlowTopBar
         ruleName={graphState.ruleName}
@@ -604,7 +604,7 @@ export function InstagramFlowRuleStudio({
                 refY="4"
                 orient="auto"
               >
-                <polygon points="0 1, 8 4, 0 7" fill="#0084FF" />
+                <polygon points="0 1, 8 4, 0 7" fill="#f97316" />
               </marker>
             </defs>
 
@@ -630,7 +630,7 @@ export function InstagramFlowRuleStudio({
               <path
                 d={connectingLinePath}
                 fill="none"
-                stroke="#0084FF"
+                stroke="#f97316"
                 strokeWidth="2.5"
                 strokeDasharray="5,5"
                 strokeLinecap="round"

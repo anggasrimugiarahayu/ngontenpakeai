@@ -222,7 +222,7 @@ export function PostRuleCard({
                 {rule.name}
               </h3>
               {(ruleConfig?.builderMode === "FLOW" || ruleConfig?.flowMeta?.builderMode === "FLOW") && (
-                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20 shrink-0">
+                <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20 shrink-0">
                   FLOW
                 </span>
               )}

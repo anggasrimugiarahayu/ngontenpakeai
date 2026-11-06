@@ -71,6 +71,14 @@ const InstagramRuleStudioModal = dynamic(
     ),
   { ssr: false }
 );
+
+const InstagramFlowRuleStudio = dynamic(
+  () =>
+    import("./instagram/InstagramFlowRuleStudio").then(
+      (mod) => mod.InstagramFlowRuleStudio
+    ),
+  { ssr: false }
+);
 import { AutomationBuilderChoiceModal } from "./components/AutomationBuilderChoiceModal";
 import {
   MessageButtonItem,
@@ -100,10 +108,12 @@ export default function RuangAutomationClient({
   const [selectedPlatform, setSelectedPlatform] = useState<"instagram" | null>(initialPlatform);
   const [selectedAgentId, setSelectedAgentId] = useState<string | null>(initialAgentId);
   const [activeIgTab, setActiveIgTab] = useState<"koneksi" | "komentar" | "dashboard">("koneksi");
+  const [activeStudioMode, setActiveStudioMode] = useState<"LIST" | "FLOW">("LIST");
+  const [flowStudioRule, setFlowStudioRule] = useState<any | null>(null);
   const [userHasExitedToHub, setUserHasExitedToHub] = useState(false);
   const [isPending, startTransition] = useTransition();
 
-  // Read initial agentId from URL query on mount (fallback sync)
+  // Read initial agentId and flow mode from URL query on mount (fallback sync)
   useEffect(() => {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
@@ -155,6 +165,24 @@ export default function RuangAutomationClient({
   } : null);
   const displayAccount = currentAgent || account;
   const isAccountLinked = Boolean(displayAccount && displayAccount.isLinked);
+
+  // Synchronize mode=flow and ruleId from URL query
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const modeFromUrl = params.get("mode");
+    const ruleIdFromUrl = params.get("ruleId");
+    if (modeFromUrl === "flow") {
+      setActiveStudioMode("FLOW");
+      setActiveIgTab("komentar");
+      if (ruleIdFromUrl && data.rules && Array.isArray(data.rules)) {
+        const found = data.rules.find((r: any) => r.id === ruleIdFromUrl);
+        if (found) {
+          setFlowStudioRule(found);
+        }
+      }
+    }
+  }, [data.rules]);
 
   // Synchronize selectedPlatform with URL and dispatch automation-platform-change for ClientLayout
   useEffect(() => {
@@ -987,20 +1015,17 @@ export default function RuangAutomationClient({
     setIsRuleModalOpen(true);
   };
 
-  const handleOpenEditRuleModal = (rule: any) => {
+  const handleOpenEditRuleModal = (rule: any, forceBasic: boolean = false) => {
     const config = parseClientRuleConfig(rule.dmMessage);
-    if (config?.builderMode === "FLOW" || config?.flowMeta?.builderMode === "FLOW") {
-      const agentIdParam = selectedAgentId || account?.id;
-      if (agentIdParam) {
-        router.push(
-          `/ruang-automation/flow-builder?agentId=${encodeURIComponent(
-            agentIdParam
-          )}&ruleId=${encodeURIComponent(rule.id)}`
-        );
-      } else {
-        router.push(
-          `/ruang-automation/flow-builder?ruleId=${encodeURIComponent(rule.id)}`
-        );
+    if (!forceBasic && (config?.builderMode === "FLOW" || config?.flowMeta?.builderMode === "FLOW")) {
+      setFlowStudioRule(rule);
+      setActiveStudioMode("FLOW");
+      setActiveIgTab("komentar");
+      if (typeof window !== "undefined") {
+        const url = new URL(window.location.href);
+        url.searchParams.set("mode", "flow");
+        url.searchParams.set("ruleId", rule.id);
+        window.history.replaceState(null, "", url.toString());
       }
       return;
     }
@@ -1641,6 +1666,34 @@ export default function RuangAutomationClient({
     });
   };
 
+  const handleSaveRuleFromFlow = async (payload: any, isSetLive: boolean) => {
+    try {
+      const res = await saveAutomationRuleAction(payload);
+      if (res?.success && res.rule) {
+        // Optimistically update / reconcile SWR cache
+        mutateData(
+          (prev: any) => {
+            if (!prev) return prev;
+            const existing = prev.rules || [];
+            const idx = existing.findIndex((r: any) => r.id === res.rule.id);
+            let updatedRules;
+            if (idx >= 0) {
+              updatedRules = [...existing];
+              updatedRules[idx] = res.rule;
+            } else {
+              updatedRules = [res.rule, ...existing];
+            }
+            return { ...prev, rules: updatedRules };
+          },
+          false
+        );
+        return { success: true, rule: res.rule };
+      }
+      return { success: false, error: (res as any)?.error || "Gagal menyimpan alur" };
+    } catch (err: any) {
+      return { success: false, error: err.message || "Terjadi kesalahan server" };
+    }
+  };
 
   // Resync Account from Meta API
   const handleResyncAccount = () => {
@@ -1958,9 +2011,49 @@ export default function RuangAutomationClient({
 
             {/* TAB 2: KOMENTAR IG KE DM */}
             {activeIgTab === "komentar" && (
-              <div className="space-y-6 animate-in fade-in duration-200">
-                {/* Header & Actions Card */}
-                <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31] shadow-sm">
+              activeStudioMode === "FLOW" ? (
+                <div className="w-full flex flex-col gap-4 animate-in fade-in duration-200">
+                  <InstagramFlowRuleStudio
+                    initialRule={flowStudioRule}
+                    agentAccount={account}
+                    currentAgent={currentAgent}
+                    feedPosts={feedPosts}
+                    activeStories={activeStories}
+                    isAccountLinked={isAccountLinked}
+                    isLoadingFeed={isLoadingFeed}
+                    onSaveRule={handleSaveRuleFromFlow}
+                    onBackToAutomation={() => {
+                      setActiveStudioMode("LIST");
+                      setFlowStudioRule(null);
+                      if (typeof window !== "undefined") {
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete("mode");
+                        url.searchParams.delete("ruleId");
+                        window.history.replaceState(null, "", url.toString());
+                      }
+                    }}
+                    onGoToBasicBuilder={(rule) => {
+                      setActiveStudioMode("LIST");
+                      setFlowStudioRule(null);
+                      if (typeof window !== "undefined") {
+                        const url = new URL(window.location.href);
+                        url.searchParams.delete("mode");
+                        url.searchParams.delete("ruleId");
+                        window.history.replaceState(null, "", url.toString());
+                      }
+                      if (rule) {
+                        handleOpenEditRuleModal(rule, true);
+                      } else {
+                        handleOpenAddRuleModal();
+                      }
+                    }}
+                    showToast={showToast}
+                  />
+                </div>
+              ) : (
+                <div className="space-y-6 animate-in fade-in duration-200">
+                  {/* Header & Actions Card */}
+                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 border border-gray-200 dark:border-[#2C3246] rounded-2xl p-6 bg-white dark:bg-[#141B31] shadow-sm">
                   <div className="mb-2 md:mb-0">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-1">
                       Komentar IG ke DM
@@ -2149,6 +2242,7 @@ export default function RuangAutomationClient({
                   />
                 )}
               </div>
+              )
             )}
 
             {/* TAB 3: DASHBOARD */}
@@ -2373,17 +2467,14 @@ export default function RuangAutomationClient({
         }}
         onSelectFlowBuilder={() => {
           setIsBuilderChoiceModalOpen(false);
-          const agentIdParam = selectedAgentId || account?.id;
-          if (agentIdParam) {
-            router.push(
-              `/ruang-automation/flow-builder?agentId=${encodeURIComponent(
-                agentIdParam
-              )}&tab=${encodeURIComponent(automationTab)}`
-            );
-          } else {
-            router.push(
-              `/ruang-automation/flow-builder?tab=${encodeURIComponent(automationTab)}`
-            );
+          setFlowStudioRule(null);
+          setActiveStudioMode("FLOW");
+          setActiveIgTab("komentar");
+          if (typeof window !== "undefined") {
+            const url = new URL(window.location.href);
+            url.searchParams.set("mode", "flow");
+            url.searchParams.delete("ruleId");
+            window.history.replaceState(null, "", url.toString());
           }
         }}
       />

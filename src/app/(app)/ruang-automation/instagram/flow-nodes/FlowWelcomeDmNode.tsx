@@ -36,8 +36,8 @@ export function FlowWelcomeDmNode({
       }}
       className={`relative w-72 bg-white dark:bg-[#141B31] rounded-2xl border transition-all duration-150 shadow-md ${
         isSelected
-          ? "border-blue-500 ring-4 ring-blue-500/20 shadow-xl"
-          : "border-gray-200 dark:border-[#2C3246] hover:border-blue-400"
+          ? "border-orange-500 ring-4 ring-orange-500/20 shadow-xl"
+          : "border-gray-200 dark:border-[#2C3246] hover:border-orange-400"
       }`}
     >
       {/* Input Port (Left Side Target) */}
@@ -80,7 +80,7 @@ export function FlowWelcomeDmNode({
               <Trash2 className="w-3.5 h-3.5" />
             </button>
           )}
-          <MessageSquare className="w-4 h-4 text-blue-500" />
+          <MessageSquare className="w-4 h-4 text-orange-500" />
         </div>
       </div>
 
@@ -102,7 +102,7 @@ export function FlowWelcomeDmNode({
             <div
               id={`${id}_port_btn`}
               onMouseDown={(e) => onPortMouseDown?.(e, "welcome_btn_click")}
-              className="w-4 h-4 rounded-full bg-slate-500 hover:bg-blue-600 border-2 border-white dark:border-[#141B31] shadow-xs cursor-crosshair transition-all hover:scale-125 shrink-0"
+              className="w-4 h-4 rounded-full bg-slate-500 hover:bg-orange-500 border-2 border-white dark:border-[#141B31] shadow-xs cursor-crosshair transition-all hover:scale-125 shrink-0"
               title="Tarik panah saat tombol diklik"
             />
           </div>

@@ -35,8 +35,8 @@ export function FlowGatekeeperNode({
       }}
       className={`relative w-72 bg-white dark:bg-[#141B31] rounded-2xl border transition-all duration-150 shadow-md ${
         isSelected
-          ? "border-blue-500 ring-4 ring-blue-500/20 shadow-xl"
-          : "border-gray-200 dark:border-[#2C3246] hover:border-blue-400"
+          ? "border-orange-500 ring-4 ring-orange-500/20 shadow-xl"
+          : "border-gray-200 dark:border-[#2C3246] hover:border-orange-400"
       }`}
     >
       {/* Input Port (Left Side Target) */}

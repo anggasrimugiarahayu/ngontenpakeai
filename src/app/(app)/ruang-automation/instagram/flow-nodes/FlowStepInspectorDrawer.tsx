@@ -49,7 +49,7 @@ export function FlowStepInspectorDrawer({
       {/* Drawer Header */}
       <div className="px-5 py-4 border-b border-gray-100 dark:border-[#2C3246] flex items-center justify-between">
         <div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-blue-600 dark:text-blue-400">
+          <span className="text-[10px] font-bold uppercase tracking-wider text-orange-600 dark:text-orange-400">
             Inspector Step
           </span>
           <h3 className="font-bold text-sm text-gray-900 dark:text-white mt-0.5">
@@ -114,7 +114,7 @@ export function FlowStepInspectorDrawer({
                     postType: newPostType,
                   });
                 }}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs font-medium text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20"
               >
                 <optgroup label="Post / Reel">
                   <option value="Postingan Tertentu">Postingan Tertentu</option>
@@ -167,7 +167,7 @@ export function FlowStepInspectorDrawer({
                           }}
                           className={`relative aspect-[4/5] rounded-xl overflow-hidden border-2 transition-all cursor-pointer ${
                             isSelected
-                              ? "border-blue-600 ring-2 ring-blue-500/30 scale-102"
+                              ? "border-orange-500 ring-2 ring-orange-500/30 scale-102"
                               : "border-gray-200 dark:border-white/10 opacity-70 hover:opacity-100"
                           }`}
                         >
@@ -208,7 +208,7 @@ export function FlowStepInspectorDrawer({
                       value={data.keywords || ""}
                       onChange={(e) => handleChange("keywords", e.target.value)}
                       placeholder="mau, link, spill, harga"
-                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                     />
                     <p className="text-[10px] text-gray-400">
                       Pisahkan kata kunci dengan tanda koma (contoh: <code>mau, info, spill</code>).
@@ -242,7 +242,7 @@ export function FlowStepInspectorDrawer({
                     rows={2}
                     value={data.commentReplies?.[0] || "Pesan terkirim! 🚀 Cek DMnya ya @{username}"}
                     onChange={(e) => handleChange("commentReplies", [e.target.value])}
-                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                    className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                   />
                 )}
               </div>
@@ -264,7 +264,7 @@ export function FlowStepInspectorDrawer({
                 value={data.welcomeMessage || ""}
                 onChange={(e) => handleChange("welcomeMessage", e.target.value)}
                 placeholder="Halo {first_name}! Akses nya udah kita buatin nihh!! Mau? ✨"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 leading-relaxed"
               />
               <p className="text-[10px] text-gray-400">
                 Gunakan variabel <code>&#123;first_name&#125;</code> atau <code>@&#123;username&#125;</code>.
@@ -281,7 +281,7 @@ export function FlowStepInspectorDrawer({
                 value={data.welcomeButtonLabel || "Lihat Produk 🤩"}
                 onChange={(e) => handleChange("welcomeButtonLabel", e.target.value)}
                 placeholder="Lihat Produk 🤩"
-                className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20"
               />
               <p className="text-[10px] text-gray-400">
                 Maksimal 20 karakter sesuai batas resmi Meta API.
@@ -304,7 +304,7 @@ export function FlowStepInspectorDrawer({
                 value={data.askForFollowMessage || ""}
                 onChange={(e) => handleChange("askForFollowMessage", e.target.value)}
                 placeholder="Btw, kamu belum follow akun ini nih. Follow dulu ya, nanti otomatis dikirimkan aksesnya!"
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 leading-relaxed"
               />
             </div>
 
@@ -317,7 +317,7 @@ export function FlowStepInspectorDrawer({
                 maxLength={20}
                 value={data.askForFollowButtonLabel || "Udah follow 🙌"}
                 onChange={(e) => handleChange("askForFollowButtonLabel", e.target.value)}
-                className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                className="w-full px-3.5 py-2 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20"
               />
             </div>
           </div>
@@ -351,7 +351,7 @@ export function FlowStepInspectorDrawer({
                 rows={3}
                 value={data.askContactMessage || ""}
                 onChange={(e) => handleChange("askContactMessage", e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 leading-relaxed"
               />
             </div>
           </div>
@@ -372,7 +372,7 @@ export function FlowStepInspectorDrawer({
                 value={data.dmMessage || ""}
                 onChange={(e) => handleChange("dmMessage", e.target.value)}
                 placeholder="Halo {first_name}! Ini link akses materi yang kamu minta..."
-                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500/20 leading-relaxed"
+                className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] text-xs text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500/20 leading-relaxed"
               />
             </div>
 
@@ -522,7 +522,7 @@ export function FlowStepInspectorDrawer({
         <button
           type="button"
           onClick={onClose}
-          className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold transition-colors cursor-pointer"
+          className="px-5 py-2 rounded-xl bg-[#f97316] hover:bg-[#ea580c] text-white text-xs font-bold shadow-sm shadow-orange-500/20 transition-colors cursor-pointer"
         >
           Selesai Edit
         </button>

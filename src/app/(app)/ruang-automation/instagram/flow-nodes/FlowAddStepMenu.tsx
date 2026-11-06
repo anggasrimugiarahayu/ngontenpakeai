@@ -74,7 +74,7 @@ export function FlowAddStepMenu({
                 onAddStep("WELCOME_DM");
                 onClose();
               }}
-              className="w-full p-3 rounded-xl border border-gray-200/80 dark:border-[#2C3246] hover:border-blue-500 hover:bg-blue-50/40 dark:hover:bg-blue-950/20 text-left flex items-center gap-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed group cursor-pointer"
+              className="w-full p-3 rounded-xl border border-gray-200/80 dark:border-[#2C3246] hover:border-orange-500 hover:bg-orange-50/40 dark:hover:bg-orange-950/20 text-left flex items-center gap-3 transition-colors disabled:opacity-40 disabled:cursor-not-allowed group cursor-pointer"
             >
               <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-amber-500 via-rose-500 to-purple-600 flex items-center justify-center text-white shrink-0 shadow-xs">
                 <InstagramIcon className="w-4 h-4 text-white" />
@@ -87,7 +87,7 @@ export function FlowAddStepMenu({
                   {hasWelcome ? "Sudah ada di alur" : "Teks + tombol pembuka respon komentar"}
                 </p>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-blue-500" />
+              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-500" />
             </button>
           </div>
 
