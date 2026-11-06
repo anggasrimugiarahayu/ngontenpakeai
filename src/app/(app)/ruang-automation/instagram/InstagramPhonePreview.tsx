@@ -103,6 +103,13 @@ export function InstagramPhonePreview({
   const previewAvatarUrl =
     activeAccount?.profilePicUrl || "/images/instagram/rcm-avatar.png";
 
+  const firstKeyword =
+    typeof ruleFormData?.keywords === "string"
+      ? (ruleFormData.keywords.split(",")[0]?.trim() || ruleFormData.keywords.trim() || "mau")
+      : Array.isArray(ruleFormData?.keywords)
+      ? (ruleFormData.keywords[0]?.trim() || "mau")
+      : "mau";
+
   return (
     <div
       className={
@@ -204,7 +211,7 @@ export function InstagramPhonePreview({
         <div
           className={`${
             compact
-              ? "w-[268px] sm:w-[276px] h-[465px] sm:h-[480px] max-h-[calc(100vh-240px)] rounded-[44px] p-[5px] origin-top scale-[0.88] sm:scale-95 md:scale-100 transition-transform"
+              ? "w-[280px] sm:w-[288px] h-[575px] sm:h-[585px] rounded-[50px] sm:rounded-[52px] p-[5.5px] sm:p-[6px] origin-center scale-[0.80] sm:scale-[0.85] 2xl:scale-[0.92] transition-transform"
               : "w-[285px] sm:w-[295px] h-[585px] rounded-[52px] p-[6px]"
           } mx-auto bg-gradient-to-b from-[#38383e] via-[#1c1c1f] to-[#121214] ring-1 ring-white/20 shadow-2xl relative select-none flex flex-col shrink-0`}
         >
@@ -217,24 +224,18 @@ export function InstagramPhonePreview({
 
           {/* Screen Inner Container */}
           <div
-            className={`w-full h-full bg-white dark:bg-black ${
-              compact ? "rounded-[39px]" : "rounded-[46px]"
-            } overflow-hidden flex flex-col relative border border-black/80 text-gray-900 dark:text-white`}
+            className={`w-full h-full bg-white dark:bg-black rounded-[46px] overflow-hidden flex flex-col relative border border-black/80 text-gray-900 dark:text-white`}
           >
             {/* Dynamic Island Floating Notch */}
             <div
-              className={`${
-                compact ? "w-20 h-5 top-2" : "w-24 h-6 top-2.5"
-              } bg-black rounded-full mx-auto absolute left-1/2 -translate-x-1/2 z-30 flex items-center justify-end pr-2 shadow-md`}
+              className="w-24 h-6 top-2.5 bg-black rounded-full mx-auto absolute left-1/2 -translate-x-1/2 z-30 flex items-center justify-end pr-2 shadow-md"
             >
               <div className="w-2 h-2 rounded-full bg-[#18181b] ring-1 ring-white/10" />
             </div>
 
             {/* Status Bar */}
             <div
-              className={`flex items-center justify-between px-5 ${
-                compact ? "pt-2 pb-0.5 text-[10px]" : "pt-3 pb-1 text-[11px]"
-              } font-semibold text-gray-900 dark:text-white shrink-0 z-20`}
+              className="flex items-center justify-between px-5 pt-3 pb-1 text-[11px] font-semibold text-gray-900 dark:text-white shrink-0 z-20"
             >
               <span>10:03</span>
               <div className="flex items-center gap-1.5 text-gray-900 dark:text-white">
@@ -292,7 +293,7 @@ export function InstagramPhonePreview({
                     /* Incoming Trigger DM Bubble from User (Pesan Instagram) */
                     <div className="flex justify-end pt-1 animate-in fade-in slide-in-from-bottom-1 duration-200">
                       <div className="max-w-[78%] rounded-2xl rounded-tr-xs bg-[#7048e8] text-white px-3.5 py-2 shadow-xs text-xs font-semibold break-words">
-                        {ruleFormData.keywords.split(",")[0]?.trim() || ruleFormData.keywords.trim() || "mau"}
+                        {firstKeyword}
                       </div>
                     </div>
                   ) : isStoryMentionTarget ? (
@@ -340,7 +341,7 @@ export function InstagramPhonePreview({
                               <div className="text-xs font-semibold pl-1 pr-1 break-words">
                                 {ruleFormData.triggerCommentType === "ALL"
                                   ? "🔥"
-                                  : (ruleFormData.keywords.split(",")[0]?.trim() || ruleFormData.keywords.trim() || "🔥")}
+                                  : firstKeyword}
                               </div>
                             </div>
 
@@ -761,7 +762,7 @@ export function InstagramPhonePreview({
                       <p className="text-[10px] text-white/80 leading-tight">
                         {ruleFormData.triggerCommentType === "ALL"
                           ? "Balas story apa saja untuk memicu DM otomatis"
-                          : `Ketik "${ruleFormData.keywords.split(",")[0]?.trim() || "kata kunci"}" untuk info lengkap`}
+                          : `Ketik "${firstKeyword}" untuk info lengkap`}
                       </p>
                     </div>
                   </div>
@@ -832,15 +833,16 @@ export function InstagramPhonePreview({
 
                   {/* Post Media Container (Aspect 4:5 Portrait) */}
                   <div className="w-full aspect-[4/5] bg-gray-100 dark:bg-white/5 flex flex-col items-center justify-center text-center overflow-hidden">
-                    {ruleFormData.targetOtomasi === "Postingan Tertentu" && (selectedPost?.thumb || selectedPost?.image) ? (
+                    {(ruleFormData.targetOtomasi === "Postingan Tertentu" || ruleFormData.postType === "SPECIFIC") && (selectedPost?.thumb || selectedPost?.image || ruleFormData.postCoverUrl) ? (
                       <img
-                        src={selectedPost.thumb || selectedPost.image}
-                        alt={selectedPost.title || "Post"}
+                        src={selectedPost?.thumb || selectedPost?.image || ruleFormData.postCoverUrl}
+                        alt={selectedPost?.title || "Post"}
                         referrerPolicy="no-referrer"
                         className="w-full h-full object-cover"
                         onError={(e) => {
-                          if (selectedPost?.image && e.currentTarget.src !== selectedPost.image) {
-                            e.currentTarget.src = selectedPost.image;
+                          const fallback = selectedPost?.image || ruleFormData.postCoverUrl;
+                          if (fallback && e.currentTarget.src !== fallback) {
+                            e.currentTarget.src = fallback;
                           }
                         }}
                       />
@@ -943,7 +945,7 @@ export function InstagramPhonePreview({
                             <p className="text-xs text-gray-800 dark:text-gray-200 break-words font-normal">
                               {ruleFormData.triggerCommentType === "ALL"
                                 ? "Komentar"
-                                : (ruleFormData.keywords.split(",")[0]?.trim() || ruleFormData.keywords.trim() || "Komentar")}
+                                : (firstKeyword || "Komentar")}
                             </p>
                             <button
                               type="button"

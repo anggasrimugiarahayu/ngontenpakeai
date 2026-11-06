@@ -25,6 +25,7 @@ interface FlowStepInspectorDrawerProps {
   activeStories?: any[];
   isAccountLinked: boolean;
   isLoadingFeed?: boolean;
+  setActivePreviewTab?: (tab: "COMMENT" | "DM") => void;
 }
 
 export function FlowStepInspectorDrawer({
@@ -35,10 +36,21 @@ export function FlowStepInspectorDrawer({
   activeStories = [],
   isAccountLinked,
   isLoadingFeed,
+  setActivePreviewTab,
 }: FlowStepInspectorDrawerProps) {
   if (!selectedNode) return null;
 
   const { id, type, data } = selectedNode;
+
+  // Auto-switch simulator tab based on node type
+  React.useEffect(() => {
+    if (!type || !setActivePreviewTab) return;
+    if (type === "TRIGGER" || type === "PUBLIC_COMMENT_REPLY") {
+      setActivePreviewTab("COMMENT");
+    } else {
+      setActivePreviewTab("DM");
+    }
+  }, [type, setActivePreviewTab]);
 
   const handleChange = (field: string, value: any) => {
     onUpdateNodeData(id, { ...data, [field]: value });
@@ -256,6 +268,7 @@ export function FlowStepInspectorDrawer({
                           key={post.id}
                           type="button"
                           onClick={() => {
+                            setActivePreviewTab?.("COMMENT");
                             onUpdateNodeData(id, {
                               ...data,
                               postId: post.id,

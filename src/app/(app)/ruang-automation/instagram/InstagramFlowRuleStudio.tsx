@@ -870,13 +870,199 @@ export function InstagramFlowRuleStudio({
     return `M ${x1} ${y1} C ${x1 + dx} ${y1}, ${x2 - dx} ${y2}, ${x2} ${y2}`;
   }, [connectingPort, graphState.nodes]);
 
-  // Extract ruleFormData representation for live phone preview
+  // Auto-switch preview tab when a node is selected in canvas
+  useEffect(() => {
+    if (!selectedNodeId) return;
+    const node = graphState.nodes.find((n) => n.id === selectedNodeId);
+    if (!node) return;
+
+    if (node.type === "TRIGGER" || node.type === "PUBLIC_COMMENT_REPLY") {
+      setPreviewTab("COMMENT");
+    } else if (
+      node.type === "WELCOME_DM" ||
+      node.type === "MAIN_DM" ||
+      node.type === "ASK_FOLLOW" ||
+      node.type === "ASK_CONTACT" ||
+      node.type === "SMART_DELAY" ||
+      node.type === "ACTIONS" ||
+      node.type === "START_AUTOMATION" ||
+      node.type === "CONDITION" ||
+      node.type === "RANDOMIZER"
+    ) {
+      setPreviewTab("DM");
+    }
+  }, [selectedNodeId, graphState.nodes]);
+
+  // Extract individual node data reactively
+  const triggerNode = graphState.nodes.find((n) => n.type === "TRIGGER");
+  const welcomeNode = graphState.nodes.find((n) => n.type === "WELCOME_DM");
+  const askFollowNode = graphState.nodes.find((n) => n.type === "ASK_FOLLOW");
+  const askContactNode = graphState.nodes.find((n) => n.type === "ASK_CONTACT");
+  const mainNode = graphState.nodes.find((n) => n.type === "MAIN_DM");
+  const publicCommentNode = graphState.nodes.find((n) => n.type === "PUBLIC_COMMENT_REPLY");
+  const smartDelayNode = graphState.nodes.find((n) => n.type === "SMART_DELAY");
+
+  const triggerData = triggerNode?.data || {};
+  const welcomeData = welcomeNode?.data || {};
+  const askFollowData = askFollowNode?.data || {};
+  const askContactData = askContactNode?.data || {};
+  const mainData = mainNode?.data || {};
+  const publicCommentData = publicCommentNode?.data || {};
+  const smartDelayData = smartDelayNode?.data || {};
+
+  // Dynamically resolve currently selected post (live update when user selects in inspector)
+  const currentPostId = triggerData.postId || initialRule?.specificPostId || "";
+  const selectedPost = useMemo(() => {
+    if (currentPostId && feedPosts.length > 0) {
+      const found = feedPosts.find((p) => p.id === currentPostId);
+      if (found) return found;
+    }
+    if (triggerData.postCoverUrl) {
+      return {
+        id: currentPostId || "custom_post",
+        image: triggerData.postCoverUrl,
+        thumb: triggerData.postCoverUrl,
+        caption: "Postingan Terpilih",
+        likes: 127,
+        comments: 124,
+        date: "Baru saja",
+      };
+    }
+    return feedPosts.length > 0 ? feedPosts[0] : null;
+  }, [feedPosts, currentPostId, triggerData.postCoverUrl]);
+
+  // Extract reactive ruleFormData representation for live phone preview
   const previewFormData = useMemo(() => {
-    return compileFlowGraphToRulePayload(graphState, {
-      accountId: agentAccount?.id,
-      setLive: graphState.isActive,
-    });
-  }, [graphState, agentAccount]);
+    const rawKeywords = triggerData.keywords ?? "mau, link, spill";
+    const keywordsStr = Array.isArray(rawKeywords)
+      ? rawKeywords.join(", ")
+      : typeof rawKeywords === "string"
+      ? rawKeywords
+      : "mau";
+
+    const commentReplies =
+      publicCommentData.commentReplies ||
+      triggerData.commentReplies || [
+        triggerData.replyCommentTemplates || "Pesan terkirim! 🚀",
+      ];
+
+    const firstReply =
+      Array.isArray(commentReplies) && commentReplies.length > 0
+        ? commentReplies[0]
+        : "Pesan terkirim! 🚀";
+
+    return {
+      name: graphState.ruleName || "Otomasi Flow Instagram",
+      targetOtomasi: triggerData.targetOtomasi || graphState.targetOtomasi || "Postingan Tertentu",
+      postType: triggerData.postType || "SPECIFIC",
+      postId: triggerData.postId || "",
+      postCoverUrl: triggerData.postCoverUrl || selectedPost?.thumb || selectedPost?.image || "",
+      keywords: keywordsStr,
+      triggerCommentType: triggerData.triggerCommentType || "KEYWORDS",
+      keywordRule: triggerData.keywordRule || "Contains",
+      storyMentionFrequency: triggerData.storyMentionFrequency || "24 jam sekali",
+
+      // Balasan Komentar Publik
+      featureReplyComment: Boolean(publicCommentNode) || Boolean(triggerData.featureReplyComment ?? true),
+      replyCommentTemplates: firstReply,
+      commentReplyVariations: commentReplies,
+      likeComment: publicCommentData.likeComment ?? triggerData.likeComment ?? true,
+      commentLimit: publicCommentData.commentLimit || triggerData.commentLimit || "1x per akun",
+
+      // Welcome DM
+      featureWelcomeMessage: Boolean(welcomeNode),
+      welcomeMessageType: welcomeData.welcomeMessageType || "Template Tombol",
+      welcomeMessage:
+        welcomeData.welcomeMessage !== undefined
+          ? welcomeData.welcomeMessage
+          : "Akses nya udah kita buatin nihh!!\n\nMau? ✨",
+      welcomeButtonLabel:
+        welcomeData.welcomeButtonLabel !== undefined
+          ? welcomeData.welcomeButtonLabel
+          : "Lihat Produk 🤩",
+
+      // Ask Follow
+      featureAskForFollow: Boolean(askFollowNode),
+      askForFollowMessageType: askFollowData.askForFollowMessageType || "Template Tombol",
+      askForFollowMessage:
+        askFollowData.askForFollowMessage !== undefined
+          ? askFollowData.askForFollowMessage
+          : "Eitss, follow akun kami dulu ya untuk mendapatkan akses eksklusif ini! 🙌",
+      askForFollowButtonLabel:
+        askFollowData.askForFollowButtonLabel !== undefined
+          ? askFollowData.askForFollowButtonLabel
+          : "Udah follow 🙌",
+      askForFollowHasRetry: Boolean(askFollowData.askForFollowHasRetry),
+      askForFollowRetryMessage:
+        askFollowData.askForFollowRetryMessage ||
+        "Sepertinya kamu belum follow nih. Klik tombol di bawah setelah follow ya! 🙏",
+      askForFollowRetryButtonLabel:
+        askFollowData.askForFollowRetryButtonLabel || "Cek Lagi",
+
+      // Ask Contact
+      featureAskForContact: Boolean(askContactNode),
+      askContactType: askContactData.askContactType || "Email Saja",
+      askContactMessage:
+        askContactData.askContactMessage !== undefined
+          ? askContactData.askContactMessage
+          : "Boleh minta alamat email aktif kamu agar kami bisa kirimkan link materinya?",
+      askContactInvalidMessage:
+        askContactData.askContactInvalidMessage ||
+        "Format email yang kamu masukkan belum valid. Mohon ketikkan alamat email yang benar ya!",
+
+      // Main DM
+      messageType: mainData.messageType || "BUTTON_TEMPLATE",
+      dmMessage:
+        mainData.dmMessage !== undefined
+          ? mainData.dmMessage
+          : "Halo {first_name}! Ini link akses spesial yang kamu minta:\n\nhttps://ruangcreativemuslim.com/materi-eksklusif\n\nSemoga bermanfaat! 🔥",
+      buttons: mainData.buttons || [
+        {
+          id: "btn_1",
+          label: "Buka Materi Sekarang 🚀",
+          type: "web_url",
+          url: "https://ruangcreativemuslim.com",
+        },
+      ],
+      carouselSlides: mainData.carouselSlides || [],
+      quickReplies: mainData.quickReplies || [],
+
+      // Smart Delay / Follow Up
+      featureFollowUp: Boolean(mainData.featureFollowUp || smartDelayNode),
+      followUpDelay:
+        mainData.followUpDelay || smartDelayData.delay || "1 Jam",
+      followUpCondition:
+        mainData.followUpCondition || "Hanya yang Belum Klik Link",
+      followUpMessageType: mainData.followUpMessageType || "BUTTON_TEMPLATE",
+      followUpMessage:
+        mainData.followUpMessage ||
+        "Halo {first_name}! Mau mengingatkan link di atas masih aktif nih. Jangan lupa dibuka ya! 😊",
+      followUpButtonLabel:
+        mainData.followUpButtonLabel || "Buka Link Sekarang",
+      followUpButtons: mainData.followUpButtons || [],
+      followUpCarouselSlides: mainData.followUpCarouselSlides || [],
+      followUpQuickReplies: mainData.followUpQuickReplies || [],
+
+      liveContents: [],
+      replyHeartReaction: false,
+    };
+  }, [
+    graphState.ruleName,
+    graphState.targetOtomasi,
+    triggerData,
+    welcomeData,
+    askFollowData,
+    askContactData,
+    mainData,
+    publicCommentData,
+    smartDelayData,
+    welcomeNode,
+    askFollowNode,
+    askContactNode,
+    publicCommentNode,
+    smartDelayNode,
+    selectedPost,
+  ]);
 
   const existingNodeTypes = graphState.nodes.map((n) => n.type);
 
@@ -1107,6 +1293,7 @@ export function InstagramFlowRuleStudio({
         activeStories={activeStories}
         isAccountLinked={isAccountLinked}
         isLoadingFeed={isLoadingFeed}
+        setActivePreviewTab={setPreviewTab}
       />
 
       {/* 5. ADD STEP DRAWER / MENU */}
@@ -1166,7 +1353,7 @@ export function InstagramFlowRuleStudio({
               activeLiveContent={null}
               account={agentAccount || currentAgent}
               currentAgent={currentAgent || agentAccount}
-              selectedPost={defaultPost}
+              selectedPost={selectedPost}
               selectedStory={activeStories[0] || null}
               feedPosts={feedPosts}
               simulatedFollowStep={simulatedFollowStep}
