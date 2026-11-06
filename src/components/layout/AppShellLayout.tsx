@@ -214,6 +214,15 @@ export default function AppShellLayout({
   const activeHasBlueprint = hasBlueprint || !!blueprintData?.aiResult || !!blueprintData;
   const [blueprintModal, setBlueprintModal] = useState<{ isOpen: boolean; toolName?: string }>({ isOpen: false });
   const [activeMaintConfig, setActiveMaintConfig] = useState<MaintenanceConfig | null>(maintenanceConfig ?? null);
+  const [isSidebarHidden, setIsSidebarHidden] = useState(false);
+
+  useEffect(() => {
+    const handleSidebarVisibility = (e: any) => {
+      setIsSidebarHidden(Boolean(e.detail?.hide));
+    };
+    window.addEventListener("app-sidebar-visibility", handleSidebarVisibility);
+    return () => window.removeEventListener("app-sidebar-visibility", handleSidebarVisibility);
+  }, []);
 
   useEffect(() => {
     setActiveMaintConfig(maintenanceConfig ?? null);
@@ -501,8 +510,10 @@ export default function AppShellLayout({
       {/* FLOATING SIDEBAR (DESKTOP) */}
       <aside
         className={`hidden md:flex fixed left-4 top-1/2 -translate-y-1/2 z-[60] bg-white/90 dark:bg-[#141B31]/90 backdrop-blur-xl border border-gray-200 dark:border-[#2C3246] shadow-2xl rounded-2xl flex-col transition-all duration-300 ease-in-out ${
-          isExpanded ? "w-[260px]" : "w-[64px]"
-        } overflow-hidden`}
+          isSidebarHidden
+            ? "-translate-x-32 opacity-0 pointer-events-none"
+            : "translate-x-0 opacity-100"
+        } ${isExpanded ? "w-[260px]" : "w-[64px]"} overflow-hidden`}
       >
         {/* Toggle Button */}
         <div className="flex items-center justify-end p-2 border-b border-gray-100 dark:border-[#2C3246]/60">

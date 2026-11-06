@@ -57,6 +57,7 @@ interface InstagramPhonePreviewProps {
   simulatedLiveQrId: string | null;
   setSimulatedLiveQrId: (id: string | null) => void;
   hideHeader?: boolean;
+  compact?: boolean;
   className?: string;
 }
 
@@ -89,6 +90,7 @@ export function InstagramPhonePreview({
   simulatedLiveQrId,
   setSimulatedLiveQrId,
   hideHeader = false,
+  compact = false,
   className,
 }: InstagramPhonePreviewProps) {
   const activeAccount = currentAgent || account;
@@ -147,7 +149,7 @@ export function InstagramPhonePreview({
 
       {/* Switcher Tab Pratinjau: Postingan & Komentar vs Pesan DM (Disembunyikan untuk Story Mention, Live Instagram & Pesan Instagram) */}
       {!isStoryMentionTarget && !isLiveTarget && !isDmTarget && (
-        <div className="flex items-center justify-center pt-2 pb-1">
+        <div className={`flex items-center justify-center ${compact ? "pt-1 pb-1" : "pt-2 pb-1"}`}>
           <div className="p-1 rounded-xl bg-gray-200/80 dark:bg-white/10 flex items-center gap-1 text-xs font-semibold">
             <button
               type="button"
@@ -198,8 +200,14 @@ export function InstagramPhonePreview({
       )}
 
       {/* iPhone 16 Pro Mockup Chassis */}
-      <div className="my-auto py-3">
-        <div className="w-[285px] sm:w-[295px] h-[585px] mx-auto rounded-[52px] p-[6px] bg-gradient-to-b from-[#38383e] via-[#1c1c1f] to-[#121214] ring-1 ring-white/20 shadow-2xl relative select-none">
+      <div className={`w-full flex items-center justify-center overflow-hidden ${compact ? "my-auto py-1" : "my-auto py-3"}`}>
+        <div
+          className={`${
+            compact
+              ? "w-[268px] sm:w-[276px] h-[465px] sm:h-[480px] max-h-[calc(100vh-240px)] rounded-[44px] p-[5px] origin-top scale-[0.88] sm:scale-95 md:scale-100 transition-transform"
+              : "w-[285px] sm:w-[295px] h-[585px] rounded-[52px] p-[6px]"
+          } mx-auto bg-gradient-to-b from-[#38383e] via-[#1c1c1f] to-[#121214] ring-1 ring-white/20 shadow-2xl relative select-none flex flex-col shrink-0`}
+        >
           {/* Left Hardware Buttons */}
           <div className="w-[3px] h-3.5 bg-gray-600 rounded-l absolute -left-[3px] top-24" />
           <div className="w-[3px] h-8 bg-gray-600 rounded-l absolute -left-[3px] top-32" />
@@ -208,14 +216,26 @@ export function InstagramPhonePreview({
           <div className="w-[3px] h-12 bg-gray-600 rounded-r absolute -right-[3px] top-32" />
 
           {/* Screen Inner Container */}
-          <div className="w-full h-full bg-white dark:bg-black rounded-[46px] overflow-hidden flex flex-col relative border border-black/80 text-gray-900 dark:text-white">
+          <div
+            className={`w-full h-full bg-white dark:bg-black ${
+              compact ? "rounded-[39px]" : "rounded-[46px]"
+            } overflow-hidden flex flex-col relative border border-black/80 text-gray-900 dark:text-white`}
+          >
             {/* Dynamic Island Floating Notch */}
-            <div className="w-24 h-6 bg-black rounded-full mx-auto absolute top-2.5 left-1/2 -translate-x-1/2 z-30 flex items-center justify-end pr-2.5 shadow-md">
-              <div className="w-2.5 h-2.5 rounded-full bg-[#18181b] ring-1 ring-white/10" />
+            <div
+              className={`${
+                compact ? "w-20 h-5 top-2" : "w-24 h-6 top-2.5"
+              } bg-black rounded-full mx-auto absolute left-1/2 -translate-x-1/2 z-30 flex items-center justify-end pr-2 shadow-md`}
+            >
+              <div className="w-2 h-2 rounded-full bg-[#18181b] ring-1 ring-white/10" />
             </div>
 
             {/* Status Bar */}
-            <div className="flex items-center justify-between px-6 pt-3 pb-1 text-[11px] font-semibold text-gray-900 dark:text-white shrink-0 z-20">
+            <div
+              className={`flex items-center justify-between px-5 ${
+                compact ? "pt-2 pb-0.5 text-[10px]" : "pt-3 pb-1 text-[11px]"
+              } font-semibold text-gray-900 dark:text-white shrink-0 z-20`}
+            >
               <span>10:03</span>
               <div className="flex items-center gap-1.5 text-gray-900 dark:text-white">
                 <Wifi className="w-3.5 h-3.5" />
@@ -1024,7 +1044,11 @@ export function InstagramPhonePreview({
             )}
 
             {/* Bottom Home Indicator */}
-            <div className="w-24 h-1 rounded-full bg-black/40 dark:bg-white/40 mx-auto my-1.5 shrink-0 z-30" />
+            <div
+              className={`${
+                compact ? "w-20 h-1 my-1" : "w-24 h-1 my-1.5"
+              } rounded-full bg-black/40 dark:bg-white/40 mx-auto shrink-0 z-30`}
+            />
           </div>
         </div>
       </div>

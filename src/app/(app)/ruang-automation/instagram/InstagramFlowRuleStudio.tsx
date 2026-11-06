@@ -126,6 +126,23 @@ export function InstagramFlowRuleStudio({
     [graphState.nodes, selectedNodeId]
   );
 
+  // Auto-hide application floating sidebar when Step Inspector (Pengaturan) is open
+  useEffect(() => {
+    const isInspectorOpen = Boolean(selectedNodeId);
+    window.dispatchEvent(
+      new CustomEvent("app-sidebar-visibility", {
+        detail: { hide: isInspectorOpen },
+      })
+    );
+    return () => {
+      window.dispatchEvent(
+        new CustomEvent("app-sidebar-visibility", {
+          detail: { hide: false },
+        })
+      );
+    };
+  }, [selectedNodeId]);
+
   // =========================================================================
   // Canvas Mouse & Gesture Handlers (Pan & Zoom)
   // =========================================================================
@@ -774,7 +791,7 @@ export function InstagramFlowRuleStudio({
           </div>
 
           {/* Drawer Body with interactive simulator */}
-          <div className="flex-1 overflow-y-auto p-4 flex justify-center items-start">
+          <div className="flex-1 overflow-hidden p-2 sm:p-3 flex flex-col justify-center items-center">
             <InstagramPhonePreview
               ruleFormData={previewFormData as any}
               setRuleFormData={() => {}}
@@ -804,7 +821,8 @@ export function InstagramFlowRuleStudio({
               simulatedLiveQrId={simulatedLiveQrId}
               setSimulatedLiveQrId={setSimulatedLiveQrId}
               hideHeader={true}
-              className="w-full flex flex-col justify-start items-center"
+              compact={true}
+              className="w-full h-full flex flex-col justify-center items-center overflow-hidden"
             />
           </div>
         </div>
