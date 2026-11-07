@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import { TikTokUserProfile, TikTokPostItem } from "@/app/(app)/ruang-riset/tiktok/types";
+import { getResolvedRisetConfig } from "@/lib/riset-config";
 
 // In-memory cache (30 seconds debounce) to prevent double-click abuse while always ensuring fresh live data
 const TIKTOK_CACHE_TTL_MS = 30 * 1000;
@@ -393,7 +394,9 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    const cfg = await getResolvedRisetConfig();
     const tiktokSessionId =
+      cfg.tiktokSessionId ||
       process.env.TIKTOK_SESSION_ID?.trim() ||
       "796fa1dafc0b9c32891250d088c9aa8c";
 

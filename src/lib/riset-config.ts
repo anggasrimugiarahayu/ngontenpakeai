@@ -3,6 +3,9 @@ import prisma from "@/lib/prisma";
 export interface InstagramRisetConfig {
   instagramSessionId?: string;
   tiktokSessionId?: string;
+  tiktokSessionStatus?: "VALID" | "EXPIRED" | "UNKNOWN";
+  tiktokLastCheckedAt?: string;
+  tiktokStatusError?: string;
   rapidApiKey?: string;
   rapidApiHost?: string;
   metaPageAccessToken?: string;
@@ -36,6 +39,9 @@ export async function getResolvedRisetConfig(): Promise<Required<InstagramRisetC
       dbConfig.tiktokSessionId?.trim() ||
       process.env.TIKTOK_SESSION_ID?.trim() ||
       "",
+    tiktokSessionStatus: dbConfig.tiktokSessionStatus || (dbConfig.tiktokSessionId || process.env.TIKTOK_SESSION_ID ? "UNKNOWN" : "UNKNOWN"),
+    tiktokLastCheckedAt: dbConfig.tiktokLastCheckedAt || "",
+    tiktokStatusError: dbConfig.tiktokStatusError || "",
     rapidApiKey:
       dbConfig.rapidApiKey?.trim() ||
       process.env.RAPIDAPI_KEY?.trim() ||
@@ -81,5 +87,30 @@ export async function updateInstagramSessionStatus(
     });
   } catch (err) {
     console.error("Failed to update instagram session status:", err);
+  }
+}
+
+export async function updateTiktokSessionStatus(
+  status: "VALID" | "EXPIRED" | "UNKNOWN",
+  errorMsg?: string
+) {
+  try {
+    const row = await prisma.appSetting.findUnique({
+      where: { key: RISET_CONFIG_KEY },
+    });
+    const current: InstagramRisetConfig = row?.value ? JSON.parse(row.value) : {};
+    const updated: InstagramRisetConfig = {
+      ...current,
+      tiktokSessionStatus: status,
+      tiktokLastCheckedAt: new Date().toISOString(),
+      tiktokStatusError: errorMsg || (status === "VALID" ? "" : current.tiktokStatusError || ""),
+    };
+    await prisma.appSetting.upsert({
+      where: { key: RISET_CONFIG_KEY },
+      update: { value: JSON.stringify(updated) },
+      create: { key: RISET_CONFIG_KEY, value: JSON.stringify(updated) },
+    });
+  } catch (err) {
+    console.error("Failed to update tiktok session status:", err);
   }
 }

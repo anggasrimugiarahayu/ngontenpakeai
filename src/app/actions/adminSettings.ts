@@ -20,6 +20,7 @@ import {
   InstagramRisetConfig,
   getResolvedRisetConfig,
   updateInstagramSessionStatus,
+  updateTiktokSessionStatus,
 } from "@/lib/riset-config";
 
 async function assertAdmin() {
@@ -968,6 +969,142 @@ export async function deleteInstagramSessionAction() {
     sessionStatus: "UNKNOWN",
     lastCheckedAt: new Date().toISOString(),
     statusError: "",
+  };
+
+  await prisma.appSetting.upsert({
+    where: { key: RISET_CONFIG_KEY },
+    update: { value: JSON.stringify(updated) },
+    create: { key: RISET_CONFIG_KEY, value: JSON.stringify(updated) },
+  });
+
+  try {
+    revalidatePath("/pengaturan");
+    revalidatePath("/ruang-riset");
+  } catch {}
+
+  return { success: true };
+}
+
+export async function testTiktokSessionAction(sessionIdInput?: string) {
+  await assertAdmin();
+  let rawSessionId = sessionIdInput?.trim();
+  if (!rawSessionId) {
+    const cfg = await getResolvedRisetConfig();
+    rawSessionId = cfg.tiktokSessionId;
+  }
+  if (!rawSessionId) {
+    return { success: false, status: "UNKNOWN", message: "TikTok Session ID belum diisi" };
+  }
+
+  const rawCleaned = rawSessionId.replace(/^sessionid(_ss)?=/i, "").split(";")[0].trim();
+  const sessionId = rawCleaned;
+
+  try {
+    const res = await fetch("https://www.tiktok.com/", {
+      headers: {
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        Cookie: `sessionid=${sessionId}; sessionid_ss=${sessionId};`,
+        "Accept-Language": "id-ID,id;q=0.9,en-US;q=0.8",
+      },
+      redirect: "manual",
+      cache: "no-store",
+    });
+
+    const isRedirect = res.status >= 300 && res.status < 400;
+    if (isRedirect) {
+      await updateTiktokSessionStatus("EXPIRED", "TikTok mengalihkan sesi (Redirect 302/Login)");
+      return {
+        success: false,
+        status: "EXPIRED",
+        statusCode: res.status,
+        message: "Session ID kadaluarsa atau ditolak oleh TikTok (Redirect ke halaman login).",
+      };
+    }
+
+    if (res.status === 200) {
+      await updateTiktokSessionStatus("VALID");
+      return {
+        success: true,
+        status: "VALID",
+        statusCode: 200,
+        message: "TikTok Session ID terverifikasi aktif & sehat (HTTP 200 OK)!",
+      };
+    }
+
+    await updateTiktokSessionStatus("UNKNOWN", `Respon TikTok: HTTP ${res.status}`);
+    return {
+      success: false,
+      status: "UNKNOWN",
+      statusCode: res.status,
+      message: `TikTok merespons dengan status HTTP ${res.status}`,
+    };
+  } catch (err: any) {
+    const isRedirectLoop = String(err?.message || "").includes("redirect");
+    const status = isRedirectLoop ? "EXPIRED" : "UNKNOWN";
+    const msg = isRedirectLoop
+      ? "Session ID kadaluarsa (Redirect count exceeded oleh TikTok)."
+      : (err?.message || "Gagal menghubungi TikTok");
+
+    await updateTiktokSessionStatus(status, msg);
+    return { success: false, status, message: msg };
+  }
+}
+
+export async function saveTiktokSessionAction(rawSessionId: string) {
+  await assertAdmin();
+  const cleaned = rawSessionId.replace(/^sessionid(_ss)?=/i, "").split(";")[0].trim();
+  if (!cleaned) {
+    return { success: false, error: "TikTok Session ID tidak boleh kosong" };
+  }
+
+  const row = await prisma.appSetting.findUnique({
+    where: { key: RISET_CONFIG_KEY },
+  });
+  const current: InstagramRisetConfig = row?.value ? JSON.parse(row.value) : {};
+
+  const testRes = await testTiktokSessionAction(cleaned);
+
+  const updated: InstagramRisetConfig = {
+    ...current,
+    tiktokSessionId: cleaned,
+    tiktokSessionStatus: (testRes.status as any) || "VALID",
+    tiktokLastCheckedAt: new Date().toISOString(),
+    tiktokStatusError: testRes.success ? "" : testRes.message,
+  };
+
+  await prisma.appSetting.upsert({
+    where: { key: RISET_CONFIG_KEY },
+    update: { value: JSON.stringify(updated) },
+    create: { key: RISET_CONFIG_KEY, value: JSON.stringify(updated) },
+  });
+
+  try {
+    revalidatePath("/pengaturan");
+    revalidatePath("/ruang-riset");
+  } catch {}
+
+  return {
+    success: true,
+    testStatus: testRes.status,
+    message: testRes.success
+      ? "TikTok Session ID berhasil disimpan dan terverifikasi AKTIF!"
+      : `TikTok Session ID berhasil disimpan, namun status saat ini: ${testRes.message}`,
+  };
+}
+
+export async function deleteTiktokSessionAction() {
+  await assertAdmin();
+  const row = await prisma.appSetting.findUnique({
+    where: { key: RISET_CONFIG_KEY },
+  });
+  const current: InstagramRisetConfig = row?.value ? JSON.parse(row.value) : {};
+  const updated: InstagramRisetConfig = {
+    ...current,
+    tiktokSessionId: "",
+    tiktokSessionStatus: "UNKNOWN",
+    tiktokLastCheckedAt: new Date().toISOString(),
+    tiktokStatusError: "",
   };
 
   await prisma.appSetting.upsert({
