@@ -13,7 +13,7 @@ import { CopyPlus, LayoutTemplate, Mic2, Zap, Target, Send, Square, CheckCircle2
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Tesseract from 'tesseract.js';
-import { extractAudioFromMedia } from "@/lib/audio/clientAudioExtractor";
+import { extractTextFromVideoFrames } from "@/lib/video/videoFrameOcr";
 
 const AI_MODELS = [
   { value: 'llama-3.3-70b-versatile', label: 'Llama 3.3' },
@@ -177,26 +177,65 @@ export default function AtmBuilderClient() {
         setChatHistory(prev => prev.map(m => m.id === userMessageId ? { ...m, isExtracting: false } : m));
       }
     } else if (isMedia && currentFile) {
-      try {
-        // Ekstraksi audio kilat di browser: video 30MB diperkecil jadi audio WAV 16kHz (~500KB) dalam < 0.5s!
-        let targetMediaBlob = currentFile.rawFile;
-        if (!targetMediaBlob && currentFile.fileData) {
-          const res = await fetch(currentFile.fileData);
-          targetMediaBlob = await res.blob();
-        }
+      let extractedTranscript = "";
 
-        if (targetMediaBlob) {
-          const audioResult = await extractAudioFromMedia(targetMediaBlob);
-          payloadFileData = audioResult.base64;
-          payloadFileType = audioResult.mimeType;
+      // Jalur A: Coba baca teks/subtitle/hook di layar video secara lokal (0 Token AI, super cepat)
+      if (currentFile.fileType?.startsWith('video/')) {
+        try {
+          const videoTarget = currentFile.rawFile || (currentFile.fileData ? await (await fetch(currentFile.fileData)).blob() : null);
+          if (videoTarget) {
+            const onScreenText = await extractTextFromVideoFrames(videoTarget);
+            if (onScreenText && onScreenText.length > 25) {
+              extractedTranscript = onScreenText;
+            }
+          }
+        } catch (vOcrErr) {
+          console.warn("Video Frame OCR skipped:", vOcrErr);
         }
-      } catch (audioExtractErr) {
-        console.warn("Client audio extraction fallback:", audioExtractErr);
-        payloadFileData = currentFile.fileData;
-        payloadFileType = currentFile.fileType;
-      } finally {
-        setChatHistory(prev => prev.map(m => m.id === userMessageId ? { ...m, isExtracting: false } : m));
       }
+
+      // Jalur B: Jika tidak ada teks di layar (video orang bicara), transkrip suara via FormData stream (Groq Whisper)
+      if (!extractedTranscript) {
+        try {
+          let uploadMedia = currentFile.rawFile;
+          if (!uploadMedia && currentFile.fileData) {
+            const res = await fetch(currentFile.fileData);
+            uploadMedia = await res.blob();
+          }
+
+          if (uploadMedia) {
+            const formData = new FormData();
+            formData.append('file', uploadMedia, currentFile.fileName || 'media.mp4');
+
+            const transcribeRes = await fetch('/api/atm-builder/transcribe', {
+              method: 'POST',
+              body: formData,
+            });
+
+            if (transcribeRes.ok) {
+              const transcribeData = await transcribeRes.json();
+              if (transcribeData.transcript && transcribeData.transcript.trim().length > 3) {
+                extractedTranscript = transcribeData.transcript.trim();
+              }
+            } else {
+              const errData = await transcribeRes.json().catch(() => ({}));
+              console.warn("Transcribe endpoint returned error:", errData);
+            }
+          }
+        } catch (audioTranscribeErr) {
+          console.warn("Audio transcribe fetch error:", audioTranscribeErr);
+        }
+      }
+
+      // Jika transkrip naskah berhasil didapatkan (dari teks layar ataupun dari suara Whisper):
+      if (extractedTranscript && extractedTranscript.length > 5) {
+        processedInput = `[TRANSKRIP ASLI DARI MEDIA REFERENSI (AUDIO/VIDEO)]:\n${extractedTranscript}\n\n${currentInput.trim() ? `[CATATAN TAMBAHAN USER]:\n${currentInput.trim()}\n\n` : ''}[INSTRUKSI]: Tolong analisis dan bedah transkrip naskah di atas dengan metode ATM (Amati, Tiru, Modifikasi) sesuai Master Blueprint. Tuliskan transkrip aslinya di field 'transkrip_sumber' dan ciptakan 3 variasi naskah konten baru yang mematikan.`;
+        // PENTING: Jangan kirim Base64 video ke /api/atm-builder/generate (menghindari error 413 & Unexpected token)
+        payloadFileData = undefined;
+        payloadFileType = undefined;
+      }
+
+      setChatHistory(prev => prev.map(m => m.id === userMessageId ? { ...m, isExtracting: false } : m));
     }
 
     setIsLocalExtracting(false);
