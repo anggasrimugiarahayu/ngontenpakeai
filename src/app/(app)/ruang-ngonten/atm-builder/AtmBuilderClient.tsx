@@ -13,6 +13,7 @@ import { CopyPlus, LayoutTemplate, Mic2, Zap, Target, Send, Square, CheckCircle2
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Tesseract from 'tesseract.js';
+import { extractAudioFromMedia } from "@/lib/utils/audioExtractor";
 
 const AI_MODELS = [
   { value: 'llama-3.3-70b-versatile', label: 'Llama 3.3' },
@@ -178,17 +179,37 @@ export default function AtmBuilderClient() {
     } else if (isMedia && currentFile) {
       let extractedTranscript = "";
 
-      // Ekstraksi Suara Langsung via Groq Whisper (FormData stream, cepat, jernih & akurat)
+      // Pastikan payload video mentah TIDAK AKAN PERNAH dikirim ke /api/atm-builder/generate (Zero Payload Leak)
+      payloadFileData = undefined;
+      payloadFileType = undefined;
+
+      // 1. Ekstraksi Audio di Browser via Web Audio API (Super cepat & menyusutkan ukuran 98%!)
       try {
-        let uploadMedia = currentFile.rawFile;
-        if (!uploadMedia && currentFile.fileData) {
+        setChatHistory(prev => prev.map(m => m.id === userMessageId ? { ...m, extractingLabel: "Mengekstrak suara video di browser..." } : m));
+
+        let sourceMedia = currentFile.rawFile;
+        if (!sourceMedia && currentFile.fileData) {
           const res = await fetch(currentFile.fileData);
-          uploadMedia = await res.blob();
+          sourceMedia = await res.blob();
         }
 
-        if (uploadMedia) {
+        let audioUploadBlob: Blob | null = null;
+        if (sourceMedia) {
+          try {
+            audioUploadBlob = await extractAudioFromMedia(sourceMedia);
+          } catch (audioExtractErr) {
+            console.warn("Client-side Web Audio API extraction fallback to raw media:", audioExtractErr);
+            audioUploadBlob = sourceMedia;
+          }
+        }
+
+        // 2. Transkripsi Audio via Groq Whisper (Stream mikro-audio WAV ~300 KB)
+        if (audioUploadBlob) {
+          setChatHistory(prev => prev.map(m => m.id === userMessageId ? { ...m, extractingLabel: "Mentranskrip audio via Whisper AI..." } : m));
+
           const formData = new FormData();
-          formData.append('file', uploadMedia, currentFile.fileName || 'media.mp4');
+          const uploadFileName = audioUploadBlob.type.includes('wav') ? 'audio.wav' : (currentFile.fileName || 'media.mp4');
+          formData.append('file', audioUploadBlob, uploadFileName);
 
           const transcribeRes = await fetch('/api/atm-builder/transcribe', {
             method: 'POST',
@@ -207,17 +228,28 @@ export default function AtmBuilderClient() {
         }
       } catch (audioTranscribeErr) {
         console.warn("Audio transcribe fetch error:", audioTranscribeErr);
+      } finally {
+        setChatHistory(prev => prev.map(m => m.id === userMessageId ? { ...m, isExtracting: false } : m));
       }
 
       // Jika transkrip naskah suara berhasil didapatkan:
       if (extractedTranscript && extractedTranscript.length > 5) {
         processedInput = `[TRANSKRIP ASLI DARI MEDIA REFERENSI (AUDIO/VIDEO)]:\n${extractedTranscript}\n\n${currentInput.trim() ? `[CATATAN TAMBAHAN USER]:\n${currentInput.trim()}\n\n` : ''}[INSTRUKSI]: Tolong analisis dan bedah transkrip naskah di atas dengan metode ATM (Amati, Tiru, Modifikasi) sesuai Master Blueprint. Tuliskan transkrip aslinya di field 'transkrip_sumber' dan ciptakan 3 variasi naskah konten baru yang mematikan.`;
-        // PENTING: Jangan kirim Base64 video ke /api/atm-builder/generate (menghindari error 413 & Unexpected token)
-        payloadFileData = undefined;
-        payloadFileType = undefined;
+      } else if (!currentInput.trim()) {
+        // Jika suara tidak terdeteksi DAN user tidak menulis catatan apapun
+        setIsLocalExtracting(false);
+        setChatHistory(prev => [...prev, {
+          id: Date.now() + 1,
+          role: "assistant",
+          content: "",
+          data: {
+            is_error: true,
+            error_message: "Suara percakapan tidak terdeteksi di dalam video ini. Mohon sertakan catatan naskah atau topik di kolom pesan agar AI dapat langsung membedah dan merakit 3 versi kontennya."
+          }
+        }]);
+        setAtmInputText(currentInput);
+        return;
       }
-
-      setChatHistory(prev => prev.map(m => m.id === userMessageId ? { ...m, isExtracting: false } : m));
     }
 
     setIsLocalExtracting(false);

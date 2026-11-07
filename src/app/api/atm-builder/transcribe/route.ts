@@ -39,19 +39,37 @@ export async function POST(req: NextRequest) {
 
     // Forward file directly to Groq Whisper via in-memory stream pass-through (0 Byte disk storage)
     const groqFormData = new FormData();
-    groqFormData.append('file', file, file.name || 'media.mp4');
+    groqFormData.append('file', file, file.name || 'audio.wav');
     groqFormData.append('model', 'whisper-large-v3-turbo');
     groqFormData.append('response_format', 'json');
     groqFormData.append('temperature', '0');
     groqFormData.append('language', 'id');
 
-    const groqRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+    let groqRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${activeGroqKey}`,
       },
       body: groqFormData,
     });
+
+    // Auto-retry with whisper-large-v3 if turbo experiences 503 (high demand) or 429
+    if (!groqRes.ok && (groqRes.status === 503 || groqRes.status === 429 || groqRes.status === 404)) {
+      const fallbackFormData = new FormData();
+      fallbackFormData.append('file', file, file.name || 'audio.wav');
+      fallbackFormData.append('model', 'whisper-large-v3');
+      fallbackFormData.append('response_format', 'json');
+      fallbackFormData.append('temperature', '0');
+      fallbackFormData.append('language', 'id');
+
+      groqRes = await fetch('https://api.groq.com/openai/v1/audio/transcriptions', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${activeGroqKey}`,
+        },
+        body: fallbackFormData,
+      });
+    }
 
     if (!groqRes.ok) {
       const errorJson = await groqRes.json().catch(() => ({}));

@@ -79,16 +79,23 @@ export async function callGroqChatCompletion(options: {
     body: JSON.stringify(body),
   });
 
-  if (!res.ok && res.status === 404 && resolvedModel !== "qwen/qwen3.8-27b") {
-    body.model = "qwen/qwen3.8-27b";
-    res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(body),
-    });
+  // Auto-failover to alternative healthy Groq models if primary model is 404, 503 (high demand), or 429
+  if (!res.ok && (res.status === 404 || res.status === 503 || res.status === 429)) {
+    const fallbackList = ["qwen/qwen3.8-27b", "openai/gpt-oss-120b", "openai/gpt-oss-20b"].filter(
+      (m) => m !== body.model
+    );
+    for (const altModel of fallbackList) {
+      body.model = altModel;
+      res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) break;
+    }
   }
 
   if (!res.ok) {

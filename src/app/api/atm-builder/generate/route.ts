@@ -5,7 +5,7 @@ import { GoogleGenAI } from '@google/genai';
 import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import prisma from "@/lib/prisma";
-import { generateStructuredAiContent, isGroqModel } from "@/lib/ai/geminiClient";
+import { generateStructuredAiContent, isGroqModel, extractJsonFromResponse } from "@/lib/ai/geminiClient";
 import { transcribeWithGroqWhisper } from "@/lib/ai/groqWhisper";
 
 export async function POST(req: Request) {
@@ -263,12 +263,11 @@ PENTING: Format output WAJIB berupa JSON yang valid.
         return NextResponse.json({ error: 'Respon kosong dari layanan AI' });
       }
 
-      let aiText = textResult.replace(/\s*·\s*/g, ', ');
-      const jsonMatch = aiText.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        return NextResponse.json({ error: 'Format JSON dari AI tidak valid' });
+      try {
+        data = extractJsonFromResponse(textResult);
+      } catch (jsonErr: any) {
+        return NextResponse.json({ error: 'Format JSON dari AI tidak valid: ' + jsonErr.message }, { status: 500 });
       }
-      data = JSON.parse(jsonMatch[0]);
     } else {
       const userPrompt = userParts.map(p => p.text).filter(Boolean).join('\n\n');
       data = await generateStructuredAiContent({
