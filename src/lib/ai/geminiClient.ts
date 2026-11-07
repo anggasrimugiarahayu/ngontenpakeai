@@ -32,7 +32,10 @@ export function resolveGroqModel(modelId: string): string {
     return "qwen/qwen3.8-27b";
   }
   if (lower.includes("llama-3.1") || lower.includes("8b")) {
-    return "openai/gpt-oss-20b";
+    return "llama-3.1-8b-instant";
+  }
+  if (lower.includes("20b") || lower.includes("120b") || lower.includes("openai")) {
+    return "openai/gpt-oss-120b";
   }
   return modelId;
 }

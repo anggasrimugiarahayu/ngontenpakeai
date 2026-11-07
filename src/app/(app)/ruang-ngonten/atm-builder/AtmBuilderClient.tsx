@@ -12,15 +12,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { CopyPlus, LayoutTemplate, Mic2, Zap, Target, Send, Square, CheckCircle2, MessageSquare, Search, UserCircle, Calendar, Bot, Lightbulb, Video, Filter, ChevronDown, Copy, Check, Save, Plus, Mic, X, FileText, ChevronLeft, ChevronRight, Camera } from "lucide-react";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import Tesseract from 'tesseract.js';
 
 const AI_MODELS = [
+  { value: 'llama-3.3-70b-versatile', label: 'Llama 3.3' },
+  { value: 'qwen/qwen3.8-27b', label: 'Qwen 3.8' },
+  { value: 'openai/gpt-oss-120b', label: 'OpenAI 120B' },
   { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash' },
-  { value: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash' },
-  { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash' },
-  { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite' },
-  { value: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash-Lite' },
-  { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
-  { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' }
+  { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite' }
 ];
 
 export default function AtmBuilderClient() {
@@ -74,23 +73,49 @@ export default function AtmBuilderClient() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleATMUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleATMUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      if (file.size > 50 * 1024 * 1024) {
-        toast.error("Ukuran file terlalu besar! Maksimal 50 MB.");
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        setAtmAttachedFile({
-          fileData: event.target?.result as string,
-          fileType: file.type,
-          fileName: file.name
-        });
-      };
-      reader.readAsDataURL(file);
+    if (!file) return;
+
+    if (file.size > 50 * 1024 * 1024) {
+      toast.error("Ukuran file terlalu besar! Maksimal 50 MB.");
+      return;
     }
+
+    // 1. Jika file berupa GAMBAR: Ekstrak teks secara lokal dengan Tesseract (0 Token AI)
+    if (file.type.startsWith('image/')) {
+      toast.loading("🔍 Mengekstrak teks dari gambar secara lokal...", { id: "ocr-toast" });
+      try {
+        const result = await Tesseract.recognize(file, 'ind+eng');
+        toast.dismiss("ocr-toast");
+        const extractedText = result?.data?.text?.trim() || "";
+
+        if (extractedText.length > 5) {
+          toast.success("✅ Teks berhasil diekstrak dari gambar!");
+          setAtmInputText(prev => (prev.trim() ? `${prev}\n\n${extractedText}` : extractedText));
+          if (atmFileInputRef.current) atmFileInputRef.current.value = "";
+          return;
+        }
+      } catch (ocrErr) {
+        console.warn("Local OCR gagal, beralih ke lampiran gambar:", ocrErr);
+        toast.dismiss("ocr-toast");
+      }
+    }
+
+    // 2. Jika file berupa Video/Audio atau OCR tidak menemukan teks: Lampirkan file
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setAtmAttachedFile({
+        fileData: event.target?.result as string,
+        fileType: file.type,
+        fileName: file.name
+      });
+      if (file.type.startsWith('video/') || file.type.startsWith('audio/')) {
+        toast.success(`🎥 Media ${file.name} terlampir. Audio/suara akan ditranskrip kilat via Whisper!`);
+      }
+    };
+    reader.readAsDataURL(file);
+    if (atmFileInputRef.current) atmFileInputRef.current.value = "";
   };
 
   const generateATMContent = async () => {
@@ -113,8 +138,15 @@ export default function AtmBuilderClient() {
     setAtmInputText("");
     setAtmAttachedFile(null);
 
+    // PENTING: Bersihkan chatHistory agar fileData Base64 raksasa dari pesan lama TIDAK dikirim ke server!
+    const cleanChatHistory = chatHistory.map(m => ({
+      role: m.role,
+      content: m.content,
+      type: m.type
+    }));
+
     const { data, error } = await fetchAI('/api/atm-builder/generate', {
-      chatHistory: [...chatHistory, userMessage],
+      chatHistory: cleanChatHistory,
       currentInput: currentInput,
       fileData: currentFile?.fileData,
       fileType: currentFile?.fileType,

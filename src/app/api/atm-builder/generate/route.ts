@@ -1,11 +1,12 @@
 import { getDefaultAiModel } from "@/lib/get-ai-model";
-import { getApiKey } from "@/lib/get-api-key";
+import { getApiKey, getGroqApiKey } from "@/lib/get-api-key";
 import { NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import prisma from "@/lib/prisma";
 import { generateStructuredAiContent, isGroqModel } from "@/lib/ai/geminiClient";
+import { transcribeWithGroqWhisper } from "@/lib/ai/groqWhisper";
 
 export async function POST(req: Request) {
   try {
@@ -136,36 +137,70 @@ PENTING: Format output WAJIB berupa JSON yang valid.
     if (currentInput && currentInput.trim()) {
       userParts.push({ text: currentInput });
     }
-    
-    let googleAiClient: GoogleGenAI | null = null;
+
+    let data: any;
+
     if (fileData) {
+      const base64Data = fileData.split(',')[1] || fileData;
+
+      // 1. FAST-PATH: Transkripsi Kilat Audio/Video menggunakan Groq Whisper
+      if (fileType.startsWith('video/') || fileType.startsWith('audio/')) {
+        const activeGroqKey = await getGroqApiKey(userRecord?.groqApiKey);
+        if (activeGroqKey) {
+          try {
+            const transcript = await transcribeWithGroqWhisper({
+              base64Data,
+              mimeType: fileType,
+              apiKey: activeGroqKey,
+            });
+
+            if (transcript && transcript.trim().length > 5) {
+              const combinedPrompt = `[TRANSKRIP ASLI DARI MEDIA REFERENSI (AUDIO/VIDEO)]:\n${transcript}\n\n${currentInput && currentInput.trim() ? `[CATATAN TAMBAHAN USER]:\n${currentInput.trim()}\n\n` : ''}[INSTRUKSI]: Tolong analisis dan bedah transkrip naskah di atas dengan metode ATM (Amati, Tiru, Modifikasi) sesuai Master Blueprint. Tuliskan transkrip aslinya di field 'transkrip_sumber' dan ciptakan 3 variasi naskah konten baru yang mematikan.`;
+
+              data = await generateStructuredAiContent({
+                apiKey: userRecord?.googleApiKey || undefined,
+                groqApiKey: userRecord?.groqApiKey || undefined,
+                model,
+                userPrompt: combinedPrompt,
+                systemPrompt,
+                responseMimeType: 'application/json',
+              });
+
+              if (accessCheck.featureId) {
+                await incrementFeatureUsage(session.user.id, accessCheck.featureId);
+              }
+
+              return NextResponse.json(data);
+            }
+          } catch (whisperErr: any) {
+            console.warn('[ATM Builder] Groq Whisper fallback ke Google Multimodal:', whisperErr?.message || whisperErr);
+          }
+        }
+      }
+
+      // 2. FALLBACK: Multimodal Google Gen AI (untuk Gambar atau Video tanpa suara)
       const apiKey = await getApiKey(userRecord?.googleApiKey);
       if (!apiKey) {
         return NextResponse.json({ error: "Google Gemini API Key diperlukan untuk menganalisis file gambar/video/audio." }, { status: 400 });
       }
-      googleAiClient = new GoogleGenAI({ apiKey });
+      const googleAiClient = new GoogleGenAI({ apiKey });
 
-      const base64Data = fileData.split(',')[1];
-      
       if (fileType.startsWith('video/') || fileType.startsWith('audio/')) {
         const os = require('os');
         const path = require('path');
         const fs = require('fs');
         
-        // Write to a temporary file
         const ext = fileType.split('/')[1] || 'mp4';
         const tempFilePath = path.join(os.tmpdir(), `gemini-upload-${Date.now()}.${ext}`);
         fs.writeFileSync(tempFilePath, Buffer.from(base64Data, 'base64'));
         
         try {
-          // Upload to Gemini File API
           const uploadResult = await (googleAiClient.files.upload as any)({
              file: tempFilePath,
              mimeType: fileType,
           });
           const uploadedFileName: string = uploadResult.name || "";
           
-          // If video, we must wait for processing to complete
           if (fileType.startsWith('video/') && uploadedFileName) {
              let fileInfo = await googleAiClient.files.get({ name: uploadedFileName });
              while (fileInfo.state === 'PROCESSING') {
@@ -173,7 +208,7 @@ PENTING: Format output WAJIB berupa JSON yang valid.
                 fileInfo = await googleAiClient.files.get({ name: uploadedFileName });
              }
              if (fileInfo.state === 'FAILED') {
-                throw new Error("Video processing failed on Google Gemini servers.");
+                throw new Error("Pemrosesan video gagal di server Google.");
              }
           }
           
@@ -185,13 +220,12 @@ PENTING: Format output WAJIB berupa JSON yang valid.
           });
           userParts.push({ text: "\n\n[Tolong analisis referensi file video/audio di atas untuk di-ATM dengan mempertahankan Hook/Judul pembuka dan struktur aslinya]" });
         } finally {
-          // Always clean up temp file
           if (fs.existsSync(tempFilePath)) {
              fs.unlinkSync(tempFilePath);
           }
         }
       } else {
-        // Images can still use inlineData
+        // Gambar
         userParts.push({
           inlineData: {
             mimeType: fileType,
@@ -200,12 +234,9 @@ PENTING: Format output WAJIB berupa JSON yang valid.
         });
         userParts.push({ text: "\n\n[Tolong analisis referensi file gambar di atas untuk di-ATM dengan mempertahankan Hook/Judul pembuka dan struktur aslinya]" });
       }
-    }
 
-    let data: any;
-
-    if (fileData && googleAiClient) {
-      const targetModel = model && !isGroqModel(model) ? model : "gemini-2.5-flash";
+      // Gunakan model Gemini aktif (gemini-3.7-flash atau gemini-3.5-flash-lite), hindari gemini-2.5-flash yang sudah ditutup Google
+      const targetModel = model && !isGroqModel(model) && !model.includes("2.5-flash") ? model : "gemini-3.7-flash";
       const response = await googleAiClient.models.generateContent({
         model: targetModel,
         contents: [{ role: 'user', parts: userParts }],
@@ -217,13 +248,13 @@ PENTING: Format output WAJIB berupa JSON yang valid.
 
       const textResult = response.text;
       if (!textResult) {
-        return NextResponse.json({ error: 'Empty response from AI' });
+        return NextResponse.json({ error: 'Respon kosong dari layanan AI' });
       }
 
       let aiText = textResult.replace(/\s*·\s*/g, ', ');
       const jsonMatch = aiText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
-        return NextResponse.json({ error: 'Invalid JSON format from AI' });
+        return NextResponse.json({ error: 'Format JSON dari AI tidak valid' });
       }
       data = JSON.parse(jsonMatch[0]);
     } else {
