@@ -265,7 +265,7 @@ export function TikTokVideoModal({ video, profile, onClose }: Props) {
                 className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#ff004f] to-rose-600 hover:opacity-90 text-white font-semibold flex items-center gap-1.5 transition-opacity shadow-xs"
               >
                 <Sparkles className="w-3.5 h-3.5" />
-                <span>Bawa ke ATM Content Builder</span>
+                <span>Bawa ke ATM Content</span>
               </Link>
               <button
                 type="button"

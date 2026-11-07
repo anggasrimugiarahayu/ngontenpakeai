@@ -13,8 +13,11 @@ const NGONTEN_ORDER = [
   "Bio Builder",
   "Idea Rooms",
   "Script Builder",
+  "Carousel Prompt",
   "Carousel Prompt Builder",
+  "ATM Content",
   "ATM Content Builder",
+  "Ebook Prompt",
   "Ebook Prompt Builder",
   "Content Calendar",
 ];

@@ -43,21 +43,21 @@ const features = [
     href: "/ruang-ngonten/script-builder"
   },
   {
-    title: "Carousel Prompt Builder",
+    title: "Carousel Prompt",
     description: "Desain alur cerita slide carousel yang edukatif, rapi, dan mudah dipahami.",
     points: ["Isi Topik", "Generate Slide", "Prompt Visual"],
     icon: Images,
     href: "/ruang-ngonten/carousel-builder"
   },
   {
-    title: "ATM Content Builder",
+    title: "ATM Content",
     description: "Strategi Amati, Tiru, dan Modifikasi konten yang sudah terbukti sukses.",
     points: ["Masukkan Referensi", "Analisis Konten", "Hasil Adaptasi"],
     icon: RefreshCw,
     href: "/ruang-ngonten/atm-builder"
   },
   {
-    title: "Ebook Prompt Builder",
+    title: "Ebook Prompt",
     description: "Susun kerangka dan draft Ebook secara instan untuk kebutuhan Lead Magnet.",
     points: ["Isi Topik", "Generate Draft", "Hasil Ebook"],
     icon: BookOpen,
@@ -76,7 +76,12 @@ export default function ToolGrid({ hasBlueprint, dbFeatures = [], isPro = false,
   
   // Map hardcoded features with DB features
   const mappedFeatures = features.map(f => {
-    const dbMatch = dbFeatures.find(db => db.name === f.title);
+    const dbMatch = dbFeatures.find(db => 
+      db.name === f.title ||
+      (f.title === "Carousel Prompt" && (db.name === "Carousel Prompt Builder" || db.name === "Carousel Builder")) ||
+      (f.title === "ATM Content" && (db.name === "ATM Content Builder" || db.name === "ATM Builder")) ||
+      (f.title === "Ebook Prompt" && (db.name === "Ebook Prompt Builder" || db.name === "Ebook Builder"))
+    );
     return {
       ...f,
       isActive: dbMatch ? dbMatch.isActive : true,

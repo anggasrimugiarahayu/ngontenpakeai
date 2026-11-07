@@ -21,7 +21,7 @@ const ToolLoading = ({ title }: { title: string }) => (
 );
 
 const AtmBuilderClient = dynamic(() => import("./atm-builder/AtmBuilderClient"), {
-  loading: () => <ToolLoading title="ATM Content Builder" />,
+  loading: () => <ToolLoading title="ATM Content" />,
   ssr: false,
 });
 const BioBuilderClient = dynamic(() => import("./bio-builder/BioBuilderClient"), {
@@ -29,7 +29,7 @@ const BioBuilderClient = dynamic(() => import("./bio-builder/BioBuilderClient"),
   ssr: false,
 });
 const CarouselBuilderClient = dynamic(() => import("./carousel-builder/CarouselBuilderClient"), {
-  loading: () => <ToolLoading title="Carousel Prompt Builder" />,
+  loading: () => <ToolLoading title="Carousel Prompt" />,
   ssr: false,
 });
 const ContentCalendarClient = dynamic(() => import("./content-calendar/ContentCalendarClient"), {
@@ -37,7 +37,7 @@ const ContentCalendarClient = dynamic(() => import("./content-calendar/ContentCa
   ssr: false,
 });
 const EbookBuilderClient = dynamic(() => import("./ebook-builder/EbookBuilderClient"), {
-  loading: () => <ToolLoading title="Ebook Prompt Builder" />,
+  loading: () => <ToolLoading title="Ebook Prompt" />,
   ssr: false,
 });
 const IdeaRoomsClient = dynamic(() => import("./idea-rooms/IdeaRoomsClient"), {

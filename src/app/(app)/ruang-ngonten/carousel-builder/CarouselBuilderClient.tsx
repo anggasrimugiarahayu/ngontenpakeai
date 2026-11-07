@@ -608,7 +608,7 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG DENGAN STANDAR COPYWRITING TINGGI:
   return (
     <div className="h-full w-full" onClick={() => { setIsScriptMenuOpen(false); setIsModelMenuOpen(false); }}>
       <GlobalChatLayout
-        title={<>Carousel Builder <Images className="text-rn-accent inline-block ml-2" size={32} /></>}
+        title={<>Carousel Prompt <Images className="text-rn-accent inline-block ml-2" size={32} /></>}
         subtitle="Sulap ide jadi desain carousel multi-slide yang mengalir dan bikin audiens betah geser sampai akhir."
         chatHistory={chatHistory}
         renderCustomMessage={renderCustomMessage}

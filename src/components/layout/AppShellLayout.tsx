@@ -66,9 +66,9 @@ const TOOLS = [
   { href: "/ruang-ngonten/bio-builder", label: "Bio Builder", icon: User },
   { href: "/ruang-ngonten/idea-rooms", label: "Idea Rooms", icon: Lightbulb },
   { href: "/ruang-ngonten/script-builder", label: "Script Builder", icon: FileText },
-  { href: "/ruang-ngonten/carousel-builder", label: "Carousel Prompt Builder", icon: LayoutTemplate },
-  { href: "/ruang-ngonten/atm-builder", label: "ATM Content Builder", icon: RefreshCw },
-  { href: "/ruang-ngonten/ebook-builder", label: "Ebook Prompt Builder", icon: BookOpen },
+  { href: "/ruang-ngonten/carousel-builder", label: "Carousel Prompt", icon: LayoutTemplate },
+  { href: "/ruang-ngonten/atm-builder", label: "ATM Content", icon: RefreshCw },
+  { href: "/ruang-ngonten/ebook-builder", label: "Ebook Prompt", icon: BookOpen },
   { href: "/ruang-ngonten/content-calendar", label: "Content Calendar", icon: Calendar },
 ];
 

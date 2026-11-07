@@ -65,9 +65,9 @@ export default async function RuangNgontenCatchAllPage(props: {
         (currentSlug === "bio-builder" && f.name === "Bio Builder") ||
         (currentSlug === "idea-rooms" && f.name === "Idea Rooms") ||
         (currentSlug === "script-builder" && f.name === "Script Builder") ||
-        (currentSlug === "carousel-builder" && f.name === "Carousel Prompt Builder") ||
-        (currentSlug === "atm-builder" && f.name === "ATM Content Builder") ||
-        (currentSlug === "ebook-builder" && f.name === "Ebook Prompt Builder") ||
+        (currentSlug === "carousel-builder" && (f.name === "Carousel Prompt" || f.name === "Carousel Prompt Builder" || f.name === "Carousel Builder")) ||
+        (currentSlug === "atm-builder" && (f.name === "ATM Content" || f.name === "ATM Content Builder" || f.name === "ATM Builder")) ||
+        (currentSlug === "ebook-builder" && (f.name === "Ebook Prompt" || f.name === "Ebook Prompt Builder" || f.name === "Ebook Builder")) ||
         (currentSlug === "content-calendar" && f.name === "Content Calendar")
       );
     });

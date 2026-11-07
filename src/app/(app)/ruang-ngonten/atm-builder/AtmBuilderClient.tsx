@@ -511,7 +511,7 @@ export default function AtmBuilderClient() {
   return (
     <div className="h-full w-full">
       <GlobalChatLayout
-        title={<>ATM Content Builder <CopyPlus className="text-rn-accent inline-block ml-2" size={32} /></>}
+        title={<>ATM Content <CopyPlus className="text-rn-accent inline-block ml-2" size={32} /></>}
         subtitle="Bedah dan rakit ulang konten referensi viral menjadi versi Anda sendiri tanpa terlihat menjiplak."
         chatHistory={chatHistory}
         renderCustomMessage={renderCustomMessage}

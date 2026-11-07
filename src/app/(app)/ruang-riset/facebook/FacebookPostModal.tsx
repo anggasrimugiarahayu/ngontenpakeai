@@ -306,14 +306,14 @@ export function FacebookPostModal({ post, profile, onClose }: Props) {
             </div>
           </div>
 
-          {/* Bagian Bawah: Integrasi ATM Content Builder & Aksi Salin */}
+          {/* Bagian Bawah: Integrasi ATM Content & Aksi Salin */}
           <div className="pt-2 border-t border-gray-100 dark:border-[#232D42] space-y-2.5">
             <Link
               href={`/ruang-ngonten/atm-builder?refTitle=${encodeURIComponent(post.title)}`}
               className="w-full py-2.5 px-4 rounded-xl bg-gradient-to-r from-[#1877F2] to-blue-600 hover:opacity-95 text-white font-bold text-xs flex items-center justify-center gap-2 transition-opacity shadow-sm cursor-pointer"
             >
               <Sparkles className="w-4 h-4" />
-              <span>Bawa ke ATM Content Builder</span>
+              <span>Bawa ke ATM Content</span>
             </Link>
 
             <div className="flex items-center gap-2 text-xs">

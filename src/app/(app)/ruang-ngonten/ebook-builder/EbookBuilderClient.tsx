@@ -309,7 +309,7 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
   return (
     <div className="h-full w-full">
       <GlobalChatLayout
-        title={<>Ebook Prompt Builder <BookOpen className="text-rn-accent inline-block ml-2" size={32} /></>}
+        title={<>Ebook Prompt <BookOpen className="text-rn-accent inline-block ml-2" size={32} /></>}
         subtitle="Riset ide brilian, rakit kerangka (outline), dan cetak master prompt untuk membuat Ebook berkualitas premium."
         chatHistory={chatHistory}
         renderCustomMessage={renderCustomMessage}

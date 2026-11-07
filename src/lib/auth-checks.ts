@@ -2,6 +2,7 @@ import prisma from "@/lib/prisma";
 import { revalidateTag } from "next/cache";
 import { getCachedFeatures, getCachedQuotaConfig, getCachedMaintenanceConfig } from "@/lib/cache";
 import { isAdminEmail } from "@/lib/admin";
+import { getFeatureByName } from "@/config/features-registry";
 
 export interface FeatureAccessResult {
   authorized: boolean;
@@ -45,11 +46,17 @@ export async function verifyFeatureAccess(
     getCachedMaintenanceConfig(),
   ]);
 
+  const regDef = getFeatureByName(featureName);
+  const matchNames = Array.from(new Set([
+    featureName.toLowerCase(),
+    ...(regDef ? [regDef.name.toLowerCase(), ...(regDef.aliases || []).map((a: string) => a.toLowerCase())] : [])
+  ]));
+
   const feature =
-    allFeatures.find((f) => f.name.toLowerCase() === featureName.toLowerCase()) ||
+    allFeatures.find((f) => matchNames.includes(f.name.toLowerCase())) ||
     (await prisma.feature.findFirst({
       where: {
-        name: { equals: featureName, mode: "insensitive" },
+        OR: matchNames.map(n => ({ name: { equals: n, mode: "insensitive" } }))
       },
     }));
 
