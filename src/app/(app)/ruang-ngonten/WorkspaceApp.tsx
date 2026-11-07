@@ -148,7 +148,7 @@ export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLogged
         {visited.calendar && <ContentCalendarClient />}
       </div>
       <div style={{ display: isEbook ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
-        {visited.ebook && <EbookBuilderClient />}
+        {visited.ebook && <EbookBuilderClient blueprintData={blueprintData?.aiResult} />}
       </div>
       <div style={{ display: isIdeaRooms ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
         {visited.ideaRooms && <IdeaRoomsClient />}

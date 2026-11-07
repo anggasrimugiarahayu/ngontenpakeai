@@ -13,6 +13,8 @@ import { useAIChat } from '@/hooks/useAIChat';
 
 export default function EbookBuilderClient({ blueprintData = {} }: { blueprintData?: any }) {
   const { fetchAI, isLoading, setIsLoading, abort } = useAIChat();
+  const { data: dbBlueprint } = useSWR("blueprint", getBlueprintAction);
+  const activeBlueprintData = dbBlueprint?.aiResult || dbBlueprint?.blueprintData || blueprintData;
   
   const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_ebook_builder", []);
   const [inputText, setInputText] = useState("");
@@ -62,7 +64,7 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
     const { data, error } = await fetchAI('/api/ebook-builder/generate', {
       prompt: promptText,
       history: historyCtx,
-      blueprint: blueprintData,
+      blueprint: activeBlueprintData,
       model: selectedModel,
       isShortcut: Boolean(overridePrompt) || promptText.includes('[SYSTEM AUTO-SUBMIT]') || promptText.includes('[SYSTEM_OUTLINE]')
     });

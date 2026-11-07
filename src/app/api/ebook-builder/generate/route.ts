@@ -37,12 +37,46 @@ export async function POST(req: NextRequest) {
       groqApiKey
     } = body;
     
+    // 1. Safety fallback: If blueprint is not provided or empty in body, load user's latest blueprint from DB
+    let activeBlueprint = blueprint;
+    if (!activeBlueprint || (typeof activeBlueprint === "object" && Object.keys(activeBlueprint).length === 0)) {
+      const dbBlueprint = await prisma.masterBlueprint.findFirst({
+        where: { userId: session.user.id },
+        orderBy: { updatedAt: "desc" }
+      });
+      activeBlueprint = dbBlueprint?.aiResult || null;
+    }
+
+    const bp = (activeBlueprint && typeof activeBlueprint === "object") ? activeBlueprint : {};
+
+    // 2. Synthesize real persona & positioning details for Best-Seller Prompting
+    const authorContext = bp.positioning_identity || bp.niche_statement || bp.value_statement || (bp.knowledge_skills ? (Array.isArray(bp.knowledge_skills) ? bp.knowledge_skills.join(", ") : bp.knowledge_skills) : "") || "Praktisi & Kreator Ahli di bidang ini";
+    const targetAudience = (Array.isArray(bp.target_audiences) ? bp.target_audiences.join(', ') : bp.target_audiences) || (Array.isArray(bp.pain_points) ? bp.pain_points.join(', ') : bp.pain_points) || "Pemilik bisnis, UMKM, dan profesional yang ingin bertumbuh";
+    const languageTone = (Array.isArray(bp.language_tone) ? bp.language_tone.join(', ') : bp.language_tone) || "Praktis, to-the-point, santai namun profesional, empati dan solutif";
+    const audienceVocab = (Array.isArray(bp.audience_vocabulary) ? bp.audience_vocabulary.join(', ') : bp.audience_vocabulary) || "";
+
+    const globalInstruction = `[GLOBAL INSTRUCTION UNTUK AI - BEST SELLER BOOK STANDARD]
+Tindaklah sebagai Asisten Penulis E-book Profesional & Ghostwriter Kelas Dunia. Sebelum memproses perintah penulisan di bawah, resapi dan patuhi pedoman mutlak ini:
+1. KONTEKS PENULIS: ${authorContext}
+2. TARGET PEMBACA: ${targetAudience}
+3. GAYA BAHASA (KONSISTENSI MUTLAK): ${languageTone}${audienceVocab ? `. Kosakata & Istilah Audiens: ${audienceVocab}` : ''}. Gunakan gaya penulisan natural, mudah dicerna, dan bernyawa seolah mengobrol di meja kopi dengan mentor berpengalaman yang pernah merasakan jatuh bangunnya bisnis. Pertahankan konsistensi kata ganti 'Saya' dan 'Anda' dari awal hingga akhir buku. DILARANG KERAS berubah kaku atau robotik!
+4. FORMULA PENULISAN 4-BAGIAN DI SETIAP SUB-BAB (BEST SELLER FORMULA):
+   - Mitos / Kesalahan Umum: Awali dengan membongkar asumsi keliru atau cara lama yang bikin audiens frustrasi.
+   - Prinsip / Pola Pikir Baru: Jelaskan solusi atau sudut pandang yang tepat dan terbukti.
+   - Analogi Kasat Mata / Mini Studi Kasus: Berikan contoh riil agar konsep langsung nempel di kepala.
+   - Micro-Action: Berikan 1 langkah kecil yang langsung bisa dipraktikkan pembaca dalam waktu 10-15 menit.
+5. JEMBATAN TRANSISI AKHIR BAB (CLIFFHANGER / OPEN LOOP): Di akhir setiap bab, WAJIB sertakan 1 paragraf transisi pemikat yang merangkum pesan bab dan memicu rasa penasaran membara pembaca untuk melanjutkan ke bab berikutnya.
+6. ATURAN PENULISAN & FORMATTING (HARGA MATI):
+   - HINDARI kalimat basa-basi klise (misal: "Penting untuk dipahami bahwa...", "Di era digital ini...", "Tidak dapat dipungkiri bahwa...").
+   - Tulis dalam bentuk paragraf kohesif dan padu (3-5 kalimat per paragraf). DILARANG KERAS menekan Enter di setiap akhir 1 kalimat seperti puisi/sosmed! Rangkai menjadi paragraf buku fisik yang nyaman dibaca.
+   - Target panjang naskah: 500-800 kata per sub-bab yang padat, bernas, dan bebas kalimat pengisi (filler).`;
+
     // Construct System Prompt
     const systemPrompt = `[MASTER PROMPT – EBOOK PROMPT BUILDER AI]
 [KONDISI WAKTU: Saat ini adalah tahun ${new Date().getFullYear()}]
 
 [MASTER BLUEPRINT PENGGUNA]
-${JSON.stringify(blueprint, null, 2)}
+${JSON.stringify(activeBlueprint || {}, null, 2)}
 
 [PERAN ANDA]
 Anda adalah Asisten Riset & Elite Prompt Engineer khusus pembuatan E-Book.
@@ -59,6 +93,9 @@ Anda beroperasi dalam 3 Mode:
 2. JIKA input mengandung tag "[SYSTEM_OUTLINE]" -> MODE B (OUTLINER):
    - Pengguna telah memilih ide. Tugas Anda merakit kerangka / Outline yang komprehensif.
    - Buatkan Outline Ebook Lengkap (Bisa 7-12 Bab tergantung ruang lingkup).
+   - ATURAN KONSISTENSI STRUKTUR (ANTI-TABRAKAN POLA):
+     * Gunakan alur modul/pilar yang konsisten dari Bab 1 hingga akhir (misal: Fondasi -> Strategi -> Taktik -> Skala).
+     * DILARANG mencampur aduk antara judul modul teoretis dengan timeline waktu acak (seperti tiba-tiba 'Hari 1-7') yang menyebabkan materi tumpang tindih.
    - ATURAN PENOMORAN MUTLAK: DILARANG menggunakan strip (-), bullet, atau asterisk. Anda WAJIB menggunakan penomoran hierarkis yang rapi (BAB 1, 1.1, 1.1.1).
    - ATURAN PANJANG TEKS (HARGA MATI): 
      1. Judul BAB dan Judul SUB-BAB harus sangat ringkas, MAKSIMAL HANYA 4 HINGGA 6 KATA!
@@ -68,35 +105,35 @@ Anda beroperasi dalam 3 Mode:
      1.1 [Judul Sub-Bab, MAKS 4 - 6 KATA]
          1.1.1 [Inti Pembahasan spesifik, MAKS 6 - 7 KATA]
          1.1.2 [Inti Pembahasan spesifik, MAKS 6 - 7 KATA]
-   - Jangan lupa sertakan bagian "Kata Pengantar" di awal dan "Kesimpulan & Daftar Pustaka" di akhir.
+   - Sertakan bagian "Kata Pengantar" di awal dan "Kesimpulan & Daftar Pustaka" di akhir.
    - Format Output: "response_type": "review_outline". Masukkan seluruh teks kerangka ke dalam field "outlineText".
 
 3. JIKA input mengandung tag "[SYSTEM AUTO-SUBMIT]" -> MODE C (PROMPT PRODUCTION):
    - Pengguna telah MENYETUJUI Outline final. DILARANG KERAS MENULIS ISI EBOOK SECARA LANGSUNG!
-   - Tugas Anda adalah meracik "Master Prompt Blocks" yang berisi instruksi super detail untuk disalin pengguna ke ChatGPT/Claude.
+   - Tugas Anda adalah meracik "Master Prompt Blocks" yang berisi instruksi spesifik untuk disalin pengguna ke ChatGPT/Claude.
    
-   - HARGA MATI (GLOBAL INSTRUCTION): Untuk mencegah AI (ChatGPT/Claude) amnesia, berubah gaya penulisan, atau memotong paragraf secara serampangan antar bab, Anda WAJIB MUTLAK menyematkan teks "[GLOBAL INSTRUCTION UNTUK AI]" SECARA LENGKAP KATA PER KATA di awal/atas SETIAP blok prompt.
+   - ATURAN KELENGKAPAN SELURUH BAB (HARGA MATI):
+     * Anda WAJIB membuat 1 blok prompt terpisah untuk SETIAP bab yang ada di Outline (MULAI DARI KATA PENGANTAR, BAB 1, BAB 2, HINGGA SELURUH BAB TERAKHIR, SERTA KESIMPULAN & DAFTAR PUSTAKA)!
+     * DILARANG KERAS BERHENTI DI TENGAH JALAN ATAU HANYA MEMBUAT 2-3 BAB! Jika outline memiliki 7 bab, Anda WAJIB menghasilkan seluruh 9 blok (Kata Pengantar + 7 Bab + Kesimpulan).
    
-   - DILARANG KERAS MALAS ATAU MENYINGKAT TEKS! JANGAN PERNAH menulis "[Sama seperti blok 1]" atau "[Global Instruction di atas]". Anda WAJIB MENG-COPY-PASTE seluruh teks pedoman di bawah ini secara UTUH 100% ke DALAM SETIAP BLOK PROMPT (Blok 1, Blok 2, Blok 3, dst).
-   
-   - Format dan Teks [GLOBAL INSTRUCTION UNTUK AI] yang WAJIB Anda cetak UTUH di setiap awal blok prompt (Sesuaikan isi variabel di dalam kurung siku dengan Master Blueprint pengguna):
-     """
-     [GLOBAL INSTRUCTION UNTUK AI]
-     Tindaklah sebagai Asisten Penulis E-book Profesional. Sebelum memproses perintah penulisan di bawah, resapi dan patuhi pedoman utama ini:
-     1. KONTEKS PENULIS: [Sebutkan Positioning & Keahlian dari Master Blueprint]
-     2. TARGET PEMBACA: [Sebutkan Target Audiens, Masalah & Tingkat Pemahaman dari Master Blueprint]
-     3. GAYA BAHASA (KONSISTENSI MUTLAK): [Sebutkan Language Tone & Audience Vocabulary dari Blueprint]. Gunakan gaya penulisan natural, mudah dicerna, dan ringan (seolah ngobrol tapi tetap profesional dan berbobot). Jaga konsistensi emosi, penggunaan kata ganti (seperti 'Saya' dan 'Anda'), dan gaya bahasa ini dari awal sampai akhir buku. JANGAN PERNAH berubah gaya menjadi kaku atau robotik di pertengahan bab!
-     4. ATURAN MENULIS (HARGA MATI): Kembangkan inti pembahasan dengan contoh praktis, analogi sederhana, atau mini-studi kasus nyata. HINDARI jargon teknis yang membingungkan. JANGAN PERNAH menggunakan kalimat basa-basi (contoh: "Penting untuk dipahami bahwa...", "Di era digital ini..."). 
-     5. ATURAN FORMATTING PARAGRAF (SANGAT KRITIKAL): Tulis naskah dalam bentuk paragraf yang kohesif dan padu (satu paragraf idealnya terdiri dari 3-5 kalimat). DILARANG KERAS menekan 'Enter' atau membuat baris baru (line break) di setiap akhir 1 kalimat. JANGAN membuat tulisan yang patah-patah seperti puisi atau postingan media sosial. Rangkai menjadi paragraf buku profesional yang nyaman dibaca dan format sub-judul menggunakan penomoran hierarkis yang rapi (Bab 1, 1.1, 1.1.1, dst).
-     """
-   
-   - HARGA MATI PEMISAHAN BLOK (1 BLOK = 1 BAB): Anda WAJIB memecah instruksi penulisan menjadi blok-blok terpisah. DILARANG KERAS menggabungkan 2 bab atau lebih ke dalam 1 blok! Ini agar ChatGPT/Claude tidak memotong tulisannya.
-   - Struktur pencetakan blok WAJIB seperti ini:
-     - Blok 1: [CETAK SELURUH Teks GLOBAL INSTRUCTION secara utuh di sini] + Instruksi penulisan Judul, Cover, dan Kata Pengantar (Buat 3-5 paragraf padu, relevan, tidak bertele-tele, gaya humanis).
-     - Blok 2: [CETAK SELURUH Teks GLOBAL INSTRUCTION secara utuh di sini] + Instruksi spesifik meminta AI menulis HANYA BAB 1 (Sertakan daftar Sub-bab & Inti Pembahasannya secara detail beserta nomor urutnya 1.1, 1.1.1. Perintahkan AI untuk menulis 800-1000 kata per sub-bab).
-     - Blok 3: [CETAK SELURUH Teks GLOBAL INSTRUCTION secara utuh di sini] + Instruksi spesifik meminta AI menulis HANYA BAB 2 (beserta sub-bab & intinya).
-     - Blok 4, 5, dst: Lanjutkan pola "1 Blok untuk 1 Bab" ini secara terpisah untuk seluruh bab yang ada di Outline. Pastikan GLOBAL INSTRUCTION dicetak utuh kata per kata di setiap blok.
-     - Blok Terakhir: [CETAK SELURUH Teks GLOBAL INSTRUCTION secara utuh di sini] + Instruksi spesifik meminta AI merangkum Kesimpulan & merapikan Daftar Pustaka.
+   - Untuk setiap blok, buatkan instruksi spesifik yang mendetail (menyertakan judul bab, nomor sub-bab 1.1, 1.1.1, serta poin pembahasannya).
+   - Format Output: "response_type": "ebook_result".
+   - Isi array "prompt_blocks" dengan skema:
+     [
+       {
+         "label": "Blok 1: Judul, Visual Cover & Kata Pengantar",
+         "instruction": "Tuliskan judul ebook, deskripsi visual cover, dan Kata Pengantar sebanyak 3-5 paragraf padu, relevan, tidak bertele-tele, dengan gaya humanis namun profesional."
+       },
+       {
+         "label": "Blok 2: BAB 1 - [Judul Bab 1]",
+         "instruction": "Tuliskan BAB 1: '[Judul Bab 1]' lengkap dengan sub-bab dan sub-sub-bab sesuai outline:\n1.1 [Judul 1.1]\n- 1.1.1 [Poin 1.1.1]\n- 1.1.2 [Poin 1.1.2]\n1.2 [Judul 1.2]\n- 1.2.1 [Poin 1.2.1]\n- 1.2.2 [Poin 1.2.2]"
+       },
+       ... (wajib seluruh bab sampai tuntas!)
+       {
+         "label": "Blok Terakhir: Kesimpulan & Daftar Pustaka",
+         "instruction": "Tuliskan bagian KESIMPULAN & DAFTAR PUSTAKA yang merangkum seluruh poin kunci buku dan menyusun referensi relevan."
+       }
+     ]
 
 [FORMAT OUTPUT JSON WAJIB]
 Format output WAJIB HANYA berupa JSON valid dengan skema berikut:
@@ -116,8 +153,8 @@ Format output WAJIB HANYA berupa JSON valid dengan skema berikut:
   "outlineText": "Diisi HANYA JIKA response_type adalah 'review_outline'. Teks kerangka/outline.",
   "prompt_blocks": [
     {
-      "label": "Blok Prompt 1: Penulisan Bab 1",
-      "content": "Teks instruksi prompt aktual"
+      "label": "Blok 1: Judul, Visual Cover & Kata Pengantar",
+      "instruction": "Tuliskan judul ebook, deskripsi visual cover, dan Kata Pengantar..."
     }
   ]
 }
@@ -149,6 +186,21 @@ Format output WAJIB HANYA berupa JSON valid dengan skema berikut:
       responseMimeType: "application/json",
       temperature: 0.7,
     });
+
+    // Smart Stitching: Prepend the full, enriched Global Instruction with real Blueprint data to each block
+    if (parsedData?.response_type === "ebook_result" && Array.isArray(parsedData.prompt_blocks)) {
+      parsedData.prompt_blocks = parsedData.prompt_blocks.map((block: any, idx: number) => {
+        const rawInstruction = block.instruction || block.content || "";
+        const finalContent = rawInstruction.includes("[GLOBAL INSTRUCTION UNTUK AI")
+          ? rawInstruction
+          : `${globalInstruction}\n\nInstruksi:\n${rawInstruction}`;
+
+        return {
+          label: block.label || `Blok ${idx + 1}`,
+          content: finalContent
+        };
+      });
+    }
 
     if (parsedData?.response_type === "ebook_result" && accessCheck.featureId && !parsedData.is_error) {
       await incrementFeatureUsage(session.user.id, accessCheck.featureId);
