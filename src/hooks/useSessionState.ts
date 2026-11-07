@@ -21,7 +21,18 @@ export function useSessionState<T>(key: string, initialValue: T) {
   useEffect(() => {
     if (isInitialized) {
       try {
-        window.sessionStorage.setItem(key, JSON.stringify(state));
+        let payloadToStore = state;
+        // If state is an array of messages, strip oversized base64 data to stay safely within browser quota
+        if (Array.isArray(state)) {
+          payloadToStore = state.map((item: any) => {
+            if (item && typeof item === 'object' && typeof item.fileData === 'string' && item.fileData.length > 50000) {
+              const { fileData, ...rest } = item;
+              return rest;
+            }
+            return item;
+          }) as unknown as T;
+        }
+        window.sessionStorage.setItem(key, JSON.stringify(payloadToStore));
       } catch (error) {
         console.warn(`Error setting sessionStorage key "${key}":`, error);
       }

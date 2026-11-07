@@ -13,6 +13,7 @@ import {
   RefreshCw,
   ShieldAlert,
   Globe,
+  Zap,
 } from "lucide-react";
 import { InstagramIcon } from "@/app/(app)/ruang-riset/components/RisetIcons";
 import {
@@ -32,6 +33,13 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
   const [apiKey, setApiKey] = useState("");
   const [savedKey, setSavedKey] = useState(initialApiKey);
   const [loadingKey, setLoadingKey] = useState(false);
+
+  // 2. Groq Cloud API Key Global
+  const initialGroqKey =
+    settings?.find((s: any) => s.key === "DEFAULT_GROQ_API_KEY")?.value || "";
+  const [groqKey, setGroqKey] = useState("");
+  const [savedGroqKey, setSavedGroqKey] = useState(initialGroqKey);
+  const [loadingGroqKey, setLoadingGroqKey] = useState(false);
 
   // 2. Instagram & Riset Config
   const rawRisetSetting = settings?.find((s: any) => s.key === RISET_CONFIG_KEY)?.value;
@@ -82,6 +90,39 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
       toast.error(err?.message || "Gagal menghapus API Key");
     } finally {
       setLoadingKey(false);
+    }
+  };
+
+  // =========================================================================
+  // HANDLERS: GROQ CLOUD API KEY GLOBAL
+  // =========================================================================
+  const handleSaveGroqKey = async () => {
+    if (!groqKey.trim()) return;
+    setLoadingGroqKey(true);
+    try {
+      await saveAppSetting("DEFAULT_GROQ_API_KEY", groqKey.trim());
+      setSavedGroqKey(groqKey.trim());
+      setGroqKey("");
+      toast.success("Groq API Key Global berhasil disimpan!");
+    } catch (err: any) {
+      toast.error(err?.message || "Gagal menyimpan Groq API Key");
+    } finally {
+      setLoadingGroqKey(false);
+    }
+  };
+
+  const handleDeleteGroqKey = async () => {
+    if (!(await confirmSwal("Yakin ingin menghapus Groq API Key Global?"))) return;
+    setLoadingGroqKey(true);
+    try {
+      await deleteAppSetting("DEFAULT_GROQ_API_KEY");
+      setGroqKey("");
+      setSavedGroqKey("");
+      toast.success("Groq API Key Global berhasil dihapus!");
+    } catch (err: any) {
+      toast.error(err?.message || "Gagal menghapus Groq API Key");
+    } finally {
+      setLoadingGroqKey(false);
     }
   };
 
@@ -342,6 +383,49 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
                   </div>
                 </td>
               </tr>
+
+              {/* Row 3: Groq Cloud API Global */}
+              <tr className="hover:bg-gray-50/50 dark:hover:bg-white/[0.02] transition-colors">
+                <td className="py-3.5 px-3 font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+                  <div className="w-7 h-7 rounded-lg bg-orange-500/10 text-orange-500 flex items-center justify-center shrink-0">
+                    <Zap className="w-4 h-4" />
+                  </div>
+                  <span>Groq Cloud API</span>
+                </td>
+                <td className="py-3.5 px-3 text-gray-500 dark:text-gray-400 text-xs">
+                  Transkripsi Suara (Whisper) & Model Llama/Qwen
+                </td>
+                <td className="py-3.5 px-3 font-mono text-xs text-gray-700 dark:text-gray-300">
+                  {getMaskedKey(savedGroqKey)}
+                </td>
+                <td className="py-3.5 px-3">
+                  {savedGroqKey ? (
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                      <CheckCircle2 className="w-3 h-3" /> Aktif
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-gray-100 dark:bg-white/5 text-gray-500">
+                      Belum Diatur
+                    </span>
+                  )}
+                </td>
+                <td className="py-3.5 px-3 text-gray-500 dark:text-gray-400 text-xs">
+                  {savedGroqKey ? "Tersimpan di DB" : "-"}
+                </td>
+                <td className="py-3.5 px-3 text-right">
+                  {savedGroqKey && (
+                    <button
+                      type="button"
+                      onClick={handleDeleteGroqKey}
+                      disabled={loadingGroqKey}
+                      className="p-1.5 text-gray-400 hover:text-red-500 rounded-lg hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors cursor-pointer"
+                      title="Hapus Groq API Key"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  )}
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -465,6 +549,76 @@ export function AdminApiKeyTab({ settings }: { settings: any[] }) {
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs sm:text-sm transition-all disabled:opacity-50 shadow-sm shadow-orange-500/20 cursor-pointer shrink-0"
             >
               {loadingKey ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Menyimpan...</span>
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" />
+                  <span>Simpan API Key</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ========================================================================= */}
+      {/* 5. FORM KELOLA: GROQ API KEY GLOBAL */}
+      {/* ========================================================================= */}
+      <div className="border border-gray-200 dark:border-[#2C3246] rounded-2xl p-5 sm:p-6 bg-white dark:bg-[#141B31] shadow-xs">
+        <div className="mb-6">
+          <h3 className="text-lg font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <Zap className="w-5 h-5 text-orange-500" /> Perbarui Groq API Key Global
+          </h3>
+          <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-1">
+            API Key Groq bawaan sistem untuk melayani transkripsi audio/video ultra-cepat (Whisper) dan inferensi model AI (Llama 3.3, Qwen, OpenAI 120B) bagi seluruh pengguna.
+          </p>
+        </div>
+
+        {/* Panduan Groq Console */}
+        <div className="mb-6 p-4 bg-orange-500/5 border border-orange-500/20 rounded-xl text-xs sm:text-sm text-gray-700 dark:text-gray-300">
+          <h4 className="font-bold text-orange-700 dark:text-orange-400 mb-2">
+            Cara Mendapatkan Groq API Key:
+          </h4>
+          <ol className="list-decimal list-inside space-y-1.5 leading-relaxed">
+            <li>
+              Kunjungi portal{" "}
+              <a
+                href="https://console.groq.com/keys"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-orange-600 dark:text-orange-400 font-bold hover:underline inline-flex items-center gap-0.5"
+              >
+                Groq Console <ExternalLink className="w-3 h-3" />
+              </a>.
+            </li>
+            <li>Klik tombol <strong>Create API Key</strong>, lalu salin kode berawalan <code className="font-mono bg-orange-500/10 px-1 rounded">gsk_...</code>.</li>
+            <li>Tempelkan pada kolom di bawah ini dan klik Simpan API Key.</li>
+          </ol>
+        </div>
+
+        <div className="space-y-4">
+          <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300">
+            Paste Groq API Key
+          </label>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              type="password"
+              value={groqKey}
+              onChange={(e) => setGroqKey(e.target.value)}
+              placeholder="gsk_..."
+              autoComplete="new-password"
+              className="flex-1 w-full px-4 py-2.5 rounded-xl border border-gray-300 dark:border-[#2C3246] bg-gray-50/50 dark:bg-[#0A1128] text-gray-900 dark:text-white font-mono text-xs sm:text-sm focus:outline-none focus:border-orange-500 transition-colors"
+            />
+            <button
+              type="button"
+              onClick={handleSaveGroqKey}
+              disabled={loadingGroqKey || !groqKey.trim()}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs sm:text-sm transition-all disabled:opacity-50 shadow-sm shadow-orange-500/20 cursor-pointer shrink-0"
+            >
+              {loadingGroqKey ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
                   <span>Menyimpan...</span>

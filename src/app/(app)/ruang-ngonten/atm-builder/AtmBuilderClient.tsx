@@ -178,6 +178,7 @@ export default function AtmBuilderClient() {
       }
     } else if (isMedia && currentFile) {
       let extractedTranscript = "";
+      let transcribeErrorMessage = "";
 
       // Pastikan payload video mentah TIDAK AKAN PERNAH dikirim ke /api/atm-builder/generate (Zero Payload Leak)
       payloadFileData = undefined;
@@ -223,11 +224,13 @@ export default function AtmBuilderClient() {
             }
           } else {
             const errData = await transcribeRes.json().catch(() => ({}));
+            transcribeErrorMessage = errData?.error || `Gagal mentranskrip audio (${transcribeRes.status})`;
             console.warn("Transcribe endpoint returned error:", errData);
           }
         }
-      } catch (audioTranscribeErr) {
+      } catch (audioTranscribeErr: any) {
         console.warn("Audio transcribe fetch error:", audioTranscribeErr);
+        transcribeErrorMessage = audioTranscribeErr?.message || "Terjadi kesalahan saat memproses audio video.";
       } finally {
         setChatHistory(prev => prev.map(m => m.id === userMessageId ? { ...m, isExtracting: false } : m));
       }
@@ -235,6 +238,20 @@ export default function AtmBuilderClient() {
       // Jika transkrip naskah suara berhasil didapatkan:
       if (extractedTranscript && extractedTranscript.length > 5) {
         processedInput = `[TRANSKRIP ASLI DARI MEDIA REFERENSI (AUDIO/VIDEO)]:\n${extractedTranscript}\n\n${currentInput.trim() ? `[CATATAN TAMBAHAN USER]:\n${currentInput.trim()}\n\n` : ''}[INSTRUKSI]: Tolong analisis dan bedah transkrip naskah di atas dengan metode ATM (Amati, Tiru, Modifikasi) sesuai Master Blueprint. Tuliskan transkrip aslinya di field 'transkrip_sumber' dan ciptakan 3 variasi naskah konten baru yang mematikan.`;
+      } else if (transcribeErrorMessage) {
+        // Tampilkan pesan error transkripsi yang sebenarnya
+        setIsLocalExtracting(false);
+        setChatHistory(prev => [...prev, {
+          id: Date.now() + 1,
+          role: "assistant",
+          content: "",
+          data: {
+            is_error: true,
+            error_message: transcribeErrorMessage
+          }
+        }]);
+        setAtmInputText(currentInput);
+        return;
       } else if (!currentInput.trim()) {
         // Jika suara tidak terdeteksi DAN user tidak menulis catatan apapun
         setIsLocalExtracting(false);
