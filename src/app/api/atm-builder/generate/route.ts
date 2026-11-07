@@ -134,6 +134,18 @@ PENTING: Format output WAJIB berupa JSON yang valid.
 `;
 
     let userParts: any[] = [];
+    let previousHistoryContext = "";
+
+    if (chatHistory && Array.isArray(chatHistory) && chatHistory.length > 0) {
+      previousHistoryContext = chatHistory
+        .filter((m: any) => m.content && typeof m.content === 'string' && m.content.trim())
+        .map((m: any) => `${m.role === 'user' ? 'Pengguna' : 'Asisten'}: ${m.content.trim()}`)
+        .join('\n');
+      if (previousHistoryContext) {
+        userParts.push({ text: `[RIWAYAT PERCAKAPAN SEBELUMNYA]:\n${previousHistoryContext}\n` });
+      }
+    }
+
     if (currentInput && currentInput.trim()) {
       userParts.push({ text: currentInput });
     }
@@ -155,7 +167,7 @@ PENTING: Format output WAJIB berupa JSON yang valid.
             });
 
             if (transcript && transcript.trim().length > 5) {
-              const combinedPrompt = `[TRANSKRIP ASLI DARI MEDIA REFERENSI (AUDIO/VIDEO)]:\n${transcript}\n\n${currentInput && currentInput.trim() ? `[CATATAN TAMBAHAN USER]:\n${currentInput.trim()}\n\n` : ''}[INSTRUKSI]: Tolong analisis dan bedah transkrip naskah di atas dengan metode ATM (Amati, Tiru, Modifikasi) sesuai Master Blueprint. Tuliskan transkrip aslinya di field 'transkrip_sumber' dan ciptakan 3 variasi naskah konten baru yang mematikan.`;
+              const combinedPrompt = `${previousHistoryContext ? `[RIWAYAT PERCAKAPAN SEBELUMNYA]:\n${previousHistoryContext}\n\n` : ''}[TRANSKRIP ASLI DARI MEDIA REFERENSI (AUDIO/VIDEO)]:\n${transcript}\n\n${currentInput && currentInput.trim() ? `[CATATAN TAMBAHAN USER]:\n${currentInput.trim()}\n\n` : ''}[INSTRUKSI]: Tolong analisis dan bedah transkrip naskah di atas dengan metode ATM (Amati, Tiru, Modifikasi) sesuai Master Blueprint. Tuliskan transkrip aslinya di field 'transkrip_sumber' dan ciptakan 3 variasi naskah konten baru yang mematikan.`;
 
               data = await generateStructuredAiContent({
                 apiKey: userRecord?.googleApiKey || undefined,

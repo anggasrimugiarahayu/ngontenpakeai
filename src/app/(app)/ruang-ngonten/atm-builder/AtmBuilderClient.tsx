@@ -73,7 +73,7 @@ export default function AtmBuilderClient() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleATMUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleATMUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -82,27 +82,6 @@ export default function AtmBuilderClient() {
       return;
     }
 
-    // 1. Jika file berupa GAMBAR: Ekstrak teks secara lokal dengan Tesseract (0 Token AI)
-    if (file.type.startsWith('image/')) {
-      toast.loading("🔍 Mengekstrak teks dari gambar secara lokal...", { id: "ocr-toast" });
-      try {
-        const result = await Tesseract.recognize(file, 'ind+eng');
-        toast.dismiss("ocr-toast");
-        const extractedText = result?.data?.text?.trim() || "";
-
-        if (extractedText.length > 5) {
-          toast.success("✅ Teks berhasil diekstrak dari gambar!");
-          setAtmInputText(prev => (prev.trim() ? `${prev}\n\n${extractedText}` : extractedText));
-          if (atmFileInputRef.current) atmFileInputRef.current.value = "";
-          return;
-        }
-      } catch (ocrErr) {
-        console.warn("Local OCR gagal, beralih ke lampiran gambar:", ocrErr);
-        toast.dismiss("ocr-toast");
-      }
-    }
-
-    // 2. Jika file berupa Video/Audio atau OCR tidak menemukan teks: Lampirkan file
     const reader = new FileReader();
     reader.onload = (event) => {
       setAtmAttachedFile({
@@ -110,8 +89,12 @@ export default function AtmBuilderClient() {
         fileType: file.type,
         fileName: file.name
       });
-      if (file.type.startsWith('video/') || file.type.startsWith('audio/')) {
-        toast.success(`🎥 Media ${file.name} terlampir. Audio/suara akan ditranskrip kilat via Whisper!`);
+      if (file.type.startsWith('image/')) {
+        toast.success(`📸 Gambar "${file.name}" terlampir. Siap diekstrak saat Anda kirim!`);
+      } else if (file.type.startsWith('video/') || file.type.startsWith('audio/')) {
+        toast.success(`🎥 Media "${file.name}" terlampir. Audio/suara akan ditranskrip kilat via Whisper!`);
+      } else {
+        toast.success(`📎 File "${file.name}" terlampir.`);
       }
     };
     reader.readAsDataURL(file);
@@ -124,6 +107,7 @@ export default function AtmBuilderClient() {
     const currentInput = atmInputText;
     const currentFile = atmAttachedFile;
 
+    // 1. Tampilkan pesan user ke bubble chat kanan secara instan dengan preview kartu gambar/video!
     const userMessage: ChatMessage = {
       id: Date.now(),
       role: 'user',
@@ -138,7 +122,34 @@ export default function AtmBuilderClient() {
     setAtmInputText("");
     setAtmAttachedFile(null);
 
-    // PENTING: Bersihkan chatHistory agar fileData Base64 raksasa dari pesan lama TIDAK dikirim ke server!
+    // 2. Ekstraksi OCR lokal untuk GAMBAR (0 Token AI, berjalan saat proses pengiriman)
+    let processedInput = currentInput;
+    let payloadFileData = currentFile?.fileData;
+    let payloadFileType = currentFile?.fileType;
+
+    if (currentFile && currentFile.fileType.startsWith('image/')) {
+      const ocrToastId = toast.loading("🔍 Mengekstrak teks naskah dari gambar secara lokal...", { id: "ocr-extract" });
+      try {
+        const result = await Tesseract.recognize(currentFile.fileData, 'ind+eng');
+        const extractedText = result?.data?.text?.trim() || "";
+        toast.dismiss(ocrToastId);
+
+        if (extractedText.length > 5) {
+          toast.success("✅ Naskah gambar berhasil diekstrak! Mengirim ke AI...");
+          processedInput = `[TRANSKRIP TEKS HASIL EKSTRAKSI GAMBAR REFERENSI]:\n${extractedText}\n\n${currentInput.trim() ? `[CATATAN USER]:\n${currentInput.trim()}\n\n` : ''}[INSTRUKSI]: Tolong analisis dan bedah transkrip naskah di atas dengan metode ATM (Amati, Tiru, Modifikasi) sesuai Master Blueprint. Tuliskan transkrip aslinya di field 'transkrip_sumber' dan ciptakan 3 variasi naskah konten baru yang mematikan.`;
+          // PENTING: Karena teks naskah sudah diekstrak penuh, TIDAK PERLU kirim Base64 gambar ke backend LLM!
+          payloadFileData = undefined;
+          payloadFileType = undefined;
+        } else {
+          toast("⚠️ Teks gambar tidak terdeteksi jelas, beralih ke analisis visual multimodal...", { icon: "ℹ️" });
+        }
+      } catch (ocrErr) {
+        console.warn("Local OCR gagal, beralih ke pengiriman visual:", ocrErr);
+        toast.dismiss(ocrToastId);
+      }
+    }
+
+    // 3. PENTING: Bersihkan chatHistory agar fileData Base64 raksasa TIDAK dikirim ke server (mencegah HTTP 413)
     const cleanChatHistory = chatHistory.map(m => ({
       role: m.role,
       content: m.content,
@@ -147,9 +158,9 @@ export default function AtmBuilderClient() {
 
     const { data, error } = await fetchAI('/api/atm-builder/generate', {
       chatHistory: cleanChatHistory,
-      currentInput: currentInput,
-      fileData: currentFile?.fileData,
-      fileType: currentFile?.fileType,
+      currentInput: processedInput,
+      fileData: payloadFileData,
+      fileType: payloadFileType,
       blueprint: blueprintData,
       model: selectedModel
     });
@@ -165,7 +176,6 @@ export default function AtmBuilderClient() {
         }
       }]);
       setAtmInputText(currentInput);
-      if (currentFile) setAtmAttachedFile(currentFile);
       return;
     }
 
