@@ -13,6 +13,7 @@ import { CopyPlus, LayoutTemplate, Mic2, Zap, Target, Send, Square, CheckCircle2
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import Tesseract from 'tesseract.js';
+import { extractAudioFromMedia } from "@/lib/audio/clientAudioExtractor";
 
 const AI_MODELS = [
   { value: 'llama-3.3-70b-versatile', label: 'Llama 3.3' },
@@ -32,6 +33,8 @@ export default function AtmBuilderClient() {
   const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_atm_builder", []);
   const [atmInputText, setAtmInputText] = useState("");
   const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
+  const [isLocalExtracting, setIsLocalExtracting] = useState(false);
+  const [customLoadingPhrases, setCustomLoadingPhrases] = useState<string[] | undefined>(undefined);
   
   // ATM Attachment State
   const atmFileInputRef = useRef<HTMLInputElement>(null);
@@ -87,12 +90,13 @@ export default function AtmBuilderClient() {
       setAtmAttachedFile({
         fileData: event.target?.result as string,
         fileType: file.type,
-        fileName: file.name
+        fileName: file.name,
+        rawFile: file
       });
       if (file.type.startsWith('image/')) {
-        toast.success(`📸 Gambar "${file.name}" terlampir. Siap diekstrak saat Anda kirim!`);
+        toast.success(`📸 Gambar "${file.name}" terlampir.`);
       } else if (file.type.startsWith('video/') || file.type.startsWith('audio/')) {
-        toast.success(`🎥 Media "${file.name}" terlampir. Audio/suara akan ditranskrip kilat via Whisper!`);
+        toast.success(`🎥 Media "${file.name}" terlampir.`);
       } else {
         toast.success(`📎 File "${file.name}" terlampir.`);
       }
@@ -102,54 +106,102 @@ export default function AtmBuilderClient() {
   };
 
   const generateATMContent = async () => {
-    if ((!atmInputText.trim() && !atmAttachedFile) || isLoading) return;
+    if ((!atmInputText.trim() && !atmAttachedFile) || isLoading || isLocalExtracting) return;
 
     const currentInput = atmInputText;
     const currentFile = atmAttachedFile;
+    const isImage = currentFile?.fileType?.startsWith('image/');
+    const isMedia = currentFile?.fileType?.startsWith('video/') || currentFile?.fileType?.startsWith('audio/');
 
-    // 1. Tampilkan pesan user ke bubble chat kanan secara instan dengan preview kartu gambar/video!
+    // 1. Tentukan frasa animasi Clawd secara kontekstual
+    if (isImage) {
+      setCustomLoadingPhrases([
+        "🔍 Membaca & mengekstrak naskah dari gambar...",
+        "🧠 Membedah Persuasion DNA & Hook...",
+        "✨ Merakit 3 variasi naskah original..."
+      ]);
+    } else if (isMedia) {
+      setCustomLoadingPhrases([
+        "🎙️ Mengekstrak audio & mentranskrip suara via Whisper...",
+        "🧠 Menganalisis alur cerita & struktur emosi...",
+        "✨ Menyusun 3 adaptasi naskah original..."
+      ]);
+    } else {
+      setCustomLoadingPhrases([
+        "🧠 Menganalisis naskah referensi...",
+        "🔍 Membedah Persuasion DNA & Hook...",
+        "✨ Menjahit dengan Master Blueprint..."
+      ]);
+    }
+
+    // Aktifkan animasi loading in-bubble seketika
+    setIsLocalExtracting(true);
+
+    // 2. Tampilkan pesan user ke bubble chat kanan secara instan dengan preview kartu gambar/video!
+    const userMessageId = Date.now();
     const userMessage: ChatMessage = {
-      id: Date.now(),
+      id: userMessageId,
       role: 'user',
       content: currentInput,
       hasFile: !!currentFile,
       fileData: currentFile?.fileData,
       fileType: currentFile?.fileType,
-      fileName: currentFile?.fileName
+      fileName: currentFile?.fileName,
+      isExtracting: !!currentFile,
+      extractingLabel: isImage ? "Mengekstrak naskah dari gambar..." : isMedia ? "Mentranskrip audio video via Whisper..." : undefined
     };
 
     setChatHistory(prev => [...prev, userMessage]);
     setAtmInputText("");
     setAtmAttachedFile(null);
 
-    // 2. Ekstraksi OCR lokal untuk GAMBAR (0 Token AI, berjalan saat proses pengiriman)
     let processedInput = currentInput;
     let payloadFileData = currentFile?.fileData;
     let payloadFileType = currentFile?.fileType;
 
-    if (currentFile && currentFile.fileType.startsWith('image/')) {
-      const ocrToastId = toast.loading("🔍 Mengekstrak teks naskah dari gambar secara lokal...", { id: "ocr-extract" });
+    // 3. Ekstraksi Lokal di Browser (Tanpa Toast Luar, Semua di Dalam Bubble)
+    if (isImage && currentFile) {
       try {
         const result = await Tesseract.recognize(currentFile.fileData, 'ind+eng');
         const extractedText = result?.data?.text?.trim() || "";
-        toast.dismiss(ocrToastId);
 
         if (extractedText.length > 5) {
-          toast.success("✅ Naskah gambar berhasil diekstrak! Mengirim ke AI...");
           processedInput = `[TRANSKRIP TEKS HASIL EKSTRAKSI GAMBAR REFERENSI]:\n${extractedText}\n\n${currentInput.trim() ? `[CATATAN USER]:\n${currentInput.trim()}\n\n` : ''}[INSTRUKSI]: Tolong analisis dan bedah transkrip naskah di atas dengan metode ATM (Amati, Tiru, Modifikasi) sesuai Master Blueprint. Tuliskan transkrip aslinya di field 'transkrip_sumber' dan ciptakan 3 variasi naskah konten baru yang mematikan.`;
-          // PENTING: Karena teks naskah sudah diekstrak penuh, TIDAK PERLU kirim Base64 gambar ke backend LLM!
+          // 0 Token AI! Tidak perlu kirim Base64 gambar
           payloadFileData = undefined;
           payloadFileType = undefined;
-        } else {
-          toast("⚠️ Teks gambar tidak terdeteksi jelas, beralih ke analisis visual multimodal...", { icon: "ℹ️" });
         }
       } catch (ocrErr) {
-        console.warn("Local OCR gagal, beralih ke pengiriman visual:", ocrErr);
-        toast.dismiss(ocrToastId);
+        console.warn("Local OCR gagal, beralih ke multimodal:", ocrErr);
+      } finally {
+        setChatHistory(prev => prev.map(m => m.id === userMessageId ? { ...m, isExtracting: false } : m));
+      }
+    } else if (isMedia && currentFile) {
+      try {
+        // Ekstraksi audio kilat di browser: video 30MB diperkecil jadi audio WAV 16kHz (~500KB) dalam < 0.5s!
+        let targetMediaBlob = currentFile.rawFile;
+        if (!targetMediaBlob && currentFile.fileData) {
+          const res = await fetch(currentFile.fileData);
+          targetMediaBlob = await res.blob();
+        }
+
+        if (targetMediaBlob) {
+          const audioResult = await extractAudioFromMedia(targetMediaBlob);
+          payloadFileData = audioResult.base64;
+          payloadFileType = audioResult.mimeType;
+        }
+      } catch (audioExtractErr) {
+        console.warn("Client audio extraction fallback:", audioExtractErr);
+        payloadFileData = currentFile.fileData;
+        payloadFileType = currentFile.fileType;
+      } finally {
+        setChatHistory(prev => prev.map(m => m.id === userMessageId ? { ...m, isExtracting: false } : m));
       }
     }
 
-    // 3. PENTING: Bersihkan chatHistory agar fileData Base64 raksasa TIDAK dikirim ke server (mencegah HTTP 413)
+    setIsLocalExtracting(false);
+
+    // 4. Bersihkan chatHistory agar fileData Base64 raksasa TIDAK dikirim ke server (mencegah HTTP 413)
     const cleanChatHistory = chatHistory.map(m => ({
       role: m.role,
       content: m.content,
@@ -399,7 +451,8 @@ export default function AtmBuilderClient() {
         value={atmInputText}
         onChange={(e: any) => setAtmInputText(e.target.value)}
         onSubmit={generateATMContent}
-        isLoading={isLoading}
+        isLoading={isLoading || isLocalExtracting}
+        loadingPhrases={customLoadingPhrases}
         onStop={abort}
         renderPlusMenu={renderPlusMenu}
         renderAttachmentPreview={renderAttachmentPreview}

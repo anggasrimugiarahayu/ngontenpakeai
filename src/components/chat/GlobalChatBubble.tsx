@@ -13,6 +13,8 @@ interface GlobalChatBubbleProps {
   fileData?: string;
   fileType?: string;
   fileName?: string;
+  isExtracting?: boolean;
+  extractingLabel?: string;
   
   // Custom content (like custom cards, tables, etc)
   children?: React.ReactNode;
@@ -37,7 +39,9 @@ export default function GlobalChatBubble({
   hasFile,
   fileData,
   fileType,
-  fileName
+  fileName,
+  isExtracting,
+  extractingLabel
 }: GlobalChatBubbleProps) {
   return (
     <div className={`flex w-full ${role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-2 duration-300`}>
@@ -46,13 +50,44 @@ export default function GlobalChatBubble({
           {hasFile && fileData && (
             <div className="mb-3 rounded-lg overflow-hidden border border-gray-200 dark:border-[#2C3246] max-w-sm">
               {fileType?.startsWith('image/') ? (
-                <img src={fileData} alt={fileName || 'Attachment'} className="w-full h-auto object-cover max-h-[300px]" />
+                <div className="relative overflow-hidden rounded-lg">
+                  <img src={fileData} alt={fileName || 'Attachment'} className="w-full h-auto object-cover max-h-[300px]" />
+                  {isExtracting ? (
+                    <div className="absolute inset-0 bg-black/45 backdrop-blur-[1px] flex flex-col items-center justify-center p-3 animate-in fade-in duration-200">
+                      <div className="w-full h-1 bg-gradient-to-r from-transparent via-orange-400 to-transparent animate-pulse absolute top-1/2 -translate-y-1/2" />
+                      <div className="flex items-center gap-2 px-3 py-1.5 bg-black/80 rounded-full text-xs font-bold text-white border border-white/20 shadow-lg">
+                        <span className="w-2 h-2 rounded-full bg-orange-400 animate-ping shrink-0" />
+                        <span>{extractingLabel || "Mengekstrak naskah dari gambar..."}</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="absolute top-2 right-2 bg-black/70 backdrop-blur-sm text-green-400 text-[10px] font-bold px-2 py-0.5 rounded-full border border-green-500/30 flex items-center gap-1 shadow-sm">
+                      <CheckCircle2 size={11} /> Naskah Terekstrak
+                    </div>
+                  )}
+                </div>
               ) : fileType?.startsWith('video/') ? (
-                <video src={fileData} controls className="w-full h-auto max-h-[300px] bg-black" />
+                <div className="relative overflow-hidden rounded-lg bg-black">
+                  <video src={fileData} controls className="w-full h-auto max-h-[300px] bg-black" />
+                  {isExtracting && (
+                    <div className="absolute inset-0 bg-black/60 backdrop-blur-[2px] flex flex-col items-center justify-center p-3 animate-in fade-in duration-200 pointer-events-none">
+                      <div className="flex items-center gap-2 px-3.5 py-2 bg-black/85 rounded-full text-xs font-bold text-white border border-white/20 shadow-xl">
+                        <span className="w-2.5 h-2.5 rounded-full bg-orange-400 animate-ping shrink-0" />
+                        <span>{extractingLabel || "Mentranskrip audio video via Whisper..."}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
               ) : fileType?.startsWith('audio/') ? (
-                <div className="p-3 bg-white dark:bg-[#0F172A]">
+                <div className="p-3 bg-white dark:bg-[#0F172A] relative">
                    <audio src={fileData} controls className="w-full" />
                    <p className="text-xs text-gray-500 mt-2 truncate">{fileName}</p>
+                   {isExtracting && (
+                     <div className="mt-2 flex items-center gap-1.5 text-xs text-orange-500 font-bold">
+                       <span className="w-2 h-2 rounded-full bg-orange-500 animate-ping" />
+                       <span>{extractingLabel || "Mentranskrip audio..."}</span>
+                     </div>
+                   )}
                 </div>
               ) : (
                 <div className="p-3 bg-white dark:bg-[#0F172A] flex items-center gap-2">

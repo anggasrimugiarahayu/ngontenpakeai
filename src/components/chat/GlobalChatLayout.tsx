@@ -15,6 +15,8 @@ export interface ChatMessage {
   fileData?: string;
   fileType?: string;
   fileName?: string;
+  isExtracting?: boolean;
+  extractingLabel?: string;
 }
 
 interface GlobalChatLayoutProps {
@@ -32,6 +34,7 @@ interface GlobalChatLayoutProps {
   onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
   onSubmit: () => void;
   isLoading: boolean;
+  loadingPhrases?: string[];
   onStop: () => void;
   renderPlusMenu?: () => React.ReactNode;
   renderAttachmentPreview?: () => React.ReactNode;
@@ -55,6 +58,7 @@ export default function GlobalChatLayout({
   onChange,
   onSubmit,
   isLoading,
+  loadingPhrases,
   onStop,
   renderPlusMenu,
   renderAttachmentPreview,
@@ -199,6 +203,8 @@ export default function GlobalChatLayout({
                 fileData={msg.fileData}
                 fileType={msg.fileType}
                 fileName={msg.fileName}
+                isExtracting={msg.isExtracting}
+                extractingLabel={msg.extractingLabel}
               >
                 {msg.role === 'assistant' && renderCustomMessage && renderCustomMessage(msg)}
               </GlobalChatBubble>
@@ -208,7 +214,7 @@ export default function GlobalChatLayout({
               <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
                 <div className="flex items-center gap-2.5 px-3.5 py-2 bg-gray-50 dark:bg-[#141B31] border border-gray-100 dark:border-[#2C3246] rounded-2xl rounded-tl-sm w-fit shadow-sm">
                   <ClawdAiThinkingVisual />
-                  <ClawdThinkingLabel className="text-xs font-semibold text-gray-500 dark:text-gray-400" />
+                  <ClawdThinkingLabel phrases={loadingPhrases} className="text-xs font-semibold text-gray-500 dark:text-gray-400" />
                 </div>
               </div>
             )}
