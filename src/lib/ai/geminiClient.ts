@@ -169,8 +169,18 @@ export function extractJsonFromResponse<T = any>(rawText: string): T {
   try {
     return JSON.parse(targetJsonStr) as T;
   } catch (err: any) {
-    console.error("Gagal melakukan parse JSON dari AI:", targetJsonStr);
-    throw new Error(`Format JSON dari AI tidak valid: ${err?.message || "Syntax Error"}`);
+    // Resilient Fallback: Auto-repair invalid escapes, single quotes, and control chars
+    try {
+      let repaired = targetJsonStr
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, "")
+        .replace(/\\'/g, "'")
+        .replace(/\\(?!["\\/bfnrt]|u[0-9a-fA-F]{4})/g, "\\\\")
+        .replace(/,\s*([\]}])/g, "$1");
+      return JSON.parse(repaired) as T;
+    } catch (secondErr: any) {
+      console.error("Gagal melakukan parse JSON dari AI:", targetJsonStr);
+      throw new Error(`Format JSON dari AI tidak valid: ${err?.message || "Syntax Error"}`);
+    }
   }
 }
 
