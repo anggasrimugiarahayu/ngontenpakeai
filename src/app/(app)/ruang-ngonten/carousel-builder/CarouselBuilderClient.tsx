@@ -51,10 +51,11 @@ const AI_MODELS = [
   { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', value: 'gemini-2.5-pro' }
 ];
 
-export default function CarouselBuilderClient() {
-  const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
-  const blueprintId = blueprint?.id;
-  const blueprintData = blueprint?.aiResult;
+export default function CarouselBuilderClient({ blueprintData: propBlueprintData }: { blueprintData?: any } = {}) {
+  const { data: dbBlueprint } = useSWR("blueprint", getBlueprintAction);
+  const activeBlueprintData = dbBlueprint?.aiResult || dbBlueprint?.blueprintData || propBlueprintData;
+  const blueprintId = dbBlueprint?.id;
+  const blueprintData = activeBlueprintData;
 
   const [carouselPromptText, setCarouselPromptText] = useState("");
   const [interimText, setInterimText] = useState("");

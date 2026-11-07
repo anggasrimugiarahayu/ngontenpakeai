@@ -49,6 +49,30 @@ export async function POST(req: Request) {
 
     const { chatHistory, cpMode, currentInput, blueprint, model } = body;
 
+    // 1. Safety fallback: If blueprint is not provided or empty in body, load user's latest blueprint from DB
+    let activeBlueprint = blueprint;
+    if (!activeBlueprint || (typeof activeBlueprint === "object" && Object.keys(activeBlueprint).length === 0)) {
+      const dbBlueprint = await prisma.masterBlueprint.findFirst({
+        where: { userId: session.user.id },
+        orderBy: { updatedAt: "desc" }
+      });
+      activeBlueprint = dbBlueprint?.aiResult || null;
+    }
+
+    const bp = (activeBlueprint && typeof activeBlueprint === "object") ? activeBlueprint : {};
+
+    const blueprintContext = Object.keys(bp).length > 0 ? `
+- Niche & Positioning: ${bp.positioning_identity || bp.niche_statement || bp.value_statement || (bp.knowledge_skills ? (Array.isArray(bp.knowledge_skills) ? bp.knowledge_skills.join(", ") : bp.knowledge_skills) : "") || 'Kreator & Edukator Ahli'}
+- Target Audiens: ${Array.isArray(bp.target_audiences) ? bp.target_audiences.join(', ') : (bp.target_audiences || 'Audiens umum')}
+- Pain Points / Masalah Utama: ${Array.isArray(bp.pain_points) ? bp.pain_points.join(', ') : (bp.pain_points || 'Tantangan umum audiens')}
+- Dream Outcome / Transformasi: ${Array.isArray(bp.dream_outcomes) ? bp.dream_outcomes.join(', ') : (bp.dream_outcomes || 'Mencapai hasil optimal')}
+- Tone of Voice & Gaya Bahasa: ${Array.isArray(bp.language_tone) ? bp.language_tone.join(', ') : (bp.language_tone || 'Edukatif, santai, berbobot, to-the-point')}
+- Kosakata Khas Audiens: ${Array.isArray(bp.audience_vocabulary) ? bp.audience_vocabulary.join(', ') : (bp.audience_vocabulary || '')}
+
+[RAW MASTER BLUEPRINT DATA]
+${JSON.stringify(bp, null, 2)}
+` : "Tidak ada master blueprint khusus yang tersimpan. Gunakan persona top-tier creator & viral copywriter profesional.";
+
     const chatContext = chatHistory.map((m: any) => {
       if(m.role === 'user') {
         if(m.content?.includes('[SYSTEM AUTO-SUBMIT]')) {
@@ -79,7 +103,7 @@ ${styleArtContext}
 3. Content Idea Database (Panduan Format & Pola Ide Konten):
 ${dbKnowledge.ideas}
 4. Master Blueprint Pengguna (WAJIB JADI RUJUKAN UTAMA NICHE, AUDIENS, DAN TONE OF VOICE):
-${JSON.stringify(blueprint, null, 2)}
+${blueprintContext}
 
 [PERAN ANDA]
 Anda adalah Elite Visual Prompt Engineer & Top-Tier Viral Carousel Copywriter. Anda memadukan teknik penjelasan Feynman, prinsip Greased Chute (Joseph Sugarman), psikologi hook media sosial, dan prompt visual AI (Midjourney/FLUX/Ideogram) yang presisi.

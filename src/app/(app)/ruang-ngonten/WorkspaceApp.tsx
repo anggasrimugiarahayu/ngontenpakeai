@@ -142,7 +142,7 @@ export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLogged
         {visited.bio && <BioBuilderClient />}
       </div>
       <div style={{ display: isCarousel ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
-        {visited.carousel && <CarouselBuilderClient />}
+        {visited.carousel && <CarouselBuilderClient blueprintData={blueprintData?.aiResult} />}
       </div>
       <div style={{ display: isCalendar ? "flex" : "none", flex: 1, height: "100%", width: "100%", flexDirection: "column" }}>
         {visited.calendar && <ContentCalendarClient />}
