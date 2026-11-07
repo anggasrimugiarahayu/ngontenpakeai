@@ -63,6 +63,12 @@ function revalidateAdminConfig() {
   try {
     revalidatePath("/ruang-ngonten");
   } catch {}
+  try {
+    revalidatePath("/api/models");
+  } catch {}
+  try {
+    revalidatePath("/api/carousel-builder/config-data");
+  } catch {}
 }
 
 function revalidateEbookCatalog(slug?: string) {

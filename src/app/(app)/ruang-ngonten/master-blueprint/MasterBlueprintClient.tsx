@@ -21,6 +21,7 @@ export default function MasterBlueprintClient({ nicheReferences }: { nicheRefere
   const { data: initialData, isLoading, mutate } = useSWR("blueprint", getBlueprintAction, {
     revalidateOnFocus: false,
     revalidateIfStale: true,
+    dedupingInterval: 60000,
   });
 
   const { data: session, status } = useSession();

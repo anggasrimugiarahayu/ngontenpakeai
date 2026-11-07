@@ -3,8 +3,9 @@ import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import { TikTokUserProfile, TikTokPostItem } from "@/app/(app)/ruang-riset/tiktok/types";
 
-// In-memory cache (15 minutes TTL) for high performance & anti-rate-limit
-const TIKTOK_CACHE_TTL_MS = 15 * 60 * 1000;
+// In-memory cache (30 seconds debounce) to prevent double-click abuse while always ensuring fresh live data
+const TIKTOK_CACHE_TTL_MS = 30 * 1000;
+const MAX_TIKTOK_CACHE_SIZE = 40;
 const tiktokMemoryCache = new Map<
   string,
   {
@@ -13,6 +14,43 @@ const tiktokMemoryCache = new Map<
     videos: TikTokPostItem[];
   }
 >();
+
+function pruneTiktokCache() {
+  if (tiktokMemoryCache.size > MAX_TIKTOK_CACHE_SIZE) {
+    const now = Date.now();
+    for (const [k, v] of tiktokMemoryCache.entries()) {
+      if (v.expiresAt <= now) tiktokMemoryCache.delete(k);
+    }
+    while (tiktokMemoryCache.size > MAX_TIKTOK_CACHE_SIZE) {
+      const oldestKey = tiktokMemoryCache.keys().next().value;
+      if (oldestKey) tiktokMemoryCache.delete(oldestKey);
+      else break;
+    }
+  }
+}
+
+/**
+ * Fast JSON extractor for __FRONTITY_CONNECT_STATE__ without regex backtracking.
+ */
+function extractFrontityJson(html: string): any | null {
+  if (!html) return null;
+  const marker = 'id="__FRONTITY_CONNECT_STATE__"';
+  const markerIdx = html.indexOf(marker);
+  if (markerIdx === -1) return null;
+
+  const openTagEnd = html.indexOf(">", markerIdx);
+  if (openTagEnd === -1) return null;
+
+  const closeTag = html.indexOf("</script>", openTagEnd);
+  if (closeTag === -1) return null;
+
+  const scriptContent = html.substring(openTagEnd + 1, closeTag).trim();
+  try {
+    return JSON.parse(scriptContent);
+  } catch {
+    return null;
+  }
+}
 
 function cleanTikTokUsername(raw: string): string {
   let cleaned = raw.trim();
@@ -136,11 +174,8 @@ async function fetchFrontityCreatorEmbed(
 
       const html = await res.text();
       if (res.status === 200 && html.includes("__FRONTITY_CONNECT_STATE__")) {
-        const match = html.match(
-          /<script id="__FRONTITY_CONNECT_STATE__"[^>]*>([\s\S]*?)<\/script>/
-        );
-        if (match?.[1]) {
-          const json = JSON.parse(match[1]);
+        const json = extractFrontityJson(html);
+        if (json) {
           const sourceData = json?.source?.data || {};
           const entry = Object.values(sourceData)[0] as any;
           if (entry?.userInfo?.uniqueId) {
@@ -203,11 +238,8 @@ async function fetchVideoEmbedDetail(
 
       const html = await res.text();
       if (res.status === 200 && html.includes("__FRONTITY_CONNECT_STATE__")) {
-        const match = html.match(
-          /<script id="__FRONTITY_CONNECT_STATE__"[^>]*>([\s\S]*?)<\/script>/
-        );
-        if (match?.[1]) {
-          const json = JSON.parse(match[1]);
+        const json = extractFrontityJson(html);
+        if (json) {
           const entry = Object.values(json?.source?.data || {})[0] as any;
           const info = entry?.videoData?.itemInfos;
           if (info) {
@@ -549,6 +581,7 @@ export async function POST(request: NextRequest) {
 
     // Only cache when videos were actually extracted so empty feeds never stick
     if (formattedVideos.length > 0) {
+      pruneTiktokCache();
       tiktokMemoryCache.set(cacheKey, {
         expiresAt: Date.now() + TIKTOK_CACHE_TTL_MS,
         profile,

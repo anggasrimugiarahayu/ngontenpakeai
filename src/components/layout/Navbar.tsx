@@ -85,19 +85,6 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
       .catch((err) => console.error("Error loading follower count:", err));
   }, []);
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      const timer = setTimeout(() => {
-        preload("ruangBelajar", getRuangBelajarDataAction);
-        preload("pengaturan", getPengaturanDataAction);
-        if (isAdminEmail(session?.user?.email)) {
-          preload("dashboard", getDashboardDataAction);
-        }
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [session?.user?.id]);
-
   const isDark = mounted ? theme === "dark" : true;
   const isWorkspace = pathname === "/" || pathname?.startsWith("/dashboard") || pathname?.startsWith("/ruang-ngonten") || pathname?.startsWith("/ruang-belajar") || pathname?.startsWith("/ruang-automation") || pathname?.startsWith("/ruang-riset") || pathname?.startsWith("/ruang-growing") || pathname?.startsWith("/pengaturan") || pathname?.startsWith("/bantuan") || pathname?.startsWith("/feedback") || pathname?.startsWith("/checkout") || pathname?.startsWith("/login") || pathname?.startsWith("/signup");
   

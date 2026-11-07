@@ -13,7 +13,7 @@ import { useAIChat } from '@/hooks/useAIChat';
 
 export default function EbookBuilderClient({ blueprintData = {} }: { blueprintData?: any }) {
   const { fetchAI, isLoading, setIsLoading, abort } = useAIChat();
-  const { data: dbBlueprint } = useSWR("blueprint", getBlueprintAction);
+  const { data: dbBlueprint } = useSWR("blueprint", getBlueprintAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
   const activeBlueprintData = dbBlueprint?.aiResult || dbBlueprint?.blueprintData || blueprintData;
   
   const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_ebook_builder", []);

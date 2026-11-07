@@ -16,7 +16,22 @@ interface CacheEntry {
 }
 
 const fbCache = new Map<string, CacheEntry>();
-const CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const CACHE_TTL_MS = 30 * 1000; // 30 seconds debounce (ensures live real-time data)
+const MAX_FB_CACHE_SIZE = 40;
+
+function pruneFbCache() {
+  if (fbCache.size > MAX_FB_CACHE_SIZE) {
+    const now = Date.now();
+    for (const [k, v] of fbCache.entries()) {
+      if (v.expiresAt <= now) fbCache.delete(k);
+    }
+    while (fbCache.size > MAX_FB_CACHE_SIZE) {
+      const oldestKey = fbCache.keys().next().value;
+      if (oldestKey) fbCache.delete(oldestKey);
+      else break;
+    }
+  }
+}
 
 const DESKTOP_UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36";
@@ -1174,6 +1189,7 @@ async function handleFacebookResearchRequest(
     };
 
     if (finalizedPosts.length > 0) {
+      pruneFbCache();
       fbCache.set(cacheKey, {
         profile,
         posts: finalizedPosts,

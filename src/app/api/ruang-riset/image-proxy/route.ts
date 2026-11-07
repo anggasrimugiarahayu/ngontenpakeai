@@ -35,7 +35,7 @@ interface ImageCacheItem {
 }
 
 const memoryImageCache = new Map<string, ImageCacheItem>();
-const MAX_CACHE_ENTRIES = 500;
+const MAX_CACHE_ENTRIES = 30;
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 export async function GET(request: NextRequest) {
@@ -58,7 +58,9 @@ export async function GET(request: NextRequest) {
           "Content-Length": String(cached.buffer.length),
           "Cross-Origin-Resource-Policy": "cross-origin",
           "Access-Control-Allow-Origin": "*",
-          "Cache-Control": "public, max-age=31536000, immutable",
+          "Cache-Control": "public, max-age=31536000, s-maxage=604800, stale-while-revalidate=86400, immutable",
+          "CDN-Cache-Control": "public, s-maxage=604800, stale-while-revalidate=86400",
+          "Vercel-CDN-Cache-Control": "public, s-maxage=604800, stale-while-revalidate=86400",
           "X-Proxy-Cache": "HIT",
         },
       });
@@ -97,7 +99,7 @@ export async function GET(request: NextRequest) {
       const buffer = Buffer.from(arrayBuffer);
 
       if (memoryImageCache.size >= MAX_CACHE_ENTRIES) {
-        const oldestKeys = Array.from(memoryImageCache.keys()).slice(0, 50);
+        const oldestKeys = Array.from(memoryImageCache.keys()).slice(0, 10);
         for (const k of oldestKeys) memoryImageCache.delete(k);
       }
 
@@ -114,7 +116,9 @@ export async function GET(request: NextRequest) {
           "Content-Length": String(buffer.length),
           "Cross-Origin-Resource-Policy": "cross-origin",
           "Access-Control-Allow-Origin": "*",
-          "Cache-Control": "public, max-age=31536000, immutable",
+          "Cache-Control": "public, max-age=31536000, s-maxage=604800, stale-while-revalidate=86400, immutable",
+          "CDN-Cache-Control": "public, s-maxage=604800, stale-while-revalidate=86400",
+          "Vercel-CDN-Cache-Control": "public, s-maxage=604800, stale-while-revalidate=86400",
           "X-Proxy-Cache": "MISS",
         },
       });

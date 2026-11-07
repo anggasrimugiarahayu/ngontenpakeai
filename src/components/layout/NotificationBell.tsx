@@ -87,9 +87,29 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
   useEffect(() => {
     fetchNotifications();
 
-    // Poll every 60 seconds
-    const interval = setInterval(fetchNotifications, 60000);
-    return () => clearInterval(interval);
+    // Smart Polling: every 5 minutes only when tab is visible
+    const interval = setInterval(() => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchNotifications();
+      }
+    }, 300000);
+
+    const handleVisibilityChange = () => {
+      if (typeof document !== "undefined" && document.visibilityState === "visible") {
+        fetchNotifications();
+      }
+    };
+
+    if (typeof document !== "undefined") {
+      document.addEventListener("visibilitychange", handleVisibilityChange);
+    }
+
+    return () => {
+      clearInterval(interval);
+      if (typeof document !== "undefined") {
+        document.removeEventListener("visibilitychange", handleVisibilityChange);
+      }
+    };
   }, []);
 
   // Close dropdown on click outside
@@ -178,7 +198,12 @@ export function NotificationBell({ isAdmin = false }: NotificationBellProps) {
       {/* Notification Bell Trigger Button */}
       <button
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={() => {
+          if (!isOpen) {
+            fetchNotifications();
+          }
+          setIsOpen(!isOpen);
+        }}
         aria-label="Notifikasi"
         className="relative p-2 rounded-xl text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-[#141B31] border border-transparent hover:border-gray-200 dark:hover:border-[#2C3246] transition-all cursor-pointer"
       >

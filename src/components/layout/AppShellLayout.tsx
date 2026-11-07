@@ -210,7 +210,10 @@ export default function AppShellLayout({
   const [isOpen, setIsOpen] = useState(false); // Mobile drawer
   const [isExpanded, setIsExpanded] = useState(false); // Desktop floating dock
 
-  const { data: blueprintData } = useSWR(isLoggedIn ? "blueprint" : null, getBlueprintAction);
+  const { data: blueprintData } = useSWR(isLoggedIn ? "blueprint" : null, getBlueprintAction, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
   const activeHasBlueprint = hasBlueprint || !!blueprintData?.aiResult || !!blueprintData;
   const [blueprintModal, setBlueprintModal] = useState<{ isOpen: boolean; toolName?: string }>({ isOpen: false });
   const [activeMaintConfig, setActiveMaintConfig] = useState<MaintenanceConfig | null>(maintenanceConfig ?? null);

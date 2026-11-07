@@ -110,7 +110,7 @@ export const getCachedMemberCount = unstable_cache(
     }
   },
   ['member-count'],
-  { revalidate: 300, tags: ['global-stats'] }
+  { revalidate: 3600, tags: ['global-stats'] }
 );
 
 export const getCachedAppUser = unstable_cache(

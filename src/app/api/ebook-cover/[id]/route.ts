@@ -36,24 +36,27 @@ export async function GET(
     }
 
     if (rawCover.startsWith("data:")) {
-      const match = rawCover.match(/^data:([^;]+);base64,(.+)$/);
-      if (!match) {
+      const commaIdx = rawCover.indexOf(",");
+      if (commaIdx === -1) {
         return new NextResponse("Invalid Data URI", { status: 400 });
       }
-      const mimeType = match[1] || "image/png";
-      const base64Data = match[2];
+      const meta = rawCover.substring(5, commaIdx);
+      const mimeType = meta.split(";")[0] || "image/png";
+      const base64Data = rawCover.substring(commaIdx + 1);
       const buffer = Buffer.from(base64Data, "base64");
 
       const hasVersion = req.nextUrl.searchParams.has("v") && req.nextUrl.searchParams.get("v") !== "1";
       const cacheHeader = hasVersion
-        ? "public, max-age=31536000, immutable"
-        : "public, max-age=60, stale-while-revalidate=600";
+        ? "public, max-age=31536000, s-maxage=31536000, stale-while-revalidate=86400, immutable"
+        : "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400";
 
       return new NextResponse(buffer, {
         status: 200,
         headers: {
           "Content-Type": mimeType,
           "Cache-Control": cacheHeader,
+          "CDN-Cache-Control": cacheHeader,
+          "Vercel-CDN-Cache-Control": cacheHeader,
         },
       });
     }
@@ -65,13 +68,15 @@ export async function GET(
 
     const hasVersion = req.nextUrl.searchParams.has("v") && req.nextUrl.searchParams.get("v") !== "1";
     const cacheHeader = hasVersion
-      ? "public, max-age=31536000, immutable"
-      : "public, max-age=60, stale-while-revalidate=600";
+      ? "public, max-age=31536000, s-maxage=31536000, stale-while-revalidate=86400, immutable"
+      : "public, max-age=300, s-maxage=3600, stale-while-revalidate=86400";
 
     return NextResponse.redirect(targetUrl, {
       status: 302,
       headers: {
         "Cache-Control": cacheHeader,
+        "CDN-Cache-Control": cacheHeader,
+        "Vercel-CDN-Cache-Control": cacheHeader,
       },
     });
   } catch (error) {

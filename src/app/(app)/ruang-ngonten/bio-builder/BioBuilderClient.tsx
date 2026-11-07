@@ -26,8 +26,8 @@ interface BioSuggestions {
 }
 
 export default function BioBuilderClient() {
-  const { data: initialData } = useSWR("bioBuilder", getBioBuilderAction);
-  const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
+  const { data: initialData } = useSWR("bioBuilder", getBioBuilderAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
+  const { data: blueprint } = useSWR("blueprint", getBlueprintAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
   const blueprintId = blueprint?.id;
   const blueprintData = blueprint?.aiResult;
 

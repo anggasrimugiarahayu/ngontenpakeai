@@ -4,8 +4,9 @@ import prisma from "@/lib/prisma";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import { YouTubeChannelProfile, YouTubeVideoItem } from "@/app/(app)/ruang-riset/youtube/types";
 
-// In-memory cache (15 minutes TTL) for high performance & rate-limit protection
-const YOUTUBE_CACHE_TTL_MS = 15 * 60 * 1000;
+// In-memory cache (30 seconds debounce) to prevent double-click abuse while always ensuring fresh live data
+const YOUTUBE_CACHE_TTL_MS = 30 * 1000;
+const MAX_YOUTUBE_CACHE_SIZE = 40;
 const youtubeMemoryCache = new Map<
   string,
   {
@@ -14,6 +15,82 @@ const youtubeMemoryCache = new Map<
     videos: YouTubeVideoItem[];
   }
 >();
+
+function pruneYoutubeCache() {
+  if (youtubeMemoryCache.size > MAX_YOUTUBE_CACHE_SIZE) {
+    const now = Date.now();
+    for (const [k, v] of youtubeMemoryCache.entries()) {
+      if (v.expiresAt <= now) youtubeMemoryCache.delete(k);
+    }
+    while (youtubeMemoryCache.size > MAX_YOUTUBE_CACHE_SIZE) {
+      const oldestKey = youtubeMemoryCache.keys().next().value;
+      if (oldestKey) youtubeMemoryCache.delete(oldestKey);
+      else break;
+    }
+  }
+}
+
+/**
+ * Ultra-fast JSON extractor for ytInitialData without regex backtracking on 3MB strings.
+ */
+function parseYtInitialData(html: string): any | null {
+  if (!html) return null;
+  const marker = "ytInitialData";
+  const markerIdx = html.indexOf(marker);
+  if (markerIdx === -1) return null;
+
+  const startIdx = html.indexOf("{", markerIdx);
+  if (startIdx === -1) return null;
+
+  // Primary fast-path: YouTube places ytInitialData in <script ...>var ytInitialData = {...};</script>
+  const scriptEndIdx = html.indexOf("</script>", startIdx);
+  if (scriptEndIdx !== -1) {
+    let slice = html.substring(startIdx, scriptEndIdx).trim();
+    if (slice.endsWith(";")) {
+      slice = slice.slice(0, -1).trim();
+    }
+    try {
+      return JSON.parse(slice);
+    } catch {
+      // Fallback to brace counting
+    }
+  }
+
+  // Robust brace matching fallback
+  let openBraces = 0;
+  let inString = false;
+  let escape = false;
+  const maxScan = Math.min(startIdx + 2_000_000, html.length);
+  for (let i = startIdx; i < maxScan; i++) {
+    const ch = html[i];
+    if (escape) {
+      escape = false;
+      continue;
+    }
+    if (ch === "\\") {
+      escape = true;
+      continue;
+    }
+    if (ch === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (!inString) {
+      if (ch === "{") openBraces++;
+      else if (ch === "}") {
+        openBraces--;
+        if (openBraces === 0) {
+          try {
+            return JSON.parse(html.substring(startIdx, i + 1));
+          } catch {
+            return null;
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
 
 const STANDARD_HEADERS = {
   "User-Agent":
@@ -61,12 +138,8 @@ async function resolveChannelBySearch(rawQuery: string): Promise<string | null> 
     if (!res.ok) return null;
 
     const html = await res.text();
-    const match =
-      html.match(/var ytInitialData = ({[\s\S]*?});<\/script>/) ||
-      html.match(/ytInitialData\s*=\s*({[\s\S]+?});/);
-    if (!match) return null;
-
-    const data = JSON.parse(match[1]);
+    const data = parseYtInitialData(html);
+    if (!data) return null;
     const contents =
       data?.contents?.twoColumnSearchResultsRenderer?.primaryContents
         ?.sectionListRenderer?.contents || [];
@@ -288,23 +361,11 @@ export async function POST(request: NextRequest) {
     const shortsHtml = shortsRes && shortsRes.ok ? await shortsRes.text() : "";
 
     // Parse ytInitialData from videos HTML
-    const matchVideos =
-      videosHtml.match(/var ytInitialData = ({[\s\S]*?});<\/script>/) ||
-      videosHtml.match(/ytInitialData\s*=\s*({[\s\S]+?});/);
+    const videosData = parseYtInitialData(videosHtml);
 
-    if (!matchVideos) {
+    if (!videosData) {
       return NextResponse.json(
         { error: "Gagal memproses data channel YouTube. Silakan coba kembali." },
-        { status: 502 }
-      );
-    }
-
-    let videosData: any = {};
-    try {
-      videosData = JSON.parse(matchVideos[1]);
-    } catch {
-      return NextResponse.json(
-        { error: "Format respon YouTube tidak valid" },
         { status: 502 }
       );
     }
@@ -463,13 +524,9 @@ export async function POST(request: NextRequest) {
 
     // 2. Process Shorts from /shorts tab
     if (shortsHtml) {
-      const matchShorts =
-        shortsHtml.match(/var ytInitialData = ({[\s\S]*?});<\/script>/) ||
-        shortsHtml.match(/ytInitialData\s*=\s*({[\s\S]+?});/);
-
-      if (matchShorts) {
+      const shortsData = parseYtInitialData(shortsHtml);
+      if (shortsData) {
         try {
-          const shortsData = JSON.parse(matchShorts[1]);
           const sTabs =
             shortsData?.contents?.twoColumnBrowseResultsRenderer?.tabs || [];
           const sTab = sTabs.find((t: any) => t.tabRenderer?.selected);
@@ -667,7 +724,8 @@ export async function POST(request: NextRequest) {
     channelProfile.averageLikes = averageLikes;
     channelProfile.averageEngagementRate = avgER;
 
-    // Cache the enriched result for 15 minutes
+    // Cache the enriched result (short debounce for live data)
+    pruneYoutubeCache();
     youtubeMemoryCache.set(cacheKey, {
       expiresAt: Date.now() + YOUTUBE_CACHE_TTL_MS,
       profile: channelProfile,

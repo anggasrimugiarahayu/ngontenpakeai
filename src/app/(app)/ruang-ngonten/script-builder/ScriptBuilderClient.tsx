@@ -35,8 +35,8 @@ const AI_MODELS = [
 ];
 
 export default function ScriptBuilderClient() {
-  const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
-  const { data: dbCalendar } = useSWR("contentCalendar", getContentCalendarAction);
+  const { data: blueprint } = useSWR("blueprint", getBlueprintAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
+  const { data: dbCalendar } = useSWR("contentCalendar", getContentCalendarAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
   const blueprintId = blueprint?.id;
   const blueprintData = blueprint?.aiResult;
 

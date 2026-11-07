@@ -8,8 +8,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, ChevronLeft, ChevronRight, X, Save, Trash2, Check, FileText, Loader2 } from 'lucide-react';
 
 export default function ContentCalendarClient() {
-  const { data: initialData } = useSWR("contentCalendar", getContentCalendarAction);
-  const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
+  const { data: initialData } = useSWR("contentCalendar", getContentCalendarAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
+  const { data: blueprint } = useSWR("blueprint", getBlueprintAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
   const blueprintId = blueprint?.id;
   const blueprintData = blueprint?.aiResult;
 

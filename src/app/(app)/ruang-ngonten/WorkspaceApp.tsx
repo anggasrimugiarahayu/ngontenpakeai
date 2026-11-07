@@ -66,7 +66,10 @@ export default function WorkspaceApp({ hasBlueprint, dbFeatures, isPro, isLogged
   const pathname = usePathname();
   const [activePath, setActivePath] = useState(pathname);
 
-  const { data: blueprintData } = useSWR(isLoggedIn ? "blueprint" : null, getBlueprintAction);
+  const { data: blueprintData } = useSWR(isLoggedIn ? "blueprint" : null, getBlueprintAction, {
+    revalidateOnFocus: false,
+    dedupingInterval: 60000,
+  });
   const activeHasBlueprint = hasBlueprint || !!blueprintData?.aiResult || !!blueprintData;
 
   useEffect(() => {

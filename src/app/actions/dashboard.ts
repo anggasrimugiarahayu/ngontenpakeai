@@ -349,7 +349,7 @@ async function calculateDashboardStats() {
 
   const [enrichedFullOrders, initialUsersData] = await Promise.all([
     populateOrderAddons(fullOrders),
-    fetchAllDashboardUsersData().catch(() => ({
+    getCachedAllDashboardUsers().catch(() => ({
       users: [],
       total: 0,
     })),
@@ -528,6 +528,7 @@ async function fetchAllDashboardUsersData() {
           proAutomationExpiredAt: true,
           proRisetExpiredAt: true,
           orders: {
+            take: 10,
             select: {
               id: true,
               orderType: true,

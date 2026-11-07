@@ -9,7 +9,7 @@ import { useAIChat } from "@/hooks/useAIChat";
 import { Copy, Check, Filter, Video, Lightbulb, MessageSquare, Search, UserCircle, CheckCircle2, Calendar, Bot, ChevronDown, Plus } from "lucide-react";
 
 export default function IdeaRoomsClient() {
-  const { data: blueprint } = useSWR("blueprint", getBlueprintAction);
+  const { data: blueprint } = useSWR("blueprint", getBlueprintAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
   const blueprintId = blueprint?.id;
   const blueprintData = blueprint?.aiResult;
 

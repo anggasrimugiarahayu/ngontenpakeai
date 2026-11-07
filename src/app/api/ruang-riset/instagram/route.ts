@@ -8,8 +8,9 @@ import {
 import { getResolvedRisetConfig, updateInstagramSessionStatus } from "@/lib/riset-config";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 
-// In-memory cache (15 minutes TTL) for fast repeated lookups & rate-limit protection
-const RISET_CACHE_TTL_MS = 15 * 60 * 1000;
+// In-memory cache (30 seconds debounce) to prevent double-click abuse while always ensuring fresh live data
+const RISET_CACHE_TTL_MS = 30 * 1000;
+const MAX_RISET_CACHE_SIZE = 40;
 const risetMemoryCache = new Map<
   string,
   {
@@ -19,6 +20,20 @@ const risetMemoryCache = new Map<
     posts: InstagramPostItem[];
   }
 >();
+
+function pruneRisetCache() {
+  if (risetMemoryCache.size > MAX_RISET_CACHE_SIZE) {
+    const now = Date.now();
+    for (const [k, v] of risetMemoryCache.entries()) {
+      if (v.expiresAt <= now) risetMemoryCache.delete(k);
+    }
+    while (risetMemoryCache.size > MAX_RISET_CACHE_SIZE) {
+      const oldestKey = risetMemoryCache.keys().next().value;
+      if (oldestKey) risetMemoryCache.delete(oldestKey);
+      else break;
+    }
+  }
+}
 
 function toProxiedImageUrl(rawUrl?: string | null): string {
   if (!rawUrl || typeof rawUrl !== "string") return "";
@@ -1163,6 +1178,7 @@ export async function POST(request: NextRequest) {
     const directData = await fetchDirectInstagramApi(cleanUsername);
     if (directData && directData.posts.length > 0) {
       await recordSuccess();
+      pruneRisetCache();
       risetMemoryCache.set(cleanUsername, {
         expiresAt: Date.now() + RISET_CACHE_TTL_MS,
         source: "instagram_direct_api",
@@ -1187,6 +1203,7 @@ export async function POST(request: NextRequest) {
       );
       if (sessionData && sessionData.posts.length > 0) {
         await recordSuccess();
+        pruneRisetCache();
         risetMemoryCache.set(cleanUsername, {
           expiresAt: Date.now() + RISET_CACHE_TTL_MS,
           source: "instagram_web_session",
@@ -1212,6 +1229,7 @@ export async function POST(request: NextRequest) {
       );
       if (rapidData && rapidData.posts.length > 0) {
         await recordSuccess();
+        pruneRisetCache();
         risetMemoryCache.set(cleanUsername, {
           expiresAt: Date.now() + RISET_CACHE_TTL_MS,
           source: "rapidapi_live_scraper",

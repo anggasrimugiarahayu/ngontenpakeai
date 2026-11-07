@@ -52,7 +52,7 @@ const AI_MODELS = [
 ];
 
 export default function CarouselBuilderClient({ blueprintData: propBlueprintData }: { blueprintData?: any } = {}) {
-  const { data: dbBlueprint } = useSWR("blueprint", getBlueprintAction);
+  const { data: dbBlueprint } = useSWR("blueprint", getBlueprintAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
   const activeBlueprintData = dbBlueprint?.aiResult || dbBlueprint?.blueprintData || propBlueprintData;
   const blueprintId = dbBlueprint?.id;
   const blueprintData = activeBlueprintData;
