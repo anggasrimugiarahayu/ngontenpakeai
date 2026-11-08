@@ -685,14 +685,16 @@ export function PricingConfigSection({
       </div>
 
       {/* 3. MODAL EDIT TERPUSAT */}
-      <PricingEditModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        config={config}
-        products={products}
-        initialCategory={selectedCategory}
-        onSave={handleSaveModal}
-      />
+      {isEditModalOpen && (
+        <PricingEditModal
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          config={config}
+          products={products}
+          initialCategory={selectedCategory}
+          onSave={handleSaveModal}
+        />
+      )}
 
       {/* 4. MODAL BANK VOUCHER GLOBAL */}
       {showVoucherModal && (

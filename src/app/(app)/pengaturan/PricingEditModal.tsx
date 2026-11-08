@@ -58,6 +58,7 @@ export function PricingEditModal({
 
   // Selected package ID within the active category
   const [selectedPkgId, setSelectedPkgId] = useState<string>("");
+  const [isUploadingCover, setIsUploadingCover] = useState(false);
 
   // Sync state whenever modal opens
   useEffect(() => {
@@ -88,8 +89,6 @@ export function PricingEditModal({
   if (!isOpen) return null;
 
   const currentPkg = selectedPkgId ? formData.packages?.[selectedPkgId] : null;
-
-  const [isUploadingCover, setIsUploadingCover] = useState(false);
 
   const handleUploadCover = async (file: File) => {
     if (!file) return;
