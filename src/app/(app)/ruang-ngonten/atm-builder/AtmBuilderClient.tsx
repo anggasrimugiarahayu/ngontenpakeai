@@ -15,14 +15,6 @@ import remarkGfm from 'remark-gfm';
 import Tesseract from 'tesseract.js';
 import { extractAudioFromMedia } from "@/lib/utils/audioExtractor";
 
-const AI_MODELS = [
-  { value: 'llama-3.3-70b-versatile', label: 'Llama 3.3' },
-  { value: 'qwen/qwen3.8-27b', label: 'Qwen 3.8' },
-  { value: 'openai/gpt-oss-120b', label: 'OpenAI 120B' },
-  { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash' },
-  { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite' }
-];
-
 export default function AtmBuilderClient() {
   const { data: blueprint } = useSWR("blueprint", getBlueprintAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
   const { data: dbCalendar } = useSWR("contentCalendar", getContentCalendarAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
@@ -32,7 +24,7 @@ export default function AtmBuilderClient() {
   const { fetchAI, isLoading, setIsLoading, abort } = useAIChat();
   const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_atm_builder", []);
   const [atmInputText, setAtmInputText] = useState("");
-  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
+  const [selectedModel, setSelectedModel] = useState("");
   const [isLocalExtracting, setIsLocalExtracting] = useState(false);
   const [customLoadingPhrases, setCustomLoadingPhrases] = useState<string[] | undefined>(undefined);
   
@@ -515,7 +507,6 @@ export default function AtmBuilderClient() {
         subtitle="Bedah dan rakit ulang konten referensi viral menjadi versi Anda sendiri tanpa terlihat menjiplak."
         chatHistory={chatHistory}
         renderCustomMessage={renderCustomMessage}
-        models={AI_MODELS}
         selectedModel={selectedModel}
         onModelChange={setSelectedModel}
         value={atmInputText}

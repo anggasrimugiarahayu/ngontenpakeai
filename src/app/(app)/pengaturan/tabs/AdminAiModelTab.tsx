@@ -41,6 +41,7 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
 
       await createAiModel({ ...newModel, provider: detectedProvider });
       mutate("pengaturan");
+      mutate("ai-models");
       router.refresh();
       setNewModel({ name: "", modelId: "", provider: "groq" });
       toast.success("Model AI berhasil ditambahkan");
@@ -59,11 +60,13 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
     try {
       await toggleModel(id, nextVal);
       mutate("pengaturan");
+      mutate("ai-models");
       router.refresh();
     } catch {
       setModelList(prevModels);
       toast.error("Gagal mengubah status model AI");
       mutate("pengaturan");
+      mutate("ai-models");
     }
   };
 
@@ -75,11 +78,13 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
     try {
       await setDefaultModel(id);
       mutate("pengaturan");
+      mutate("ai-models");
       router.refresh();
     } catch {
       setModelList(prevModels);
       toast.error("Gagal mengatur model default");
       mutate("pengaturan");
+      mutate("ai-models");
     }
   };
 
@@ -91,11 +96,13 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
     try {
       await setFallbackModel(id);
       mutate("pengaturan");
+      mutate("ai-models");
       router.refresh();
     } catch {
       setModelList(prevModels);
       toast.error("Gagal mengatur model alternatif");
       mutate("pengaturan");
+      mutate("ai-models");
     }
   };
 
@@ -106,12 +113,14 @@ export function AdminAiModelTab({ models }: { models: any[] }) {
       try {
         await deleteModel(id);
         mutate("pengaturan");
+        mutate("ai-models");
         router.refresh();
         toast.success("Model berhasil dihapus");
       } catch {
         setModelList(prevModels);
         toast.error("Gagal menghapus model");
         mutate("pengaturan");
+        mutate("ai-models");
       }
     }
   };

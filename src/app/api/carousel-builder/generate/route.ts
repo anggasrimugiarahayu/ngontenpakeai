@@ -93,7 +93,7 @@ ${JSON.stringify(bp, null, 2)}
     const dbStyles = await prisma.carouselStyleArt.findMany({ where: { isActive: true }, orderBy: { kode: 'asc' } });
     const styleArtContext = dbStyles.map(s => `- ${s.kode} - ${s.namaLabel}\n  Konsep: ${s.deskripsiPrompt}`).join('\n\n');
 
-    const defaultModel = await getDefaultAiModel("llama-3.3-70b-versatile");
+    const defaultModel = await getDefaultAiModel("openai/gpt-oss-120b");
     const activeModel = model || defaultModel;
     const isGroq = isGroqModel(activeModel);
 

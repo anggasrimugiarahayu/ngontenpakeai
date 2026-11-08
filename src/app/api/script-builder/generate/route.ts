@@ -168,7 +168,7 @@ ${Array.from({ length: Math.max(1, targetSlides - 3) }, (_, i) => {
   Content: CTA yang sangat relevan dan beralasan kuat (contoh: ajak Save sekarang sebelum gajian, atau Share ke teman yang gajinya numpang lewat).`;
     }
 
-    const defaultModel = await getDefaultAiModel("llama-3.3-70b-versatile");
+    const defaultModel = await getDefaultAiModel("openai/gpt-oss-120b");
     const activeModel = model || defaultModel;
     const isGroq = isGroqModel(activeModel);
 

@@ -202,6 +202,7 @@ export default function DashboardClient({
       globalMutate("blueprint");
       globalMutate("contentCalendar");
       globalMutate("bioBuilder");
+      globalMutate("ai-models");
 
       toast.success("Seluruh data tools & dashboard berhasil disinkronkan!");
     } catch (e) {

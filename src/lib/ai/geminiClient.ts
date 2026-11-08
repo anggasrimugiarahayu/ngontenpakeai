@@ -27,37 +27,45 @@ export function isGroqModel(modelId?: string | null): boolean {
 }
 
 export function resolveGroqModel(modelId: string): string {
-  if (!modelId) return "llama-3.3-70b-versatile";
+  if (!modelId) return "openai/gpt-oss-120b";
   const trimmed = modelId.trim();
   const lower = trimmed.toLowerCase();
 
-  // Normalize Llama 3.3
+  // If already exact model IDs active on Groq
+  if (
+    lower === "openai/gpt-oss-120b" ||
+    lower === "openai/gpt-oss-20b" ||
+    lower === "qwen/qwen3.8-27b" ||
+    lower === "allam-2-7b"
+  ) {
+    return trimmed;
+  }
+
+  // Graceful alias for Llama 3.3 / OpenAI 120B
   if (
     lower === "llama-3.3" ||
     lower === "llama3.3" ||
     lower === "llama 3.3" ||
-    lower.includes("llama-3.3-70b")
+    lower.includes("llama-3.3") ||
+    lower.includes("120b")
   ) {
-    return "llama-3.3-70b-versatile";
+    return "openai/gpt-oss-120b";
   }
 
-  // Normalize Llama 3.1
+  // Graceful alias for Llama 3.1 / OpenAI 20B
   if (
     lower === "llama-3.1" ||
     lower === "llama3.1" ||
     lower === "llama 3.1" ||
-    lower.includes("llama-3.1-8b")
+    lower.includes("llama-3.1") ||
+    lower.includes("20b")
   ) {
-    return "llama-3.1-8b-instant";
+    return "openai/gpt-oss-20b";
   }
 
-  // Normalize Qwen variants to official Groq Qwen model IDs
+  // Normalize Qwen variants to official active Groq Qwen model
   if (lower.includes("qwen")) {
-    if (lower.includes("qwq") || lower.includes("qwen-2.5") || lower.includes("coder")) {
-      return trimmed;
-    }
-    // Map non-standard names (like qwen 3.6, qwen 3.8, qwen/qwen3.8-27b) to active Groq Qwen model
-    return "qwen-qwq-32b";
+    return "qwen/qwen3.8-27b";
   }
 
   return trimmed;
@@ -78,7 +86,7 @@ export async function callGroqChatCompletion(options: {
   }
   messages.push({ role: "user", content: userPrompt });
 
-  const resolvedModel = resolveGroqModel(model || "llama-3.3-70b-versatile");
+  const resolvedModel = resolveGroqModel(model || "openai/gpt-oss-120b");
   const body: any = {
     model: resolvedModel,
     messages,
@@ -102,9 +110,9 @@ export async function callGroqChatCompletion(options: {
     body: JSON.stringify(body),
   });
 
-  // If primary model returned 404 (model ID not registered in Groq), retry once with standard Llama 3.3
-  if (!res.ok && res.status === 404 && body.model !== "llama-3.3-70b-versatile") {
-    body.model = "llama-3.3-70b-versatile";
+  // If primary model returned 404 (model ID not registered in Groq), retry once with OpenAI 120B
+  if (!res.ok && res.status === 404 && body.model !== "openai/gpt-oss-120b") {
+    body.model = "openai/gpt-oss-120b";
     res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -225,8 +233,8 @@ export async function generateStructuredAiContent<T = any>(
     temperature = 0.7,
   } = options;
 
-  const defaultModelFromDb = await getDefaultAiModel("llama-3.3-70b-versatile");
-  const targetModel = model || defaultModelFromDb || fallbackModelDefault || "llama-3.3-70b-versatile";
+  const defaultModelFromDb = await getDefaultAiModel("openai/gpt-oss-120b");
+  const targetModel = model || defaultModelFromDb || fallbackModelDefault || "openai/gpt-oss-120b";
 
   let rawText: string | null = null;
   const targetIsGroq = isGroqModel(targetModel);
@@ -317,10 +325,10 @@ export async function generateStructuredAiContent<T = any>(
     const activeGeminiKey = await getApiKey(apiKey);
     if (activeGeminiKey) {
       try {
-        console.log("[Universal AI] Menjalankan Emergency Fallback ke Google Gemini 2.5 Flash...");
+        console.log("[Universal AI] Menjalankan Emergency Fallback ke Google Gemini 3.5 Flash-Lite...");
         rawText = await callGoogleGeminiContent({
           apiKey: activeGeminiKey,
-          model: "gemini-2.5-flash",
+          model: "gemini-3.5-flash-lite",
           userPrompt,
           systemPrompt,
           responseMimeType,

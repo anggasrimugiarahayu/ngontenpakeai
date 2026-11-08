@@ -86,7 +86,7 @@ export async function POST(req: Request) {
 
     const { promptText, isFunneling, blueprintData, chatHistory, model } = body;
 
-    const defaultModel = await getDefaultAiModel("llama-3.3-70b-versatile");
+    const defaultModel = await getDefaultAiModel("openai/gpt-oss-120b");
     const effectiveModel = model || defaultModel;
     const isGroq = isGroqModel(effectiveModel);
 

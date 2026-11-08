@@ -33,12 +33,12 @@ const getCachedFallbackModelId = unstable_cache(
   { revalidate: 3600, tags: ["admin-config"] }
 );
 
-export async function getDefaultAiModel(fallbackModel = "llama-3.3-70b-versatile") {
+export async function getDefaultAiModel(fallbackModel = "openai/gpt-oss-120b") {
   const modelId = await getCachedDefaultModelId();
   return modelId || fallbackModel;
 }
 
-export async function getFallbackAiModel(fallbackModel = "gemini-3.5-flash-lite") {
+export async function getFallbackAiModel(fallbackModel = "openai/gpt-oss-20b") {
   const modelId = await getCachedFallbackModelId();
   return modelId || fallbackModel;
 }

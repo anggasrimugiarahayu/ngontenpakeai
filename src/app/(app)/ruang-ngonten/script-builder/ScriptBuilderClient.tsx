@@ -24,16 +24,6 @@ interface ScriptVariation {
   caption: string;
 }
 
-const AI_MODELS = [
-  { value: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash' },
-  { value: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash' },
-  { value: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash' },
-  { value: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite' },
-  { value: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash-Lite' },
-  { value: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro' },
-  { value: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash' }
-];
-
 export default function ScriptBuilderClient() {
   const { data: blueprint } = useSWR("blueprint", getBlueprintAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
   const { data: dbCalendar } = useSWR("contentCalendar", getContentCalendarAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
@@ -43,7 +33,7 @@ export default function ScriptBuilderClient() {
   const { fetchAI, isLoading, abort } = useAIChat();
   const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_script_builder", []);
   const [scriptPromptText, setScriptPromptText] = useState("");
-  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
+  const [selectedModel, setSelectedModel] = useState("");
   
   const [scriptFormat, setScriptFormat] = useState("");
   const [scriptTone, setScriptTone] = useState("");
@@ -345,7 +335,6 @@ export default function ScriptBuilderClient() {
         title={<>Script Builder <FileText className="text-rn-accent inline-block ml-2" size={32} /></>}
         subtitle="Ubah ide mentah menjadi naskah konten TikTok/Reels yang siap direkam."
         chatHistory={chatHistory}
-        models={AI_MODELS}
         selectedModel={selectedModel}
         onModelChange={setSelectedModel}
         value={scriptPromptText}

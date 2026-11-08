@@ -18,7 +18,7 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
   
   const [chatHistory, setChatHistory] = useSessionState<ChatMessage[]>("chat_ebook_builder", []);
   const [inputText, setInputText] = useState("");
-  const [selectedModel, setSelectedModel] = useState("llama-3.3-70b-versatile");
+  const [selectedModel, setSelectedModel] = useState("");
   
   const [actionState, setActionState] = useState<string | null>(null);
   const [isPlusMenuOpen, setIsPlusMenuOpen] = useState(false);
@@ -313,7 +313,6 @@ export default function EbookBuilderClient({ blueprintData = {} }: { blueprintDa
         subtitle="Riset ide brilian, rakit kerangka (outline), dan cetak master prompt untuk membuat Ebook berkualitas premium."
         chatHistory={chatHistory}
         renderCustomMessage={renderCustomMessage}
-        models={[]}
         selectedModel={selectedModel}
         onModelChange={setSelectedModel}
         value={inputText}

@@ -1,4 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
+import useSWR from 'swr';
 import { ChevronDown } from 'lucide-react';
 import GlobalChatbox from './GlobalChatbox';
 import GlobalChatBubble from './GlobalChatBubble';
@@ -27,7 +28,7 @@ interface GlobalChatLayoutProps {
   renderCustomMessage?: (msg: ChatMessage) => React.ReactNode;
   
   // Chatbox passthrough
-  models: any[];
+  models?: any[];
   selectedModel: string;
   onModelChange: (model: string) => void;
   value: string;
@@ -51,7 +52,7 @@ export default function GlobalChatLayout({
   chatHistory,
   renderCustomMessage,
   
-  models,
+  models = [],
   selectedModel,
   onModelChange,
   value,
@@ -69,31 +70,35 @@ export default function GlobalChatLayout({
 }: GlobalChatLayoutProps) {
   const mainScrollRef = useRef<HTMLElement>(null);
   const [showScrollBottom, setShowScrollBottom] = useState(false);
-  const [dbModels, setDbModels] = useState<any[]>(models);
-  
+  const { data: dbModelsData } = useSWR<any[]>(
+    "ai-models",
+    async () => {
+      const res = await fetch("/api/models", { cache: "no-store" });
+      if (!res.ok) throw new Error("Gagal mengambil model AI");
+      return res.json();
+    },
+    {
+      revalidateOnFocus: true,
+      dedupingInterval: 5000,
+    }
+  );
 
+  const activeModels = dbModelsData && dbModelsData.length > 0 ? dbModelsData : models;
+
+  // Auto-select valid default model whenever models are loaded/changed
   useEffect(() => {
-    async function fetchModels() {
-      try {
-        const res = await fetch('/api/models');
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.length > 0) {
-            setDbModels(data);
-            
-            // Select default model if available
-            const defaultModel = data.find((m: any) => m.isDefault) || data[0];
-            if (defaultModel) {
-              onModelChange(defaultModel.modelId || defaultModel.value || defaultModel.id);
-            }
-          }
+    if (activeModels && activeModels.length > 0) {
+      const isCurrentValid = activeModels.some(
+        (m: any) => (m.modelId || m.value || m.id) === selectedModel
+      );
+      if (!isCurrentValid || !selectedModel) {
+        const defaultModel = activeModels.find((m: any) => m.isDefault) || activeModels[0];
+        if (defaultModel) {
+          onModelChange(defaultModel.modelId || defaultModel.value || defaultModel.id);
         }
-      } catch (err) {
-        console.error("Failed to fetch AI models:", err);
       }
     }
-    fetchModels();
-  }, []);
+  }, [activeModels, selectedModel, onModelChange]);
 
   const handleScroll = () => {
     if (mainScrollRef.current) {
@@ -172,7 +177,7 @@ export default function GlobalChatLayout({
             )}
 
             <GlobalChatbox
-              models={dbModels}
+              models={activeModels}
               selectedModel={selectedModel}
               onModelChange={onModelChange}
               value={value}
@@ -238,7 +243,7 @@ export default function GlobalChatLayout({
         <div className="w-full shrink-0 bg-transparent pt-2 pb-4 px-4 z-40">
           <div className="max-w-3xl mx-auto relative">
             <GlobalChatbox
-              models={dbModels}
+              models={activeModels}
               selectedModel={selectedModel}
               onModelChange={onModelChange}
               value={value}

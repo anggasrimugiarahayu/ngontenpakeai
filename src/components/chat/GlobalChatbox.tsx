@@ -180,7 +180,7 @@ export default function GlobalChatbox({
               <span className="text-gray-900 dark:text-white whitespace-nowrap">
                 {models.find(m => (m.modelId || m.value || m.id) === selectedModel)?.name || 
                  models.find(m => (m.modelId || m.value || m.id) === selectedModel)?.label || 
-                 'Llama 3.3'}
+                 models[0]?.name || models[0]?.label || (models.length === 0 ? 'Memuat AI...' : 'Pilih AI')}
               </span>
               <ChevronDown size={12} strokeWidth={2.5} className={`transition-transform text-gray-400 dark:text-gray-400 ml-0.5 ${isModelMenuOpen ? 'rotate-180' : ''}`}/>
             </button>
@@ -189,19 +189,23 @@ export default function GlobalChatbox({
               <>
                 <div className="fixed inset-0 z-[40]" onClick={(e) => { e.stopPropagation(); setIsModelMenuOpen(false); }}></div>
                 <div onClick={(e) => e.stopPropagation()} className="absolute bottom-full left-0 mb-2 w-[180px] bg-white dark:bg-[#141B31] border border-gray-200 dark:border-[#2C3246] shadow-xl rounded-xl z-50 overflow-hidden py-1 animate-in fade-in zoom-in-95 cursor-default">
-                  {models.map((model) => {
-                    const val = model.modelId || model.value || model.id || "";
-                    const name = model.name || model.label;
-                    return (
-                      <button 
-                        key={val} 
-                        onClick={(e) => { e.stopPropagation(); onModelChange(val); setIsModelMenuOpen(false); }} 
-                        className={`w-full text-left px-3 py-2 text-xs font-bold transition-colors cursor-pointer ${selectedModel === val ? 'text-orange-600 dark:text-orange-400 bg-orange-500/10' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]'}`}
-                      >
-                        {name}
-                      </button>
-                    );
-                  })}
+                  {models.length === 0 ? (
+                    <div className="px-3 py-2 text-xs text-gray-400 text-center">Memuat model...</div>
+                  ) : (
+                    models.map((model) => {
+                      const val = model.modelId || model.value || model.id || "";
+                      const name = model.name || model.label;
+                      return (
+                        <button 
+                          key={val} 
+                          onClick={(e) => { e.stopPropagation(); onModelChange(val); setIsModelMenuOpen(false); }} 
+                          className={`w-full text-left px-3 py-2 text-xs font-bold transition-colors cursor-pointer ${selectedModel === val ? 'text-orange-600 dark:text-orange-400 bg-orange-500/10' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-[#1f2947]'}`}
+                        >
+                          {name}
+                        </button>
+                      );
+                    })
+                  )}
                 </div>
               </>
             )}

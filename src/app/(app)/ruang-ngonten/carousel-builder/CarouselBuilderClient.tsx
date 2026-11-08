@@ -39,18 +39,6 @@ interface CarouselIdea {
   typography?: string;
 }
 
-
-const AI_MODELS = [
-  { id: 'gemini-3.7-flash', label: 'Gemini 3.7 Flash', value: 'gemini-3.7-flash' },
-  { id: 'gemini-3.6-flash', label: 'Gemini 3.6 Flash', value: 'gemini-3.6-flash' },
-  { id: 'gemini-3.5-flash', label: 'Gemini 3.5 Flash', value: 'gemini-3.5-flash' },
-  { id: 'gemini-3.5-flash-lite', label: 'Gemini 3.5 Flash-Lite', value: 'gemini-3.5-flash-lite' },
-  { id: 'gemini-3.1-flash-lite', label: 'Gemini 3.1 Flash-Lite', value: 'gemini-3.1-flash-lite' },
-  { id: 'gemini-2.5-flash', label: 'Gemini 2.5 Flash', value: 'gemini-2.5-flash' },
-  { id: 'gemini-2.5-flash-lite', label: 'Gemini 2.5 Flash-Lite', value: 'gemini-2.5-flash-lite' },
-  { id: 'gemini-2.5-pro', label: 'Gemini 2.5 Pro', value: 'gemini-2.5-pro' }
-];
-
 export default function CarouselBuilderClient({ blueprintData: propBlueprintData }: { blueprintData?: any } = {}) {
   const { data: dbBlueprint } = useSWR("blueprint", getBlueprintAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
   const activeBlueprintData = dbBlueprint?.aiResult || dbBlueprint?.blueprintData || propBlueprintData;
@@ -64,7 +52,7 @@ export default function CarouselBuilderClient({ blueprintData: propBlueprintData
   
   const [isScriptMenuOpen, setIsScriptMenuOpen] = useState(false);
   const [isModelMenuOpen, setIsModelMenuOpen] = useState(false);
-  const [selectedModel, setSelectedModel] = useState('llama-3.3-70b-versatile');
+  const [selectedModel, setSelectedModel] = useState("");
   const [isListening, setIsListening] = useState(false);
   const recognitionRef = useRef<any>(null);
   
@@ -612,7 +600,6 @@ TOLONG JALANKAN MASTER PROMPT SEKARANG DENGAN STANDAR COPYWRITING TINGGI:
         subtitle="Sulap ide jadi desain carousel multi-slide yang mengalir dan bikin audiens betah geser sampai akhir."
         chatHistory={chatHistory}
         renderCustomMessage={renderCustomMessage}
-        models={AI_MODELS}
         selectedModel={selectedModel}
         onModelChange={setSelectedModel}
         value={carouselPromptText}
