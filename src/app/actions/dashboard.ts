@@ -68,16 +68,39 @@ async function calculateDashboardStats() {
     prisma.user
       .count({
         where: {
+          role: { not: "FREE" },
           OR: [
             { role: "ADMIN" },
             { hasProBook: true },
             { proToolsExpiredAt: { gt: now } },
-            { proAutomationExpiredAt: { gt: now } },
             { proRisetExpiredAt: { gt: now } },
+            {
+              AND: [
+                { proAutomationExpiredAt: { gt: now } },
+                {
+                  orders: {
+                    some: {
+                      status: "SUCCESS",
+                      paymentMethod: { not: "FREE_CLAIM" },
+                      orderType: {
+                        in: [
+                          "PRO_AUTOMATION",
+                          "PRO_AUTO_3M",
+                          "PRO_AUTO_1Y",
+                          "PRO_PLUS",
+                          "PRO_PLUS_1Y",
+                        ],
+                      },
+                    },
+                  },
+                },
+              ],
+            },
             {
               orders: {
                 some: {
                   status: "SUCCESS",
+                  paymentMethod: { not: "FREE_CLAIM" },
                   orderType: {
                     in: [
                       "PRO_BOOK",
@@ -97,14 +120,22 @@ async function calculateDashboardStats() {
     prisma.order.aggregate({
       _sum: { amount: true },
       _count: { id: true },
-      where: { status: 'SUCCESS' }
+      where: {
+        status: 'SUCCESS',
+        paymentMethod: { not: 'FREE_CLAIM' },
+        amount: { gt: 0 }
+      }
     }).catch(() => ({ _sum: { amount: 0 }, _count: { id: 0 } })),
     
     prisma.order.groupBy({
       by: ['digitalProductId', 'orderType'],
       _sum: { amount: true },
       _count: { id: true },
-      where: { status: 'SUCCESS' },
+      where: {
+        status: 'SUCCESS',
+        paymentMethod: { not: 'FREE_CLAIM' },
+        amount: { gt: 0 }
+      },
       orderBy: [
         { _sum: { amount: 'desc' } },
         { _count: { id: 'desc' } }
@@ -158,6 +189,7 @@ async function calculateDashboardStats() {
     prisma.user
       .count({
         where: {
+          role: { not: "FREE" },
           OR: [
             { role: "ADMIN" },
             { hasProBook: true },
@@ -165,6 +197,7 @@ async function calculateDashboardStats() {
               orders: {
                 some: {
                   status: "SUCCESS",
+                  paymentMethod: { not: "FREE_CLAIM" },
                   orderType: {
                     in: ["PRO_BOOK", "PRO_BOOK_PRO", "PRO_PLUS", "PRO_PLUS_1Y"],
                   },
@@ -179,6 +212,7 @@ async function calculateDashboardStats() {
     prisma.user
       .count({
         where: {
+          role: { not: "FREE" },
           OR: [
             { role: "ADMIN" },
             { proToolsExpiredAt: { gt: now } },
@@ -186,6 +220,7 @@ async function calculateDashboardStats() {
               orders: {
                 some: {
                   status: "SUCCESS",
+                  paymentMethod: { not: "FREE_CLAIM" },
                   orderType: { in: ["PRO_TOOLS", "PRO_PLUS", "PRO_PLUS_1Y"] },
                 },
               },
@@ -198,16 +233,22 @@ async function calculateDashboardStats() {
     prisma.user
       .count({
         where: {
+          role: { not: "FREE" },
           OR: [
             { role: "ADMIN" },
-            { proAutomationExpiredAt: { gt: now } },
             {
-              orders: {
-                some: {
-                  status: "SUCCESS",
-                  orderType: { in: ["PRO_AUTOMATION", "PRO_PLUS", "PRO_PLUS_1Y"] },
+              AND: [
+                { proAutomationExpiredAt: { gt: now } },
+                {
+                  orders: {
+                    some: {
+                      status: "SUCCESS",
+                      paymentMethod: { not: "FREE_CLAIM" },
+                      orderType: { in: ["PRO_AUTOMATION", "PRO_AUTO_3M", "PRO_AUTO_1Y", "PRO_PLUS", "PRO_PLUS_1Y"] },
+                    },
+                  },
                 },
-              },
+              ],
             },
           ],
         },
@@ -217,6 +258,7 @@ async function calculateDashboardStats() {
     prisma.user
       .count({
         where: {
+          role: { not: "FREE" },
           OR: [
             { role: "ADMIN" },
             { proRisetExpiredAt: { gt: now } },
@@ -224,6 +266,7 @@ async function calculateDashboardStats() {
               orders: {
                 some: {
                   status: "SUCCESS",
+                  paymentMethod: { not: "FREE_CLAIM" },
                   orderType: { in: ["PRO_RISET", "PRO_PLUS", "PRO_PLUS_1Y"] },
                 },
               },
@@ -534,6 +577,7 @@ async function fetchAllDashboardUsersData() {
               orderType: true,
               status: true,
               amount: true,
+              paymentMethod: true,
               createdAt: true,
               product: {
                 select: {
@@ -726,6 +770,29 @@ export async function adminUpdateUserAccessAction(params: {
       }
     }
 
+    if (mode === "grant" && target !== "revoke_all") {
+      const grantOrderType =
+        target === "book"
+          ? "PRO_BOOK"
+          : target === "tools"
+          ? "PRO_TOOLS"
+          : target === "automation"
+          ? "PRO_AUTOMATION"
+          : target === "riset"
+          ? "PRO_RISET_1M"
+          : "PRO_PLUS";
+
+      await prisma.order.create({
+        data: {
+          userId,
+          orderType: grantOrderType,
+          amount: 0,
+          status: "SUCCESS",
+          paymentMethod: "ADMIN_GRANT",
+        },
+      });
+    }
+
     const updatedDbUser = await prisma.user.update({
       where: { id: userId },
       data: updateData,
@@ -739,7 +806,7 @@ export async function adminUpdateUserAccessAction(params: {
         proRisetExpiredAt: true,
         orders: {
           where: { status: "SUCCESS" },
-          select: { orderType: true, status: true, createdAt: true },
+          select: { orderType: true, status: true, amount: true, paymentMethod: true, createdAt: true },
         },
       },
     });

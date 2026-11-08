@@ -206,6 +206,15 @@ export function resolveUserPackageBundledProductIds(
   if (!Array.isArray(userOrders)) return [];
   for (const o of userOrders) {
     if (o?.status && o.status !== "SUCCESS") continue;
+    if (
+      o?.paymentMethod === "FREE_CLAIM" ||
+      (o?.amount !== undefined &&
+        Number(o.amount) <= 0 &&
+        o.paymentMethod !== "ADMIN_GRANT" &&
+        o.paymentMethod !== "PACKAGE_INCLUDED")
+    ) {
+      continue;
+    }
     const meta = resolvePackageMeta(o?.orderType || "", rawPricingConfig);
     if (Array.isArray(meta.bundledProductIds)) {
       meta.bundledProductIds.forEach((pid) => {
@@ -357,7 +366,25 @@ export function computeUserSubscriptionStatus(
 ): UserSubscriptionStatus {
   const now = new Date();
   const isAdmin = isAdminUser(dbUser);
-  const isExplicitPro = dbUser?.role === "PRO";
+  const isRevoked = dbUser?.role === "FREE";
+
+  if (isRevoked && !isAdmin) {
+    return {
+      isAdmin: false,
+      hasBook: false,
+      hasTools: false,
+      hasAutomation: false,
+      hasAutomationTrial: false,
+      hasRiset: false,
+      activePillarsCount: 0,
+      isPro: false,
+      isFullyPro: false,
+      badgeName: "FREE",
+      proToolsExpiredAt: null,
+      proAutomationExpiredAt: null,
+      proRisetExpiredAt: null,
+    };
+  }
 
   let effectiveToolsExpiry: Date | null = dbUser?.proToolsExpiredAt
     ? new Date(dbUser.proToolsExpiredAt)
@@ -379,7 +406,7 @@ export function computeUserSubscriptionStatus(
       o &&
       (!o.status || o.status === "SUCCESS") &&
       o.paymentMethod !== "FREE_CLAIM" &&
-      (o.amount === undefined || o.amount > 0 || o.paymentMethod === "ADMIN_GRANT" || o.paymentMethod === "PACKAGE_INCLUDED")
+      (Number(o.amount) > 0 || o.paymentMethod === "ADMIN_GRANT" || o.paymentMethod === "PACKAGE_INCLUDED")
     );
 
   if (Array.isArray(userOrders)) {
@@ -395,13 +422,22 @@ export function computeUserSubscriptionStatus(
       if (meta.category === "riset" || meta.category === "plus") hasPaidRisetOrder = true;
       if (meta.category === "ebook" || isBookPackageOrder(o?.orderType, rawPricingConfig)) hasPaidBookOrder = true;
 
+      // Track cross-room dynamic bundle eligibility
+      if (meta.bundledRooms) {
+        if (meta.bundledRooms.toolsDays && meta.bundledRooms.toolsDays > 0) hasPaidToolsOrder = true;
+        if (meta.bundledRooms.risetDays && meta.bundledRooms.risetDays > 0) hasPaidRisetOrder = true;
+        if (meta.bundledRooms.automationDays && meta.bundledRooms.automationDays > 0) hasPaidAutoOrder = true;
+      }
+
       // Backward-compatible fallback for Riset orders purchased before proRisetExpiredAt column existed
+      // HANYA dijalankan jika kolom proRisetExpiredAt di database masih null
       if (
+        !dbUser?.proRisetExpiredAt &&
         (meta.category === "riset" || meta.category === "plus") &&
         o?.createdAt
       ) {
         const exp = addDurationToExpiry(
-          effectiveRisetExpiry,
+          null,
           meta.durationDays || 30,
           orderDate
         );
@@ -409,57 +445,20 @@ export function computeUserSubscriptionStatus(
           effectiveRisetExpiry = exp;
         }
       }
-
-      // Check bundledRooms dynamic cross-room bonus
-      if (meta.bundledRooms) {
-        if (meta.bundledRooms.toolsDays && meta.bundledRooms.toolsDays > 0) {
-          hasPaidToolsOrder = true;
-          const exp = addDurationToExpiry(
-            effectiveToolsExpiry,
-            meta.bundledRooms.toolsDays,
-            orderDate
-          );
-          if (!effectiveToolsExpiry || exp > effectiveToolsExpiry) {
-            effectiveToolsExpiry = exp;
-          }
-        }
-        if (meta.bundledRooms.risetDays && meta.bundledRooms.risetDays > 0) {
-          hasPaidRisetOrder = true;
-          const exp = addDurationToExpiry(
-            effectiveRisetExpiry,
-            meta.bundledRooms.risetDays,
-            orderDate
-          );
-          if (!effectiveRisetExpiry || exp > effectiveRisetExpiry) {
-            effectiveRisetExpiry = exp;
-          }
-        }
-        if (meta.bundledRooms.automationDays && meta.bundledRooms.automationDays > 0) {
-          hasPaidAutoOrder = true;
-          const exp = addDurationToExpiry(
-            effectiveAutoExpiry,
-            meta.bundledRooms.automationDays,
-            orderDate
-          );
-          if (!effectiveAutoExpiry || exp > effectiveAutoExpiry) {
-            effectiveAutoExpiry = exp;
-          }
-        }
-      }
     }
   }
 
-  // Hak akses Pro aktif yang sah (bukan sekadar trial gratis)
-  const isEligibleTools = isAdmin || isExplicitPro || hasPaidToolsOrder;
-  const isEligibleAuto = isAdmin || isExplicitPro || hasPaidAutoOrder;
-  const isEligibleRiset = isAdmin || isExplicitPro || hasPaidRisetOrder;
-  const isEligibleBook = isAdmin || isExplicitPro || hasPaidBookOrder;
+  // Hak akses Pro aktif yang sah (Automation strictly requires paid/grant order; trial does not grant Pro)
+  const isEligibleTools = isAdmin || hasPaidToolsOrder || dbUser?.role === "PRO";
+  const isEligibleAuto = isAdmin || hasPaidAutoOrder;
+  const isEligibleRiset = isAdmin || hasPaidRisetOrder || dbUser?.role === "PRO";
+  const isEligibleBook = isAdmin || hasPaidBookOrder || Boolean(dbUser?.hasProBook && (dbUser?.role === "PRO" || isAdmin));
 
   const hasTools = Boolean(isAdmin || (isEligibleTools && effectiveToolsExpiry && effectiveToolsExpiry > now));
   const hasAutomation = Boolean(isAdmin || (isEligibleAuto && effectiveAutoExpiry && effectiveAutoExpiry > now));
   const hasAutomationTrial = Boolean(!isAdmin && !hasAutomation && effectiveAutoExpiry && effectiveAutoExpiry > now);
   const hasRiset = Boolean(isAdmin || (isEligibleRiset && effectiveRisetExpiry && effectiveRisetExpiry > now));
-  const hasBook = Boolean(isAdmin || (dbUser?.hasProBook && isExplicitPro) || hasPaidBookOrder);
+  const hasBook = Boolean(isAdmin || isEligibleBook);
 
   const activePillarsCount = [
     hasBook,

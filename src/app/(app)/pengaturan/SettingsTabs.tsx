@@ -34,12 +34,13 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
   if (!data) return <LoadingSpinner message="Memuat Pengaturan..." />;
   const { userData, adminData, isPro, isAdmin } = data;
   const isFullyPro = Boolean(userData?.isFullyPro || isAdmin);
+  const activeOrders = data?.userOrders || orders;
 
   // Map urutan agen untuk order automasi secara kronologis (dari order terlama ke terbaru)
   // Order automasi ke-1 -> Agen 1, ke-2 -> Agen 2, dst.
   const automationOrderAgentMap = useMemo(() => {
-    if (!orders || orders.length === 0) return new Map<string, number>();
-    const automationOrdersAsc = [...orders]
+    if (!activeOrders || activeOrders.length === 0) return new Map<string, number>();
+    const automationOrdersAsc = [...activeOrders]
       .filter((o: any) => {
         if (o.orderType === "EBOOK") return false;
         const meta = resolvePackageMeta(o.orderType, userData?.pricingConfig);
@@ -55,7 +56,7 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
       map.set(order.id, idx + 1);
     });
     return map;
-  }, [orders, userData?.pricingConfig]);
+  }, [activeOrders, userData?.pricingConfig]);
 
 
   const adminTabs = [
@@ -115,7 +116,7 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
               </div>
               
               <div className="space-y-4">
-                {orders.length === 0 ? (
+                {activeOrders.length === 0 ? (
                   <div className="flex justify-between items-center">
                     <div>
                       <div className="font-bold text-gray-900 dark:text-white">Free</div>
@@ -123,7 +124,7 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
                     </div>
                   </div>
                 ) : (
-                  orders.map((order: any) => {
+                  activeOrders.map((order: any) => {
                     const createdAt = new Date(order.createdAt);
                     const createdStr = format(createdAt, "d MMM yyyy", { locale: id });
 
@@ -131,8 +132,8 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
                     let dateInfo = "";
                     let isActive = false;
 
-                    if (order.orderType === "EBOOK") {
-                      title = order.product?.title || "E-Book Satuan";
+                    if (order.orderType === "EBOOK" || order.product) {
+                      title = order.product?.title || (order.orderType === "EBOOK" ? "E-Book Satuan" : "Produk Digital");
                       dateInfo = `${createdStr} – Selamanya`;
                       isActive = true;
                     } else {
@@ -175,6 +176,16 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
                         <div className="flex-1 min-w-0">
                           <div className="font-bold text-gray-900 dark:text-white flex items-center gap-2 flex-wrap">
                             <span>{title}</span>
+                            {order.paymentMethod === "FREE_CLAIM" && (
+                              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 dark:bg-emerald-950/40 dark:text-emerald-400 px-2 py-0.5 rounded-full">
+                                Klaim Gratis
+                              </span>
+                            )}
+                            {order.paymentMethod === "ADMIN_GRANT" && (
+                              <span className="text-[10px] font-bold text-blue-700 bg-blue-100 dark:bg-blue-950/40 dark:text-blue-400 px-2 py-0.5 rounded-full">
+                                Diberikan Admin
+                              </span>
+                            )}
                             {addonCount > 0 && (
                               <span className="text-[10px] font-bold text-orange-600 bg-orange-100 dark:bg-orange-950/40 px-2 py-0.5 rounded-full">
                                 +{addonCount} Add-on
@@ -183,14 +194,12 @@ export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user:
                           </div>
                           <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-2 flex-wrap">
                             <span>{dateInfo}</span>
-                            {order.amount ? (
-                              <>
-                                <span>•</span>
-                                <span className="font-semibold text-gray-800 dark:text-gray-200">
-                                  Rp {Number(order.amount).toLocaleString("id-ID")}
-                                </span>
-                              </>
-                            ) : null}
+                            <span>•</span>
+                            <span className="font-semibold text-gray-800 dark:text-gray-200">
+                              {order.paymentMethod === "FREE_CLAIM" || (!order.amount || Number(order.amount) === 0)
+                                ? "Gratis (Rp 0)"
+                                : `Rp ${Number(order.amount).toLocaleString("id-ID")}`}
+                            </span>
                             <span className="font-mono text-[11px] text-gray-400 dark:text-gray-500">
                               #{order.id.slice(0, 8)}
                             </span>

@@ -191,9 +191,29 @@ export function InstagramAgentListSection({
               key={agent.id}
               role="button"
               tabIndex={0}
-              onClick={() => onSelectAgent(agent.id)}
+              onClick={() => {
+                if (agent.isExpired) {
+                  if (onRenewAgent) {
+                    onRenewAgent(agent);
+                  } else {
+                    window.dispatchEvent(new Event("app-loading-start"));
+                    window.location.href = `/?pricing=true&cat=automation&agentId=${encodeURIComponent(agent.id)}&action=renew`;
+                  }
+                  return;
+                }
+                onSelectAgent(agent.id);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
+                  if (agent.isExpired) {
+                    if (onRenewAgent) {
+                      onRenewAgent(agent);
+                    } else {
+                      window.dispatchEvent(new Event("app-loading-start"));
+                      window.location.href = `/?pricing=true&cat=automation&agentId=${encodeURIComponent(agent.id)}&action=renew`;
+                    }
+                    return;
+                  }
                   onSelectAgent(agent.id);
                 }
               }}

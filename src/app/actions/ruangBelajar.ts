@@ -352,7 +352,7 @@ export async function claimFreeProduct(productId: string) {
         userId,
         status: "SUCCESS",
       },
-      select: { orderType: true, status: true },
+      select: { orderType: true, status: true, amount: true, paymentMethod: true },
     }),
     prisma.appSetting.findUnique({ where: { key: "PRICING_PACKAGES" } }).catch(() => null),
   ]);

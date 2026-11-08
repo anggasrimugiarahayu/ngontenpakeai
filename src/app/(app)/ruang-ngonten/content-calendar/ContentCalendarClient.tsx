@@ -6,6 +6,7 @@ import { getContentCalendarAction } from "@/app/actions/toolsData";
 import React, { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Calendar, ChevronLeft, ChevronRight, X, Save, Trash2, Check, FileText, Loader2 } from 'lucide-react';
+import toast from 'react-hot-toast';
 
 export default function ContentCalendarClient() {
   const { data: initialData } = useSWR("contentCalendar", getContentCalendarAction, { revalidateOnFocus: false, dedupingInterval: 60000 });
@@ -59,14 +60,29 @@ export default function ContentCalendarClient() {
 
   const saveToDB = async (newData: any) => {
     try {
-      await fetch('/api/calendar', {
+      const res = await fetch('/api/calendar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ calendarData: newData })
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (err.code === "QUOTA_EXCEEDED" || res.status === 403) {
+          toast.error(err.message || "Batas kuota Content Calendar telah tercapai! Silakan upgrade paket untuk melanjutkan.");
+          setTimeout(() => {
+            router.push("/?pricing=true&cat=tools");
+          }, 1500);
+          return false;
+        }
+        toast.error("Gagal menyimpan agenda: " + (err.error || "Terjadi kesalahan"));
+        return false;
+      }
       mutate("contentCalendar");
+      return true;
     } catch (e) {
       console.error("Failed to save calendar data", e);
+      toast.error("Gagal menghubungi server");
+      return false;
     }
   };
 
@@ -130,14 +146,16 @@ export default function ContentCalendarClient() {
       }
     };
     
-    setCalendarData(newData);
-    await saveToDB(newData);
-    
+    const success = await saveToDB(newData);
     setIsSaving(false);
-    setSavedSuccess(true);
-    setTimeout(() => {
-      setIsAgendaOpen(false);
-    }, 1000);
+    
+    if (success) {
+      setCalendarData(newData);
+      setSavedSuccess(true);
+      setTimeout(() => {
+        setIsAgendaOpen(false);
+      }, 1000);
+    }
   };
 
   const handleDeleteAgenda = async () => {
@@ -145,9 +163,11 @@ export default function ContentCalendarClient() {
     const newData = { ...calendarData };
     delete newData[selectedCalDate];
     
-    setCalendarData(newData);
-    await saveToDB(newData);
-    setIsAgendaOpen(false);
+    const success = await saveToDB(newData);
+    if (success) {
+      setCalendarData(newData);
+      setIsAgendaOpen(false);
+    }
   };
 
   const renderCalendarGrid = () => {

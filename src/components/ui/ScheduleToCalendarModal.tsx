@@ -1,7 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import useSWR, { mutate } from "swr";
+import toast from "react-hot-toast";
 import { getContentCalendarAction } from "@/app/actions/toolsData";
 import { Calendar, CheckCircle2, Save, Square, X, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "./Button";
@@ -21,6 +23,7 @@ interface ScheduleToCalendarModalProps {
 const MONTH_NAMES = ['JANUARI', 'FEBRUARI', 'MARET', 'APRIL', 'MEI', 'JUNI', 'JULI', 'AGUSTUS', 'SEPTEMBER', 'OKTOBER', 'NOVEMBER', 'DESEMBER'];
 
 export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }: ScheduleToCalendarModalProps) {
+  const router = useRouter();
   const { data: dbCalendar } = useSWR("contentCalendar", getContentCalendarAction);
   const calendarData = dbCalendar?.data || {};
 
@@ -73,11 +76,22 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
     };
     
     try {
-      await fetch('/api/calendar', {
+      const res = await fetch('/api/calendar', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ calendarData: newCalendarData })
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        if (err.code === "QUOTA_EXCEEDED" || res.status === 403) {
+          toast.error(err.message || "Batas kuota Content Calendar telah tercapai! Silakan upgrade paket.");
+          onClose();
+          router.push("/?pricing=true&cat=tools");
+          return;
+        }
+        toast.error("Gagal menyimpan agenda: " + (err.error || "Terjadi kesalahan"));
+        return;
+      }
       mutate("contentCalendar");
       setStep("success");
       setTimeout(() => {
@@ -85,6 +99,7 @@ export default function ScheduleToCalendarModal({ isOpen, onClose, defaultData }
       }, 1500);
     } catch (e) {
       console.error(e);
+      toast.error("Gagal menghubungi server");
     } finally {
       setIsSavingAgenda(false);
     }

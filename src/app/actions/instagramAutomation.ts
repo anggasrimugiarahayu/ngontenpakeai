@@ -530,6 +530,16 @@ export async function createInstagramAgentAction({ name }: { name: string }) {
     });
 
     const isUserAdmin = isAdmin || user?.role === "ADMIN";
+    const isAutomationActive = Boolean(user?.proAutomationExpiredAt && new Date(user.proAutomationExpiredAt) > new Date());
+
+    if (!isUserAdmin && !isAutomationActive) {
+      return {
+        success: false,
+        error: "payment_required",
+        message: "Masa aktif otomatisasi Anda telah berakhir atau belum aktif. Silakan lakukan aktivasi/perpanjangan paket otomatisasi terlebih dahulu."
+      };
+    }
+
     const allowedLimit = user?.automationAgentLimit || 1;
 
     const currentAgentCount = await (db as any).instagramAccount.count({

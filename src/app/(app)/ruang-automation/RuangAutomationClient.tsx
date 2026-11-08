@@ -1924,7 +1924,7 @@ export default function RuangAutomationClient({
               }
               return;
             }
-            if (isProOnly && !isPro && !isAdmin) {
+            if (!isPro && !isAdmin) {
               window.dispatchEvent(new Event("app-loading-start"));
               router.push("/?pricing=true&cat=automation");
               return;

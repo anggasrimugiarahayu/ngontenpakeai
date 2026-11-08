@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
-import { verifyFeatureAccess } from '@/lib/auth-checks';
+import { verifyFeatureAccess, incrementFeatureUsage } from '@/lib/auth-checks';
 
 export async function GET(req: Request) {
   try {
@@ -11,7 +11,7 @@ export async function GET(req: Request) {
     }
 
     const access = await verifyFeatureAccess(session.user.id, "Content Calendar", session.user.email);
-    if (!access.authorized) {
+    if (!access.authorized && access.code !== "QUOTA_EXCEEDED") {
       return NextResponse.json({
         error: access.reason || "Akses tidak diizinkan",
         code: access.code,
@@ -39,7 +39,7 @@ export async function POST(req: Request) {
     const access = await verifyFeatureAccess(session.user.id, "Content Calendar", session.user.email);
     if (!access.authorized) {
       return NextResponse.json({
-        error: access.reason || "Akses tidak diizinkan",
+        error: access.code === "QUOTA_EXCEEDED" ? "QUOTA_EXCEEDED" : access.reason || "Akses tidak diizinkan",
         code: access.code,
       }, { status: 403 });
     }
@@ -69,6 +69,10 @@ export async function POST(req: Request) {
           data: calendarData
         }
       });
+    }
+
+    if (access.featureId) {
+      await incrementFeatureUsage(session.user.id, access.featureId);
     }
 
     return NextResponse.json({ success: true });

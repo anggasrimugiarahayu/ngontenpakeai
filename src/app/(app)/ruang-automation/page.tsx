@@ -1,5 +1,6 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { revalidateTag } from "next/cache";
 import { getInstagramAutomationDataAction } from "@/app/actions/instagramAutomation";
 import { getCachedAppUser, getCachedFeatures, getCachedQuotaConfig, getCachedHomepageCards } from "@/lib/cache";
 import prisma from "@/lib/prisma";
@@ -66,6 +67,8 @@ export default async function RuangAutomationPage({
             automationAgentLimit: Math.max(1, (dbUser as any)?.automationAgentLimit || 1),
           },
         });
+        revalidateTag("user-session", "default");
+        revalidateTag(`user-${session.user.id}`, "default");
         hasAutomation = true;
       }
 
