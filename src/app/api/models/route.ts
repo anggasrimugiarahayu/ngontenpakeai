@@ -24,7 +24,7 @@ export async function GET() {
       return NextResponse.json([
         { modelId: 'llama-3.3-70b-versatile', name: 'Llama 3.3', isDefault: true, provider: 'groq' },
         { modelId: 'llama-3.1-8b-instant', name: 'Llama 3.1', isDefault: false, provider: 'groq' },
-        { modelId: 'qwen/qwen3.8-27b', name: 'Qwen 3.8', isDefault: false, provider: 'groq' },
+        { modelId: 'qwen-qwq-32b', name: 'Qwen QwQ 32B', isDefault: false, provider: 'groq' },
         { modelId: 'gemini-3.7-flash', name: 'Gemini 3.7 Flash', isDefault: false, provider: 'google' },
         { modelId: 'gemini-3.5-flash-lite', name: 'Gemini 3.5 Flash-Lite', isDefault: false, isFallback: true, provider: 'google' },
         { modelId: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', isDefault: false, provider: 'google' }

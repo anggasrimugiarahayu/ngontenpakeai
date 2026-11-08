@@ -64,7 +64,8 @@ export default function IdeaRoomsClient() {
       blueprintData,
       isShortcut,
       isFunneling: input === 'Ide Konten Funneling',
-      chatHistory: chatHistory.slice(-4).map(m => `${m.role === 'user' ? 'User' : 'AI'}: ${m.content || m.data?.conversation_reply || ''}`).join('\n')
+      chatHistory: chatHistory.slice(-4).map(m => `${m.role === 'user' ? 'User' : 'AI'}: ${m.content || m.data?.conversation_reply || ''}`).join('\n'),
+      model: selectedModel
     });
 
     if (error || !data) {

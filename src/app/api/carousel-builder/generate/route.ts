@@ -4,7 +4,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import prisma from '@/lib/prisma';
-import { generateStructuredAiContent } from '@/lib/ai/geminiClient';
+import { generateStructuredAiContent, isGroqModel } from '@/lib/ai/geminiClient';
+import { getDefaultAiModel } from '@/lib/get-ai-model';
 
 // Initialize the Google Gen AI SDK
 // The same style art mapping from the old app
@@ -92,6 +93,14 @@ ${JSON.stringify(bp, null, 2)}
     const dbStyles = await prisma.carouselStyleArt.findMany({ where: { isActive: true }, orderBy: { kode: 'asc' } });
     const styleArtContext = dbStyles.map(s => `- ${s.kode} - ${s.namaLabel}\n  Konsep: ${s.deskripsiPrompt}`).join('\n\n');
 
+    const defaultModel = await getDefaultAiModel("llama-3.3-70b-versatile");
+    const activeModel = model || defaultModel;
+    const isGroq = isGroqModel(activeModel);
+
+    const ideasKnowledge = isGroq
+      ? dbKnowledge.ideas.split('\n').slice(0, 120).join('\n')
+      : dbKnowledge.ideas;
+
     const systemPrompt = `[MASTER PROMPT – CAROUSEL PROMPT BUILDER]
 [KONDISI WAKTU: Saat ini adalah tahun ${new Date().getFullYear()}]
 
@@ -101,7 +110,7 @@ ${dbKnowledge.carouselKb}
 2. Style Art Database (Daftar Gaya Visual & Konsep Detailnya):
 ${styleArtContext}
 3. Content Idea Database (Panduan Format & Pola Ide Konten):
-${dbKnowledge.ideas}
+${ideasKnowledge}
 4. Master Blueprint Pengguna (WAJIB JADI RUJUKAN UTAMA NICHE, AUDIENS, DAN TONE OF VOICE):
 ${blueprintContext}
 

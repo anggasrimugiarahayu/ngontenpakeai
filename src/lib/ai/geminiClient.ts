@@ -27,17 +27,40 @@ export function isGroqModel(modelId?: string | null): boolean {
 }
 
 export function resolveGroqModel(modelId: string): string {
-  const lower = modelId.toLowerCase();
-  if (lower.includes("llama-3.3") || lower.includes("70b")) {
-    return "qwen/qwen3.8-27b";
+  if (!modelId) return "llama-3.3-70b-versatile";
+  const trimmed = modelId.trim();
+  const lower = trimmed.toLowerCase();
+
+  // Normalize Llama 3.3
+  if (
+    lower === "llama-3.3" ||
+    lower === "llama3.3" ||
+    lower === "llama 3.3" ||
+    lower.includes("llama-3.3-70b")
+  ) {
+    return "llama-3.3-70b-versatile";
   }
-  if (lower.includes("llama-3.1") || lower.includes("8b")) {
+
+  // Normalize Llama 3.1
+  if (
+    lower === "llama-3.1" ||
+    lower === "llama3.1" ||
+    lower === "llama 3.1" ||
+    lower.includes("llama-3.1-8b")
+  ) {
     return "llama-3.1-8b-instant";
   }
-  if (lower.includes("20b") || lower.includes("120b") || lower.includes("openai")) {
-    return "openai/gpt-oss-120b";
+
+  // Normalize Qwen variants to official Groq Qwen model IDs
+  if (lower.includes("qwen")) {
+    if (lower.includes("qwq") || lower.includes("qwen-2.5") || lower.includes("coder")) {
+      return trimmed;
+    }
+    // Map non-standard names (like qwen 3.6, qwen 3.8, qwen/qwen3.8-27b) to active Groq Qwen model
+    return "qwen-qwq-32b";
   }
-  return modelId;
+
+  return trimmed;
 }
 
 export async function callGroqChatCompletion(options: {
@@ -55,7 +78,7 @@ export async function callGroqChatCompletion(options: {
   }
   messages.push({ role: "user", content: userPrompt });
 
-  const resolvedModel = resolveGroqModel(model || "qwen/qwen3.8-27b");
+  const resolvedModel = resolveGroqModel(model || "llama-3.3-70b-versatile");
   const body: any = {
     model: resolvedModel,
     messages,
@@ -79,23 +102,17 @@ export async function callGroqChatCompletion(options: {
     body: JSON.stringify(body),
   });
 
-  // Auto-failover to alternative healthy Groq models if primary model is 404, 503 (high demand), or 429
-  if (!res.ok && (res.status === 404 || res.status === 503 || res.status === 429)) {
-    const fallbackList = ["qwen/qwen3.8-27b", "openai/gpt-oss-120b", "openai/gpt-oss-20b"].filter(
-      (m) => m !== body.model
-    );
-    for (const altModel of fallbackList) {
-      body.model = altModel;
-      res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(body),
-      });
-      if (res.ok) break;
-    }
+  // If primary model returned 404 (model ID not registered in Groq), retry once with standard Llama 3.3
+  if (!res.ok && res.status === 404 && body.model !== "llama-3.3-70b-versatile") {
+    body.model = "llama-3.3-70b-versatile";
+    res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    });
   }
 
   if (!res.ok) {
@@ -254,34 +271,63 @@ export async function generateStructuredAiContent<T = any>(
 
   // 2. Attempt Fallback Path if Primary Failed or was Unavailable
   if (!rawText) {
-    const fallbackModel = await getFallbackAiModel("gemini-3.5-flash-lite");
+    const fallbackModel = await getFallbackAiModel(fallbackModelDefault || "gemini-3.5-flash-lite");
     const fallbackIsGroq = isGroqModel(fallbackModel);
 
     if (fallbackIsGroq) {
       const activeGroqKey = await getGroqApiKey(groqApiKey);
-      if (!activeGroqKey) {
-        throw new Error("Kunci Groq API tidak ditemukan untuk fallback model.");
+      if (activeGroqKey) {
+        try {
+          rawText = await callGroqChatCompletion({
+            apiKey: activeGroqKey,
+            model: fallbackModel,
+            userPrompt,
+            systemPrompt,
+            responseMimeType,
+            temperature,
+          });
+        } catch (groqFbErr: any) {
+          console.warn(
+            `[Universal AI] Groq fallback model ${fallbackModel} juga gagal: ${groqFbErr?.message || groqFbErr}. Mencoba Emergency Google Gemini...`
+          );
+        }
       }
-      rawText = await callGroqChatCompletion({
-        apiKey: activeGroqKey,
-        model: fallbackModel,
-        userPrompt,
-        systemPrompt,
-        responseMimeType,
-        temperature,
-      });
     } else {
       const activeGeminiKey = await getApiKey(apiKey);
-      if (!activeGeminiKey) {
-        throw new Error("Kunci Google API tidak ditemukan untuk fallback model.");
+      if (activeGeminiKey) {
+        try {
+          rawText = await callGoogleGeminiContent({
+            apiKey: activeGeminiKey,
+            model: fallbackModel,
+            userPrompt,
+            systemPrompt,
+            responseMimeType,
+          });
+        } catch (geminiFbErr: any) {
+          console.warn(
+            `[Universal AI] Gemini fallback model ${fallbackModel} juga gagal: ${geminiFbErr?.message || geminiFbErr}. Mencoba Emergency Google Gemini...`
+          );
+        }
       }
-      rawText = await callGoogleGeminiContent({
-        apiKey: activeGeminiKey,
-        model: fallbackModel,
-        userPrompt,
-        systemPrompt,
-        responseMimeType,
-      });
+    }
+  }
+
+  // 3. Emergency Safety Net: If both Primary & Admin Fallback failed (e.g. Groq token limit / downtime), try Google Gemini Flash
+  if (!rawText) {
+    const activeGeminiKey = await getApiKey(apiKey);
+    if (activeGeminiKey) {
+      try {
+        console.log("[Universal AI] Menjalankan Emergency Fallback ke Google Gemini 2.5 Flash...");
+        rawText = await callGoogleGeminiContent({
+          apiKey: activeGeminiKey,
+          model: "gemini-2.5-flash",
+          userPrompt,
+          systemPrompt,
+          responseMimeType,
+        });
+      } catch (emergencyErr: any) {
+        console.error("[Universal AI] Emergency Gemini fallback juga gagal:", emergencyErr);
+      }
     }
   }
 

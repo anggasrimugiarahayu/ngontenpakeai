@@ -5,7 +5,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import prisma from '@/lib/prisma';
-import { generateStructuredAiContent } from "@/lib/ai/geminiClient";
+import { generateStructuredAiContent, isGroqModel } from "@/lib/ai/geminiClient";
+import { getDefaultAiModel } from "@/lib/get-ai-model";
 
 async function fetchKnowledgeBase() {
   const kbDir = path.join(process.cwd(), 'src', 'data', 'knowledge_database');
@@ -167,6 +168,18 @@ ${Array.from({ length: Math.max(1, targetSlides - 3) }, (_, i) => {
   Content: CTA yang sangat relevan dan beralasan kuat (contoh: ajak Save sekarang sebelum gajian, atau Share ke teman yang gajinya numpang lewat).`;
     }
 
+    const defaultModel = await getDefaultAiModel("llama-3.3-70b-versatile");
+    const activeModel = model || defaultModel;
+    const isGroq = isGroqModel(activeModel);
+
+    const hooksKnowledge = isGroq
+      ? dbKnowledge.hooks.split('\n').slice(0, 100).join('\n')
+      : dbKnowledge.hooks;
+
+    const ctaKnowledge = isGroq
+      ? dbKnowledge.cta.split('\n').slice(0, 60).join('\n')
+      : dbKnowledge.cta;
+
     const systemPrompt = `[MASTER PROMPT – ELITE VIRAL SCRIPT ARCHITECT]
 Saat ini adalah tahun ${new Date().getFullYear()}. Anda adalah Direktur Copywriting & Storyteller Viral Kelas Dunia.
 Tugas Anda adalah memproduksi 3 (TIGA) variasi naskah konten berdaya ledak tinggi (High-Converting & Highly Shareable) yang siap viral ketika diposting.
@@ -177,9 +190,9 @@ Gunakan data target audiens, pain point, bahasa percakapan, dan positioning di a
 
 [DATABASE KNOWLEDGE UNTUK INSPIRASI (HOOK & CTA)]
 1. Inspirasi Hook:
-${dbKnowledge.hooks}
+${hooksKnowledge}
 2. Inspirasi CTA / CTV:
-${dbKnowledge.cta}
+${ctaKnowledge}
 
 # ==========================================================
 # ATURAN EMAS COPYWRITING VIRAL (ANTI-ROBOT & ANTI-KLISE)

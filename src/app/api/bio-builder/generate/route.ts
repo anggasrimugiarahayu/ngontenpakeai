@@ -287,7 +287,7 @@ ${blueprintContext}
       model: body.model,
       userPrompt,
       systemPrompt,
-      fallbackModelDefault: "llama-3.3-70b-versatile",
+      fallbackModelDefault: "gemini-3.5-flash-lite",
     });
 
     if (action === 'generate-bios' && accessCheck.featureId) {

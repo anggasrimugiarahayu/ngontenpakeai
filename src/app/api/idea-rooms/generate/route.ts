@@ -4,7 +4,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { verifyFeatureAccess, incrementFeatureUsage } from "@/lib/auth-checks";
 import prisma from "@/lib/prisma";
-import { generateStructuredAiContent } from "@/lib/ai/geminiClient";
+import { generateStructuredAiContent, isGroqModel } from "@/lib/ai/geminiClient";
+import { getDefaultAiModel } from "@/lib/get-ai-model";
 
 // Cache knowledge base files
 async function fetchKnowledgeBase() {
@@ -23,6 +24,39 @@ async function fetchKnowledgeBase() {
     brief: briefRes,
     ideas: ideasRes,
   };
+}
+
+function formatKnowledgeForModel(dbKnowledge: any, isGroq: boolean) {
+  if (!isGroq) {
+    return `[DATABASE KNOWLEDGE WAJIB BACA]
+1. Content Idea Database (ATURAN UTAMA IDEA ROOM):
+${dbKnowledge.ideas}
+2. Content Brief Database:
+${dbKnowledge.brief}
+3. Hooks Database:
+${dbKnowledge.hooks}
+4. CTA / CTV Database:
+${dbKnowledge.cta}
+5. Writing Style Database:
+${dbKnowledge.style}`;
+  }
+
+  // Optimized Knowledge Base for Groq (Fast & within Groq TPM token limits)
+  const compactIdeaTemplates = dbKnowledge.ideas
+    .split("\n")
+    .slice(0, 160)
+    .join("\n");
+
+  return `[DATABASE KNOWLEDGE (OPTIMIZED FOR FAST GROQ INFERENCE)]
+1. Content Idea Database (Format & Template Terpilih):
+${compactIdeaTemplates}
+
+2. Writing Style Database:
+${dbKnowledge.style}
+
+3. Prinsip Hooks & CTA:
+- Gunakan Hook yang memicu Pattern Interrupt, Curiosity Gap, atau Realita Terbalik.
+- Gunakan CTA yang mengalir relevan dengan masalah audiens di Master Blueprint.`;
 }
 
 export async function POST(req: Request) {
@@ -52,9 +86,15 @@ export async function POST(req: Request) {
 
     const { promptText, isFunneling, blueprintData, chatHistory, model } = body;
 
+    const defaultModel = await getDefaultAiModel("llama-3.3-70b-versatile");
+    const effectiveModel = model || defaultModel;
+    const isGroq = isGroqModel(effectiveModel);
+
     const ideaCountRule = isFunneling 
       ? "JIKA Anda memutuskan untuk membuahkan ide, Anda WAJIB MENGHASILKAN TEPAT 30 IDE KONTEN (10 TOFU, 10 MOFU, 10 BOFU). Tulis setiap field secara sangat singkat dan padat (maksimal 1 kalimat) agar JSON tidak terpotong."
       : "JIKA Anda memutuskan untuk membuahkan ide, Anda WAJIB MUTLAK MENGHASILKAN TEPAT 3 IDE (tidak boleh 2, tidak boleh 4).";
+
+    const knowledgePrompt = formatKnowledgeForModel(dbKnowledge, isGroq);
 
     const systemPrompt = `[MASTER PROMPT – RUANG NGONTEN AI]
 [KONDISI WAKTU]
@@ -63,17 +103,7 @@ Saat ini adalah tahun ${new Date().getFullYear()}. Seluruh riset, tren, dan refe
 [SOURCE OF TRUTH: MASTER BLUEPRINT]
 ${JSON.stringify(blueprintData, null, 2)}
 
-[DATABASE KNOWLEDGE WAJIB BACA]
-1. Content Idea Database (ATURAN UTAMA IDEA ROOM):
-${dbKnowledge.ideas}
-2. Content Brief Database:
-${dbKnowledge.brief}
-3. Hooks Database:
-${dbKnowledge.hooks}
-4. CTA / CTV Database:
-${dbKnowledge.cta}
-5. Writing Style Database:
-${dbKnowledge.style}
+${knowledgePrompt}
 
 [URUTAN BERPIKIR & ATURAN MUTLAK IDEA ROOM]
 1. JANGKAR BLUEPRINT (HARGA MATI): Pahami target audiens & pain point dari Master Blueprint. Topik/Isi dari ide konten WAJIB 100% berada di koridor Niche ini. (Jika pengguna meminta 'Riset Trend' atau 'Ide Evergreen', artinya carikan trend/evergreen DI DALAM NICHE MEREKA, bukan malah bikin konten yang mengajarkan cara riset trend!).
