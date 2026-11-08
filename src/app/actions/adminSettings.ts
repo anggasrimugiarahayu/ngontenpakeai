@@ -139,10 +139,27 @@ export async function getAppSettings() {
 }
 export async function saveAppSetting(key: string, value: string) {
   await assertAdmin();
+  let sanitizedValue = value;
+  if (key === "PRICING_PACKAGES") {
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed.packages && typeof parsed.packages === "object") {
+        const cleanConfig: any = {
+          packages: parsed.packages,
+          categoryOrder: parsed.categoryOrder || {},
+          promoBanner: parsed.promoBanner || { text: "", show: false },
+        };
+        sanitizedValue = JSON.stringify(cleanConfig);
+      }
+    } catch (e) {
+      console.error("Sanitizing PRICING_PACKAGES error:", e);
+    }
+  }
+
   await prisma.appSetting.upsert({
     where: { key },
-    update: { value },
-    create: { key, value },
+    update: { value: sanitizedValue },
+    create: { key, value: sanitizedValue },
   });
   if (key === "PRICING_PACKAGES") {
     try {

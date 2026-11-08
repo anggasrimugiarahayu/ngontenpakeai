@@ -47,6 +47,7 @@ export function PricingConfigSection({
 }) {
   const router = useRouter();
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editingTargetPkgId, setEditingTargetPkgId] = useState<string | null>(null);
   const [showVoucherModal, setShowVoucherModal] = useState(false);
   const [voucherList, setVoucherList] = useState<any[]>(vouchers || []);
   const [newVoucher, setNewVoucher] = useState({
@@ -99,9 +100,9 @@ export function PricingConfigSection({
       mutate("pengaturan");
       router.refresh();
       return true;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
-      toast.error("Gagal menyimpan konfigurasi pricing");
+      toast.error(e?.message || "Gagal menyimpan konfigurasi pricing");
       return false;
     }
   };
@@ -123,7 +124,6 @@ export function PricingConfigSection({
         ...config.packages,
         [pkgKey]: updatedPkg,
       },
-      [pkgKey]: updatedPkg,
     };
 
     setConfig(updatedConfig);
@@ -543,6 +543,19 @@ export function PricingConfigSection({
                           </div>
                           <button
                             type="button"
+                            onClick={() => {
+                              setOpenMenuId(null);
+                              setEditingTargetPkgId(pkgKey);
+                              setSelectedCategory(pkg.category);
+                              setIsEditModalOpen(true);
+                            }}
+                            className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl font-bold transition-colors text-left cursor-pointer hover:bg-orange-50 dark:hover:bg-orange-500/10 text-gray-700 dark:text-gray-200 hover:text-orange-600 dark:hover:text-orange-400 mb-0.5"
+                          >
+                            <Edit3 size={14} className="text-orange-500" />
+                            <span>Edit Paket</span>
+                          </button>
+                          <button
+                            type="button"
                             onClick={() => handleDuplicatePackage(pkgKey)}
                             className="w-full flex items-center gap-2 px-2.5 py-2 rounded-xl font-bold transition-colors text-left cursor-pointer hover:bg-purple-50 dark:hover:bg-purple-500/10 text-gray-700 dark:text-gray-200 hover:text-purple-600 dark:hover:text-purple-400 mb-0.5"
                           >
@@ -688,10 +701,14 @@ export function PricingConfigSection({
       {isEditModalOpen && (
         <PricingEditModal
           isOpen={isEditModalOpen}
-          onClose={() => setIsEditModalOpen(false)}
+          onClose={() => {
+            setIsEditModalOpen(false);
+            setEditingTargetPkgId(null);
+          }}
           config={config}
           products={products}
           initialCategory={selectedCategory}
+          targetPkgId={editingTargetPkgId}
           onSave={handleSaveModal}
         />
       )}

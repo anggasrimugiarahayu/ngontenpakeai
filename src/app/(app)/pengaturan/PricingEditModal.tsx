@@ -39,6 +39,7 @@ interface PricingEditModalProps {
   config: PricingPackagesConfig;
   products: any[];
   initialCategory?: PricingCategoryKey;
+  targetPkgId?: string | null;
   onSave: (newConfig: PricingPackagesConfig) => Promise<void>;
 }
 
@@ -50,6 +51,7 @@ export function PricingEditModal({
   config,
   products,
   initialCategory = "ebook",
+  targetPkgId,
   onSave,
 }: PricingEditModalProps) {
   const [activeTab, setActiveTab] = useState<ModalTab>(initialCategory);
@@ -65,13 +67,18 @@ export function PricingEditModal({
     if (isOpen) {
       const cloned: PricingPackagesConfig = JSON.parse(JSON.stringify(config));
       setFormData(cloned);
-      setActiveTab(initialCategory);
 
-      // Pick first package in this category
-      const firstInCat = cloned.categoryOrder?.[initialCategory]?.[0] || "";
-      setSelectedPkgId(firstInCat);
+      if (targetPkgId && cloned.packages?.[targetPkgId]) {
+        const cat = cloned.packages[targetPkgId]?.category;
+        if (cat) setActiveTab(cat);
+        setSelectedPkgId(targetPkgId);
+      } else {
+        setActiveTab(initialCategory);
+        const firstInCat = cloned.categoryOrder?.[initialCategory]?.[0] || "";
+        setSelectedPkgId(firstInCat);
+      }
     }
-  }, [isOpen, config, initialCategory]);
+  }, [isOpen, config, initialCategory, targetPkgId]);
 
   // When switching category tabs, select the first package of that category
   const handleSelectTab = (tab: ModalTab) => {
@@ -123,13 +130,6 @@ export function PricingEditModal({
     }
   };
 
-  const getPackageCoverPreview = (pkg: PricingPackageItem) => {
-    if (pkg.coverUrl) return pkg.coverUrl;
-    if (pkg.category === "ebook") return "/img_paket/paket_ebook.png";
-    if (pkg.category === "tools") return "/img_paket/paket_tools.png";
-    return "/img_paket/paket_lengkap.png";
-  };
-
   const handleUpdateCurrentPkg = (
     field: keyof PricingPackageItem,
     value: any
@@ -146,7 +146,6 @@ export function PricingEditModal({
           ...prev.packages,
           [selectedPkgId]: updatedPkg,
         },
-        [selectedPkgId]: updatedPkg,
       };
     });
   };
@@ -296,7 +295,6 @@ export function PricingEditModal({
           ...prev.categoryOrder,
           [category]: currentCatList,
         },
-        [newId]: clonedPkg,
       };
     });
 
@@ -619,86 +617,70 @@ export function PricingEditModal({
                     />
                   </div>
 
-                  {/* Cover Image Paket */}
-                  <div className="bg-gray-50/70 dark:bg-[#0A1128]/70 border border-gray-200 dark:border-[#2C3246] rounded-2xl p-4">
-                    <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-2 flex items-center justify-between">
-                      <span className="flex items-center gap-1.5">
-                        <ImageIcon className="w-4 h-4 text-orange-500" />
-                        Cover Image Paket
-                      </span>
-                      {currentPkg.coverUrl ? (
-                        <span className="text-[11px] font-semibold text-emerald-600 dark:text-emerald-400">
-                          ✓ Cover Kustom Aktif
-                        </span>
-                      ) : (
-                        <span className="text-[11px] text-gray-400">
-                          Menggunakan Cover Bawaan Kategori ({currentPkg.category})
-                        </span>
-                      )}
+                  {/* Galeri Cover Paket */}
+                  <div className="space-y-2">
+                    <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block">
+                      Galeri Cover & Preview
                     </label>
-
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                      {/* Preview Box */}
-                      <div className="relative w-20 h-24 rounded-xl border border-gray-200 dark:border-[#2C3246] bg-white dark:bg-[#141B31] p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
-                        <img
-                          src={getPackageCoverPreview(currentPkg)}
-                          alt={currentPkg.name}
-                          className="max-w-full max-h-full object-contain"
-                          onError={(e) => {
-                            (e.currentTarget as HTMLImageElement).src = "/img_paket/paket_ebook.png";
+                    <div className="flex flex-row items-center justify-between gap-3 bg-gray-50 dark:bg-white/5 p-3 rounded-xl border border-gray-200 dark:border-[#2C3246] relative overflow-visible">
+                      <div className="flex flex-col min-w-0 flex-1 z-10 gap-1.5">
+                        <span className="text-[11px] font-bold text-gray-400 block">
+                          1. COVER UTAMA
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          disabled={isUploadingCover}
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleUploadCover(file);
+                            e.target.value = "";
                           }}
+                          className="block w-full text-xs text-transparent file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-orange-500/10 file:text-orange-600 hover:file:bg-orange-500/20 cursor-pointer"
                         />
-                        {isUploadingCover && (
-                          <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center">
-                            <Loader2 className="w-5 h-5 text-white animate-spin" />
-                          </div>
-                        )}
+                        <input
+                          type="text"
+                          value={currentPkg.coverUrl || ""}
+                          onChange={(e) => handleUpdateCurrentPkg("coverUrl", e.target.value)}
+                          placeholder="Atau tempel URL gambar (/uploads/... atau https://...)"
+                          className="w-full bg-white dark:bg-[#141B31] border border-gray-300 dark:border-[#2C3246] rounded-lg px-2.5 py-1 text-xs text-gray-900 dark:text-white focus:border-orange-500 outline-none"
+                        />
                       </div>
 
-                      {/* Actions & Inputs */}
-                      <div className="flex-1 space-y-2 w-full">
-                        <div className="flex flex-wrap items-center gap-2">
-                          <label className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs font-bold transition-colors cursor-pointer shadow-xs">
-                            <Upload className="w-3.5 h-3.5" />
-                            <span>{isUploadingCover ? "Mengunggah..." : "Upload Cover Baru"}</span>
-                            <input
-                              type="file"
-                              accept="image/png,image/jpeg,image/webp,image/gif"
-                              disabled={isUploadingCover}
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) handleUploadCover(file);
-                                e.target.value = "";
+                      <div className="relative shrink-0 ml-auto">
+                        {currentPkg.coverUrl ? (
+                          <div className="relative">
+                            <img
+                              src={currentPkg.coverUrl}
+                              alt={currentPkg.name}
+                              className="w-12 h-16 sm:w-14 sm:h-18 object-cover z-0 rounded shadow-md ring-2 ring-green-500 transition-all duration-300 bg-white dark:bg-[#141B31]"
+                              onError={(e) => {
+                                (e.currentTarget as HTMLImageElement).src = "/img_paket/paket_ebook.png";
                               }}
-                              className="hidden"
                             />
-                          </label>
-
-                          {currentPkg.coverUrl && (
+                            {isUploadingCover && (
+                              <div className="absolute inset-0 bg-black/60 rounded flex items-center justify-center">
+                                <Loader2 className="w-4 h-4 text-white animate-spin" />
+                              </div>
+                            )}
                             <button
                               type="button"
                               onClick={() => handleUpdateCurrentPkg("coverUrl", undefined)}
-                              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-200 dark:bg-white/10 hover:bg-gray-300 dark:hover:bg-white/20 text-gray-700 dark:text-gray-300 rounded-xl text-xs font-semibold transition-colors cursor-pointer"
-                              title="Kembalikan ke cover bawaan"
+                              className="absolute -top-1.5 -right-1.5 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-md z-20 transition-transform hover:scale-110 cursor-pointer"
+                              title="Hapus cover"
                             >
-                              <RotateCcw className="w-3.5 h-3.5" />
-                              <span>Reset ke Default</span>
+                              <X size={12} className="stroke-[3]" />
                             </button>
-                          )}
-                        </div>
-
-                        <div className="relative">
-                          <input
-                            type="text"
-                            value={currentPkg.coverUrl || ""}
-                            onChange={(e) => handleUpdateCurrentPkg("coverUrl", e.target.value)}
-                            placeholder="Atau tempel URL gambar (contoh: /uploads/cover.png atau https://...)"
-                            className="w-full bg-white dark:bg-[#141B31] border border-gray-300 dark:border-[#2C3246] rounded-xl px-3 py-1.5 text-xs text-gray-900 dark:text-white focus:border-orange-500 focus:ring-1 focus:ring-orange-500 outline-none"
-                          />
-                        </div>
-                        <p className="text-[11px] text-gray-400">
-                          Disarankan rasio cover 3:4 atau persegi (format PNG/JPG transparan/solid, maks 2MB).
-                        </p>
+                          </div>
+                        ) : (
+                          <div className="w-12 h-16 sm:w-14 sm:h-18 rounded border-2 border-dashed border-gray-300 dark:border-[#2C3246] flex flex-col items-center justify-center text-gray-400 bg-gray-100/50 dark:bg-white/5 text-[10px] text-center p-1 font-medium">
+                            {isUploadingCover ? (
+                              <Loader2 className="w-4 h-4 text-orange-500 animate-spin" />
+                            ) : (
+                              <span>Belum ada cover</span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>

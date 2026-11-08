@@ -56,14 +56,14 @@ export async function POST(req: NextRequest) {
     const rawBuffer = Buffer.from(bytes);
 
     // Kompresi & Optimasi Otomatis dengan sharp:
-    // Resize max lebar 900px, konversi ke WebP kualitas 80
+    // Resize max lebar 480px, konversi ke WebP kualitas 75 untuk efisiensi penyimpanan & loading super cepat
     let optimizedBuffer: Buffer;
     let mimeType = "image/webp";
     try {
       optimizedBuffer = await sharp(rawBuffer)
         .rotate()
-        .resize({ width: 900, withoutEnlargement: true })
-        .webp({ quality: 80 })
+        .resize({ width: 480, withoutEnlargement: true })
+        .webp({ quality: 75 })
         .toBuffer();
     } catch (sharpErr) {
       console.warn("Sharp optimization fallback to raw buffer:", sharpErr);
