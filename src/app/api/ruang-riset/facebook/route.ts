@@ -343,6 +343,9 @@ async function handleFacebookResearchRequest(
   if (!forceRefresh) {
     const cached = fbCache.get(cacheKey);
     if (cached && cached.expiresAt > Date.now() && cached.posts.length > 0) {
+      if (access.featureId) {
+        await incrementFeatureUsage(userId, access.featureId);
+      }
       return NextResponse.json({
         profile: cached.profile,
         posts: cached.posts,
@@ -1197,7 +1200,7 @@ async function handleFacebookResearchRequest(
       });
     }
 
-    if (!access.isPro && access.featureId) {
+    if (access.featureId) {
       await incrementFeatureUsage(userId, access.featureId);
     }
     const remainingQuota = access.isPro ? 9999 : Math.max(0, (access.remainingQuota ?? 1) - 1);

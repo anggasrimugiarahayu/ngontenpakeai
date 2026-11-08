@@ -191,7 +191,7 @@ export const getCachedUserUsages = unstable_cache(
     }
   },
   ['user-usages'],
-  { revalidate: 86400, tags: ['user-usages'] }
+  { revalidate: 60, tags: ['user-usages'] }
 );
 
 export interface MaintenanceConfig {

@@ -385,6 +385,9 @@ export async function POST(request: NextRequest) {
         cached.videos.length > 0 &&
         cached.videos[0].savesCount !== undefined
       ) {
+        if (access.featureId) {
+          await incrementFeatureUsage(userId, access.featureId);
+        }
         return NextResponse.json({
           source: "cache",
           profile: cached.profile,
@@ -592,7 +595,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    if (!access.isPro && access.featureId) {
+    if (access.featureId) {
       await incrementFeatureUsage(userId, access.featureId);
     }
     const remainingQuota = access.isPro ? 9999 : Math.max(0, (access.remainingQuota ?? 1) - 1);

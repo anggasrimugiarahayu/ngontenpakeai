@@ -314,6 +314,9 @@ export async function POST(request: NextRequest) {
     if (!forceRefresh) {
       const cached = youtubeMemoryCache.get(cacheKey);
       if (cached && cached.expiresAt > Date.now()) {
+        if (access.featureId) {
+          await incrementFeatureUsage(userId, access.featureId);
+        }
         return NextResponse.json({
           source: "cache",
           profile: cached.profile,
@@ -732,7 +735,7 @@ export async function POST(request: NextRequest) {
       videos: enrichedVideos,
     });
 
-    if (!access.isPro && access.featureId) {
+    if (access.featureId) {
       await incrementFeatureUsage(userId, access.featureId);
     }
     const remainingQuota = access.isPro ? 9999 : Math.max(0, (access.remainingQuota ?? 1) - 1);

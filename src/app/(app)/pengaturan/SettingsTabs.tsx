@@ -15,9 +15,9 @@ import { id } from "date-fns/locale";
 export function SettingsTabs({ user, dbUser, orders = [], initialData }: { user: any, dbUser?: any, orders?: any[], initialData?: any }) {
   const { data } = useSWR("pengaturan", getPengaturanDataAction, {
     fallbackData: initialData,
-    revalidateOnFocus: false,
-    revalidateIfStale: false,
-    dedupingInterval: 60000
+    revalidateOnFocus: true,
+    revalidateIfStale: true,
+    dedupingInterval: 5000
   });
   const [activeTab, setActiveTab] = useState("profil");
 

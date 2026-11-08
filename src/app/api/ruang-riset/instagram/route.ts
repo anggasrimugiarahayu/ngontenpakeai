@@ -1147,7 +1147,7 @@ export async function POST(request: NextRequest) {
       .toLowerCase();
 
     const recordSuccess = async () => {
-      if (!access.isPro && access.featureId) {
+      if (access.featureId) {
         await incrementFeatureUsage(userId, access.featureId);
       }
     };
