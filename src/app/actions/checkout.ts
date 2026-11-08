@@ -274,7 +274,7 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
       token: pendingDbOrder.midtransId,
       orderId: pendingDbOrder.id,
       expiryTime: verifyRes.expiryTime,
-      paymentMethodKey: pendingDbOrder.paymentMethod || "QRIS"
+      paymentMethodKey: pendingDbOrder.paymentMethod || "BSI_VA"
     };
   }
 

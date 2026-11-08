@@ -60,7 +60,7 @@ export default function CheckoutClient({
   const [paymentState, setPaymentState] = useState<"idle" | "verifying" | "success" | "pending" | "error">(existingPendingOrder ? "pending" : "idle");
   const [errorMessage, setErrorMessage] = useState("");
   const [isIncludedModalOpen, setIsIncludedModalOpen] = useState(false);
-  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey>((existingPendingOrder?.paymentMethodKey as PaymentMethodKey) || "QRIS");
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethodKey>((existingPendingOrder?.paymentMethodKey as PaymentMethodKey) || "BSI_VA");
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedAddons, setSelectedAddons] = useState<string[]>([]);
   const [showAddonModal, setShowAddonModal] = useState(false);
@@ -374,10 +374,22 @@ export default function CheckoutClient({
   };
 
   const groupedMethods = {
-    "Transfer Bank (Virtual Account)": ["BCA_VA", "BRI_VA", "BNI_VA", "MANDIRI_VA", "PERMATA_VA", "CIMB_VA", "DANAMON_VA", "BSI_VA", "SEABANK_VA", "BANK_SAQU_VA"],
-    "E-Wallet & QRIS": ["GOPAY", "QRIS", "SHOPEEPAY", "DANA", "OVO"],
-    Minimarket: ["INDOMARET", "ALFAMART", "ALFAMIDI", "DAN_DAN"],
-    "Kartu Kredit & Cicilan": ["CREDIT_CARD", "AKULAKU", "KREDIVO"],
+    "Transfer Bank (Virtual Account)": [
+      "BSI_VA",
+      "MANDIRI_VA",
+      "BRI_VA",
+      "BNI_VA",
+      "PERMATA_VA",
+      "CIMB_VA",
+      // "BCA_VA",
+      // "DANAMON_VA",
+      // "SEABANK_VA",
+      // "BANK_SAQU_VA",
+    ],
+    // SEMENTARA DI-HIDDEN (Menunggu aktivasi Midtrans disetujui):
+    // "E-Wallet & QRIS": ["GOPAY", "QRIS", "SHOPEEPAY", "DANA", "OVO"],
+    // Minimarket: ["INDOMARET", "ALFAMART", "ALFAMIDI", "DAN_DAN"],
+    // "Kartu Kredit & Cicilan": ["CREDIT_CARD", "AKULAKU", "KREDIVO"],
   } as Record<string, PaymentMethodKey[]>;
 
   if (paymentState === "verifying") {
