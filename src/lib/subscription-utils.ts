@@ -66,11 +66,12 @@ export function resolvePackageMeta(
       typeof pkg.durationDays === "number" ? pkg.durationDays : defaultDays;
 
     const image =
-      cat === "ebook"
+      pkg.coverUrl ||
+      (cat === "ebook"
         ? "/img_paket/paket_ebook.png"
         : cat === "tools"
         ? "/img_paket/paket_tools.png"
-        : "/img_paket/paket_lengkap.png";
+        : "/img_paket/paket_lengkap.png");
 
     return {
       id: cleanType,

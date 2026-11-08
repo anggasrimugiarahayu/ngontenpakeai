@@ -159,11 +159,19 @@ export async function getCheckoutDetailsAction(type: string, productId?: string)
       bundledIds = targetPkg.bundledProductIds || [];
       targetPkgBundledRooms = targetPkg.bundledRooms || null;
       const cat = targetPkg.category;
-      if (type.includes("BOOK") || cat === "ebook") productImage = "/img_paket/paket_ebook.png";
-      else if (type.includes("TOOLS") || cat === "tools") productImage = "/img_paket/paket_tools.png";
-      else if (type.includes("AUTO") || cat === "automation") productImage = "/img_paket/paket_tools.png";
-      else if (type.includes("RISET") || cat === "riset") productImage = "/img_paket/paket_tools.png";
-      else productImage = "/img_paket/paket_lengkap.png";
+      if (targetPkg.coverUrl) {
+        productImage = targetPkg.coverUrl;
+      } else if (type.includes("BOOK") || cat === "ebook") {
+        productImage = "/img_paket/paket_ebook.png";
+      } else if (type.includes("TOOLS") || cat === "tools") {
+        productImage = "/img_paket/paket_tools.png";
+      } else if (type.includes("AUTO") || cat === "automation") {
+        productImage = "/img_paket/paket_tools.png";
+      } else if (type.includes("RISET") || cat === "riset") {
+        productImage = "/img_paket/paket_tools.png";
+      } else {
+        productImage = "/img_paket/paket_lengkap.png";
+      }
 
       if (cat === "ebook" || cat === "plus" || type.includes("BOOK") || type.includes("PLUS")) {
         isPackageEbookOrPlus = true;

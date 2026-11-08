@@ -26,6 +26,7 @@ export interface PricingPackageItem {
   periodLabel?: string; // e.g. "Sekali Bayar", "/bulan", "/3 bulan", "/tahun"
   subBillingText?: string; // e.g. "Hemat Rp 68.000 dibanding bulanan"
   durationDays?: number; // 0 = Lifetime, 30, 90, 365
+  coverUrl?: string; // URL / path cover image kustom (opsional)
   features: string[];
   bundledProductIds: string[];
   bundledRooms?: BundledRoomsConfig;
@@ -431,6 +432,7 @@ export function mergePricingConfig(rawConfig: any): PricingPackagesConfig {
         periodLabel: rawItem.periodLabel ?? defaultItem?.periodLabel ?? "Sekali Bayar",
         subBillingText: rawItem.subBillingText ?? defaultItem?.subBillingText ?? "",
         durationDays: typeof rawItem.durationDays === "number" ? rawItem.durationDays : defaultItem?.durationDays ?? 30,
+        coverUrl: rawItem.coverUrl || defaultItem?.coverUrl || undefined,
         features: Array.isArray(rawItem.features) ? rawItem.features : defaultItem?.features || [],
         bundledProductIds: Array.isArray(rawItem.bundledProductIds) ? rawItem.bundledProductIds : defaultItem?.bundledProductIds || [],
         bundledRooms: rawItem.bundledRooms && typeof rawItem.bundledRooms === "object"

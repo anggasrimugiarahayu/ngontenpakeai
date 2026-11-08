@@ -574,9 +574,29 @@ export function PricingConfigSection({
 
                   {/* Konten Card Atas */}
                   <div>
-                    <h3 className="text-gray-900 dark:text-white font-bold text-lg mb-1 leading-tight pr-8">
-                      {pkg.name}
-                    </h3>
+                    <div className="flex items-start gap-3 mb-2.5">
+                      <div className="w-12 h-14 rounded-lg bg-gray-50 dark:bg-[#0A1128] border border-gray-200 dark:border-[#2C3246] p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                        <img
+                          src={pkg.coverUrl || (pkg.category === "ebook" ? "/img_paket/paket_ebook.png" : pkg.category === "tools" ? "/img_paket/paket_tools.png" : "/img_paket/paket_lengkap.png")}
+                          alt={pkg.name}
+                          className="max-w-full max-h-full object-contain"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLImageElement).src = "/img_paket/paket_ebook.png";
+                          }}
+                        />
+                      </div>
+                      <div className="flex-1 min-w-0 pr-6">
+                        <h3 className="text-gray-900 dark:text-white font-bold text-base mb-1 leading-tight line-clamp-2">
+                          {pkg.name}
+                        </h3>
+                        {pkg.coverUrl && (
+                          <span className="inline-block text-[9px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-1.5 py-0.5 rounded">
+                            Custom Cover
+                          </span>
+                        )}
+                      </div>
+                    </div>
+
                     <p className="text-gray-500 dark:text-gray-400 text-[11px] mb-3 leading-relaxed line-clamp-2">
                       {pkg.desc}
                     </p>
