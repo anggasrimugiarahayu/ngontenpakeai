@@ -25,10 +25,17 @@ export function resolvePackageMeta(
 ): ResolvedPackageMeta {
   const cleanType = (orderType || "").trim();
 
-  if (cleanType === "EBOOK") {
+  if (
+    cleanType === "EBOOK" ||
+    cleanType === "LINK" ||
+    cleanType === "VIDEO" ||
+    cleanType === "VIDEO_COURSE" ||
+    cleanType === "NOTION" ||
+    cleanType === "TEMPLATE"
+  ) {
     return {
-      id: "EBOOK",
-      name: "E-Book Satuan",
+      id: cleanType,
+      name: "Produk Satuan",
       category: "single_ebook",
       durationDays: 0,
       periodLabel: "Selamanya",
@@ -325,6 +332,7 @@ export interface UserSubscriptionStatus {
   hasBook: boolean;
   hasTools: boolean;
   hasAutomation: boolean;
+  hasAutomationTrial?: boolean;
   hasRiset: boolean;
   activePillarsCount: number;
   isPro: boolean;
@@ -349,6 +357,7 @@ export function computeUserSubscriptionStatus(
 ): UserSubscriptionStatus {
   const now = new Date();
   const isAdmin = isAdminUser(dbUser);
+  const isExplicitPro = dbUser?.role === "PRO";
 
   let effectiveToolsExpiry: Date | null = dbUser?.proToolsExpiredAt
     ? new Date(dbUser.proToolsExpiredAt)
@@ -360,11 +369,31 @@ export function computeUserSubscriptionStatus(
     ? new Date(dbUser.proRisetExpiredAt)
     : null;
 
+  let hasPaidToolsOrder = false;
+  let hasPaidAutoOrder = false;
+  let hasPaidRisetOrder = false;
+  let hasPaidBookOrder = false;
+
+  const isPaidOrder = (o: any) =>
+    Boolean(
+      o &&
+      (!o.status || o.status === "SUCCESS") &&
+      o.paymentMethod !== "FREE_CLAIM" &&
+      (o.amount === undefined || o.amount > 0 || o.paymentMethod === "ADMIN_GRANT" || o.paymentMethod === "PACKAGE_INCLUDED")
+    );
+
   if (Array.isArray(userOrders)) {
     for (const o of userOrders) {
       if (o?.status && o.status !== "SUCCESS") continue;
+      if (!isPaidOrder(o)) continue;
+
       const meta = resolvePackageMeta(o?.orderType || "", rawPricingConfig);
       const orderDate = o?.createdAt ? new Date(o.createdAt) : now;
+
+      if (meta.category === "tools" || meta.category === "plus") hasPaidToolsOrder = true;
+      if (meta.category === "automation" || meta.category === "plus") hasPaidAutoOrder = true;
+      if (meta.category === "riset" || meta.category === "plus") hasPaidRisetOrder = true;
+      if (meta.category === "ebook" || isBookPackageOrder(o?.orderType, rawPricingConfig)) hasPaidBookOrder = true;
 
       // Backward-compatible fallback for Riset orders purchased before proRisetExpiredAt column existed
       if (
@@ -384,6 +413,7 @@ export function computeUserSubscriptionStatus(
       // Check bundledRooms dynamic cross-room bonus
       if (meta.bundledRooms) {
         if (meta.bundledRooms.toolsDays && meta.bundledRooms.toolsDays > 0) {
+          hasPaidToolsOrder = true;
           const exp = addDurationToExpiry(
             effectiveToolsExpiry,
             meta.bundledRooms.toolsDays,
@@ -394,6 +424,7 @@ export function computeUserSubscriptionStatus(
           }
         }
         if (meta.bundledRooms.risetDays && meta.bundledRooms.risetDays > 0) {
+          hasPaidRisetOrder = true;
           const exp = addDurationToExpiry(
             effectiveRisetExpiry,
             meta.bundledRooms.risetDays,
@@ -404,6 +435,7 @@ export function computeUserSubscriptionStatus(
           }
         }
         if (meta.bundledRooms.automationDays && meta.bundledRooms.automationDays > 0) {
+          hasPaidAutoOrder = true;
           const exp = addDurationToExpiry(
             effectiveAutoExpiry,
             meta.bundledRooms.automationDays,
@@ -417,26 +449,17 @@ export function computeUserSubscriptionStatus(
     }
   }
 
-  const hasTools =
-    isAdmin ||
-    Boolean(effectiveToolsExpiry && effectiveToolsExpiry > now);
+  // Hak akses Pro aktif yang sah (bukan sekadar trial gratis)
+  const isEligibleTools = isAdmin || isExplicitPro || hasPaidToolsOrder;
+  const isEligibleAuto = isAdmin || isExplicitPro || hasPaidAutoOrder;
+  const isEligibleRiset = isAdmin || isExplicitPro || hasPaidRisetOrder;
+  const isEligibleBook = isAdmin || isExplicitPro || hasPaidBookOrder;
 
-  const hasAutomation =
-    isAdmin ||
-    Boolean(effectiveAutoExpiry && effectiveAutoExpiry > now);
-
-  const hasRiset =
-    isAdmin || Boolean(effectiveRisetExpiry && effectiveRisetExpiry > now);
-
-  const hasOrderBook = Array.isArray(userOrders)
-    ? userOrders.some(
-        (o: any) =>
-          (!o?.status || o.status === "SUCCESS") &&
-          isBookPackageOrder(o?.orderType, rawPricingConfig)
-      )
-    : false;
-
-  const hasBook = isAdmin || Boolean(dbUser?.hasProBook) || hasOrderBook;
+  const hasTools = Boolean(isAdmin || (isEligibleTools && effectiveToolsExpiry && effectiveToolsExpiry > now));
+  const hasAutomation = Boolean(isAdmin || (isEligibleAuto && effectiveAutoExpiry && effectiveAutoExpiry > now));
+  const hasAutomationTrial = Boolean(!isAdmin && !hasAutomation && effectiveAutoExpiry && effectiveAutoExpiry > now);
+  const hasRiset = Boolean(isAdmin || (isEligibleRiset && effectiveRisetExpiry && effectiveRisetExpiry > now));
+  const hasBook = Boolean(isAdmin || (dbUser?.hasProBook && isExplicitPro) || hasPaidBookOrder);
 
   const activePillarsCount = [
     hasBook,
@@ -469,6 +492,7 @@ export function computeUserSubscriptionStatus(
     hasBook,
     hasTools,
     hasAutomation,
+    hasAutomationTrial,
     hasRiset,
     activePillarsCount,
     isPro,

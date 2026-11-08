@@ -44,6 +44,7 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
   const hasBook = Boolean(userData?.hasBook);
   const hasTools = Boolean(userData?.hasTools);
   const hasAutomation = Boolean(userData?.hasAutomation);
+  const hasAutomationTrial = Boolean(userData?.hasAutomationTrial);
   const hasRiset = Boolean(userData?.hasRiset);
   const badgeName = userData?.badgeName || (isPro ? "PRO" : "FREE");
 
@@ -186,6 +187,10 @@ export function PlanUsageSection({ isPro, userData }: { isPro: boolean, userData
                   {hasAutomation ? (
                     <span className="text-emerald-500 font-medium">
                       Aktif (Unlimited)
+                    </span>
+                  ) : hasAutomationTrial ? (
+                    <span className="text-blue-500 dark:text-blue-400 font-semibold">
+                      Free Trial (Aktif)
                     </span>
                   ) : feature.isProOnly ? (
                     <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-orange-500/10 text-orange-500 border border-orange-500/20">
