@@ -29,12 +29,12 @@ export default function CuanFacelessLandingPage() {
     <div className="w-full min-h-screen bg-[#EEF2F6] flex justify-center -mt-16 -mb-1 font-sans selection:bg-amber-300 selection:text-gray-950">
       <LightModeLock />
 
-      {/* Centered Canvas Container with Left and Right Border Lines */}
-      <div className="w-full max-w-[620px] min-h-screen bg-white border-x border-gray-200/90 shadow-[0_0_30px_rgba(0,0,0,0.03)] flex flex-col justify-between">
+      {/* Centered Canvas Container (Lebar Pas ~680px dengan Batas Kiri-Kanan) */}
+      <div className="w-full max-w-[680px] min-h-screen bg-white border-x border-gray-200/90 shadow-[0_0_30px_rgba(0,0,0,0.03)] flex flex-col justify-between">
         
-        {/* Top Header Inside the Canvas (Seamless White, No Horizontal Line) */}
-        <header className="w-full pt-8 sm:pt-10 pb-4 flex items-center justify-center bg-white">
-          <span className="font-bold font-heading text-lg sm:text-xl tracking-tight text-gray-900 select-none">
+        {/* Top Header (Dinaikkan ke Atas & Font Lebih Ringkas) */}
+        <header className="w-full pt-5 sm:pt-6 pb-2 sm:pb-3 flex items-center justify-center bg-white">
+          <span className="font-bold font-heading text-sm sm:text-[15px] tracking-tight text-gray-800 select-none">
             ruangcreativemuslim
           </span>
         </header>
@@ -42,18 +42,18 @@ export default function CuanFacelessLandingPage() {
         {/* Hero Section Container */}
         <main className="flex-1 w-full px-5 sm:px-8 py-2 flex flex-col items-center text-center">
           
-          {/* Main Headline (Harmonized Golden Ratio Scale) */}
-          <h1 className="text-[25px] sm:text-[32px] md:text-[36px] font-extrabold text-gray-950 tracking-tight leading-[1.26] text-center max-w-lg mx-auto">
+          {/* Main Headline (Line-height Kompak & Proporsional Sesuai Golden Ratio) */}
+          <h1 className="text-[25px] sm:text-[32px] md:text-[36px] font-extrabold text-gray-950 tracking-tight leading-[1.18] sm:leading-[1.2] text-center max-w-xl mx-auto">
             Tutorial Dapetin Cuan dari Produk Digital Lewat Ngonten Faceless
           </h1>
 
-          {/* Sub-headline (Proportional Secondary Text) */}
-          <p className="text-[14px] sm:text-[16px] text-gray-600 font-normal leading-relaxed max-w-md mx-auto mt-3.5 mb-5 text-center">
+          {/* Sub-headline (Kompak & Mengalir Nyaman) */}
+          <p className="text-[14px] sm:text-[15.5px] text-gray-600 font-normal leading-[1.45] max-w-lg mx-auto mt-2.5 mb-4 text-center">
             Belajar menghasilkan uang dari produk digital tanpa harus tampil wajah. Cukup modal HP dan internet!
           </p>
 
           {/* Bonus Badge with Curved Arrow */}
-          <div className="relative inline-flex items-center justify-center my-2 sm:my-3 w-full max-w-md">
+          <div className="relative inline-flex items-center justify-center my-1.5 sm:my-2 w-full max-w-lg">
             {/* Hand-drawn style curved pointer arrow (Pink) */}
             <div className="hidden sm:block absolute -left-8 -top-5 transform -rotate-6 pointer-events-none text-[#FF1493]">
               <svg 
@@ -70,15 +70,15 @@ export default function CuanFacelessLandingPage() {
               </svg>
             </div>
 
-            <div className="w-full bg-[#E6007A] text-white text-[12px] sm:text-[13px] font-bold px-4 sm:px-5 py-2.5 rounded-full shadow-xs text-center tracking-wide leading-snug flex items-center justify-center gap-1.5">
+            <div className="w-full bg-[#E6007A] text-white text-[12px] sm:text-[13px] font-bold px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-xs text-center tracking-wide leading-snug flex items-center justify-center gap-1.5">
               <span>🎁 BONUS: 8 Tools Ngonten &amp; Riset Instagram, TikTok, Facebook, dan YouTube.</span>
             </div>
           </div>
 
-          {/* 3 Green Checklist Points */}
-          <div className="w-full max-w-md mx-auto mt-4 space-y-2.5 text-left">
+          {/* 3 Green Checklist Points (Kompak & Rapi) */}
+          <div className="w-full max-w-lg mx-auto mt-3.5 space-y-2 text-left">
             {/* Point 1 */}
-            <div className="flex items-center gap-3 p-3 sm:p-3.5 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
+            <div className="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
               <div className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
                 <Check className="w-3.5 h-3.5 stroke-[3]" />
               </div>
@@ -88,7 +88,7 @@ export default function CuanFacelessLandingPage() {
             </div>
 
             {/* Point 2 */}
-            <div className="flex items-center gap-3 p-3 sm:p-3.5 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
+            <div className="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
               <div className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
                 <Check className="w-3.5 h-3.5 stroke-[3]" />
               </div>
@@ -98,7 +98,7 @@ export default function CuanFacelessLandingPage() {
             </div>
 
             {/* Point 3 */}
-            <div className="flex items-center gap-3 p-3 sm:p-3.5 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
+            <div className="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
               <div className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
                 <Check className="w-3.5 h-3.5 stroke-[3]" />
               </div>
@@ -110,8 +110,8 @@ export default function CuanFacelessLandingPage() {
 
         </main>
 
-        {/* Bottom Footer Inside the Canvas (Seamless White, No Horizontal Line) */}
-        <footer className="w-full pb-8 pt-4 flex flex-col items-center justify-center gap-1.5 text-xs text-gray-500 bg-white">
+        {/* Bottom Footer Inside the Canvas */}
+        <footer className="w-full pb-6 pt-3 flex flex-col items-center justify-center gap-1 text-xs text-gray-500 bg-white">
           <div className="flex items-center gap-1.5">
             <span>Product by</span>
             <a
