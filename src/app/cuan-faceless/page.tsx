@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { LightModeLock } from "./LightModeLock";
@@ -129,6 +130,20 @@ export default function CuanFacelessLandingPage() {
                     Bisa menghasilkan cuan setiap hari, dengan total <strong className="text-emerald-700 font-bold">penghasilan bulanan mencapai 2 digit</strong>.
                   </span>
                 </div>
+              </div>
+            </div>
+
+            {/* Visual Social Proof Card */}
+            <div className="mt-4 sm:mt-5 w-full flex justify-center">
+              <div className="w-full overflow-hidden rounded-2xl border border-gray-200/80 shadow-xs bg-white">
+                <Image
+                  src="/cuan-faceless/bukti-instagram-162k.jpg"
+                  alt="Bukti akun Instagram ruangcreativemuslim 162 ribu followers dan konten viral"
+                  width={768}
+                  height={1024}
+                  className="w-full h-auto object-contain block"
+                  priority
+                />
               </div>
             </div>
           </div>
