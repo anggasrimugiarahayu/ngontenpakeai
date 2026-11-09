@@ -32,7 +32,7 @@ export default function CuanFacelessLandingPage() {
       {/* Centered Canvas Container (Lebar Pas ~680px dengan Batas Kiri-Kanan) */}
       <div className="w-full max-w-[680px] min-h-screen bg-white border-x border-gray-200/90 shadow-[0_0_30px_rgba(0,0,0,0.03)] flex flex-col justify-between">
         
-        {/* Top Header (Dinaikkan ke Atas & Font Lebih Ringkas) */}
+        {/* Top Header Inside the Canvas (Seamless White, No Horizontal Line) */}
         <header className="w-full pt-5 sm:pt-6 pb-2 sm:pb-3 flex items-center justify-center bg-white">
           <span className="font-bold font-heading text-sm sm:text-[15px] tracking-tight text-gray-800 select-none">
             ruangcreativemuslim
@@ -42,41 +42,27 @@ export default function CuanFacelessLandingPage() {
         {/* Hero Section Container */}
         <main className="flex-1 w-full px-5 sm:px-8 py-2 flex flex-col items-center text-center">
           
-          {/* Main Headline (Line-height Kompak & Proporsional Sesuai Golden Ratio) */}
-          <h1 className="text-[25px] sm:text-[32px] md:text-[36px] font-extrabold text-gray-950 tracking-tight leading-[1.18] sm:leading-[1.2] text-center max-w-xl mx-auto">
-            Tutorial Dapetin Cuan dari Produk Digital Lewat Ngonten Faceless
+          {/* Main Headline (Harmonized 3-Line Cascade across Mobile & Desktop) */}
+          <h1 className="text-[25px] sm:text-[30px] md:text-[34px] font-extrabold text-gray-950 tracking-tight leading-[1.22] text-center max-w-[460px] mx-auto">
+            <span className="block">Tutorial Dapetin Cuan</span>
+            <span className="block">dari Produk Digital Lewat</span>
+            <span className="block">Ngonten Faceless</span>
           </h1>
 
           {/* Sub-headline (Kompak & Mengalir Nyaman) */}
-          <p className="text-[14px] sm:text-[15.5px] text-gray-600 font-normal leading-[1.45] max-w-lg mx-auto mt-2.5 mb-4 text-center">
+          <p className="text-[14px] sm:text-[15.5px] text-gray-600 font-normal leading-[1.45] max-w-[420px] mx-auto mt-3 mb-4 text-center">
             Belajar menghasilkan uang dari produk digital tanpa harus tampil wajah. Cukup modal HP dan internet!
           </p>
 
-          {/* Bonus Badge with Curved Arrow */}
-          <div className="relative inline-flex items-center justify-center my-1.5 sm:my-2 w-full max-w-lg">
-            {/* Hand-drawn style curved pointer arrow (Pink) */}
-            <div className="hidden sm:block absolute -left-8 -top-5 transform -rotate-6 pointer-events-none text-[#FF1493]">
-              <svg 
-                className="w-9 h-9" 
-                viewBox="0 0 50 50" 
-                fill="none" 
-                stroke="currentColor" 
-                strokeWidth="2.5" 
-                strokeLinecap="round" 
-                strokeLinejoin="round"
-              >
-                <path d="M 8 8 Q 18 36 38 38" />
-                <path d="M 28 38 L 40 40 L 38 28" />
-              </svg>
-            </div>
-
-            <div className="w-full bg-[#E6007A] text-white text-[12px] sm:text-[13px] font-bold px-4 sm:px-6 py-2 sm:py-2.5 rounded-full shadow-xs text-center tracking-wide leading-snug flex items-center justify-center gap-1.5">
-              <span>🎁 BONUS: 8 Tools Ngonten &amp; Riset Instagram, TikTok, Facebook, dan YouTube.</span>
+          {/* Bonus Badge (No Icon, Brand Accent Color) */}
+          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto my-1.5 sm:my-2">
+            <div className="w-full bg-rn-accent text-white text-[12px] sm:text-[13px] font-bold px-4 sm:px-6 py-2.5 rounded-full shadow-xs text-center tracking-wide leading-snug">
+              BONUS: 8 Tools Ngonten &amp; Riset Instagram, TikTok, Facebook, dan YouTube.
             </div>
           </div>
 
-          {/* 3 Green Checklist Points (Kompak & Rapi) */}
-          <div className="w-full max-w-lg mx-auto mt-3.5 space-y-2 text-left">
+          {/* 3 Green Checklist Points (Kompak, Sejajar & Rapi) */}
+          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-3.5 space-y-2 text-left">
             {/* Point 1 */}
             <div className="flex items-center gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
               <div className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs">
