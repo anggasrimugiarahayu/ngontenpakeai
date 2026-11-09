@@ -94,13 +94,16 @@ export default function CuanFacelessLandingPage() {
             </div>
           </div>
 
-          {/* Narrative Story Section (Kompak, Rapi & Sejajar) */}
-          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-7 text-left bg-gray-50/80 border border-gray-200/80 rounded-2xl p-4 sm:p-5 shadow-xs">
-            <h2 className="text-[17px] sm:text-[19px] font-black text-gray-950 tracking-tight mb-3">
+          {/* Narrative Story Section (Tanpa Kotak Pembungkus Besar, Menyatu di Canvas Putih) */}
+          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-10 mb-4">
+            
+            {/* Story Heading (Posisi di Tengah & Ukuran Font Sama dengan Headline Utama) */}
+            <h2 className="text-[25px] sm:text-[30px] md:text-[34px] font-extrabold text-gray-950 tracking-tight leading-[1.22] text-center mb-4">
               Ceritanya Gini, Teman-Teman...
             </h2>
 
-            <div className="space-y-2 text-[13px] sm:text-[14px] text-gray-700 leading-[1.5]">
+            {/* Story Paragraphs */}
+            <div className="space-y-2 text-[14px] sm:text-[15px] text-gray-700 leading-[1.55] text-left">
               <p>Tahun 2025, saya mulai khawatir melihat banyak teman kantor yang terkena PHK.</p>
               <p>Saya pun berpikir, bagaimana kalau suatu saat saya mengalami hal yang sama?</p>
               <p>Akhirnya, saya mencoba mencari peluang penghasilan yang bisa dikerjakan dari rumah hanya bermodalkan HP.</p>
@@ -108,37 +111,37 @@ export default function CuanFacelessLandingPage() {
               <p className="font-bold text-gray-950 pt-0.5">Alhamdulillah, ternyata peluangnya luar biasa!</p>
             </div>
 
-            {/* Achievement Highlights */}
-            <div className="mt-4 pt-3.5 border-t border-gray-200/70">
-              <p className="text-[12px] font-bold text-gray-500 uppercase tracking-wider mb-2.5">
+            {/* Achievement Highlights (3 Kotak Kecil Tetap Ada) */}
+            <div className="mt-5 text-left">
+              <p className="text-[12.5px] sm:text-[13px] font-bold text-gray-500 uppercase tracking-wider mb-2.5">
                 Dari yang awalnya mulai dari nol, sekarang:
               </p>
               <div className="space-y-2">
-                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white border border-gray-200/70 shadow-xs">
+                <div className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
                   <span className="text-base shrink-0 leading-none mt-0.5">📈</span>
-                  <span className="text-[13px] sm:text-[13.5px] text-gray-800 font-medium leading-snug">
+                  <span className="text-[13px] sm:text-[14px] text-gray-800 font-medium leading-snug">
                     Akun Instagram berkembang hingga <strong className="text-gray-950 font-bold">162 ribu followers</strong>.
                   </span>
                 </div>
 
-                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white border border-gray-200/70 shadow-xs">
+                <div className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
                   <span className="text-base shrink-0 leading-none mt-0.5">🔥</span>
-                  <span className="text-[13px] sm:text-[13.5px] text-gray-800 font-medium leading-snug">
+                  <span className="text-[13px] sm:text-[14px] text-gray-800 font-medium leading-snug">
                     Konten yang awalnya sepi, kini bisa menjangkau <strong className="text-gray-950 font-bold">ribuan hingga jutaan views</strong>.
                   </span>
                 </div>
 
-                <div className="flex items-start gap-2.5 p-2.5 rounded-xl bg-white border border-gray-200/70 shadow-xs">
+                <div className="flex items-start gap-2.5 p-2.5 sm:p-3 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
                   <span className="text-base shrink-0 leading-none mt-0.5">💰</span>
-                  <span className="text-[13px] sm:text-[13.5px] text-gray-800 font-medium leading-snug">
+                  <span className="text-[13px] sm:text-[14px] text-gray-800 font-medium leading-snug">
                     Menghasilkan pemasukan setiap hari dengan total <strong className="text-emerald-700 font-bold">pendapatan bulanan mencapai dua digit</strong>.
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* Closing Note */}
-            <div className="mt-4 p-3 rounded-xl bg-rn-accent/10 border border-rn-accent/20 text-[12.5px] sm:text-[13px] text-gray-900 leading-snug space-y-1">
+            {/* Closing Note Box (Kotak Penutup Tetap Ada) */}
+            <div className="mt-4 p-3 sm:p-3.5 rounded-xl bg-rn-accent/10 border border-rn-accent/20 text-[13px] sm:text-[13.5px] text-gray-900 leading-snug space-y-1 text-left">
               <p className="font-bold text-gray-950">
                 Semua itu saya bangun tanpa harus menunjukkan wajah.
               </p>
