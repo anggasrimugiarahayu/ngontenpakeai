@@ -54,10 +54,10 @@ export default function CuanFacelessLandingPage() {
             Belajar menghasilkan uang dari produk digital tanpa harus tampil wajah. Cukup modal HP dan internet!
           </p>
 
-          {/* Bonus Badge (No Icon, Brand Accent Color) */}
+          {/* Bonus Card (Mengikuti Style Kotak Soft Accent) */}
           <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto my-1.5 sm:my-2">
-            <div className="w-full bg-rn-accent text-white text-[12px] sm:text-[13px] font-bold px-4 sm:px-6 py-2.5 rounded-full shadow-xs text-center tracking-wide leading-snug">
-              BONUS: 8 Tools Ngonten &amp; Riset Instagram, TikTok, Facebook, dan YouTube.
+            <div className="w-full p-2.5 sm:p-3 rounded-xl bg-rn-accent/10 border border-rn-accent/20 text-[12.5px] sm:text-[13.5px] text-gray-900 leading-snug text-center">
+              <strong className="font-bold text-gray-950">BONUS:</strong> 8 Tools Ngonten &amp; Riset Instagram, TikTok, Facebook, dan YouTube.
             </div>
           </div>
 
@@ -97,9 +97,10 @@ export default function CuanFacelessLandingPage() {
           {/* Narrative Story Section (Tanpa Kotak Pembungkus Besar, Menyatu di Canvas Putih) */}
           <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-10 mb-4">
             
-            {/* Story Heading (Posisi di Tengah & Ukuran Font Sama dengan Headline Utama) */}
+            {/* Story Heading (Posisi di Tengah, 2 Baris Terkunci, Ukuran Font Sama dengan Headline Utama) */}
             <h2 className="text-[25px] sm:text-[30px] md:text-[34px] font-extrabold text-gray-950 tracking-tight leading-[1.22] text-center mb-4">
-              Ceritanya Gini, Teman-Teman...
+              <span className="block">Ceritanya Gini,</span>
+              <span className="block">Teman-Teman...</span>
             </h2>
 
             {/* Story Paragraphs */}
