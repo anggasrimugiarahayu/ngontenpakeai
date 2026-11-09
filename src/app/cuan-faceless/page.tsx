@@ -133,8 +133,8 @@ export default function CuanFacelessLandingPage() {
               </div>
             </div>
 
-            {/* Visual Social Proof (Tanpa Bungkus Kontainer, Sangat Rapat & Menyatu Bersih) */}
-            <div className="mt-1 sm:mt-1.5 w-full flex justify-center">
+            {/* Visual Social Proof (Tanpa Bungkus Kontainer, Jarak Harmonis 16px Sejajar Ritme Header) */}
+            <div className="mt-4 w-full flex justify-center">
               <Image
                 src="/cuan-faceless/bukti-instagram-v2.jpg"
                 alt="Bukti akun Instagram ruangcreativemuslim 162 ribu followers dan konten viral"
