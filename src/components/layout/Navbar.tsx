@@ -91,6 +91,16 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
   const isAdmin = isAdminUser(session?.user ? { email: session.user.email, role: userRole } : null);
   const isPro = badgeName !== "FREE";
 
+  if (pathname === "/cuan-faceless" || pathname?.startsWith("/cuan-faceless")) {
+    return (
+      <header className="fixed w-full top-0 z-50 flex items-center justify-center py-3.5 sm:py-4 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+        <span className="font-bold font-heading text-lg sm:text-xl tracking-tight text-gray-900 select-none">
+          ruangcreativemuslim
+        </span>
+      </header>
+    );
+  }
+
   return (
     <nav className="fixed w-full top-0 z-50 flex items-center justify-between px-3 sm:px-6 py-3 sm:py-4 transition-colors duration-300 backdrop-blur-md bg-gray-50/80 dark:bg-[#0A1128]/80">
       <div className="flex items-center shrink-0 gap-3">

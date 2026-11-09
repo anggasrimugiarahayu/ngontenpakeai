@@ -3,19 +3,22 @@
 import Link from "next/link";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 
 export function Footer() {
   const { theme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const isDark = mounted ? theme === "dark" : true;
+  const isCuanFaceless = pathname === "/cuan-faceless" || pathname?.startsWith("/cuan-faceless");
+  const isDark = isCuanFaceless ? false : (mounted ? theme === "dark" : true);
 
   return (
-    <footer className="w-full pt-1 pb-2 sm:pb-3 xl:pb-3 flex flex-col items-center justify-center mt-auto gap-0.5 sm:gap-1 shrink-0">
+    <footer className={`w-full flex flex-col items-center justify-center mt-auto gap-0.5 sm:gap-1 shrink-0 ${isCuanFaceless ? "bg-white border-t border-gray-100 py-4" : "pt-1 pb-2 sm:pb-3 xl:pb-3"}`}>
       <div className="text-gray-500 text-xs flex items-center gap-2">
         Product by
         <a
