@@ -93,7 +93,7 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
 
   if (pathname === "/cuan-faceless" || pathname?.startsWith("/cuan-faceless")) {
     return (
-      <header className="fixed w-full top-0 z-50 flex items-center justify-center py-3.5 sm:py-4 bg-white/95 backdrop-blur-md border-b border-gray-100 shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+      <header className="fixed w-full top-0 z-50 flex items-center justify-center py-4 bg-white/95 backdrop-blur-md">
         <span className="font-bold font-heading text-lg sm:text-xl tracking-tight text-gray-900 select-none">
           ruangcreativemuslim
         </span>
