@@ -91,7 +91,7 @@ export default function CuanFacelessLandingPage() {
           </div>
 
           {/* Narrative Story Section (Menyatu Bersih di Canvas Putih) */}
-          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-10 mb-4">
+          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-10 mb-2 sm:mb-3">
             
             {/* Story Heading (Posisi di Tengah, 2 Baris Terkunci, Ukuran Font Sama dengan Headline Utama) */}
             <h2 className="text-[25px] sm:text-[30px] md:text-[34px] font-extrabold text-gray-950 tracking-tight leading-[1.22] text-center mb-4">
@@ -133,25 +133,23 @@ export default function CuanFacelessLandingPage() {
               </div>
             </div>
 
-            {/* Visual Social Proof Card */}
-            <div className="mt-4 sm:mt-5 w-full flex justify-center">
-              <div className="w-full overflow-hidden rounded-2xl border border-gray-200/80 shadow-xs bg-white">
-                <Image
-                  src="/cuan-faceless/bukti-instagram-162k.jpg"
-                  alt="Bukti akun Instagram ruangcreativemuslim 162 ribu followers dan konten viral"
-                  width={768}
-                  height={1024}
-                  className="w-full h-auto object-contain block"
-                  priority
-                />
-              </div>
+            {/* Visual Social Proof (Tanpa Bungkus Kontainer, Rapat & Menyatu Bersih) */}
+            <div className="mt-3 sm:mt-3.5 w-full flex justify-center">
+              <Image
+                src="/cuan-faceless/bukti-instagram-162k.jpg"
+                alt="Bukti akun Instagram ruangcreativemuslim 162 ribu followers dan konten viral"
+                width={658}
+                height={773}
+                className="w-full h-auto object-contain block select-none"
+                priority
+              />
             </div>
           </div>
 
         </main>
 
         {/* Bottom Footer Inside the Canvas */}
-        <footer className="w-full pb-6 pt-4 flex flex-col items-center justify-center gap-1 text-xs text-gray-500 bg-white">
+        <footer className="w-full pb-6 pt-3 sm:pt-4 flex flex-col items-center justify-center gap-1 text-xs text-gray-500 bg-white">
           <div className="flex items-center gap-1.5">
             <span>Product by</span>
             <a
