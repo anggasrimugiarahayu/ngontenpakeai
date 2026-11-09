@@ -147,7 +147,7 @@ export default function CuanFacelessLandingPage() {
           </div>
 
           {/* Tutorial Creation & Social Response Section (Jarak Simetris Presisi 20px dari Bawah Gambar) */}
-          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-[20px] mb-4">
+          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-[20px] mb-0">
             
             {/* Section Heading (Harmonis dengan Heading Lainnya) */}
             <h2 className="text-[25px] sm:text-[30px] md:text-[34px] font-extrabold text-gray-950 tracking-tight leading-[1.22] text-center mb-4">
@@ -175,6 +175,22 @@ export default function CuanFacelessLandingPage() {
                 className="w-full h-auto object-contain block select-none"
                 priority
               />
+            </div>
+          </div>
+
+          {/* Personal Results Showcase Section */}
+          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-[20px] mb-4">
+            
+            {/* Section Heading (Harmonis & Seragam dengan Heading Lainnya) */}
+            <h2 className="text-[25px] sm:text-[30px] md:text-[34px] font-extrabold text-gray-950 tracking-tight leading-[1.22] text-center mb-4">
+              Nah, Kalo Ini...
+            </h2>
+
+            {/* Section Paragraph (Seragam dengan Body Text Lainnya) */}
+            <div className="text-[14px] sm:text-[15px] text-gray-700 leading-[1.55] text-left">
+              <p>
+                Beberapa hasil yang berhasil saya kumpulkan dari bisnis produk digital lewat konten faceless, tanpa perlu menampilkan wajah, hanya dalam beberapa bulan.
+              </p>
             </div>
           </div>
 
