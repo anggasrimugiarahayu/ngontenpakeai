@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Check } from "lucide-react";
 import { LightModeLock } from "./LightModeLock";
+import { CuanFacelessNavbar } from "./CuanFacelessNavbar";
 
 export const metadata: Metadata = {
   title: "Tutorial Dapat Cuan dari Produk Digital Lewat Konten Faceless | ruangcreativemuslim",
@@ -33,12 +34,8 @@ export default function CuanFacelessLandingPage() {
       {/* Centered Canvas Container (Lebar Pas ~680px dengan Batas Kiri-Kanan) */}
       <div className="w-full max-w-[680px] min-h-screen bg-white border-x border-gray-200/90 shadow-[0_0_30px_rgba(0,0,0,0.03)] flex flex-col justify-between">
         
-        {/* Top Header Inside the Canvas (Seamless White, No Horizontal Line) */}
-        <header className="w-full pt-5 sm:pt-6 pb-2 sm:pb-3 flex items-center justify-center bg-white">
-          <span className="font-bold font-heading text-sm sm:text-[15px] tracking-tight text-gray-800 select-none">
-            ruangcreativemuslim
-          </span>
-        </header>
+        {/* Top Header Inside the Canvas (Bounded Strictly Within 680px Canvas Borders) */}
+        <CuanFacelessNavbar />
 
         {/* Hero Section Container */}
         <main className="flex-1 w-full px-5 sm:px-8 py-2 flex flex-col items-center text-center">
