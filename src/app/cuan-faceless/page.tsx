@@ -91,7 +91,7 @@ export default function CuanFacelessLandingPage() {
           </div>
 
           {/* Narrative Story Section (Menyatu Bersih di Canvas Putih) */}
-          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-10 mb-2 sm:mb-3">
+          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-10 mb-0">
             
             {/* Story Heading (Posisi di Tengah, 2 Baris Terkunci, Ukuran Font Sama dengan Headline Utama) */}
             <h2 className="text-[25px] sm:text-[30px] md:text-[34px] font-extrabold text-gray-950 tracking-tight leading-[1.22] text-center mb-4">
@@ -133,8 +133,8 @@ export default function CuanFacelessLandingPage() {
               </div>
             </div>
 
-            {/* Visual Social Proof (Tanpa Bungkus Kontainer, Jarak Harmonis 16px Sejajar Ritme Header) */}
-            <div className="mt-4 w-full flex justify-center">
+            {/* Visual Social Proof (Tanpa Bungkus Kontainer, Jarak Simetris Presisi 20px) */}
+            <div className="mt-[20px] w-full flex justify-center">
               <Image
                 src="/cuan-faceless/bukti-instagram-v2.jpg"
                 alt="Bukti akun Instagram ruangcreativemuslim 162 ribu followers dan konten viral"
@@ -146,8 +146,8 @@ export default function CuanFacelessLandingPage() {
             </div>
           </div>
 
-          {/* Tutorial Creation & Social Response Section */}
-          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-10 sm:mt-12 mb-4">
+          {/* Tutorial Creation & Social Response Section (Jarak Simetris Presisi 20px dari Bawah Gambar) */}
+          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-[20px] mb-4">
             
             {/* Section Heading (Harmonis dengan Heading Lainnya) */}
             <h2 className="text-[25px] sm:text-[30px] md:text-[34px] font-extrabold text-gray-950 tracking-tight leading-[1.22] text-center mb-4">
