@@ -164,6 +164,18 @@ export default function CuanFacelessLandingPage() {
                 Alhamdulillah, qadarullah, ternyata banyak yang memberikan respons positif dan mulai merasakan hasilnya juga.
               </p>
             </div>
+
+            {/* Visual Testimonial Proof (Tanpa Bungkus Kontainer, Jarak Presisi 20px) */}
+            <div className="mt-[20px] w-full flex justify-center">
+              <Image
+                src="/cuan-faceless/bukti-testimoni-member.jpg"
+                alt="Bukti testimoni dan hasil penjualan member tutorial cuan produk digital faceless"
+                width={724}
+                height={868}
+                className="w-full h-auto object-contain block select-none"
+                priority
+              />
+            </div>
           </div>
 
         </main>
