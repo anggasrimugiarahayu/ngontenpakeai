@@ -192,6 +192,18 @@ export default function CuanFacelessLandingPage() {
                 Beberapa hasil yang berhasil saya kumpulkan dari bisnis produk digital lewat konten faceless, tanpa perlu menampilkan wajah, hanya dalam beberapa bulan.
               </p>
             </div>
+
+            {/* Visual Income Proof (Tanpa Bungkus Kontainer, Jarak Presisi 20px) */}
+            <div className="mt-[20px] w-full flex justify-center">
+              <Image
+                src="/cuan-faceless/bukti-penghasilan-lynk.jpg"
+                alt="Bukti omzet penjualan produk digital konten faceless mencapai Rp156 juta di Lynk.id"
+                width={658}
+                height={802}
+                className="w-full h-auto object-contain block select-none"
+                priority
+              />
+            </div>
           </div>
 
         </main>
