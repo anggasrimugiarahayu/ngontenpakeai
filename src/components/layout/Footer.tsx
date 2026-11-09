@@ -15,7 +15,9 @@ export function Footer() {
   }, []);
 
   const isCuanFaceless = pathname === "/cuan-faceless" || pathname?.startsWith("/cuan-faceless");
-  const isDark = isCuanFaceless ? false : (mounted ? theme === "dark" : true);
+  if (isCuanFaceless) return null;
+
+  const isDark = mounted ? theme === "dark" : true;
 
   return (
     <footer className={`w-full flex flex-col items-center justify-center mt-auto gap-0.5 sm:gap-1 shrink-0 ${isCuanFaceless ? "bg-white py-6" : "pt-1 pb-2 sm:pb-3 xl:pb-3"}`}>

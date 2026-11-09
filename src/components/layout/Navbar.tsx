@@ -92,13 +92,7 @@ export function Navbar({ followerCount = "154K", memberCount = "0", userRole = "
   const isPro = badgeName !== "FREE";
 
   if (pathname === "/cuan-faceless" || pathname?.startsWith("/cuan-faceless")) {
-    return (
-      <header className="fixed w-full top-0 z-50 flex items-center justify-center py-4 bg-white/95 backdrop-blur-md">
-        <span className="font-bold font-heading text-lg sm:text-xl tracking-tight text-gray-900 select-none">
-          ruangcreativemuslim
-        </span>
-      </header>
-    );
+    return null;
   }
 
   return (
