@@ -179,7 +179,7 @@ export default function CuanFacelessLandingPage() {
           </div>
 
           {/* Personal Results Showcase Section */}
-          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-[20px] mb-4">
+          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-[20px] mb-0">
             
             {/* Section Heading (Harmonis & Seragam dengan Heading Lainnya) */}
             <h2 className="text-[25px] sm:text-[30px] md:text-[34px] font-extrabold text-gray-950 tracking-tight leading-[1.22] text-center mb-4">
@@ -203,6 +203,68 @@ export default function CuanFacelessLandingPage() {
                 className="w-full h-auto object-contain block select-none"
                 priority
               />
+            </div>
+          </div>
+
+          {/* Deliverables / Curriculum Section (Yang Kamu Dapetin) */}
+          <div className="w-full max-w-[440px] sm:max-w-[480px] mx-auto mt-[20px] mb-4">
+            
+            {/* Section Heading */}
+            <h2 className="text-[25px] sm:text-[30px] md:text-[34px] font-extrabold text-gray-950 tracking-tight leading-[1.22] text-center mb-4">
+              Yang Kamu Dapetin
+            </h2>
+
+            {/* 5 Benefit Checklist Cards */}
+            <div className="space-y-2 text-left">
+              {/* Point 1 */}
+              <div className="flex items-start gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
+                <div className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                </div>
+                <span className="text-[13px] sm:text-[14px] text-gray-800 font-medium leading-snug">
+                  Diajarin dari A-Z ngonten ilustrasi faceless dari <strong className="text-gray-950 font-bold">NOL sampai CUAN</strong>.
+                </span>
+              </div>
+
+              {/* Point 2 */}
+              <div className="flex items-start gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
+                <div className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                </div>
+                <span className="text-[13px] sm:text-[14px] text-gray-800 font-medium leading-snug">
+                  Diajarin biar akun IG kamu jadi <strong className="text-gray-950 font-bold">mesin penghasil cuan</strong>.
+                </span>
+              </div>
+
+              {/* Point 3 */}
+              <div className="flex items-start gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
+                <div className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                </div>
+                <span className="text-[13px] sm:text-[14px] text-gray-800 font-medium leading-snug">
+                  Diajarin agar konten kamu viewsnya tembus <strong className="text-emerald-700 font-bold">10 RB ++</strong>.
+                </span>
+              </div>
+
+              {/* Point 4 */}
+              <div className="flex items-start gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
+                <div className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                </div>
+                <span className="text-[13px] sm:text-[14px] text-gray-800 font-medium leading-snug">
+                  Diajarin cara buat konten <strong className="text-gray-950 font-bold">tanpa nunjukin wajah</strong>.
+                </span>
+              </div>
+
+              {/* Point 5 */}
+              <div className="flex items-start gap-3 p-2.5 sm:p-3 rounded-xl bg-gray-50/80 border border-gray-200/80 shadow-xs">
+                <div className="w-5 h-5 rounded-md bg-emerald-500 text-white flex items-center justify-center shrink-0 shadow-xs mt-0.5">
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                </div>
+                <span className="text-[13px] sm:text-[14px] text-gray-800 font-medium leading-snug">
+                  Diajarin pakai sistem <strong className="text-gray-950 font-bold">OTOMATISASI</strong> biar kamu lagi apapun dan dimanapun cuan masuk terus.
+                </span>
+              </div>
             </div>
           </div>
 
